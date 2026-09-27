@@ -308,7 +308,7 @@ def legend(items):
 # --------------------------------------------------------------------------
 def load():
     d = {}
-    p = C.RESULTS
+    p = C.LEGACY
     d["def"] = pd.read_csv(p / "definitive_oos.csv")
     d["cost"] = pd.read_csv(p / "cost_lab.csv")
     d["sweep"] = pd.read_csv(p / "sweep_merged.csv")
@@ -1007,6 +1007,6 @@ gross_r ก็พัง &mdash; นั่นคือ adverse selection ที�
 
 
 if __name__ == "__main__":
-    out = C.RESULTS / "report.html"
+    out = C.LEGACY / "report.html"
     out.write_text(build(), encoding="utf-8")
     print(f"wrote {out}  ({out.stat().st_size/1024:.0f} KB)")

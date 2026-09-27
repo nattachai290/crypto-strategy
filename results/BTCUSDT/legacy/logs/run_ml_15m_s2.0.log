@@ -1,0 +1,103 @@
+bars=233,744 2020-01-01 00:15:00+00:00 .. 2026-09-01 00:00:00+00:00  stop_scale=2.0
+candidate signals: 110,204
+labelled candidates: 110,203  mean R=-0.0681  win=45.5%
+    reg    thr=0.0  ret=-12.07% cagr=-22.87% sharpe=-0.20 sortino=-0.12 maxDD=14.45% calmar=0.00 trades=117 win=44.4% PF=0.70 expR=-0.134 grossR=-0.071 costR=0.063 fees=4.24U(4.2%) fund=0.00U expo=32.0% hold=47bars final=87.93U
+    reg    thr=0.05  ret=-12.39% cagr=-23.42% sharpe=-0.22 sortino=-0.13 maxDD=15.16% calmar=0.00 trades=110 win=44.5% PF=0.68 expR=-0.133 grossR=-0.069 costR=0.064 fees=4.04U(4.0%) fund=0.00U expo=29.6% hold=47bars final=87.61U
+    reg    thr=0.1  ret=-9.40% cagr=-18.07% sharpe=-0.16 sortino=-0.10 maxDD=12.73% calmar=0.00 trades=105 win=44.8% PF=0.73 expR=-0.108 grossR=-0.046 costR=0.062 fees=3.84U(3.8%) fund=0.00U expo=28.9% hold=48bars final=90.60U
+    reg    thr=0.2  ret=-0.23% cagr=-0.46% sharpe=0.00 sortino=0.00 maxDD=6.05% calmar=0.00 trades=90 win=53.3% PF=0.99 expR=-0.016 grossR=0.047 costR=0.063 fees=3.28U(3.3%) fund=0.00U expo=23.0% hold=44bars final=99.77U
+    clf    thr=0.0  ret=-12.84% cagr=-24.22% sharpe=-0.20 sortino=-0.13 maxDD=14.93% calmar=0.00 trades=124 win=43.5% PF=0.70 expR=-0.132 grossR=-0.069 costR=0.063 fees=4.54U(4.5%) fund=0.00U expo=34.1% hold=48bars final=87.16U
+    clf    thr=0.05  ret=-12.71% cagr=-23.99% sharpe=-0.22 sortino=-0.13 maxDD=14.89% calmar=0.00 trades=117 win=42.7% PF=0.68 expR=-0.129 grossR=-0.065 costR=0.064 fees=4.30U(4.3%) fund=0.00U expo=32.2% hold=48bars final=87.29U
+    clf    thr=0.1  ret=-7.44% cagr=-14.44% sharpe=-0.13 sortino=-0.07 maxDD=12.73% calmar=0.00 trades=111 win=45.0% PF=0.80 expR=-0.087 grossR=-0.024 costR=0.063 fees=4.09U(4.1%) fund=0.00U expo=29.3% hold=46bars final=92.56U
+    clf    thr=0.2  ret=-2.50% cagr=-4.98% sharpe=-0.06 sortino=-0.03 maxDD=5.75% calmar=0.00 trades=66 win=48.5% PF=0.87 expR=-0.076 grossR=-0.005 costR=0.072 fees=2.56U(2.6%) fund=0.00U expo=15.5% hold=41bars final=97.50U
+    rules  thr=None  ret=-14.58% cagr=-27.24% sharpe=-0.22 sortino=-0.14 maxDD=15.73% calmar=0.00 trades=129 win=44.2% PF=0.69 expR=-0.132 grossR=-0.070 costR=0.062 fees=4.73U(4.7%) fund=0.00U expo=35.0% hold=47bars final=85.42U
+  fold 1 2022-01..2022-06: done (34535 train / 7947 test candidates)
+    reg    thr=0.0  ret=-12.46% cagr=-23.21% sharpe=-0.18 sortino=-0.17 maxDD=15.62% calmar=0.00 trades=237 win=46.4% PF=0.79 expR=-0.055 grossR=0.019 costR=0.074 fees=9.86U(9.9%) fund=0.00U expo=71.8% hold=54bars final=87.54U
+    reg    thr=0.05  ret=-23.90% cagr=-41.86% sharpe=-0.41 sortino=-0.35 maxDD=25.21% calmar=0.00 trades=203 win=41.9% PF=0.58 expR=-0.143 grossR=-0.067 costR=0.076 fees=8.03U(8.0%) fund=0.00U expo=61.1% hold=53bars final=76.10U
+    reg    thr=0.1  ret=-21.45% cagr=-38.07% sharpe=-0.36 sortino=-0.29 maxDD=23.74% calmar=0.00 trades=169 win=41.4% PF=0.57 expR=-0.177 grossR=-0.096 costR=0.081 fees=7.32U(7.3%) fund=0.00U expo=52.3% hold=55bars final=78.55U
+    reg    thr=0.2  ret=-16.61% cagr=-30.27% sharpe=-0.37 sortino=-0.24 maxDD=19.28% calmar=0.00 trades=112 win=38.4% PF=0.51 expR=-0.182 grossR=-0.092 costR=0.089 fees=5.59U(5.6%) fund=0.00U expo=35.1% hold=55bars final=83.39U
+    clf    thr=0.0  ret=-18.89% cagr=-34.01% sharpe=-0.28 sortino=-0.28 maxDD=21.46% calmar=0.00 trades=250 win=46.0% PF=0.70 expR=-0.092 grossR=-0.018 costR=0.074 fees=9.71U(9.7%) fund=0.00U expo=77.0% hold=54bars final=81.11U
+    clf    thr=0.05  ret=-20.59% cagr=-36.73% sharpe=-0.32 sortino=-0.28 maxDD=21.84% calmar=0.00 trades=221 win=44.3% PF=0.66 expR=-0.119 grossR=-0.043 costR=0.077 fees=8.84U(8.8%) fund=0.00U expo=66.1% hold=53bars final=79.41U
+    clf    thr=0.1  ret=-21.74% cagr=-38.54% sharpe=-0.40 sortino=-0.29 maxDD=22.53% calmar=0.00 trades=160 win=39.4% PF=0.55 expR=-0.167 grossR=-0.082 costR=0.085 fees=7.14U(7.1%) fund=0.00U expo=47.3% hold=52bars final=78.26U
+    clf    thr=0.2  ret=-11.34% cagr=-21.26% sharpe=-0.36 sortino=-0.13 maxDD=13.52% calmar=0.00 trades=48 win=31.2% PF=0.40 expR=-0.271 grossR=-0.155 costR=0.115 fees=3.31U(3.3%) fund=0.00U expo=14.4% hold=53bars final=88.66U
+    rules  thr=None  ret=-14.34% cagr=-26.45% sharpe=-0.17 sortino=-0.20 maxDD=18.34% calmar=0.00 trades=323 win=46.1% PF=0.82 expR=-0.053 grossR=0.017 costR=0.070 fees=12.61U(12.6%) fund=0.00U expo=91.3% hold=50bars final=85.66U
+  fold 2 2022-07..2022-12: done (33932 train / 8043 test candidates)
+    reg    thr=0.0  ret=3.16% cagr=6.48% sharpe=0.06 sortino=0.05 maxDD=8.87% calmar=0.73 trades=164 win=50.6% PF=1.08 expR=0.011 grossR=0.082 costR=0.071 fees=6.92U(6.9%) fund=-0.00U expo=52.5% hold=56bars final=103.16U
+    reg    thr=0.05  ret=0.62% cagr=1.26% sharpe=0.02 sortino=0.02 maxDD=10.38% calmar=0.12 trades=139 win=48.9% PF=1.02 expR=-0.001 grossR=0.073 costR=0.074 fees=5.95U(6.0%) fund=-0.00U expo=43.6% hold=55bars final=100.62U
+    reg    thr=0.1  ret=-0.13% cagr=-0.26% sharpe=0.01 sortino=0.01 maxDD=9.78% calmar=0.00 trades=116 win=47.4% PF=1.00 expR=0.002 grossR=0.078 costR=0.076 fees=5.03U(5.0%) fund=-0.00U expo=35.5% hold=53bars final=99.87U
+    reg    thr=0.2  ret=6.71% cagr=13.99% sharpe=0.18 sortino=0.09 maxDD=4.91% calmar=2.85 trades=56 win=60.7% PF=1.73 expR=0.161 grossR=0.232 costR=0.070 fees=2.17U(2.2%) fund=-0.00U expo=17.9% hold=55bars final=106.71U
+    clf    thr=0.0  ret=2.11% cagr=4.29% sharpe=0.04 sortino=0.04 maxDD=9.65% calmar=0.44 trades=176 win=46.0% PF=1.05 expR=0.009 grossR=0.083 costR=0.074 fees=7.40U(7.4%) fund=-0.00U expo=52.4% hold=52bars final=102.11U
+    clf    thr=0.05  ret=-3.82% cagr=-7.56% sharpe=-0.06 sortino=-0.04 maxDD=12.12% calmar=0.00 trades=123 win=49.6% PF=0.88 expR=-0.021 grossR=0.053 costR=0.074 fees=5.00U(5.0%) fund=-0.00U expo=36.6% hold=52bars final=96.18U
+    clf    thr=0.1  ret=2.13% cagr=4.35% sharpe=0.06 sortino=0.03 maxDD=6.83% calmar=0.64 trades=67 win=56.7% PF=1.14 expR=0.053 grossR=0.125 costR=0.072 fees=2.63U(2.6%) fund=-0.00U expo=21.4% hold=56bars final=102.13U
+    clf    thr=0.2  ret=3.16% cagr=6.48% sharpe=0.16 sortino=0.05 maxDD=1.51% calmar=4.28 trades=15 win=66.7% PF=2.91 expR=0.326 grossR=0.394 costR=0.068 fees=0.55U(0.6%) fund=-0.00U expo=4.9% hold=57bars final=103.16U
+    rules  thr=None  ret=6.79% cagr=14.18% sharpe=0.09 sortino=0.10 maxDD=13.95% calmar=1.02 trades=347 win=50.1% PF=1.08 expR=0.014 grossR=0.091 costR=0.077 fees=16.78U(16.8%) fund=-0.00U expo=91.2% hold=46bars final=106.79U
+  fold 3 2023-01..2023-06: done (32709 train / 7927 test candidates)
+    reg    thr=0.0  ret=-9.21% cagr=-17.45% sharpe=-0.20 sortino=-0.11 maxDD=12.51% calmar=0.00 trades=97 win=42.3% PF=0.64 expR=-0.128 grossR=-0.016 costR=0.111 fees=5.93U(5.9%) fund=-0.00U expo=29.0% hold=53bars final=90.79U
+    reg    thr=0.05  ret=-1.95% cagr=-3.84% sharpe=-0.05 sortino=-0.03 maxDD=6.64% calmar=0.00 trades=65 win=41.5% PF=0.86 expR=-0.035 grossR=0.088 costR=0.122 fees=4.68U(4.7%) fund=-0.00U expo=20.3% hold=55bars final=98.05U
+    reg    thr=0.1  ret=-3.05% cagr=-5.97% sharpe=-0.10 sortino=-0.04 maxDD=7.50% calmar=0.00 trades=44 win=43.2% PF=0.73 expR=-0.094 grossR=0.027 costR=0.122 fees=3.08U(3.1%) fund=-0.00U expo=13.8% hold=55bars final=96.95U
+    reg    thr=0.2  ret=-4.04% cagr=-7.86% sharpe=-0.37 sortino=-0.11 maxDD=5.06% calmar=0.00 trades=15 win=26.7% PF=0.25 expR=-0.345 grossR=-0.215 costR=0.130 fees=1.13U(1.1%) fund=0.00U expo=5.3% hold=63bars final=95.96U
+    clf    thr=0.0  ret=-7.58% cagr=-14.48% sharpe=-0.17 sortino=-0.09 maxDD=13.04% calmar=0.00 trades=98 win=42.9% PF=0.69 expR=-0.085 grossR=0.024 costR=0.109 fees=5.90U(5.9%) fund=0.00U expo=26.1% hold=47bars final=92.42U
+    clf    thr=0.05  ret=-5.49% cagr=-10.60% sharpe=-0.17 sortino=-0.08 maxDD=10.51% calmar=0.00 trades=58 win=39.7% PF=0.63 expR=-0.113 grossR=0.006 costR=0.118 fees=3.78U(3.8%) fund=0.00U expo=16.0% hold=49bars final=94.51U
+    clf    thr=0.1  ret=2.77% cagr=5.57% sharpe=0.14 sortino=0.06 maxDD=1.79% calmar=3.11 trades=22 win=59.1% PF=2.24 expR=0.127 grossR=0.267 costR=0.141 fees=1.80U(1.8%) fund=-0.00U expo=6.0% hold=48bars final=102.77U
+    rules  thr=None  ret=-26.32% cagr=-45.47% sharpe=-0.35 sortino=-0.34 maxDD=27.87% calmar=0.00 trades=300 win=45.3% PF=0.67 expR=-0.109 grossR=0.008 costR=0.117 fees=17.77U(17.8%) fund=-0.00U expo=78.4% hold=46bars final=73.68U
+  fold 4 2023-07..2023-12: done (32000 train / 8396 test candidates)
+    reg    thr=0.0  ret=7.90% cagr=16.48% sharpe=0.22 sortino=0.14 maxDD=3.70% calmar=4.45 trades=48 win=66.7% PF=1.79 expR=0.234 grossR=0.341 costR=0.106 fees=2.88U(2.9%) fund=-0.00U expo=12.6% hold=46bars final=107.90U
+    reg    thr=0.05  ret=6.05% cagr=12.52% sharpe=0.18 sortino=0.09 maxDD=2.88% calmar=4.35 trades=34 win=64.7% PF=1.86 expR=0.237 grossR=0.336 costR=0.098 fees=1.80U(1.8%) fund=-0.00U expo=9.6% hold=49bars final=106.05U
+    reg    thr=0.1  ret=1.82% cagr=3.69% sharpe=0.07 sortino=0.03 maxDD=3.29% calmar=1.12 trades=23 win=56.5% PF=1.31 expR=0.129 grossR=0.225 costR=0.096 fees=1.20U(1.2%) fund=-0.00U expo=6.2% hold=47bars final=101.82U
+    reg    thr=0.2  ret=0.49% cagr=0.98% sharpe=0.04 sortino=0.01 maxDD=1.68% calmar=0.58 trades=8 win=50.0% PF=1.25 expR=0.081 grossR=0.173 costR=0.092 fees=0.39U(0.4%) fund=-0.00U expo=2.3% hold=49bars final=100.49U
+    clf    thr=0.0  ret=2.32% cagr=4.72% sharpe=0.07 sortino=0.03 maxDD=4.71% calmar=1.00 trades=48 win=58.3% PF=1.17 expR=0.075 grossR=0.182 costR=0.107 fees=2.91U(2.9%) fund=0.00U expo=10.4% hold=38bars final=102.32U
+    clf    thr=0.05  ret=-1.71% cagr=-3.40% sharpe=-0.05 sortino=-0.01 maxDD=5.51% calmar=0.00 trades=28 win=53.6% PF=0.83 expR=-0.036 grossR=0.063 costR=0.098 fees=1.56U(1.6%) fund=-0.00U expo=6.0% hold=38bars final=98.29U
+    clf    thr=0.1  ret=0.30% cagr=0.60% sharpe=0.02 sortino=0.00 maxDD=2.87% calmar=0.21 trades=12 win=58.3% PF=1.08 expR=0.091 grossR=0.184 costR=0.093 fees=0.62U(0.6%) fund=-0.00U expo=2.7% hold=39bars final=100.30U
+    clf    thr=0.2  ret=0.72% cagr=1.46% sharpe=0.17 sortino=0.03 maxDD=0.42% calmar=3.47 trades=1 win=100.0% PF=  n/a expR=0.930 grossR=1.012 costR=0.081 fees=0.05U(0.0%) fund=0.00U expo=0.3% hold=61bars final=100.72U
+    rules  thr=None  ret=9.63% cagr=20.27% sharpe=0.15 sortino=0.12 maxDD=6.80% calmar=2.98 trades=138 win=56.5% PF=1.24 expR=0.075 grossR=0.167 costR=0.092 fees=8.31U(8.3%) fund=0.00U expo=37.7% hold=48bars final=109.63U
+  fold 5 2024-01..2024-06: done (32313 train / 8542 test candidates)
+    reg    thr=0.0  ret=1.45% cagr=2.90% sharpe=0.05 sortino=0.02 maxDD=4.54% calmar=0.64 trades=58 win=53.4% PF=1.08 expR=0.042 grossR=0.146 costR=0.104 fees=3.88U(3.9%) fund=0.00U expo=13.9% hold=42bars final=101.45U
+    reg    thr=0.05  ret=3.88% cagr=7.85% sharpe=0.12 sortino=0.05 maxDD=3.68% calmar=2.14 trades=54 win=57.4% PF=1.24 expR=0.095 grossR=0.196 costR=0.102 fees=3.54U(3.5%) fund=0.00U expo=12.8% hold=42bars final=103.88U
+    reg    thr=0.1  ret=2.87% cagr=5.77% sharpe=0.11 sortino=0.05 maxDD=3.55% calmar=1.63 trades=45 win=53.3% PF=1.22 expR=0.098 grossR=0.200 costR=0.102 fees=2.95U(3.0%) fund=0.00U expo=11.2% hold=44bars final=102.87U
+    reg    thr=0.2  ret=-0.61% cagr=-1.20% sharpe=-0.03 sortino=-0.01 maxDD=4.48% calmar=0.00 trades=31 win=45.2% PF=0.94 expR=0.003 grossR=0.113 costR=0.110 fees=2.02U(2.0%) fund=0.00U expo=8.1% hold=46bars final=99.39U
+    clf    thr=0.0  ret=4.37% cagr=8.87% sharpe=0.13 sortino=0.06 maxDD=4.71% calmar=1.88 trades=57 win=49.1% PF=1.26 expR=0.094 grossR=0.196 costR=0.102 fees=3.75U(3.8%) fund=0.00U expo=13.9% hold=43bars final=104.37U
+    clf    thr=0.05  ret=5.07% cagr=10.31% sharpe=0.15 sortino=0.07 maxDD=4.64% calmar=2.22 trades=46 win=47.8% PF=1.39 expR=0.113 grossR=0.217 costR=0.105 fees=3.13U(3.1%) fund=0.00U expo=11.3% hold=43bars final=105.07U
+    clf    thr=0.1  ret=0.28% cagr=0.56% sharpe=0.02 sortino=0.01 maxDD=4.96% calmar=0.11 trades=28 win=50.0% PF=1.03 expR=0.029 grossR=0.148 costR=0.119 fees=2.01U(2.0%) fund=0.00U expo=6.6% hold=42bars final=100.28U
+    clf    thr=0.2  ret=-2.47% cagr=-4.84% sharpe=-0.20 sortino=-0.04 maxDD=3.59% calmar=0.00 trades=8 win=37.5% PF=0.42 expR=-0.263 grossR=-0.126 costR=0.137 fees=0.60U(0.6%) fund=0.00U expo=1.9% hold=42bars final=97.53U
+    rules  thr=None  ret=-1.47% cagr=-2.90% sharpe=-0.03 sortino=-0.01 maxDD=7.28% calmar=0.00 trades=65 win=50.8% PF=0.94 expR=-0.021 grossR=0.082 costR=0.103 fees=4.26U(4.3%) fund=0.00U expo=17.0% hold=46bars final=98.53U
+  fold 6 2024-07..2024-12: done (32908 train / 8444 test candidates)
+    reg    thr=0.0  ret=-0.27% cagr=-0.54% sharpe=-0.00 sortino=-0.00 maxDD=2.71% calmar=0.00 trades=15 win=53.3% PF=0.96 expR=-0.009 grossR=0.154 costR=0.162 fees=1.61U(1.6%) fund=0.00U expo=2.7% hold=32bars final=99.73U
+    reg    thr=0.05  ret=1.16% cagr=2.36% sharpe=0.05 sortino=0.01 maxDD=2.35% calmar=1.00 trades=13 win=53.8% PF=1.31 expR=0.084 grossR=0.253 costR=0.169 fees=1.45U(1.4%) fund=0.00U expo=2.6% hold=34bars final=101.16U
+    reg    thr=0.1  ret=1.66% cagr=3.38% sharpe=0.07 sortino=0.01 maxDD=1.81% calmar=1.87 trades=11 win=63.6% PF=1.57 expR=0.204 grossR=0.369 costR=0.165 fees=1.12U(1.1%) fund=0.00U expo=2.0% hold=32bars final=101.66U
+    reg    thr=0.2  ret=0.74% cagr=1.50% sharpe=0.07 sortino=0.01 maxDD=1.43% calmar=1.05 trades=4 win=50.0% PF=1.91 expR=0.213 grossR=0.369 costR=0.155 fees=0.40U(0.4%) fund=-0.00U expo=0.8% hold=36bars final=100.74U
+    clf    thr=0.0  ret=-3.08% cagr=-6.11% sharpe=-0.15 sortino=-0.03 maxDD=3.98% calmar=0.00 trades=16 win=50.0% PF=0.56 expR=-0.207 grossR=-0.042 costR=0.165 fees=1.60U(1.6%) fund=0.00U expo=3.6% hold=39bars final=96.92U
+    clf    thr=0.05  ret=2.41% cagr=4.92% sharpe=0.14 sortino=0.04 maxDD=1.25% calmar=3.93 trades=10 win=60.0% PF=2.34 expR=0.307 grossR=0.479 costR=0.173 fees=1.02U(1.0%) fund=0.00U expo=1.8% hold=31bars final=102.41U
+    clf    thr=0.1  ret=0.11% cagr=0.23% sharpe=0.01 sortino=0.00 maxDD=2.75% calmar=0.08 trades=6 win=50.0% PF=1.06 expR=0.094 grossR=0.271 costR=0.177 fees=0.62U(0.6%) fund=-0.00U expo=1.0% hold=28bars final=100.11U
+    clf    thr=0.2  ret=-0.64% cagr=-1.28% sharpe=-0.07 sortino=-0.00 maxDD=1.45% calmar=0.00 trades=1 win=0.0% PF=0.00 expR=-0.665 grossR=-0.508 costR=0.157 fees=0.11U(0.1%) fund=-0.00U expo=0.3% hold=50bars final=99.36U
+    rules  thr=None  ret=-2.96% cagr=-5.89% sharpe=-0.07 sortino=-0.03 maxDD=5.31% calmar=0.00 trades=41 win=48.8% PF=0.80 expR=-0.059 grossR=0.100 costR=0.159 fees=4.02U(4.0%) fund=0.00U expo=9.4% hold=40bars final=97.04U
+  fold 7 2025-01..2025-06: done (33309 train / 7968 test candidates)
+    reg    thr=0.0  ret=5.58% cagr=11.37% sharpe=0.20 sortino=0.08 maxDD=2.59% calmar=4.38 trades=29 win=72.4% PF=1.89 expR=0.204 grossR=0.388 costR=0.184 fees=3.34U(3.3%) fund=0.00U expo=7.7% hold=47bars final=105.58U
+    reg    thr=0.05  ret=7.03% cagr=14.43% sharpe=0.24 sortino=0.10 maxDD=3.21% calmar=4.49 trades=27 win=70.4% PF=2.46 expR=0.259 grossR=0.444 costR=0.185 fees=3.07U(3.1%) fund=0.00U expo=7.4% hold=49bars final=107.03U
+    reg    thr=0.1  ret=1.72% cagr=3.45% sharpe=0.09 sortino=0.03 maxDD=2.91% calmar=1.18 trades=16 win=68.8% PF=1.54 expR=0.104 grossR=0.311 costR=0.206 fees=1.86U(1.9%) fund=-0.00U expo=4.4% hold=49bars final=101.72U
+    reg    thr=0.2  ret=-0.91% cagr=-1.81% sharpe=-0.07 sortino=-0.01 maxDD=2.55% calmar=0.00 trades=8 win=50.0% PF=0.66 expR=-0.195 grossR=0.011 costR=0.206 fees=0.91U(0.9%) fund=-0.00U expo=1.9% hold=42bars final=99.09U
+    clf    thr=0.0  ret=4.03% cagr=8.15% sharpe=0.13 sortino=0.06 maxDD=2.89% calmar=2.82 trades=34 win=67.6% PF=1.49 expR=0.138 grossR=0.322 costR=0.184 fees=3.76U(3.8%) fund=0.00U expo=8.6% hold=45bars final=104.03U
+    clf    thr=0.05  ret=0.53% cagr=1.05% sharpe=0.03 sortino=0.01 maxDD=4.76% calmar=0.22 trades=22 win=63.6% PF=1.09 expR=0.056 grossR=0.264 costR=0.208 fees=2.49U(2.5%) fund=0.00U expo=5.8% hold=46bars final=100.53U
+    clf    thr=0.1  ret=2.58% cagr=5.19% sharpe=0.18 sortino=0.05 maxDD=1.43% calmar=3.63 trades=12 win=75.0% PF=2.54 expR=0.261 grossR=0.465 costR=0.204 fees=1.30U(1.3%) fund=0.00U expo=3.4% hold=50bars final=102.58U
+    clf    thr=0.2  ret=-0.73% cagr=-1.43% sharpe=-0.09 sortino=-0.00 maxDD=1.22% calmar=0.00 trades=1 win=0.0% PF=0.00 expR=-1.146 grossR=-0.891 costR=0.255 fees=0.12U(0.1%) fund=-0.00U expo=0.4% hold=63bars final=99.27U
+    rules  thr=None  ret=2.46% cagr=4.94% sharpe=0.07 sortino=0.04 maxDD=5.57% calmar=0.89 trades=54 win=55.6% PF=1.16 expR=0.032 grossR=0.205 costR=0.173 fees=5.75U(5.8%) fund=0.00U expo=15.6% hold=51bars final=102.46U
+  fold 8 2025-07..2025-12: done (33350 train / 7973 test candidates)
+    reg    thr=0.0  ret=1.84% cagr=3.75% sharpe=0.05 sortino=0.02 maxDD=4.25% calmar=0.88 trades=50 win=54.0% PF=1.13 expR=0.045 grossR=0.174 costR=0.129 fees=3.85U(3.8%) fund=0.00U expo=13.0% hold=45bars final=101.84U
+    reg    thr=0.05  ret=5.16% cagr=10.69% sharpe=0.15 sortino=0.07 maxDD=3.07% calmar=3.48 trades=41 win=58.5% PF=1.63 expR=0.139 grossR=0.274 costR=0.135 fees=3.17U(3.2%) fund=0.00U expo=11.6% hold=49bars final=105.16U
+    reg    thr=0.1  ret=-0.53% cagr=-1.08% sharpe=-0.02 sortino=-0.01 maxDD=3.49% calmar=0.00 trades=27 win=48.1% PF=0.93 expR=-0.061 grossR=0.079 costR=0.140 fees=2.09U(2.1%) fund=0.00U expo=7.9% hold=51bars final=99.47U
+    reg    thr=0.2  ret=0.12% cagr=0.25% sharpe=0.01 sortino=0.00 maxDD=2.92% calmar=0.08 trades=13 win=46.2% PF=1.03 expR=-0.024 grossR=0.129 costR=0.153 fees=1.08U(1.1%) fund=0.00U expo=3.6% hold=48bars final=100.12U
+    clf    thr=0.0  ret=0.92% cagr=1.87% sharpe=0.04 sortino=0.01 maxDD=4.89% calmar=0.38 trades=38 win=55.3% PF=1.08 expR=0.041 grossR=0.187 costR=0.145 fees=3.04U(3.0%) fund=0.00U expo=9.7% hold=44bars final=100.92U
+    clf    thr=0.05  ret=6.45% cagr=13.44% sharpe=0.26 sortino=0.10 maxDD=1.90% calmar=7.09 trades=28 win=64.3% PF=2.39 expR=0.266 grossR=0.417 costR=0.151 fees=2.40U(2.4%) fund=0.00U expo=7.5% hold=47bars final=106.45U
+    clf    thr=0.1  ret=-0.08% cagr=-0.15% sharpe=-0.00 sortino=-0.00 maxDD=2.82% calmar=0.00 trades=17 win=47.1% PF=0.99 expR=-0.031 grossR=0.135 costR=0.166 fees=1.53U(1.5%) fund=0.00U expo=4.4% hold=45bars final=99.92U
+    clf    thr=0.2  ret=0.55% cagr=1.11% sharpe=0.14 sortino=0.02 maxDD=0.66% calmar=1.70 trades=3 win=66.7% PF=1.83 expR=0.154 grossR=0.363 costR=0.209 fees=0.33U(0.3%) fund=0.00U expo=0.5% hold=31bars final=100.55U
+    rules  thr=None  ret=-6.09% cagr=-11.91% sharpe=-0.11 sortino=-0.06 maxDD=9.71% calmar=0.00 trades=82 win=47.6% PF=0.79 expR=-0.095 grossR=0.032 costR=0.127 fees=6.27U(6.3%) fund=0.00U expo=21.1% hold=45bars final=93.91U
+  fold 9 2026-01..2026-06: done (32927 train / 7658 test candidates)
+
+=== walk-forward summary ===
+method  thr  folds  trades   ret_sum  sharpe_avg  sharpe_med  maxdd_worst      win       pf      expR     expo
+   clf 0.00    9.0   841.0 -0.286376   -0.043949    0.036932     0.214629 0.509772 0.968592 -0.017560 0.261879
+   clf 0.05    9.0   653.0 -0.298668   -0.024464   -0.045501     0.218411 0.517386 1.209666  0.036020 0.203639
+   clf 0.10    9.0   435.0 -0.210782   -0.013036    0.017355     0.225342 0.534022 1.270164  0.040995 0.135606
+   clf 0.20    8.0   143.0 -0.132380   -0.038075   -0.066812     0.135150 0.438210 0.920045 -0.126256 0.047868
+   reg 0.00    9.0   815.0 -0.140759   -0.000547    0.046295     0.156185 0.537331 1.117966  0.023483 0.261360
+   reg 0.05    9.0   686.0 -0.143398    0.008426    0.049464     0.252062 0.535270 1.292551  0.055757 0.220761
+   reg 0.10    9.0   556.0 -0.264972   -0.032971    0.007430     0.237431 0.519075 1.067092  0.010755 0.180146
+   reg 0.20    9.0   337.0 -0.143445   -0.059753    0.003404     0.192815 0.467136 1.029823 -0.033686 0.108885

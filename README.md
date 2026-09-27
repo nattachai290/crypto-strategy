@@ -59,8 +59,8 @@ src/recipes.py       combinable triggers / filters / exits
 ideas/               idea files (JSON), shared by all coins
 docs/research/       TECHNIQUES.md - what to try
 journal/<SYMBOL>/    STATUS.md + research log (one entry per experiment)
-results/<SYMBOL>/    CSV output of every run + report.html
-data/logs/<SYMBOL>/  console logs of runs
+results/<SYMBOL>/    evaluations.csv + holdout_log.csv (current workflow)
+results/<SYMBOL>/legacy/  Exp 003–010 outputs, report.html, logs (history)
 data/raw|cache/<SYMBOL>/  downloaded zips / parquet (git-ignored)
 ```
 

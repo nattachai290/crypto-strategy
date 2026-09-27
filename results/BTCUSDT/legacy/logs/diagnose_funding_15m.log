@@ -1,0 +1,110 @@
+====================================================================================================
+DIAGNOSTIC  combo_funding_reversion  15m  {'rate_thresh': 0.0002, 'z_thresh': 1.5, 'stop_mult': 1.8, 'tp_mult': 2.2, 'max_hold': 30}
+====================================================================================================
+
+[1] cost in R  (full history)
+    strategy               combo_funding_reversion
+    tf                     15
+    trades                 680
+    stop_pct_median        0.0094
+    roundtrip_cost_pct     0.0014
+    cost_per_trade_R       0.1628
+    gross_expectancy_R     0.125
+    fee_drag_R             0.1164
+    net_expectancy_R       0.0086
+    win_rate               0.5824
+    breakeven_win_rate     nan
+    edge_per_trade_R       -0.0378
+
+[2] cost sensitivity
+      cost  trades  net_return    sharpe   max_dd  expectancy_r  win_rate
+  free     691    0.360489  0.049592 0.133081      0.064416  0.570188
+  half     689    0.096866  0.021699 0.173844      0.028427  0.571843
+  real     680    0.006564  0.010070 0.191338      0.008640  0.582353
+double     625   -0.401511 -0.061909 0.457384     -0.082594  0.584000
+
+[3] bootstrap CI on expectancy
+    strategy               combo_funding_reversion
+    tf                     15
+    trades                 680
+    mean_R                 0.0086
+    ci_lo                  -0.0695
+    ci_hi                  0.088
+    p_mean_gt_0            0.5898
+    verdict                CI straddles 0
+
+[4] walk-forward
+python : Traceback (most recent call last):
+At line:1 char:33
++ ... utures_dt"; python -u src\diagnose.py > data\diag_funding15.log 2>&1; ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arrays\datetimelike.py", 
+line 555, in _validate_comparison_value
+    self._check_compatible_with(other)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arrays\datetimes.py", line 
+557, in _check_compatible_with
+    self._assert_tzawareness_compat(other)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arrays\datetimes.py", line 
+800, in _assert_tzawareness_compat
+    raise TypeError(
+        "Cannot compare tz-naive and tz-aware datetime-like objects"
+    )
+TypeError: Cannot compare tz-naive and tz-aware datetime-like objects
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arrays\datetimelike.py", 
+line 991, in _cmp_method
+    other = self._validate_comparison_value(other)
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arrays\datetimelike.py", 
+line 558, in _validate_comparison_value
+    raise InvalidComparison(other) from err
+pandas.errors.InvalidComparison: 2022-01-01 00:00:00
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\ai data\btc_futures_dt\src\diagnose.py", line 211, in <module>
+    report(spec["name"], spec["params"], spec["tf"])
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\ai data\btc_futures_dt\src\diagnose.py", line 202, in report
+    walk_forward(name, params, tf)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\ai data\btc_futures_dt\src\diagnose.py", line 48, in walk_forward
+    res = run_backtest(bars, sig, start_time=te0, end_time=te1, funding=funding)
+  File "D:\ai data\btc_futures_dt\src\backtest.py", line 138, in run_backtest
+    df = df[df.index >= start_time]
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\ops\common.py", line 85, in 
+new_method
+    return method(self, other)
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arraylike.py", line 62, in 
+__ge__
+    return self._cmp_method(other, operator.ge)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\indexes\base.py", line 
+7406, in _cmp_method
+    result = ops.comparison_op(self._values, other, op)
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\ops\array_ops.py", line 
+341, in comparison_op
+    res_values = op(lvalues, rvalues)
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\ops\common.py", line 85, in 
+new_method
+    return method(self, other)
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arraylike.py", line 62, in 
+__ge__
+    return self._cmp_method(other, operator.ge)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\arrays\datetimelike.py", 
+line 995, in _cmp_method
+    return invalid_comparison(self, other, op)
+  File "C:\Users\arm\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\core\ops\invalid.py", line 55, 
+in invalid_comparison
+    raise TypeError(f"Invalid comparison between dtype={left.dtype} and {typ}")
+TypeError: Invalid comparison between dtype=datetime64[ms, UTC] and datetime

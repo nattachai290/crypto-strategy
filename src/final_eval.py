@@ -161,7 +161,7 @@ def main(tf: int = 15, stop_scale: float = 2.0) -> None:
             f"{i}:{r['count']}/{r['mean']:+.3f}" for i, r in y.iterrows()))
 
     df = pd.DataFrame(summary)
-    df.to_csv(C.RESULTS / f"final_eval_{tf}m_s{stop_scale}.csv", index=False)
+    df.to_csv(C.LEGACY / f"final_eval_{tf}m_s{stop_scale}.csv", index=False)
     print("\n" + "=" * 100)
     print("SUMMARY - pooled out-of-sample, 9 walk-forward folds, 2022-01 .. 2026-08")
     print("=" * 100)
