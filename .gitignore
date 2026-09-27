@@ -11,7 +11,8 @@ build/
 # Data cache - generated files (run datafeed.py to recreate)
 data/cache/*.parquet
 
-# Raw downloaded data - too large for git
+# Raw downloaded data. NOTE: the existing 2020-01..2026-08 zips were
+# force-added and ARE tracked; this only stops new zips being added.
 data/raw/*.zip
 data/raw/*.CHECKSUM
 
