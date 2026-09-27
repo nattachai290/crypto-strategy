@@ -436,11 +436,15 @@ def run_backtest(
             hi, lo, op = h[i], l[i], o[i]
 
             # ---- dynamic exit management ("fixing the trade") -------------
-            # Applied at the START of the bar, using this bar's close as the
-            # reference price. That is the honest assumption: a trailing rule
-            # computed on bar i can only be active from bar i+1 onward.
-            if use_dyn and pos_r_unit > 0:
-                unreal_r = pos_side * (c[i] - pos_entry) / pos_r_unit
+            # Applied at the START of bar i using the PREVIOUS bar's close
+            # (and ATR): a rule evaluated on bar i-1's close is only active
+            # from bar i onward. An earlier version used c[i] here - the close
+            # of the very bar whose high/low is then checked - which let a bar
+            # that ran through the stop and closed higher exit at break-even
+            # instead of -1R (look-ahead; journal Exp 011).
+            # Not on the entry bar: there is no in-position close before it.
+            if use_dyn and pos_r_unit > 0 and i > pos_entry_i:
+                unreal_r = pos_side * (c[i - 1] - pos_entry) / pos_r_unit
                 if pos_be > 0 and unreal_r >= pos_be:
                     # a true break-even stop must also cover the round-trip
                     # cost, otherwise "break-even" quietly loses money
@@ -455,9 +459,9 @@ def run_backtest(
                         if be_px < pos_stop:
                             pos_stop = be_px
                 if pos_trail_atr > 0 and pos_trail_at > 0 and unreal_r >= pos_trail_at:
-                    a_i = atr_l[i]
+                    a_i = atr_l[i - 1]
                     if a_i > 0:
-                        t_px = c[i] - pos_side * pos_trail_atr * a_i
+                        t_px = c[i - 1] - pos_side * pos_trail_atr * a_i
                         if pos_side > 0:
                             if t_px > pos_stop:
                                 pos_stop = t_px

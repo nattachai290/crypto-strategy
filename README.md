@@ -38,7 +38,13 @@ slippage is not a strategy.
 
 ## Layout
 
+> **AI agents / new contributors:** read `AGENTS.md` (rules) and
+> `journal/<SYMBOL>/STATUS.md` (current state + next steps) before changing
+> anything. Code in `src/` is shared; everything coin-specific lives in a
+> `<SYMBOL>/` folder, selected per run with `SYMBOL=...` (default `BTCUSDT`).
+
 ```
+AGENTS.md            rules for AI agents (CLAUDE.md imports it)
 src/config.py        all tunable constants + costs + risk rules
 src/datafeed.py      download & cache Binance public data, with validation
 src/indicators.py    causal indicators (EMA/ATR/RSI/ADX/BB/VWAP/supertrend...)
@@ -46,62 +52,82 @@ src/backtest.py      event-driven backtester + metrics
 src/strategies.py    rule-based strategy zoo (the "rules" arm)
 src/ml_filter.py     causal features + trade-outcome labelling
 src/run_ml.py        walk-forward "rules vs ML" comparison
-src/experiment.py    data loading, resampling, walk-forward splits, sweeps
-journal/             the research log - one entry per experiment
-results/             CSV output of every run
+src/experiment.py    data loading (native bars only), walk-forward splits
+src/test_engine.py   engine correctness tests
+src/evaluate.py      the research gate: idea file -> verdict
+src/recipes.py       combinable triggers / filters / exits
+ideas/               idea files (JSON), shared by all coins
+docs/research/       TECHNIQUES.md - what to try
+journal/<SYMBOL>/    STATUS.md + research log (one entry per experiment)
+results/<SYMBOL>/    CSV output of every run + report.html
+data/logs/<SYMBOL>/  console logs of runs
+data/raw|cache/<SYMBOL>/  downloaded zips / parquet (git-ignored)
 ```
 
-## Usage
+## Research workflow (from Exp 011)
 
-```powershell
+New ideas are JSON files in `ideas/`, combining triggers, filters and exits
+(`src/recipes.py`), and are judged by one command with fixed gates:
+
+```bash
+python src/evaluate.py --list                          # building blocks
+python src/evaluate.py ideas/example_trend_breakout.json   # TRAIN select -> VALID verdict
+python src/evaluate.py ideas/<idea>.json --final       # one-time HOLDOUT, only after PASS
+```
+
+Rules: `AGENTS.md`. Technique catalogue + backlog: `docs/research/TECHNIQUES.md`.
+
+## Usage (older experiment scripts, Exp 000–010)
+
+```bash
+pip install -r requirements.txt
+
 # 0. verify the engine (must pass before any number is trusted)
-python src\test_engine.py
+python src/test_engine.py
 
 # 1. download + validate data (only needed once)
-python src\datafeed.py
+python src/datafeed.py
 
 # 2. leak-free sweep: train -> shortlist -> test
-python src\sweep.py 20
+python src/sweep.py 20
 
 # 3. the cost arithmetic: stop width x execution scenario
-python src\cost_lab.py
+python src/cost_lab.py
 
 # 4. stop width chosen on train, frozen, then tested
-python src\round2_stopwidth.py
+python src/round2_stopwidth.py
 
 # 5. rules vs ML filter, walk-forward
-python src\run_ml.py 15 2.0
+python src/run_ml.py 15 2.0
 
 # 6. the definitive number: pooled executed trades + bootstrap + chained equity
-python src\definitive.py 15 "1.0,2.0,3.5,5.0"
+python src/definitive.py 15 "1.0,2.0,3.5,5.0"
 ```
 
 ## Data cache
 
-`.parquet` files in `data/cache/` are **generated** by `src/datafeed.py` from raw
-Binance monthly zips (`data/raw/`). These cached files speed up subsequent runs
-by 50x+ but are **not committed to git** — they are rebuilt on each fresh clone
-via step 1 above.
+`.parquet` files in `data/cache/<SYMBOL>/` are **generated** by `src/datafeed.py` and are
+**not committed** — rebuild them after cloning with `python src/datafeed.py`.
 
-To regenerate caches after cloning:
-```powershell
-python src\datafeed.py
-```
+The raw Binance monthly zips in `data/raw/<SYMBOL>/` (1m/3m/5m/15m/30m klines + funding,
+2020-01 .. 2026-08, ~240 MB) are **not committed** either. `datafeed.py`
+downloads any month that is missing from
+https://data.binance.vision/?prefix=data/futures/um/monthly/klines/BTCUSDT/ ,
+verifies its SHA-256 checksum, skips files already on disk, and only takes
+months inside `DATA_START..DATA_END` from `src/config.py`.
 
-The raw `.zip` files are also git-ignored (too large for GitHub). The datafeed script
-will automatically download them from Binance, or you can manually download from:
-- **Binance Futures Klines:** https://data.binance.vision/?prefix=data/futures/um/daily/klines/BTCUSDT/
-  - Select timeframe (1m, 3m, 5m, 15m, 30m, 1h, etc.)
-  - Download monthly zips into `data/raw/` folder
-  - Example files: `BTCUSDT-1h-2024-01.zip`, `BTCUSDT-1h-2024-02.zip`, etc.
+Every timeframe is Binance's own native file — **nothing is resampled**
+(see `journal/BTCUSDT/experiments.md` Exp 010).
 
 ## Headline result
 
 **No statistically demonstrated edge** in intraday BTCUSDT futures at retail
 (VIP0) costs, across 106+ configurations, 4 timeframes, 6.5 years, and two
-strategy families. The best configuration returns **+2.2%/year** with a 95%
-confidence interval on expectancy of `[-0.039, +0.115] R/trade` — i.e.
-indistinguishable from zero.
+strategy families. After fixing a one-bar data offset (Exp 010) the best
+walk-forward configuration is **+0.051 R/trade on 72 trades**, 95% CI
+`[-0.065, +0.168]`, **+0.9%/year** — indistinguishable from zero.
+(Earlier numbers such as "+2.2%/year" came from shifted data and are void;
+see `journal/BTCUSDT/STATUS.md` for which result files are stale.)
 
 The single most important finding is *why*:
 
@@ -112,11 +138,12 @@ cost_r = round_trip_cost / stop_distance
 
 Every "1.8x ATR stop" rule is a cost-efficiency mistake. Widening the stop
 from 1x to 5x, **without changing a single signal**, moved the account from
--25%/year to roughly break-even. See `journal/experiments.md` Exp 004 and 007.
+roughly -17..-25%/year to roughly break-even. See `journal/BTCUSDT/experiments.md`
+Exp 004, 007 and 010.
 
 ## The log
 
-`journal/experiments.md` is the source of truth. Every run gets an entry with
+`journal/<SYMBOL>/experiments.md` is the source of truth. Every run gets an entry with
 the hypothesis, the result, and — most importantly — the verdict. Entries are
 appended, never edited, so we can see which ideas actually survived contact
 with out-of-sample data.
@@ -125,8 +152,8 @@ with out-of-sample data.
 
 Most published intraday BTC futures strategies do not survive realistic
 costs. That turned out to be true here as well, and finding that out cheaply
-was the point of building the harness. The one lever not yet exhausted is
-execution cost: a post-only maker round trip is 0.04% instead of 0.14%, which
-is a 3.5x reduction in the dominant term — but it requires a real fill model
-to test honestly, because an unfilled limit order is a skipped trade, not a
-cheap one.
+was the point of building the harness. Cheaper execution was tested too
+(Exp 008/010): a post-only entry with a taker exit cuts the round trip from
+0.14% to 0.09% (1.55x, not 3.5x — a stop-loss never gets a maker fill), and
+adverse selection eats part of that. It helps, but no configuration's
+confidence interval excludes zero. Next steps are listed in `journal/BTCUSDT/STATUS.md`.

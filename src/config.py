@@ -1,25 +1,53 @@
 """
-Global config for BTCUSDT USDT-M futures day-trading research.
+Global config for USDT-M futures day-trading research (one symbol per run).
 
 All costs are deliberately set to realistic/conservative values so that
 backtest results are not inflated. Change nothing here without writing a
-note in journal/experiments.md.
+note in journal/<SYMBOL>/experiments.md.
 """
 from __future__ import annotations
 
 import datetime as dt
+import os
 from pathlib import Path
 
 # --------------------------------------------------------------------------
-# Paths
+# Instrument. One symbol per run, chosen with the SYMBOL environment variable:
+#     SYMBOL=ETHUSDT python src/sweep.py
+# Every data/result/journal path below is split per symbol so coins never mix.
+# To add a coin, add its exchange specs here first (see AGENTS.md).
+# --------------------------------------------------------------------------
+SYMBOL_SPECS: dict[str, dict] = {
+    "BTCUSDT": dict(
+        qty_step=0.001,       # contract quantity step
+        min_notional=5.0,     # Binance min notional (rounded up)
+        data_start="2020-01", # first monthly file used
+        data_end="2026-08",   # last monthly file used
+        # evaluate.py splits:  TRAIN [data_start, valid_start)
+        #                      VALID [valid_start, holdout_start)
+        #                      HOLDOUT [holdout_start, data_end]  (locked)
+        valid_start="2023-01",
+        holdout_start="2025-01",
+    ),
+}
+SYMBOL = os.environ.get("SYMBOL", "BTCUSDT").upper()
+if SYMBOL not in SYMBOL_SPECS:
+    raise SystemExit(f"unknown SYMBOL {SYMBOL!r}; add it to SYMBOL_SPECS in "
+                     f"src/config.py (known: {', '.join(SYMBOL_SPECS)})")
+SPEC = SYMBOL_SPECS[SYMBOL]
+MARKET = "um"  # USDT-margined
+
+# --------------------------------------------------------------------------
+# Paths - shared code in src/, everything symbol-specific under <dir>/<SYMBOL>/
 # --------------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "data" / "raw"
-CACHE = ROOT / "data" / "cache"
-RESULTS = ROOT / "results"
-JOURNAL = ROOT / "journal"
+RAW = ROOT / "data" / "raw" / SYMBOL          # Binance zips (git-ignored)
+CACHE = ROOT / "data" / "cache" / SYMBOL      # parquet (git-ignored)
+LOGS = ROOT / "data" / "logs" / SYMBOL        # console logs of runs
+RESULTS = ROOT / "results" / SYMBOL           # CSV/JSON output + report.html
+JOURNAL = ROOT / "journal" / SYMBOL           # experiments.md + ledger.md
 
-for _d in (RAW, CACHE, RESULTS, JOURNAL):
+for _d in (RAW, CACHE, LOGS, RESULTS, JOURNAL):
     _d.mkdir(parents=True, exist_ok=True)
 
 # --------------------------------------------------------------------------
@@ -27,12 +55,10 @@ for _d in (RAW, CACHE, RESULTS, JOURNAL):
 # --------------------------------------------------------------------------
 S3 = "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision"
 WEB = "https://data.binance.vision/data"
-SYMBOL = "BTCUSDT"
-MARKET = "um"  # USDT-margined
 
-# Data window. Monthly files exist 2020-01 .. 2026-08
-DATA_START = "2020-01"
-DATA_END = "2026-08"
+# Data window (monthly files), per symbol
+DATA_START = SPEC["data_start"]
+DATA_END = SPEC["data_end"]
 
 # Raw kline columns for Binance futures (no header in file)
 KLINE_COLS = [
@@ -55,8 +81,8 @@ MAX_LEVERAGE = 10.0           # hard cap on notional / equity
 # refactored into a list, and that is not worth the risk to a verified engine.
 # Trade frequency is instead increased via max_hold (see Exp 009).
 MAX_CONCURRENT = 1
-MIN_NOTIONAL = 5.0            # Binance min notional (rounded up)
-QTY_STEP = 0.001              # BTCUSDT contract step
+MIN_NOTIONAL = SPEC["min_notional"]
+QTY_STEP = SPEC["qty_step"]
 
 # --------------------------------------------------------------------------
 # Costs (VIP0 USDT-M futures)
@@ -91,6 +117,18 @@ COOLDOWN_AFTER_STOP_BAR = 0
 # Train = 24 months, test = 6 months, step = 6 months
 WF_TRAIN_MONTHS = 24
 WF_TEST_MONTHS = 6
+# evaluate.py - the standard research gate (see AGENTS.md). Changing any of
+# these makes old and new verdicts incomparable: journal it first.
+VALID_START = SPEC["valid_start"]
+HOLDOUT_START = SPEC["holdout_start"]
+EVAL_MAX_GRID = 64            # max parameter combinations per idea
+EVAL_MIN_TRAIN_TRADES = 100   # a combo needs this many train trades to be eligible
+EVAL_MIN_VALID_TRADES = 100   # PASS needs this many validation trades
+EVAL_MIN_ANY_TRADES = 30      # below this the verdict is INCONCLUSIVE
+EVAL_STRESS_COST = 1.5        # fees and slippage x this for the stress test
+EVAL_MAX_DD = 0.20            # PASS needs validation max drawdown <= this
+EVAL_BOOTSTRAP = 10000        # bootstrap resamples for the CI
+
 # Annualisation factor for minute bars
 MINUTES_PER_YEAR = 365 * 24 * 60
 

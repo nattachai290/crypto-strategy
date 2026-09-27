@@ -1,0 +1,4 @@
+numpy
+pandas
+pyarrow      # parquet cache in data/cache/
+lightgbm     # ML filter (src/run_ml.py)

@@ -996,7 +996,7 @@ gross_r ก็พัง &mdash; นั่นคือ adverse selection ที�
 
     A(f"""<footer>
 <span>สร้างเมื่อ {today} &middot; ข้อมูล Binance USDT-M Public Data 2020-01 &rarr; 2026-08</span>
-<span class="mono">btc_futures_dt / journal/experiments.md</span>
+<span class="mono">journal/{C.SYMBOL}/experiments.md</span>
 </footer>""")
 
     return ("<!DOCTYPE html><html lang=\"th\"><head><meta charset=\"utf-8\">"
@@ -1007,6 +1007,6 @@ gross_r ก็พัง &mdash; นั่นคือ adverse selection ที�
 
 
 if __name__ == "__main__":
-    out = C.ROOT / "report.html"
+    out = C.RESULTS / "report.html"
     out.write_text(build(), encoding="utf-8")
     print(f"wrote {out}  ({out.stat().st_size/1024:.0f} KB)")

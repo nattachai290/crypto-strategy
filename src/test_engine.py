@@ -319,11 +319,124 @@ def main() -> None:
     test_cost_monotonicity()
     test_no_lookahead()
     test_post_only()
+    test_dynamic_exits()
+    test_recipe_blocks_causal()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
         sys.exit(1)
     print("ALL CHECKS PASSED")
+
+
+# --------------------------------------------------------------------------
+# 6. Break-even / trailing stop must not see the current bar's close
+# --------------------------------------------------------------------------
+def _dyn_case(path, *, be_at=0.0, trail_at=0.0, trail_atr=0.0):
+    """Long signalled on bar 0, filled at bar 1 open. `path` gives
+    (open, high, low, close) for bars 1.. ; bar 0 is flat at 50000."""
+    rows = [(50000.0, 50000.0, 50000.0, 50000.0)] + list(path)
+    rows += [(50000.0, 50000.0, 50000.0, 50000.0)] * 15
+    idx = pd.date_range("2024-01-01", periods=len(rows), freq="5min", tz="UTC")
+    bars = pd.DataFrame(rows, columns=["open", "high", "low", "close"], index=idx)
+    bars["volume"] = 100.0
+    sig = pd.DataFrame(0.0, index=idx, columns=["side", "stop_dist", "tp_dist", "max_hold"])
+    sig.loc[idx[0], ["side", "stop_dist", "max_hold"]] = [1.0, 200.0, 50]
+    sig["atr"] = 100.0
+    sig["be_at"] = 0.0
+    sig["trail_at"] = 0.0
+    sig["trail_atr"] = 0.0
+    sig.loc[idx[0], ["be_at", "trail_at", "trail_atr"]] = [be_at, trail_at, trail_atr]
+    res = run_backtest(bars, sig, session_start=0, session_end=24,
+                       flat_at_session_end=False)
+    return idx, res.trades
+
+
+def test_dynamic_exits() -> None:
+    print("\n6. break-even / trailing stop use only information already known")
+    slip = 0.0002
+    entry = 50000.0 * (1 + slip)
+    stop = entry - 200.0
+
+    # A. bar 2 first trades through the ORIGINAL stop, then closes +1.5R.
+    #    The stop can only move after bar 2 closes, so this is a full stop-out.
+    idx, tr = _dyn_case([(50000, 50000, 50000, 50000),
+                         (50000, 50400, 49700, 50300)], be_at=1.0)
+    ok = len(tr) == 1 and tr[0].exit_reason == "stop"
+    check("BE: a bar cannot move its own stop (full loss, not break-even)",
+          ok and abs(tr[0].exit_px - stop * (1 - slip)) < 1e-4,
+          f"exit_px={tr[0].exit_px:.2f} expected {stop * (1 - slip):.2f}" if tr else "no trade")
+
+    # B. bar 2 closes +1.5R without touching the stop; bar 3 dips to entry.
+    #    BE is armed from bar 3 on, so the exit is at the BE price on bar 3.
+    idx, tr = _dyn_case([(50000, 50000, 50000, 50000),
+                         (50000, 50320, 50000, 50300),
+                         (50300, 50300, 49950, 50000)], be_at=1.0)
+    be_px = entry * (1 + 0.0005 + slip)
+    ok = len(tr) == 1
+    check("BE: armed after the close that triggered it, exits on the next bar",
+          ok and tr[0].exit_time == idx[3] and abs(tr[0].exit_px - be_px * (1 - slip)) < 1e-4,
+          f"exit {tr[0].exit_time} @ {tr[0].exit_px:.2f}, expected {idx[3]} @ "
+          f"{be_px * (1 - slip):.2f}" if ok else "no trade")
+
+    # C. trailing: bar 2 closes +2R with a low that is below where the trail
+    #    WILL be; that trail only exists from bar 3.
+    idx, tr = _dyn_case([(50000, 50000, 50000, 50000),
+                         (50000, 50420, 50200, 50400),
+                         (50400, 50400, 50250, 50300)],
+                        trail_at=1.0, trail_atr=1.0)
+    ok = len(tr) == 1
+    check("trail: set from the previous close, not the current one",
+          ok and tr[0].exit_time == idx[3] and abs(tr[0].exit_px - 50300 * (1 - slip)) < 1e-4,
+          f"exit {tr[0].exit_time} @ {tr[0].exit_px:.2f}" if ok else "no trade")
+
+    # D. strategies must publish ATR on every bar, not only on signal bars,
+    #    or the trail has nothing to move with while the position is open.
+    import strategies as S
+    bars, _, _ = _random_case(5)
+    sig = S.donchian_breakout(bars, trail_at=1.0, trail_atr=1.5)
+    warm = sig["atr"].iloc[50:]
+    check("signal frame carries ATR on every bar (trail can move)",
+          bool((warm > 0).all()), f"{int((warm <= 0).sum())} bars with atr<=0")
+
+
+# --------------------------------------------------------------------------
+# 7. Every recipe building block must be causal
+# --------------------------------------------------------------------------
+def test_recipe_blocks_causal() -> None:
+    """Compute each trigger/filter on the full series and on a truncated one.
+    A causal block gives identical values on the common prefix; any block
+    that peeks at later bars (shift(-k), centred windows, full-sample stats)
+    fails here."""
+    print("\n7. recipe blocks are causal (full run == truncated run on the prefix)")
+    import recipes as RC
+    bars, _, funding = _random_case(9, n=2500)
+    bars["taker_buy_base"] = bars["volume"] * 0.5 * (1 + 0.2 * np.sin(np.arange(len(bars)) / 7))
+    cut = 1700
+    bad = []
+    for kind, table in (("trigger", RC.TRIGGERS), ("filter", RC.FILTERS)):
+        for name, fn in table.items():
+            full = fn(bars, funding)
+            part = fn(bars.iloc[:cut], funding)
+            full = full if isinstance(full, tuple) else (full,)
+            part = part if isinstance(part, tuple) else (part,)
+            for a, b in zip(full, part):
+                a = np.nan_to_num(np.asarray(a, dtype=float)[:cut], nan=-999)
+                b = np.nan_to_num(np.asarray(b, dtype=float), nan=-999)
+                if not np.array_equal(a, b):
+                    bad.append(f"{kind}:{name}")
+                    break
+    check("all recipe triggers and filters are causal", not bad, ", ".join(bad))
+    sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],
+                    filters=[{"type": "trend_ema", "fast": 20, "slow": 50}],
+                    stop={"type": "swing", "n": 10}, tp={"type": "r", "r": 2.0},
+                    trail_at=1.0, trail_atr=2.0, max_hold_hours=2, cooldown_bars=3)
+    act = sig[sig["side"] != 0]
+    check("recipe emits signals with positive stops and tp = r * stop",
+          len(act) > 0 and bool((act["stop_dist"] > 0).all())
+          and np.allclose(act["tp_dist"], 2.0 * act["stop_dist"]),
+          f"{len(act)} signals")
+    check("recipe max_hold converts hours to bars (2h on 5m = 24)",
+          bool((act["max_hold"] == 24).all()))
 
 
 # --------------------------------------------------------------------------

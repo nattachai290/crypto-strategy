@@ -8,12 +8,13 @@ __pycache__/
 dist/
 build/
 
-# Data cache - generated files (run datafeed.py to recreate)
-data/cache/*.parquet
+# Data cache - generated per symbol (data/cache/<SYMBOL>/), run datafeed.py
+data/cache/
 
-# Raw downloaded data - too large for git
-data/raw/*.zip
-data/raw/*.CHECKSUM
+# Raw Binance zips - never committed. `python src/datafeed.py` downloads
+# whatever is missing (checksum-verified) and builds data/cache/.
+# (data/raw/<SYMBOL>/*.zip)
+data/raw/
 
 # IDE
 .vscode/
@@ -27,3 +28,6 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Per-evaluation trade lists - regenerable with evaluate.py --rerun
+results/*/eval_trades/
