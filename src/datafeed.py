@@ -164,8 +164,11 @@ def build(dataset: str) -> Path:
         print(f"[{dataset}] cached -> {out.name}")
         return out
 
-    keys = list_keys(prefix)
-    print(f"[{dataset}] {len(keys)} files found")
+    # Pin the window to config, so a fresh download reproduces the same data
+    # instead of silently picking up whatever months Binance has added since.
+    wanted = set(C.month_range())
+    keys = [k for k in list_keys(prefix) if k[-11:-4] in wanted]
+    print(f"[{dataset}] {len(keys)} files in {C.DATA_START}..{C.DATA_END}")
     frames = []
     for i, key in enumerate(keys, 1):
         z = fetch_zip(key)

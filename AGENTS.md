@@ -70,9 +70,10 @@ A result that looks too good is a bug until proven otherwise.
     journal entry using the template in §4.
 
 ### Git
-17. Do not commit `data/cache/*.parquet`, `__pycache__/`, or secrets/API keys.
-    The raw zips in `data/raw/` are already tracked (see `docs/STATUS.md`); do
-    not add large new binaries without asking the owner.
+17. Never commit data: `data/raw/*.zip` and `data/cache/*.parquet` are
+    git-ignored and rebuilt by `python src/datafeed.py` (downloads only what
+    is missing). Also never commit `__pycache__/` or secrets/API keys, and do
+    not add other large binaries without asking the owner.
 18. No live trading code, exchange API keys, or order placement in this repo
     unless the owner explicitly asks for it.
 
@@ -89,7 +90,7 @@ report.html             generated HTML report (Thai) — src/make_report.py
 journal/experiments.md  research log, SOURCE OF TRUTH, append-only
 journal/ledger.md       generated summary of results/ledger.csv
 results/*.csv|json      raw output of each experiment script
-data/raw/               Binance monthly zips (1m/3m/5m/15m/30m klines + funding)
+data/raw/               Binance monthly zips (git-ignored, downloaded by datafeed.py)
 data/cache/             generated parquet (git-ignored) — built by datafeed.py
 data/*.log              console logs of past runs
 src/                    all code (flat; scripts import each other via sys.path)
@@ -123,7 +124,7 @@ Python 3.11+ (developed on 3.13). Scripts are run from the repo root.
 pip install -r requirements.txt
 
 python src/test_engine.py            # must pass before trusting any number
-python src/datafeed.py               # build data/cache/*.parquet from data/raw (+ download missing)
+python src/datafeed.py               # download missing zips (~240 MB first time) + build data/cache/*.parquet
 python src/verify_resample.py        # diff vs native Binance files (needs network)
 
 python src/sweep.py 20               # Exp 003 leak-free sweep

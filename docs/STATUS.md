@@ -62,14 +62,14 @@ journal; verify before relying on it.)
 4. **Exp 009 status says "running"** in the journal but its result and verdict
    are written. The journal is append-only, so note completion in Exp 011
    rather than editing it.
-5. **Raw zips are tracked in git** (480 files, ~240 MB) even though
-   `.gitignore` lists `data/raw/*.zip`; they were force-added in the first
-   commit so a fresh clone has data without network. `.gitignore` only
-   prevents *new* zips being added. Do not add more without asking.
-6. `data/cache/` is not committed: run `python src/datafeed.py` after cloning
-   (it builds parquet from the zips in `data/raw/` and downloads anything
-   missing, then runs `validate()`).
-7. `SESSION_START_HOUR=0 / SESSION_END_HOUR=24` with `FLAT_AT_SESSION_END=True`
+5. **Data is not in git.** Neither `data/raw/*.zip` (~240 MB, 480 files) nor
+   `data/cache/*.parquet` is committed. After cloning run
+   `python src/datafeed.py`: it downloads only the months missing from
+   `data/raw/` (checksum-verified, limited to `DATA_START..DATA_END`), builds
+   the parquet cache and runs `validate()`. Needs network access to
+   `data.binance.vision` / its S3 bucket. (The zips still exist in old git
+   history, so `.git` stays large unless history is rewritten.)
+6. `SESSION_START_HOUR=0 / SESSION_END_HOUR=24` with `FLAT_AT_SESSION_END=True`
    — the session filter is effectively off; holding limits come from each
    strategy's `max_hold`.
 

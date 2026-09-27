@@ -90,9 +90,11 @@ python src/definitive.py 15 "1.0,2.0,3.5,5.0"
 **not committed** — rebuild them after cloning with `python src/datafeed.py`.
 
 The raw Binance monthly zips in `data/raw/` (1m/3m/5m/15m/30m klines + funding,
-2020-01 .. 2026-08) **are** committed, so a fresh clone can build the cache
-without network. `datafeed.py` downloads anything missing from
-https://data.binance.vision/?prefix=data/futures/um/monthly/klines/BTCUSDT/ .
+2020-01 .. 2026-08, ~240 MB) are **not committed** either. `datafeed.py`
+downloads any month that is missing from
+https://data.binance.vision/?prefix=data/futures/um/monthly/klines/BTCUSDT/ ,
+verifies its SHA-256 checksum, skips files already on disk, and only takes
+months inside `DATA_START..DATA_END` from `src/config.py`.
 
 Every timeframe is Binance's own native file — **nothing is resampled**
 (see `journal/experiments.md` Exp 010).
