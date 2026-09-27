@@ -28,3 +28,6 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Per-evaluation trade lists - regenerable with evaluate.py --rerun
+results/*/eval_trades/

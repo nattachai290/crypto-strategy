@@ -1,0 +1,24 @@
+{
+  "name": "example_range_reversion",
+  "hypothesis": "When ADX is low (no trend) and price is stretched outside its Bollinger band, it tends to snap back toward the mean within a few hours, especially when the stretch was not driven by aggressive one-sided taker flow.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "bb_revert", "n": 40, "k": 2.2},
+                 {"type": "rsi_revert", "n": 14, "lo": 30, "hi": 70}],
+    "trigger_mode": "all",
+    "confirm_bars": 3,
+    "filters": [{"type": "adx_max", "n": 14, "max": 20}],
+    "stop": {"type": "swing", "n": 12, "buffer_atr": 0.3, "min_atr": 1.5, "max_atr": 5.0},
+    "tp": {"type": "r", "r": 1.5},
+    "be_at": 0,
+    "max_hold_hours": 4,
+    "cooldown_bars": 2
+  },
+  "grid": {
+    "tp.r": [1.0, 1.5, 2.0],
+    "stop.min_atr": [1.5, 3.0],
+    "filters.0.max": [18, 25]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.15, "entry_fill_ratio": 1.0}
+}

@@ -1,227 +1,310 @@
 # AGENTS.md — rules for any AI agent working in this repo
 
-Read this file first, then for the coin you are working on
-`journal/<SYMBOL>/STATUS.md` (where it stands, what to do next) and the latest
-entries of `journal/<SYMBOL>/experiments.md`. Today only `BTCUSDT` exists.
+**Read this whole file before doing anything.** Then read
+`docs/research/TECHNIQUES.md` (what to try) and `journal/<SYMBOL>/STATUS.md`
+(where the coin stands). Today only `BTCUSDT` exists.
 
-This is a **research harness**, not a trading bot. Its job is to find out
-honestly whether an intraday edge exists in Binance USDT-M perpetual futures
-after realistic costs. For BTCUSDT the answer so far is **no**
-(see `journal/BTCUSDT/STATUS.md`).
-A result that looks too good is a bug until proven otherwise.
+Talk to the owner **in Thai**. Write code, idea files and the journal in English.
 
 ---
 
-## 1. Hard rules (never break these)
+## 0. Your job
 
-### Honesty of results
-1. **Never loosen the cost model to make a result look better.** Fees
-   (taker 0.05% / maker 0.02%), slippage 0.02% per fill, funding at real
-   timestamps and stop-first intrabar fills are fixed in `src/config.py`.
-   Changing any of them requires a journal entry explaining why (see §4).
-2. **Signal on bar `i` close → fill at bar `i+1` open.** Never fill at the bar
-   used to make the decision. All indicators must be causal (value at `i` uses
-   only bars `<= i`).
-3. **Stop fills first** when a bar touches both stop and target
-   (`PESSIMISTIC_INTRABAR = True`). Do not flip it.
-4. **Train/test separation is sacred.** Parameters, thresholds, stop widths
-   and model choices are selected on train (or inside the walk-forward train
-   window) only. Choosing the best of N on test is a second selection and must
-   be reported as such.
-5. **Only executed trades describe the account.** Bootstrap and CAGR come from
-   the pooled trades the backtester actually executed across walk-forward
-   folds, with equity chained fold-to-fold. Never bootstrap the ML label set,
-   never sum per-fold percentage returns (Exp 007).
-6. **A result is not "profitable" unless its 95% bootstrap CI on expectancy
-   (R/trade) excludes zero.** Report `gross_r`, `cost_r`, `exp_r`, trade count
-   and the CI together — never a return or Sharpe alone.
-7. **Never report a number you did not produce in this session or cannot
-   point to in `results/<SYMBOL>/`.** If you did not run it, say so.
+Find trading techniques for Binance USDT-M perpetual futures that make money
+**after realistic costs**. That includes creative entries, combinations of
+several techniques, and trade-management techniques (TP/SL, break-even,
+trailing, "แก้ไม้"). Test every one of them **honestly** with
+`src/evaluate.py`.
 
-### Data
-8. **No resampling.** Every timeframe is loaded from Binance's own native
-   kline file via `experiment.get_bars(tf)`. A home-made resampler once shifted
-   every bar by one window and invalidated nine experiments (Exp 010). Do not
-   add a resample path back.
-9. **Data loading must fail loudly.** A pipeline that logs an error and exits 0
-   is a lie (Exp 000: 58 of 80 months silently dropped). Run
-   `datafeed.validate()` after any data change; it must print `OK`.
-10. Timestamps are **UTC, tz-aware**, and a bar's timestamp is its **open
-    time** (Binance convention).
+This is a research harness, not a trading bot. For BTCUSDT, 100+ earlier
+configurations found **no proven edge** (see STATUS.md). So:
 
-### Engine
-11. **`python src/test_engine.py` must print `ALL CHECKS PASSED`** before and
-    after any change to `src/backtest.py`, `src/indicators.py`,
-    `src/strategies.py`, `src/ml_filter.py` or `src/config.py`. If you change
-    behaviour on purpose, extend the tests (the differential reference in
-    `test_engine.py` must be updated in the same commit) — never weaken or
-    delete a check to make it pass.
-12. The engine is **single-position** (`MAX_CONCURRENT = 1`, no pyramiding).
-    Do not add concurrency without a new test suite for it.
-13. Position size is derived from stop distance so "1% risk" means the same in
-    every regime. Keep it that way.
+- A result that looks great is a **bug or luck** until the gates say
+  otherwise.
+- A clear REJECT is a useful result. Record it and move on to a different
+  idea.
+- Never make a result look better than it is. Owner money depends on it.
 
-### Journal and records
-14. `journal/<SYMBOL>/experiments.md` is **append-only**. Never edit or delete a past
-    entry, even when it is wrong — append a new entry (or a clearly labelled
-    "Correction" section) that supersedes it, as Exp 008 → Exp 010 did.
-15. `journal/<SYMBOL>/ledger.md` and `results/<SYMBOL>/ledger.csv` are **generated** by
-    `src/ledger.py` / `src/ledger_report.py`. Do not edit by hand.
-16. Every new experiment gets: a new script (or a flagged mode of an existing
-    one), its own CSV in `results/<SYMBOL>/`, its log in
-    `data/logs/<SYMBOL>/<name>.log`, and a journal entry using the template
-    in §4.
-
-### Git
-17. Never commit data: `data/raw/` and `data/cache/` are
-    git-ignored and rebuilt by `python src/datafeed.py` (downloads only what
-    is missing). Also never commit `__pycache__/` or secrets/API keys, and do
-    not add other large binaries without asking the owner.
-18. No live trading code, exchange API keys, or order placement in this repo
-    unless the owner explicitly asks for it.
-
-### One folder per coin
-19. **Every symbol-specific file lives under a `<SYMBOL>/` folder** (e.g.
-    `BTCUSDT`, `ETHUSDT` — Binance's exact symbol, upper case):
-    `data/raw/<SYMBOL>/`, `data/cache/<SYMBOL>/`, `data/logs/<SYMBOL>/`,
-    `results/<SYMBOL>/`, `journal/<SYMBOL>/`. Never write a coin's data,
-    results or notes at the top level of those folders or in another coin's
-    folder.
-20. **Code in `src/` is shared and symbol-agnostic.** Never hard-code a
-    symbol, path or contract spec in a script: get them from `config.py`
-    (`C.SYMBOL`, `C.RAW`, `C.CACHE`, `C.LOGS`, `C.RESULTS`, `C.JOURNAL`,
-    `C.QTY_STEP`, `C.MIN_NOTIONAL`, `C.DATA_START/END`). A strategy that only
-    makes sense for one coin (e.g. uses a BTC-specific threshold) must take it
-    as a parameter, not a constant.
-21. **The coin is chosen per run with the `SYMBOL` env var** (default
-    `BTCUSDT`): `SYMBOL=ETHUSDT python src/sweep.py`. `config.py` refuses
-    unknown symbols.
-22. **Adding a new coin:** (a) add an entry to `SYMBOL_SPECS` in
-    `src/config.py` with the exchange's real `qty_step`, `min_notional`, and
-    the `data_start`/`data_end` months Binance publishes for it; (b) run
-    `SYMBOL=<X> python src/datafeed.py` until it prints `VALIDATION: OK`;
-    (c) create `journal/<X>/experiments.md` starting at **Exp 000** and
-    `journal/<X>/STATUS.md`; (d) re-run `test_engine.py`. Each coin keeps its
-    own experiment numbering. Never reuse another coin's fitted parameters
-    without re-selecting them on that coin's own train data.
-23. Cross-coin comparisons (if ever done) go in a separate experiment whose
-    script reads each coin's `results/<SYMBOL>/` and writes to
-    `results/_multi/` + `journal/_multi/`; they never overwrite a coin's files.
-
----
-
-## 2. Repository map
-
-```
-AGENTS.md / CLAUDE.md     these rules (CLAUDE.md just imports this file)
-README.md                 human-facing overview
-requirements.txt          Python dependencies
-src/                      ALL code, shared by every coin (flat; imports via sys.path)
-journal/<SYMBOL>/
-    STATUS.md             where this coin stands, stale results, next steps
-    experiments.md        research log, SOURCE OF TRUTH, append-only
-    ledger.md             generated summary of results/<SYMBOL>/ledger.csv
-results/<SYMBOL>/         CSV/JSON output of each experiment + report.html (Thai)
-data/logs/<SYMBOL>/       console logs of past runs
-data/raw/<SYMBOL>/        Binance monthly zips   (git-ignored, datafeed.py downloads)
-data/cache/<SYMBOL>/      parquet               (git-ignored, datafeed.py builds)
-```
-
-Only `BTCUSDT` exists today.
-
-### `src/` by role
-
-| Role | Files |
-|---|---|
-| Config | `config.py` — `SYMBOL` / `SYMBOL_SPECS` (per-coin specs), per-coin paths, costs, risk, session, walk-forward sizes |
-| Data | `datafeed.py` (download + cache + `validate()`), `verify_resample.py`, `show_bars.py` |
-| Core library | `indicators.py` (causal indicators), `strategies.py` (rule zoo, `REGISTRY`), `backtest.py` (`run_backtest`, `compute_metrics`), `ml_filter.py` (features + outcome labels), `experiment.py` (`get_bars`, `load_funding`, splits, `evaluate`) |
-| Tests | `test_engine.py` — hand-computed trade, differential test, cost monotonicity, no-look-ahead, post-only fills |
-| Experiments (one per journal entry) | `sweep.py` (Exp 003), `diagnose.py` (003), `cost_lab.py` (004), `round2_stopwidth.py` (004b), `run_ml.py` (006), `final_eval.py` / `definitive.py` (007/010), `round3_maker.py` (008/010), `round4_holdperiod.py` (009) |
-| Reporting | `ledger.py`, `ledger_report.py`, `report_data.py`, `make_report.py` |
-
-Strategy contract (`strategies.py`): `fn(bars, **params) -> DataFrame[side,
-stop_dist, tp_dist, max_hold]` where row `i` is the order to fill at bar
-`i+1` open. `side` ∈ {-1, 0, +1}. Register new strategies in `REGISTRY`.
-
-Key metric identity: `exp_r = gross_r - cost_r` (per trade, in R). Any row
-where this does not hold is a bug — `ledger.verify_arithmetic()` checks it.
-
----
-
-## 3. Commands
-
-Python 3.11+ (developed on 3.13). Scripts are run from the repo root.
-All commands act on `$SYMBOL` (default `BTCUSDT`); prefix with e.g.
-`SYMBOL=ETHUSDT` for another coin.
+### Start-of-session checklist (run these, in order)
 
 ```bash
 pip install -r requirements.txt
-
-python src/test_engine.py            # must pass before trusting any number
-python src/datafeed.py               # download missing zips (~240 MB for BTC) + build data/cache/<SYMBOL>/
-python src/verify_resample.py        # diff vs native Binance files (needs network)
-
-python src/sweep.py 20               # Exp 003 leak-free sweep
-python src/cost_lab.py               # Exp 004
-python src/round2_stopwidth.py       # Exp 004b
-python src/run_ml.py 15 2.0          # Exp 006  (tf minutes, stop scale)
-python src/definitive.py 15 "1.0,2.0,3.5,5.0"   # Exp 007/010 headline
-python src/round3_maker.py 15        # Exp 008/010 post-only
-python src/round4_holdperiod.py      # Exp 009
-
-python src/ledger.py                 # rebuild results/<SYMBOL>/ledger.csv
-python src/ledger_report.py          # rebuild journal/<SYMBOL>/ledger.md
-python src/report_data.py && python src/make_report.py   # rebuild results/<SYMBOL>/report.html
+python src/test_engine.py        # must end with: ALL CHECKS PASSED
+python src/datafeed.py           # first time ~3 min; must end with: VALIDATION: OK
+python src/evaluate.py --list    # the building blocks you can combine
+tail -n 60 journal/BTCUSDT/evaluations.md   # what was already tried
 ```
 
-Heavy scripts use multiprocessing and set `OMP_NUM_THREADS=1` etc. before
-importing numpy — keep that at the top of any new parallel script.
+If any of these fails, **stop and fix that first** (see §9). Do not research
+on a broken setup.
 
 ---
 
-## 4. Journal entry template
+## 1. The research loop — how to find a technique
 
-Append to `journal/<SYMBOL>/experiments.md`, numbering sequentially per coin
-(next for BTCUSDT is **Exp 011**):
+Repeat this loop. One loop = one idea = one hypothesis.
+
+**Step 1 — Pick an idea.** Take one from the backlog in
+`docs/research/TECHNIQUES.md` §6, or invent a new one. First check
+`journal/<SYMBOL>/evaluations.md` and `results/<SYMBOL>/evaluations.csv` to
+make sure it was not already tried.
+
+**Step 2 — Write the hypothesis first.** Explain in 1–3 sentences **why**
+this should make money: who is on the other side, or what market behaviour
+you are exploiting. "Try RSI 14 with 3 filters" is not a hypothesis.
+
+**Step 3 — Write an idea file** `ideas/NNN_short_name.json`. NNN is the next
+free number. Copy the format from `ideas/example_trend_breakout.json` and
+read `ideas/README.md`. Usually you need **no Python**: combine triggers,
+filters and exits in the `recipe` format.
+
+**Step 4 — Keep the grid small.** At most 4 grid keys and at most 64
+combinations (enforced). Sweep the things the hypothesis is actually about.
+Fix everything else at a sensible value.
+
+**Step 5 — Run it:**
+```bash
+python src/evaluate.py ideas/NNN_short_name.json
+```
+It selects parameters on TRAIN (2020–2022), tests the frozen choice on VALID
+(2023–2024), and appends the result to `results/<SYMBOL>/evaluations.csv` and
+`journal/<SYMBOL>/evaluations.md`. It prints a verdict.
+
+**Step 6 — Read the verdict and act on it:**
+
+| Verdict | Meaning | What you do |
+|---|---|---|
+| `PASS` | All gates passed on VALID | Run `--final` **once** (step 7) |
+| `WATCH` | Positive on train, valid and cost stress, but CI touches 0 or DD too big | You may make **up to 2** improved versions (`NNN_name_v2.json`, `_v3`). Each change must be explained by a diagnosis (step 8), not by trying numbers |
+| `REJECT` | Failed | Record one line of *why* (step 8). Move to a **different** idea |
+| `INCONCLUSIVE` | Fewer than 30 validation trades | Make the idea trade more (looser filter, lower tf) or drop it |
+
+**Step 7 — Holdout (only after PASS):**
+```bash
+python src/evaluate.py ideas/NNN_short_name.json --final
+```
+This runs the frozen choice **one time** on HOLDOUT (2025-01 → 2026-08),
+data nothing has been tuned on. `CONFIRMED` = a real candidate: tell the owner
+right away. `FAILED` = it was luck: record it and move on. The script refuses
+a second holdout run for the same config. **Never** work around that. Never
+make a copy with a tiny change just to get another holdout try.
+
+**Step 8 — Diagnose, don't guess.** Before a v2, look at the numbers in the
+report: `gross_r` vs `cost_r`, exit mix (stop/tp/time %), avg hold,
+long vs short, per-year R. Also look at the trades file
+`results/<SYMBOL>/eval_trades/<eval_id>_valid.csv`. Typical diagnoses:
+- `cost_r` ≥ `gross_r` → stop too tight or too many trades: widen the stop, add a filter, use a higher tf.
+- `time_rate` very high → trades go nowhere: shorter `max_hold_hours`, or a better trigger.
+- TP rarely hit, stop often hit → TP too far, or the trigger is late.
+- One side (long or short) loses → `direction` or a trend filter.
+- One year carries everything → a regime effect, not an edge. Say so.
+
+**Step 9 — Every 5 ideas**, append a short batch summary to
+`journal/<SYMBOL>/experiments.md` (template §8). Update
+`journal/<SYMBOL>/STATUS.md` when something important changes.
+
+---
+
+## 2. What counts as good — the gates (fixed in `src/config.py`)
+
+A technique is a **candidate** only if `evaluate.py` says `PASS` and then
+`--final` says `CONFIRMED`. PASS requires, on VALID:
+
+| Gate | Why |
+|---|---|
+| ≥ 100 validation trades | fewer is noise |
+| mean R > 0 on TRAIN too | an edge should exist in both periods |
+| mean R > 0 on VALID | |
+| 95% bootstrap CI lower bound > 0 | not just lucky |
+| mean R > 0 with fees and slippage ×1.5 | survives worse execution |
+| max drawdown ≤ 20% | survivable at 1% risk per trade |
+
+Always report `trades, gross_r, cost_r, mean R, 95% CI, CAGR, maxDD`
+together. Never report only a return, a win rate, or a Sharpe.
+
+---
+
+## 3. Hard rules — NEVER
+
+1. **Never** change costs, risk, splits or gates in `src/config.py` (fees
+   0.05%/0.02%, slippage 0.02%, 1% risk, stop-first fills, `EVAL_*`,
+   `valid_start`, `holdout_start`) to make something pass. If you believe one
+   is wrong, ask the owner.
+2. **Never** use future data. A signal on bar `i` is filled at the open of
+   bar `i+1`. Indicators may only use bars `<= i`. No `.shift(-k)`, no
+   `center=True`, no mean/std/quantile over the whole series, no "best
+   parameter for this year".
+3. **Never** tune on VALID or HOLDOUT by hand: no picking parameters after
+   looking at validation, no running many near-identical ideas until one
+   passes. The small grid runs on TRAIN only; that is the only place
+   parameters are chosen.
+4. **Never** run `--final` on anything that is not `PASS`. Never delete or
+   edit `results/<SYMBOL>/holdout_log.csv` or `evaluations.csv`.
+5. **Never** edit an idea file after it was evaluated. Make `_v2` instead.
+   Maximum 3 versions per idea; after that, move on.
+6. **Never** weaken, skip or delete a test to make it pass. Never edit past
+   journal entries (append-only). Never edit generated files
+   (`evaluations.md`, `ledger.md`, `ledger.csv`) by hand.
+7. **Never** implement martingale (bigger size after a loss), unlimited
+   averaging down, or anything that risks more than 1% of equity per idea.
+   (TECHNIQUES.md §4 explains which trade-fixing methods are allowed.)
+8. **Never** resample bars. Load native Binance files with
+   `experiment.get_bars(tf)` only (Exp 010: resampling shifted every bar).
+9. **Never** commit data (`data/raw/`, `data/cache/`), `__pycache__`, API
+   keys or secrets. Never add live trading or order-placement code unless
+   the owner asks.
+10. **Never** report a number you did not produce or cannot point to in
+    `results/<SYMBOL>/`.
+
+## 4. Hard rules — ALWAYS
+
+11. **Always** run `python src/test_engine.py` after changing anything in
+    `src/` and before committing. It must print `ALL CHECKS PASSED`.
+12. **Always** write the hypothesis before running.
+13. **Always** keep a REJECT in the records. Negative results stop the next
+    agent from repeating your work.
+14. **Always** say how many ideas you tried when you report a PASS. Out of 50
+    ideas, a couple can pass by luck; that is why the holdout exists.
+15. **Always** commit your work at the end of a session (§10).
+
+---
+
+## 5. How much code you may change — levels
+
+| Level | You may | Requirements |
+|---|---|---|
+| **1 — idea files** (default, do this most) | Write `ideas/*.json` using existing blocks and strategies | None beyond §1 |
+| **2 — new building block** | Add a trigger or filter function to `src/recipes.py` (or a strategy to `src/strategies.py` + `REGISTRY`) | Docstring with a one-line description. Causal. `python src/test_engine.py` passes: test 7 automatically checks that every block is causal. Mention it in TECHNIQUES.md |
+| **3 — engine change** | Change `src/backtest.py` (e.g. partial TP, scale-in, stop-and-reverse) | **Ask the owner first.** New behaviour must be off by default. Add a hand-computed test in `test_engine.py` that fails before your change and passes after. All old tests unchanged and passing. Journal entry explaining it |
+
+`src/config.py` costs/gates, `src/evaluate.py` gates and the split dates are
+not yours to change at any level.
+
+---
+
+## 6. One folder per coin
+
+- Everything coin-specific lives under `<SYMBOL>/` (Binance symbol, upper
+  case): `data/raw/<SYMBOL>/`, `data/cache/<SYMBOL>/`, `data/logs/<SYMBOL>/`,
+  `results/<SYMBOL>/`, `journal/<SYMBOL>/`.
+- Code in `src/` and idea files in `ideas/` are shared by all coins. Never
+  hard-code a symbol or path. Use `config.py` (`C.SYMBOL`, `C.RESULTS`,
+  `C.JOURNAL`, …).
+- Choose the coin per run: `SYMBOL=ETHUSDT python src/evaluate.py ideas/x.json`
+  (default `BTCUSDT`).
+- **Adding a coin:** (a) add it to `SYMBOL_SPECS` in `src/config.py` with the
+  real `qty_step`, `min_notional`, `data_start`, `data_end`, `valid_start`,
+  `holdout_start`; (b) `SYMBOL=X python src/datafeed.py` until
+  `VALIDATION: OK`; (c) create `journal/X/STATUS.md` and
+  `journal/X/experiments.md` (starts at Exp 000); (d) run `test_engine.py`.
+  Adding a new coin is a Level 3 change: ask the owner first.
+- A config found on one coin must be re-evaluated on the other coin's own
+  data. Never assume it transfers.
+- Cross-coin comparisons go to `results/_multi/` and `journal/_multi/`.
+
+---
+
+## 7. Repository map
+
+```
+AGENTS.md / CLAUDE.md       these rules (CLAUDE.md imports this file)
+docs/research/TECHNIQUES.md catalogue of techniques + idea backlog  <- read for ideas
+ideas/                      idea files (JSON), shared by all coins; ideas/README.md = format
+src/                        all code (flat; scripts import each other via sys.path)
+journal/<SYMBOL>/
+    STATUS.md               where the coin stands, next steps
+    experiments.md          research log, append-only
+    evaluations.md          GENERATED by evaluate.py, one block per evaluation
+    ledger.md               GENERATED by ledger_report.py (older experiments)
+results/<SYMBOL>/
+    evaluations.csv         every evaluate.py run (one row each)
+    holdout_log.csv         every holdout use (the lock)
+    eval_trades/            trade lists per evaluation (git-ignored, regenerable)
+    *.csv, report.html      output of older experiment scripts (Exp 003–010)
+data/{raw,cache,logs}/<SYMBOL>/   zips, parquet (both git-ignored), run logs
+```
+
+| `src/` file | Role |
+|---|---|
+| `evaluate.py` | **the research gate**: idea file → TRAIN select → VALID verdict → optional one-time HOLDOUT |
+| `recipes.py` | building blocks: `TRIGGERS`, `FILTERS`, and `recipe()` that combines them with exits |
+| `strategies.py` | older hand-written strategies (`REGISTRY`), also usable in idea files |
+| `backtest.py` | the engine (`run_backtest`): next-bar-open fills, taker/maker fees, slippage, funding, stop-first, BE/trailing, post-only entries |
+| `indicators.py` | causal indicators (EMA, ATR, RSI, ADX, BB, VWAP, supertrend, …) |
+| `config.py` | symbol specs, paths, costs, risk, split dates, gates |
+| `experiment.py` | `get_bars(tf)`, `load_funding()`, older helpers |
+| `datafeed.py` | download + cache + `validate()` |
+| `test_engine.py` | engine and block tests; must pass |
+| `ml_filter.py`, `run_ml.py`, `definitive.py`, `sweep.py`, `cost_lab.py`, `round*.py`, `diagnose.py` | older experiments (Exp 003–010), see journal |
+| `ledger*.py`, `report_data.py`, `make_report.py` | reporting for the older experiments |
+
+Engine facts to remember:
+- R = stop distance. `gross_r - cost_r = mean R` per trade. At a 0.5%
+  stop, costs alone are ≈ 0.28 R per trade. **Wide stops are cheap stops**
+  (the main finding so far, Exp 004).
+- One position at a time. Position size = 1% equity ÷ stop distance (max 10x
+  leverage).
+- Break-even and trailing stops move using the **previous** bar's close
+  (fixed in Exp 011).
+
+---
+
+## 8. Journal and reporting
+
+`evaluate.py` writes `evaluations.md` for you. You write, by hand, only a
+**batch summary** in `journal/<SYMBOL>/experiments.md` every ~5 ideas, or
+when something important happens. Use the next Exp number:
 
 ```markdown
 ---
 
-## Exp NNN — <one-line title>
+## Exp NNN — <batch title>
 
 **Date:** YYYY-MM-DD
-**Status:** running | complete | superseded by Exp MMM
+**Status:** complete
 
-### Hypothesis
-What you expect and why. State it before looking at results.
+### Ideas tested
+| idea file | eval_id | verdict | valid mean R | 95% CI | note |
+|---|---|---|---|---|---|
 
-### Method
-Symbol, script + exact command, data window, split (train/test/walk-forward),
-timeframe, stop scale, execution mode, number of configs tried.
-
-### Result
-Table with trades, gross_r, cost_r, exp_r, 95% CI, CAGR, maxDD.
-Results file: `results/<SYMBOL>/<file>.csv`, log: `data/logs/<SYMBOL>/<file>.log`.
+### What we learned
+2–5 bullets: which hypotheses died and why, which block combinations look
+promising, what to try next.
 
 ### Verdict
-KEEP | WATCH | REJECT | INCONCLUSIVE — with one paragraph of reasoning.
+KEEP | WATCH | REJECT | INCONCLUSIVE — one paragraph.
 ```
 
-Verdict vocabulary: `KEEP` survived OOS with acceptable drawdown; `WATCH`
-promising, not verified OOS; `REJECT` failed; `INCONCLUSIVE` not decisive.
+**Reporting to the owner (in Thai):** number of ideas tried, how many were
+PASS / WATCH / REJECT, the best one with `trades, mean R, 95% CI, CAGR,
+maxDD`, and the holdout result if any. Never say "profitable" unless the
+holdout is `CONFIRMED`.
 
 ---
 
-## 5. Working style
+## 9. When something goes wrong
 
-- Measure before optimising; profile the whole pipeline (Exp 002: the slow
-  part was an indicator, not the backtest loop).
-- When a number surprises you, look for a bug first (Exp 001, 008, 010).
-- Prefer small, verified changes. Rerun `test_engine.py` after each.
-- Keep code style consistent with the existing files: plain numpy/pandas,
-  no TA libraries, docstrings that explain *why*, `from __future__ import
-  annotations`, type hints on public functions.
-- Write the journal in English. `report.html` is in Thai for the owner;
-  its prose in `src/make_report.py` is written about BTCUSDT and must be
-  generalised before generating a report for another coin.
+| Symptom | Fix |
+|---|---|
+| `FileNotFoundError ... native ... klines` | `python src/datafeed.py` |
+| `unknown SYMBOL` | add it to `SYMBOL_SPECS` (§6) or unset `SYMBOL` |
+| `unknown trigger/filter 'x'` | check names with `python src/evaluate.py --list` |
+| `grid has N combinations; the limit is 64` | fewer values per grid key |
+| `already evaluated as ...` | the exact idea exists. Change the idea (new file) — `--rerun` only after a code fix |
+| `--final refused` | working as intended. Do not bypass it |
+| `test_engine.py` shows FAIL | undo your last change to `src/`, or fix it. Never edit the test to pass |
+| A result looks amazing (mean R > 0.3, win rate > 70%, DD < 2%) | assume a bug: look-ahead, a too-small sample, or a single year. Check the trades file |
+| Unsure what to do | re-read §1. Still unsure: ask the owner. Never guess on rules §3 |
+
+---
+
+## 10. End of session — definition of done
+
+1. `python src/test_engine.py` → `ALL CHECKS PASSED`.
+2. Every evaluation is in `evaluations.csv` / `evaluations.md` (automatic).
+3. A batch summary is in `experiments.md` if you tested ≥ 3 ideas.
+4. `journal/<SYMBOL>/STATUS.md` is updated if the picture changed.
+5. `git add` your idea files, `src/` changes, journal and results (not
+   `data/`), then commit with a message that says what was tested and the
+   verdicts.
+6. Tell the owner (in Thai) what you did (§8).

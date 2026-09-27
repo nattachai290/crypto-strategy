@@ -23,6 +23,11 @@ SYMBOL_SPECS: dict[str, dict] = {
         min_notional=5.0,     # Binance min notional (rounded up)
         data_start="2020-01", # first monthly file used
         data_end="2026-08",   # last monthly file used
+        # evaluate.py splits:  TRAIN [data_start, valid_start)
+        #                      VALID [valid_start, holdout_start)
+        #                      HOLDOUT [holdout_start, data_end]  (locked)
+        valid_start="2023-01",
+        holdout_start="2025-01",
     ),
 }
 SYMBOL = os.environ.get("SYMBOL", "BTCUSDT").upper()
@@ -112,6 +117,18 @@ COOLDOWN_AFTER_STOP_BAR = 0
 # Train = 24 months, test = 6 months, step = 6 months
 WF_TRAIN_MONTHS = 24
 WF_TEST_MONTHS = 6
+# evaluate.py - the standard research gate (see AGENTS.md). Changing any of
+# these makes old and new verdicts incomparable: journal it first.
+VALID_START = SPEC["valid_start"]
+HOLDOUT_START = SPEC["holdout_start"]
+EVAL_MAX_GRID = 64            # max parameter combinations per idea
+EVAL_MIN_TRAIN_TRADES = 100   # a combo needs this many train trades to be eligible
+EVAL_MIN_VALID_TRADES = 100   # PASS needs this many validation trades
+EVAL_MIN_ANY_TRADES = 30      # below this the verdict is INCONCLUSIVE
+EVAL_STRESS_COST = 1.5        # fees and slippage x this for the stress test
+EVAL_MAX_DD = 0.20            # PASS needs validation max drawdown <= this
+EVAL_BOOTSTRAP = 10000        # bootstrap resamples for the CI
+
 # Annualisation factor for minute bars
 MINUTES_PER_YEAR = 365 * 24 * 60
 

@@ -54,13 +54,30 @@ src/ml_filter.py     causal features + trade-outcome labelling
 src/run_ml.py        walk-forward "rules vs ML" comparison
 src/experiment.py    data loading (native bars only), walk-forward splits
 src/test_engine.py   engine correctness tests
+src/evaluate.py      the research gate: idea file -> verdict
+src/recipes.py       combinable triggers / filters / exits
+ideas/               idea files (JSON), shared by all coins
+docs/research/       TECHNIQUES.md - what to try
 journal/<SYMBOL>/    STATUS.md + research log (one entry per experiment)
 results/<SYMBOL>/    CSV output of every run + report.html
 data/logs/<SYMBOL>/  console logs of runs
 data/raw|cache/<SYMBOL>/  downloaded zips / parquet (git-ignored)
 ```
 
-## Usage
+## Research workflow (from Exp 011)
+
+New ideas are JSON files in `ideas/`, combining triggers, filters and exits
+(`src/recipes.py`), and are judged by one command with fixed gates:
+
+```bash
+python src/evaluate.py --list                          # building blocks
+python src/evaluate.py ideas/example_trend_breakout.json   # TRAIN select -> VALID verdict
+python src/evaluate.py ideas/<idea>.json --final       # one-time HOLDOUT, only after PASS
+```
+
+Rules: `AGENTS.md`. Technique catalogue + backlog: `docs/research/TECHNIQUES.md`.
+
+## Usage (older experiment scripts, Exp 000–010)
 
 ```bash
 pip install -r requirements.txt

@@ -1,6 +1,11 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-27, after Exp 010. Rules for agents: `AGENTS.md`._
+_Last updated: 2026-09-27, after Exp 011. Rules for agents: `AGENTS.md`._
+
+> **How research is done from Exp 011 on:** write an idea file in `ideas/`,
+> run `python src/evaluate.py ideas/<file>.json`, follow the verdict
+> (AGENTS.md §1). Ideas to try: `docs/research/TECHNIQUES.md` §6. Every
+> evaluation so far: `journal/BTCUSDT/evaluations.md`.
 
 ## One-paragraph summary
 
@@ -53,6 +58,10 @@ journal; verify before relying on it.)
 
 ## Known issues / loose ends
 
+0. **Exit-management results before Exp 011 are biased** (break-even /
+   trailing bugs, now fixed). Any `be_at` / `trail_*` numbers in Exp 003
+   files are too pessimistic.
+
 1. **Stale results.** Exp 003–006 and 009 have not been re-run on native bars.
 2. **Ledger has no data-version column.** Pre- and post-fix rows for Exp 008
    sit side by side (duplicate configs with different numbers). Add a
@@ -75,16 +84,12 @@ journal; verify before relying on it.)
 
 ## Suggested next steps (in order)
 
-1. `pip install -r requirements.txt`, `python src/datafeed.py`,
-   `python src/test_engine.py` — confirm the environment.
-2. Add a `data_version` column to the ledger and tag existing rows (see table
-   above), then regenerate `journal/BTCUSDT/ledger.md`.
-3. Re-run the stale experiments on native bars (sweep → cost_lab →
-   round2_stopwidth → run_ml → round4_holdperiod), log each as a new journal
-   entry (Exp 011+), and update `report_data.py` / `results/BTCUSDT/report.html`.
-4. Only then consider new hypotheses. The journal's own conclusion is that
-   more indicator search is not worthwhile; candidates it names are:
-   - an explicit multi-hour **swing** horizon (and saying so — not intraday);
-   - **funding carry** / basis strategies;
-   - **market making** (earning spread), which needs an order-book fill model
-     the current engine does not have.
+1. Run the start-of-session checklist in `AGENTS.md` §0.
+2. Work through the ★★★ ideas in `docs/research/TECHNIQUES.md` §6 with
+   `evaluate.py`: trend breakout with a wide stop, the exit study (exits
+   were mis-simulated before Exp 011), range mean reversion, and crowded
+   funding.
+3. Batch-summarise every ~5 ideas in `experiments.md` (Exp 012+).
+4. Optional housekeeping, lower priority: the stale Exp 003–009 result files
+   and the ledger `data_version` column (see above). New work does not depend
+   on them.

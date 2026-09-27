@@ -718,3 +718,73 @@ implementation, wrote a bootstrap, checked for look-ahead, and audited fills —
 and the defect lived in the **data preparation step**, which nothing was
 checking because "we resampled it ourselves" felt like a safe assumption.
 Verification effort follows attention, and my attention was on the engine.
+
+---
+
+## Exp 011 — Two exit-management engine bugs, and a standard research gate
+
+**Date:** 2026-09-27
+**Status:** complete
+
+Also records that Exp 009 (listed as "running" above) completed with the
+verdict written in its entry.
+
+### Bug 1 — break-even / trailing stop used the current bar's close
+`run_backtest` moved the stop at the start of bar `i` using `c[i]`, the close
+of that same bar, and then checked bar `i`'s high/low against the moved stop.
+That is look-ahead, and it cut both ways:
+- a bar that fell through the original stop and then closed above the
+  break-even trigger was booked as a break-even exit instead of -1R
+  (optimistic);
+- far more often, a bar that rallied lifted the stop above its own open, and
+  the trade was "stopped" at that open. Winners were cut at the first strong
+  bar (pessimistic).
+
+Fix: the stop moves using `c[i-1]` / `atr[i-1]`, from the bar after the
+trigger close onward, and never on the entry bar. New tests in
+`test_engine.py` §6 fail on the old code and pass on the new.
+
+### Bug 2 — the trailing stop had no ATR while in a position
+`strategies._pack` wrote the `atr` column only on signal bars (0
+elsewhere). The engine reads ATR on every bar of an open position to move
+the trail, so the trail only moved on bars that happened to follow another
+raw signal. Fix: ATR on every bar. Test §6 D checks it.
+
+### Effect (15m, full history, taker; same signals)
+| config | engine | trades | mean R | gross_r | CAGR |
+|---|---|---|---|---|---|
+| combo_breakout_confirmed stop 2 tp 4 BE 1 | old | 1584 | -0.105 | +0.084 | -19.9% |
+| | fixed | 1732 | -0.084 | +0.113 | -16.7% |
+| ema_trend stop 2 tp 4 BE 0.5 trail 1/1.5 | old | 1124 | -0.374 | -0.083 | -41.9% |
+| | fixed | 1527 | -0.263 | +0.040 | -40.3% |
+| donchian_breakout stop 3.5 BE 1 trail 1.5/2.5 | old | 1757 | -0.030 | +0.076 | -8.0% |
+| | fixed | 2167 | -0.018 | +0.089 | -5.7% |
+
+(Bug 1 fix only. In a separate check, donchian_breakout stop 3.5, trail
+1.0/1.5, no TP, max_hold 96: the bug 2 fix moved mean R from -0.010 to -0.019.)
+Net, the old engine **understated** break-even/trailing exits. Every exit-
+management result before this entry (the `be_at`/`trail_*` variants in
+Exp 003) is biased low. They are still negative after the fix, but exit
+techniques deserve a proper retest.
+
+### New standard protocol: `src/evaluate.py`
+From here on every idea is an `ideas/*.json` file evaluated the same way:
+- TRAIN 2020-01..2022-12: a grid of ≤ 64 combos; pick the best mean R among
+  combos with ≥ 100 trades.
+- VALID 2023-01..2024-12: the frozen choice only. Gates: ≥ 100 trades, train
+  and valid mean R > 0, bootstrap CI lower bound > 0, mean R > 0 at 1.5x
+  costs, maxDD ≤ 20% → PASS / WATCH / REJECT / INCONCLUSIVE.
+- HOLDOUT 2025-01..2026-08: one run per config, only after PASS, locked in
+  `results/BTCUSDT/holdout_log.csv`.
+- New `src/recipes.py`: triggers + filters + exits combined from JSON; test
+  §7 checks every block for causality.
+
+Smoke tests (examples, both REJECT): `example_trend_breakout` valid mean R
++0.016, CI [-0.082, +0.117], fails at 1.5x cost; `example_range_reversion`
+negative on train. The trend-breakout example's holdout was consumed while
+testing the `--final` lock (it FAILED, -0.23 R); that is recorded in
+`holdout_log.csv`.
+
+### Verdict
+`KEEP` the engine fixes and the protocol. All results in
+`results/BTCUSDT/evaluations.csv` use the fixed engine and native data.

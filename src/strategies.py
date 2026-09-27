@@ -63,8 +63,10 @@ def _pack(
     out["stop_dist"] = np.where(active, dist, np.nan)
     out["tp_dist"] = np.where(active, tp_mult * a * scale, 0.0)
     out["max_hold"] = np.where(active, float(max_hold), 0.0)
-    # exit management
-    out["atr"] = np.where(active, a, 0.0)
+    # exit management. ATR is set on EVERY bar, not only signal bars: the
+    # engine reads it on each bar of an open position to move the trailing
+    # stop, and a 0 there silently froze the trail (journal Exp 011).
+    out["atr"] = np.nan_to_num(a, nan=0.0)
     out["be_at"] = np.where(active, be_at, 0.0)
     out["trail_at"] = np.where(active, trail_at, 0.0)
     out["trail_atr"] = np.where(active, trail_atr, 0.0)

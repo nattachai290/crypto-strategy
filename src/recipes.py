@@ -1,0 +1,432 @@
+"""Recipe strategies: combine entry triggers, filters and exits from JSON.
+
+A recipe lets you build a new combined strategy WITHOUT writing Python:
+
+    {
+      "triggers": [{"type": "donchian_break", "n": 48}],
+      "trigger_mode": "any",
+      "filters":  [{"type": "trend_ema", "fast": 50, "slow": 200},
+                   {"type": "adx_min", "min": 20}],
+      "direction": "both",
+      "stop":  {"type": "atr", "mult": 3.0},
+      "tp":    {"type": "r", "r": 2.0},
+      "be_at": 1.0, "trail_at": 1.5, "trail_atr": 2.0,
+      "max_hold_hours": 4, "cooldown_bars": 4, "atr_n": 14
+    }
+
+How the pieces combine (all causal - bar i uses only bars <= i):
+  1. TRIGGERS say *when* to act: each returns +1 (long), -1 (short) or 0 on the
+     bar where its event happens. trigger_mode "any" fires if any trigger
+     fires (if two disagree on the same bar, nothing fires); "all" needs every
+     trigger to fire in the same direction within `confirm_bars` bars.
+  2. FILTERS say *whether* a direction is allowed on that bar. A long needs
+     every filter's long_ok; a short needs every filter's short_ok.
+  3. `direction` can restrict to "long" or "short" only.
+  4. `cooldown_bars` suppresses new signals for N bars after one fires.
+  5. EXITS: stop (ATR or swing structure), take-profit (ATR multiple, R
+     multiple, or none), break-even, ATR trailing stop, and a time stop. The
+     engine applies them with no look-ahead (see backtest.py).
+
+To add a building block: write a function below, add it to TRIGGERS or
+FILTERS, and document its params in AGENTS.md / docs/research/TECHNIQUES.md.
+Every block must be causal. Never use .shift(-k), centred windows, or any
+value from a bar after i.
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import indicators as ta  # noqa: E402
+
+
+def _cross_up(a: pd.Series, b) -> np.ndarray:
+    a = pd.Series(a)
+    b = b if np.isscalar(b) else pd.Series(b, index=a.index)
+    now = (a > b)
+    prev = now.shift(1, fill_value=False)
+    return (now & ~prev).to_numpy()
+
+
+def _cross_dn(a: pd.Series, b) -> np.ndarray:
+    a = pd.Series(a)
+    b = b if np.isscalar(b) else pd.Series(b, index=a.index)
+    now = (a < b)
+    prev = now.shift(1, fill_value=False)
+    return (now & ~prev).to_numpy()
+
+
+def _side(long_ev: np.ndarray, short_ev: np.ndarray) -> np.ndarray:
+    long_ev = np.nan_to_num(np.asarray(long_ev, dtype=float)) > 0
+    short_ev = np.nan_to_num(np.asarray(short_ev, dtype=float)) > 0
+    return np.where(long_ev & ~short_ev, 1.0, np.where(short_ev & ~long_ev, -1.0, 0.0))
+
+
+# ==========================================================================
+# TRIGGERS  fn(bars, funding, **p) -> np.ndarray of +1 / -1 / 0
+# ==========================================================================
+def t_ema_cross(b, f, fast=20, slow=50):
+    """Fast EMA crosses slow EMA (trend start)."""
+    ef, es = ta.ema(b["close"], fast), ta.ema(b["close"], slow)
+    return _side(_cross_up(ef, es), _cross_dn(ef, es))
+
+
+def t_donchian_break(b, f, n=48):
+    """Close breaks the previous n-bar high/low (breakout)."""
+    up, dn = ta.donchian(b["high"], b["low"], n)
+    c = b["close"]
+    return _side(_cross_up(c, up.shift(1)), _cross_dn(c, dn.shift(1)))
+
+
+def t_supertrend_flip(b, f, n=10, mult=3.0):
+    """Supertrend changes direction."""
+    d = ta.supertrend(b["high"], b["low"], b["close"], n, mult)["dir"].diff()
+    return _side(d > 0, d < 0)
+
+
+def t_rsi_revert(b, f, n=14, lo=30, hi=70):
+    """RSI crosses back up through `lo` (long) / down through `hi` (short)."""
+    r = ta.rsi(b["close"], n)
+    return _side(_cross_up(r, lo), _cross_dn(r, hi))
+
+
+def t_bb_revert(b, f, n=20, k=2.0):
+    """Close comes back inside the Bollinger band after being outside."""
+    bb = ta.bbands(b["close"], n, k)
+    c = b["close"]
+    return _side(_cross_up(c, bb["dn"]), _cross_dn(c, bb["up"]))
+
+
+def t_zscore_revert(b, f, n=96, z=2.0):
+    """Price z-score vs its n-bar mean crosses back inside +-z."""
+    zs = ta.zscore(b["close"], n)
+    return _side(_cross_up(zs, -z), _cross_dn(zs, z))
+
+
+def t_vwap_revert(b, f, z=2.0, z_n=200):
+    """Distance from the daily VWAP, in rolling std units, crosses back inside +-z."""
+    c = b["close"]
+    vw = ta.session_vwap(b["high"], b["low"], c, b["volume"])
+    dev = (c - vw).rolling(z_n, min_periods=z_n // 4).std()
+    zz = (c - vw) / dev.replace(0, np.nan)
+    return _side(_cross_up(zz, -z), _cross_dn(zz, z))
+
+
+def t_momentum(b, f, n=12, atr_k=1.5, atr_n=14):
+    """n-bar price change exceeds atr_k * ATR (impulse)."""
+    c = b["close"]
+    atr = ta.atr_(b["high"], b["low"], c, atr_n)
+    mom = (c - c.shift(n)) / atr
+    return _side(_cross_up(mom, atr_k), _cross_dn(mom, -atr_k))
+
+
+def t_pullback(b, f, fast=20, slow=50):
+    """In an EMA uptrend, close dips to/below the fast EMA then closes back
+    above it (mirror for shorts)."""
+    c = b["close"]
+    ef, es = ta.ema(c, fast), ta.ema(c, slow)
+    up = (ef > es).to_numpy()
+    dn = (ef < es).to_numpy()
+    return _side(_cross_up(c, ef) & up, _cross_dn(c, ef) & dn)
+
+
+def t_range_break(b, f, range_n=24, hours=None):
+    """Break of the previous range_n-bar range, optionally only in given UTC hours."""
+    h, l, c = b["high"], b["low"], b["close"]
+    hi_p = h.rolling(range_n, min_periods=range_n // 2).max().shift(1)
+    lo_p = l.rolling(range_n, min_periods=range_n // 2).min().shift(1)
+    s = _side(_cross_up(c, hi_p), _cross_dn(c, lo_p))
+    if hours is not None:
+        s = np.where(np.isin(b.index.hour, list(hours)), s, 0.0)
+    return s
+
+
+def t_funding_extreme(b, f, thresh=0.0003):
+    """Funding rate crosses beyond +-thresh: fade the crowded side
+    (high positive funding -> short, high negative -> long)."""
+    rate = _funding_on_bars(b, f)
+    return _side(_cross_dn(rate, -thresh), _cross_up(rate, thresh))
+
+
+TRIGGERS = {
+    "ema_cross": t_ema_cross,
+    "donchian_break": t_donchian_break,
+    "supertrend_flip": t_supertrend_flip,
+    "rsi_revert": t_rsi_revert,
+    "bb_revert": t_bb_revert,
+    "zscore_revert": t_zscore_revert,
+    "vwap_revert": t_vwap_revert,
+    "momentum": t_momentum,
+    "pullback": t_pullback,
+    "range_break": t_range_break,
+    "funding_extreme": t_funding_extreme,
+}
+
+
+# ==========================================================================
+# FILTERS  fn(bars, funding, **p) -> (long_ok, short_ok) boolean arrays
+# ==========================================================================
+def _both(mask) -> tuple[np.ndarray, np.ndarray]:
+    m = np.nan_to_num(np.asarray(mask, dtype=float)) > 0
+    return m, m
+
+
+def f_trend_ema(b, f, fast=50, slow=200):
+    """Trade with the trend: long only if EMA(fast) > EMA(slow), short only if below."""
+    ef, es = ta.ema(b["close"], fast), ta.ema(b["close"], slow)
+    return (ef > es).to_numpy(), (ef < es).to_numpy()
+
+
+def f_price_vs_ema(b, f, n=200):
+    """Long only above EMA(n), short only below."""
+    e = ta.ema(b["close"], n)
+    return (b["close"] > e).to_numpy(), (b["close"] < e).to_numpy()
+
+
+def f_htf_trend(b, f, n=50, mult=4):
+    """Higher-timeframe trend proxy: close vs EMA(n*mult). mult=4 on 15m ~ EMA(n) on 1h."""
+    e = ta.ema(b["close"], int(n * mult))
+    return (b["close"] > e).to_numpy(), (b["close"] < e).to_numpy()
+
+
+def f_adx_min(b, f, n=14, min=20):  # noqa: A002 - JSON key
+    """Trending regime only: ADX >= min."""
+    a = ta.adx(b["high"], b["low"], b["close"], n)["adx"]
+    return _both(a >= min)
+
+
+def f_adx_max(b, f, n=14, max=20):  # noqa: A002 - JSON key
+    """Ranging regime only: ADX <= max (use with mean-reversion triggers)."""
+    a = ta.adx(b["high"], b["low"], b["close"], n)["adx"]
+    return _both(a <= max)
+
+
+def f_di_side(b, f, n=14):
+    """Long only if +DI > -DI, short only if -DI > +DI."""
+    a = ta.adx(b["high"], b["low"], b["close"], n)
+    return (a["pdi"] > a["mdi"]).to_numpy(), (a["mdi"] > a["pdi"]).to_numpy()
+
+
+def f_rsi_side(b, f, n=14, level=50):
+    """Long only if RSI > level, short only if RSI < 100-level."""
+    r = ta.rsi(b["close"], n)
+    return (r > level).to_numpy(), (r < 100 - level).to_numpy()
+
+
+def f_vol_regime(b, f, fast=14, slow=100, lo=0.0, hi=99.0):
+    """Only when ATR(fast)/ATR(slow) is within [lo, hi]. hi<1 = quiet market,
+    lo>1 = expanding volatility."""
+    h, l, c = b["high"], b["low"], b["close"]
+    ratio = ta.atr_(h, l, c, fast) / ta.atr_(h, l, c, slow)
+    return _both((ratio >= lo) & (ratio <= hi))
+
+
+def f_squeeze(b, f, n=20, q=0.2, lookback=500):
+    """Bollinger width was in its lowest q quantile on the previous bar (compression)."""
+    w = ta.bbands(b["close"], n, 2.0)["width"]
+    qq = ta.rolling_quantile(w, lookback, q)
+    return _both((w <= qq).shift(1, fill_value=False))
+
+
+def f_taker_flow(b, f, n=20, thresh=0.52):
+    """Aggressive buyers dominate for longs (taker buy ratio > thresh), sellers for shorts."""
+    r = ta.taker_ratio(b["taker_buy_base"], b["volume"], n)
+    return (r > thresh).to_numpy(), (r < 1 - thresh).to_numpy()
+
+
+def f_vwap_side(b, f):
+    """Long only above the daily VWAP, short only below."""
+    c = b["close"]
+    vw = ta.session_vwap(b["high"], b["low"], c, b["volume"])
+    return (c > vw).to_numpy(), (c < vw).to_numpy()
+
+
+def f_volume_spike(b, f, n=96, k=1.5):
+    """Volume on the signal bar > k * its n-bar average (participation)."""
+    v = b["volume"]
+    return _both(v > k * v.rolling(n, min_periods=n // 2).mean().shift(1))
+
+
+def f_funding_not_crowded(b, f, thresh=0.0003):
+    """Avoid joining a crowded side: no longs when funding > thresh,
+    no shorts when funding < -thresh."""
+    rate = _funding_on_bars(b, f)
+    return (rate <= thresh).to_numpy(), (rate >= -thresh).to_numpy()
+
+
+def f_hours(b, f, hours=(13, 14, 15, 16)):
+    """Only in these UTC hours of the signal bar."""
+    return _both(np.isin(b.index.hour, list(hours)))
+
+
+def f_weekdays(b, f, days=(0, 1, 2, 3, 4)):
+    """Only on these weekdays (0 = Monday)."""
+    return _both(np.isin(b.index.dayofweek, list(days)))
+
+
+FILTERS = {
+    "trend_ema": f_trend_ema,
+    "price_vs_ema": f_price_vs_ema,
+    "htf_trend": f_htf_trend,
+    "adx_min": f_adx_min,
+    "adx_max": f_adx_max,
+    "di_side": f_di_side,
+    "rsi_side": f_rsi_side,
+    "vol_regime": f_vol_regime,
+    "squeeze": f_squeeze,
+    "taker_flow": f_taker_flow,
+    "vwap_side": f_vwap_side,
+    "volume_spike": f_volume_spike,
+    "funding_not_crowded": f_funding_not_crowded,
+    "hours": f_hours,
+    "weekdays": f_weekdays,
+}
+
+NEEDS_FUNDING_BLOCKS = {"funding_extreme", "funding_not_crowded"}
+
+
+def _funding_on_bars(b: pd.DataFrame, f: pd.DataFrame | None) -> pd.Series:
+    if f is None:
+        raise ValueError("this block needs funding data (run datafeed.py)")
+    s = f.set_index(pd.to_datetime(f["calc_time"], utc=True))["last_funding_rate"]
+    s = s[~s.index.duplicated(keep="last")].sort_index()
+    return s.reindex(b.index, method="ffill")
+
+
+def _block(spec: dict, table: dict, kind: str):
+    spec = dict(spec)
+    name = spec.pop("type", None)
+    if name not in table:
+        raise ValueError(f"unknown {kind} {name!r}; available: {', '.join(sorted(table))}")
+    return table[name], spec
+
+
+def _bar_minutes(index: pd.DatetimeIndex) -> float:
+    return float(pd.Series(index[:1000]).diff().dt.total_seconds().median() / 60.0)
+
+
+# ==========================================================================
+# The strategy
+# ==========================================================================
+def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
+           triggers: list[dict], filters: list[dict] | None = None,
+           trigger_mode: str = "any", confirm_bars: int = 3,
+           direction: str = "both",
+           stop: dict | None = None, tp: dict | None = None,
+           be_at: float = 0.0, trail_at: float = 0.0, trail_atr: float = 0.0,
+           max_hold_hours: float = 4.0, cooldown_bars: int = 0,
+           atr_n: int = 14) -> pd.DataFrame:
+    """Build a signal frame from a JSON-style recipe. See the module docstring."""
+    n = len(bars)
+    if not triggers:
+        raise ValueError("a recipe needs at least one trigger")
+
+    # 1. triggers
+    sides = []
+    for t in triggers:
+        fn, p = _block(t, TRIGGERS, "trigger")
+        sides.append(np.nan_to_num(np.asarray(fn(bars, funding, **p), dtype=float)))
+    S = np.vstack(sides)
+    if trigger_mode == "any":
+        up, dn = (S > 0).any(axis=0), (S < 0).any(axis=0)
+        side = np.where(up & ~dn, 1.0, np.where(dn & ~up, -1.0, 0.0))
+    elif trigger_mode == "all":
+        # every trigger fired in the same direction within the last confirm_bars
+        k = max(int(confirm_bars), 1)
+        recent_up = np.vstack([pd.Series(s > 0).rolling(k, min_periods=1).max().to_numpy()
+                               for s in S]).all(axis=0)
+        recent_dn = np.vstack([pd.Series(s < 0).rolling(k, min_periods=1).max().to_numpy()
+                               for s in S]).all(axis=0)
+        fired = (S != 0).any(axis=0)  # act on the bar the last one arrives
+        side = np.where(fired & recent_up & ~recent_dn, 1.0,
+                        np.where(fired & recent_dn & ~recent_up, -1.0, 0.0))
+    else:
+        raise ValueError("trigger_mode must be 'any' or 'all'")
+
+    # 2. filters
+    long_ok = np.ones(n, bool)
+    short_ok = np.ones(n, bool)
+    for flt in filters or []:
+        fn, p = _block(flt, FILTERS, "filter")
+        lo, sh = fn(bars, funding, **p)
+        long_ok &= np.nan_to_num(np.asarray(lo, dtype=float)) > 0
+        short_ok &= np.nan_to_num(np.asarray(sh, dtype=float)) > 0
+    side = np.where((side > 0) & long_ok, 1.0, np.where((side < 0) & short_ok, -1.0, 0.0))
+
+    # 3. direction
+    if direction == "long":
+        side = np.where(side > 0, side, 0.0)
+    elif direction == "short":
+        side = np.where(side < 0, side, 0.0)
+    elif direction != "both":
+        raise ValueError("direction must be 'both', 'long' or 'short'")
+
+    # 4. cooldown
+    if cooldown_bars > 0:
+        last = -10**9
+        for i in np.flatnonzero(side):
+            if i - last <= cooldown_bars:
+                side[i] = 0.0
+            else:
+                last = i
+
+    # 5. exits
+    h, l, c = bars["high"], bars["low"], bars["close"]
+    atr = ta.atr_(h, l, c, atr_n).to_numpy(float)
+    stop = stop or {"type": "atr", "mult": 2.0}
+    if stop.get("type", "atr") == "atr":
+        stop_dist = stop.get("mult", 2.0) * atr
+    elif stop["type"] == "swing":
+        # beyond the recent swing low (long) / high (short), plus an ATR buffer,
+        # clamped to [min_atr, max_atr] ATR so one bar cannot make it absurd
+        sn = int(stop.get("n", 10))
+        buf = stop.get("buffer_atr", 0.2)
+        lo_n = l.rolling(sn, min_periods=1).min().to_numpy(float)
+        hi_n = h.rolling(sn, min_periods=1).max().to_numpy(float)
+        cc = c.to_numpy(float)
+        raw = np.where(side > 0, cc - lo_n, hi_n - cc) + buf * atr
+        stop_dist = np.clip(raw, stop.get("min_atr", 1.0) * atr, stop.get("max_atr", 6.0) * atr)
+    else:
+        raise ValueError("stop.type must be 'atr' or 'swing'")
+
+    tp = tp or {"type": "none"}
+    tpt = tp.get("type", "none")
+    if tpt == "none":
+        tp_dist = np.zeros(n)
+    elif tpt == "atr":
+        tp_dist = tp.get("mult", 3.0) * atr
+    elif tpt == "r":
+        tp_dist = tp.get("r", 2.0) * stop_dist
+    else:
+        raise ValueError("tp.type must be 'none', 'atr' or 'r'")
+
+    max_hold = max(1, int(round(max_hold_hours * 60.0 / _bar_minutes(bars.index))))
+
+    ok = np.isfinite(atr) & (atr > 0) & np.isfinite(stop_dist) & (stop_dist > 0)
+    side = np.where(ok, side, 0.0)
+    active = side != 0
+    out = pd.DataFrame(index=bars.index)
+    out["side"] = side
+    out["stop_dist"] = np.where(active, stop_dist, np.nan)
+    out["tp_dist"] = np.where(active, np.nan_to_num(tp_dist), 0.0)
+    out["max_hold"] = np.where(active, float(max_hold), 0.0)
+    out["atr"] = np.nan_to_num(atr, nan=0.0)  # every bar: the trail reads it in-position
+    out["be_at"] = np.where(active, be_at, 0.0)
+    out["trail_at"] = np.where(active, trail_at, 0.0)
+    out["trail_atr"] = np.where(active, trail_atr, 0.0)
+    return out
+
+
+def describe() -> str:
+    """Human-readable catalogue of every block (used by `evaluate.py --list`)."""
+    lines = ["TRIGGERS (when to act):"]
+    for k, fn in TRIGGERS.items():
+        lines.append(f"  {k:<18} {(fn.__doc__ or '').strip().splitlines()[0]}")
+    lines.append("\nFILTERS (whether a direction is allowed):")
+    for k, fn in FILTERS.items():
+        lines.append(f"  {k:<18} {(fn.__doc__ or '').strip().splitlines()[0]}")
+    return "\n".join(lines)
