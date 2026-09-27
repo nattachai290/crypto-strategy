@@ -39,11 +39,12 @@ slippage is not a strategy.
 ## Layout
 
 > **AI agents / new contributors:** read `AGENTS.md` (rules) and
-> `docs/STATUS.md` (current state + next steps) before changing anything.
+> `journal/<SYMBOL>/STATUS.md` (current state + next steps) before changing
+> anything. Code in `src/` is shared; everything coin-specific lives in a
+> `<SYMBOL>/` folder, selected per run with `SYMBOL=...` (default `BTCUSDT`).
 
 ```
 AGENTS.md            rules for AI agents (CLAUDE.md imports it)
-docs/STATUS.md       where the project stands, which results are stale, next steps
 src/config.py        all tunable constants + costs + risk rules
 src/datafeed.py      download & cache Binance public data, with validation
 src/indicators.py    causal indicators (EMA/ATR/RSI/ADX/BB/VWAP/supertrend...)
@@ -53,8 +54,10 @@ src/ml_filter.py     causal features + trade-outcome labelling
 src/run_ml.py        walk-forward "rules vs ML" comparison
 src/experiment.py    data loading (native bars only), walk-forward splits
 src/test_engine.py   engine correctness tests
-journal/             the research log - one entry per experiment
-results/             CSV output of every run
+journal/<SYMBOL>/    STATUS.md + research log (one entry per experiment)
+results/<SYMBOL>/    CSV output of every run + report.html
+data/logs/<SYMBOL>/  console logs of runs
+data/raw|cache/<SYMBOL>/  downloaded zips / parquet (git-ignored)
 ```
 
 ## Usage
@@ -86,10 +89,10 @@ python src/definitive.py 15 "1.0,2.0,3.5,5.0"
 
 ## Data cache
 
-`.parquet` files in `data/cache/` are **generated** by `src/datafeed.py` and are
+`.parquet` files in `data/cache/<SYMBOL>/` are **generated** by `src/datafeed.py` and are
 **not committed** — rebuild them after cloning with `python src/datafeed.py`.
 
-The raw Binance monthly zips in `data/raw/` (1m/3m/5m/15m/30m klines + funding,
+The raw Binance monthly zips in `data/raw/<SYMBOL>/` (1m/3m/5m/15m/30m klines + funding,
 2020-01 .. 2026-08, ~240 MB) are **not committed** either. `datafeed.py`
 downloads any month that is missing from
 https://data.binance.vision/?prefix=data/futures/um/monthly/klines/BTCUSDT/ ,
@@ -97,7 +100,7 @@ verifies its SHA-256 checksum, skips files already on disk, and only takes
 months inside `DATA_START..DATA_END` from `src/config.py`.
 
 Every timeframe is Binance's own native file — **nothing is resampled**
-(see `journal/experiments.md` Exp 010).
+(see `journal/BTCUSDT/experiments.md` Exp 010).
 
 ## Headline result
 
@@ -107,7 +110,7 @@ strategy families. After fixing a one-bar data offset (Exp 010) the best
 walk-forward configuration is **+0.051 R/trade on 72 trades**, 95% CI
 `[-0.065, +0.168]`, **+0.9%/year** — indistinguishable from zero.
 (Earlier numbers such as "+2.2%/year" came from shifted data and are void;
-see `docs/STATUS.md` for which result files are stale.)
+see `journal/BTCUSDT/STATUS.md` for which result files are stale.)
 
 The single most important finding is *why*:
 
@@ -118,12 +121,12 @@ cost_r = round_trip_cost / stop_distance
 
 Every "1.8x ATR stop" rule is a cost-efficiency mistake. Widening the stop
 from 1x to 5x, **without changing a single signal**, moved the account from
-roughly -17..-25%/year to roughly break-even. See `journal/experiments.md`
+roughly -17..-25%/year to roughly break-even. See `journal/BTCUSDT/experiments.md`
 Exp 004, 007 and 010.
 
 ## The log
 
-`journal/experiments.md` is the source of truth. Every run gets an entry with
+`journal/<SYMBOL>/experiments.md` is the source of truth. Every run gets an entry with
 the hypothesis, the result, and — most importantly — the verdict. Entries are
 appended, never edited, so we can see which ideas actually survived contact
 with out-of-sample data.
@@ -136,4 +139,4 @@ was the point of building the harness. Cheaper execution was tested too
 (Exp 008/010): a post-only entry with a taker exit cuts the round trip from
 0.14% to 0.09% (1.55x, not 3.5x — a stop-loss never gets a maker fill), and
 adverse selection eats part of that. It helps, but no configuration's
-confidence interval excludes zero. Next steps are listed in `docs/STATUS.md`.
+confidence interval excludes zero. Next steps are listed in `journal/BTCUSDT/STATUS.md`.

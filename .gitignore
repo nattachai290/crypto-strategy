@@ -8,14 +8,13 @@ __pycache__/
 dist/
 build/
 
-# Data cache - generated files (run datafeed.py to recreate)
-data/cache/*.parquet
+# Data cache - generated per symbol (data/cache/<SYMBOL>/), run datafeed.py
+data/cache/
 
 # Raw Binance zips - never committed. `python src/datafeed.py` downloads
 # whatever is missing (checksum-verified) and builds data/cache/.
-data/raw/*.zip
-data/raw/*.part
-data/raw/*.CHECKSUM
+# (data/raw/<SYMBOL>/*.zip)
+data/raw/
 
 # IDE
 .vscode/

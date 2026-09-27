@@ -1,4 +1,4 @@
-# Project status and handoff
+# BTCUSDT — status and handoff
 
 _Last updated: 2026-09-27, after Exp 010. Rules for agents: `AGENTS.md`._
 
@@ -32,7 +32,7 @@ excludes zero.
 
 Exp 010 found that every experiment before it (003–009) ran on bars shifted
 one window into the past. The pipeline now loads native Binance files only.
-Status of each file in `results/`:
+Status of each file in `results/BTCUSDT/`:
 
 | File | Experiment | Data | Trust |
 |---|---|---|---|
@@ -46,7 +46,7 @@ Status of each file in `results/`:
 | `final_eval_15m_s2.0.csv` | 007 | shifted | ⚠️ stale |
 | `round4_holdperiod.csv` | 009 | shifted | ⚠️ stale |
 | `report_best.json` → `report.html` | 007 best (154 trades, +0.038 R) | shifted | ⚠️ stale — report shows pre-fix numbers |
-| `ledger.csv` / `journal/ledger.md` | all | **mixed** | ⚠️ contains both pre- and post-fix rows without a flag |
+| `ledger.csv` / `journal/BTCUSDT/ledger.md` | all | **mixed** | ⚠️ contains both pre- and post-fix rows without a flag |
 
 (Trust status inferred by matching file contents against the numbers in the
 journal; verify before relying on it.)
@@ -62,10 +62,10 @@ journal; verify before relying on it.)
 4. **Exp 009 status says "running"** in the journal but its result and verdict
    are written. The journal is append-only, so note completion in Exp 011
    rather than editing it.
-5. **Data is not in git.** Neither `data/raw/*.zip` (~240 MB, 480 files) nor
-   `data/cache/*.parquet` is committed. After cloning run
+5. **Data is not in git.** Neither `data/raw/BTCUSDT/*.zip` (~240 MB, 480 files)
+   nor `data/cache/BTCUSDT/*.parquet` is committed. After cloning run
    `python src/datafeed.py`: it downloads only the months missing from
-   `data/raw/` (checksum-verified, limited to `DATA_START..DATA_END`), builds
+   `data/raw/BTCUSDT/` (checksum-verified, limited to `DATA_START..DATA_END`), builds
    the parquet cache and runs `validate()`. Needs network access to
    `data.binance.vision` / its S3 bucket. (The zips still exist in old git
    history, so `.git` stays large unless history is rewritten.)
@@ -78,10 +78,10 @@ journal; verify before relying on it.)
 1. `pip install -r requirements.txt`, `python src/datafeed.py`,
    `python src/test_engine.py` — confirm the environment.
 2. Add a `data_version` column to the ledger and tag existing rows (see table
-   above), then regenerate `journal/ledger.md`.
+   above), then regenerate `journal/BTCUSDT/ledger.md`.
 3. Re-run the stale experiments on native bars (sweep → cost_lab →
    round2_stopwidth → run_ml → round4_holdperiod), log each as a new journal
-   entry (Exp 011+), and update `report_data.py` / `report.html`.
+   entry (Exp 011+), and update `report_data.py` / `results/BTCUSDT/report.html`.
 4. Only then consider new hypotheses. The journal's own conclusion is that
    more indicator search is not worthwhile; candidates it names are:
    - an explicit multi-hour **swing** horizon (and saying so — not intraday);

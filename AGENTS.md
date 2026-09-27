@@ -1,11 +1,13 @@
 # AGENTS.md — rules for any AI agent working in this repo
 
-Read this file first, then `docs/STATUS.md` (where the project stands and
-what to do next), then the latest entries of `journal/experiments.md`.
+Read this file first, then for the coin you are working on
+`journal/<SYMBOL>/STATUS.md` (where it stands, what to do next) and the latest
+entries of `journal/<SYMBOL>/experiments.md`. Today only `BTCUSDT` exists.
 
 This is a **research harness**, not a trading bot. Its job is to find out
-honestly whether an intraday edge exists in BTCUSDT USDT-M perpetual futures
-after realistic costs. So far the answer is **no** (see `docs/STATUS.md`).
+honestly whether an intraday edge exists in Binance USDT-M perpetual futures
+after realistic costs. For BTCUSDT the answer so far is **no**
+(see `journal/BTCUSDT/STATUS.md`).
 A result that looks too good is a bug until proven otherwise.
 
 ---
@@ -34,7 +36,7 @@ A result that looks too good is a bug until proven otherwise.
    (R/trade) excludes zero.** Report `gross_r`, `cost_r`, `exp_r`, trade count
    and the CI together — never a return or Sharpe alone.
 7. **Never report a number you did not produce in this session or cannot
-   point to in `results/`.** If you did not run it, say so.
+   point to in `results/<SYMBOL>/`.** If you did not run it, say so.
 
 ### Data
 8. **No resampling.** Every timeframe is loaded from Binance's own native
@@ -60,47 +62,78 @@ A result that looks too good is a bug until proven otherwise.
     every regime. Keep it that way.
 
 ### Journal and records
-14. `journal/experiments.md` is **append-only**. Never edit or delete a past
+14. `journal/<SYMBOL>/experiments.md` is **append-only**. Never edit or delete a past
     entry, even when it is wrong — append a new entry (or a clearly labelled
     "Correction" section) that supersedes it, as Exp 008 → Exp 010 did.
-15. `journal/ledger.md` and `results/ledger.csv` are **generated** by
+15. `journal/<SYMBOL>/ledger.md` and `results/<SYMBOL>/ledger.csv` are **generated** by
     `src/ledger.py` / `src/ledger_report.py`. Do not edit by hand.
 16. Every new experiment gets: a new script (or a flagged mode of an existing
-    one), its own CSV in `results/`, its log in `data/<name>.log`, and a
-    journal entry using the template in §4.
+    one), its own CSV in `results/<SYMBOL>/`, its log in
+    `data/logs/<SYMBOL>/<name>.log`, and a journal entry using the template
+    in §4.
 
 ### Git
-17. Never commit data: `data/raw/*.zip` and `data/cache/*.parquet` are
+17. Never commit data: `data/raw/` and `data/cache/` are
     git-ignored and rebuilt by `python src/datafeed.py` (downloads only what
     is missing). Also never commit `__pycache__/` or secrets/API keys, and do
     not add other large binaries without asking the owner.
 18. No live trading code, exchange API keys, or order placement in this repo
     unless the owner explicitly asks for it.
 
+### One folder per coin
+19. **Every symbol-specific file lives under a `<SYMBOL>/` folder** (e.g.
+    `BTCUSDT`, `ETHUSDT` — Binance's exact symbol, upper case):
+    `data/raw/<SYMBOL>/`, `data/cache/<SYMBOL>/`, `data/logs/<SYMBOL>/`,
+    `results/<SYMBOL>/`, `journal/<SYMBOL>/`. Never write a coin's data,
+    results or notes at the top level of those folders or in another coin's
+    folder.
+20. **Code in `src/` is shared and symbol-agnostic.** Never hard-code a
+    symbol, path or contract spec in a script: get them from `config.py`
+    (`C.SYMBOL`, `C.RAW`, `C.CACHE`, `C.LOGS`, `C.RESULTS`, `C.JOURNAL`,
+    `C.QTY_STEP`, `C.MIN_NOTIONAL`, `C.DATA_START/END`). A strategy that only
+    makes sense for one coin (e.g. uses a BTC-specific threshold) must take it
+    as a parameter, not a constant.
+21. **The coin is chosen per run with the `SYMBOL` env var** (default
+    `BTCUSDT`): `SYMBOL=ETHUSDT python src/sweep.py`. `config.py` refuses
+    unknown symbols.
+22. **Adding a new coin:** (a) add an entry to `SYMBOL_SPECS` in
+    `src/config.py` with the exchange's real `qty_step`, `min_notional`, and
+    the `data_start`/`data_end` months Binance publishes for it; (b) run
+    `SYMBOL=<X> python src/datafeed.py` until it prints `VALIDATION: OK`;
+    (c) create `journal/<X>/experiments.md` starting at **Exp 000** and
+    `journal/<X>/STATUS.md`; (d) re-run `test_engine.py`. Each coin keeps its
+    own experiment numbering. Never reuse another coin's fitted parameters
+    without re-selecting them on that coin's own train data.
+23. Cross-coin comparisons (if ever done) go in a separate experiment whose
+    script reads each coin's `results/<SYMBOL>/` and writes to
+    `results/_multi/` + `journal/_multi/`; they never overwrite a coin's files.
+
 ---
 
 ## 2. Repository map
 
 ```
-AGENTS.md / CLAUDE.md   these rules (CLAUDE.md just imports this file)
-docs/STATUS.md          current state, validity of each result file, next steps
-README.md               human-facing overview
-requirements.txt        Python dependencies
-report.html             generated HTML report (Thai) — src/make_report.py
-journal/experiments.md  research log, SOURCE OF TRUTH, append-only
-journal/ledger.md       generated summary of results/ledger.csv
-results/*.csv|json      raw output of each experiment script
-data/raw/               Binance monthly zips (git-ignored, downloaded by datafeed.py)
-data/cache/             generated parquet (git-ignored) — built by datafeed.py
-data/*.log              console logs of past runs
-src/                    all code (flat; scripts import each other via sys.path)
+AGENTS.md / CLAUDE.md     these rules (CLAUDE.md just imports this file)
+README.md                 human-facing overview
+requirements.txt          Python dependencies
+src/                      ALL code, shared by every coin (flat; imports via sys.path)
+journal/<SYMBOL>/
+    STATUS.md             where this coin stands, stale results, next steps
+    experiments.md        research log, SOURCE OF TRUTH, append-only
+    ledger.md             generated summary of results/<SYMBOL>/ledger.csv
+results/<SYMBOL>/         CSV/JSON output of each experiment + report.html (Thai)
+data/logs/<SYMBOL>/       console logs of past runs
+data/raw/<SYMBOL>/        Binance monthly zips   (git-ignored, datafeed.py downloads)
+data/cache/<SYMBOL>/      parquet               (git-ignored, datafeed.py builds)
 ```
+
+Only `BTCUSDT` exists today.
 
 ### `src/` by role
 
 | Role | Files |
 |---|---|
-| Config | `config.py` — paths, costs, risk, session, walk-forward sizes |
+| Config | `config.py` — `SYMBOL` / `SYMBOL_SPECS` (per-coin specs), per-coin paths, costs, risk, session, walk-forward sizes |
 | Data | `datafeed.py` (download + cache + `validate()`), `verify_resample.py`, `show_bars.py` |
 | Core library | `indicators.py` (causal indicators), `strategies.py` (rule zoo, `REGISTRY`), `backtest.py` (`run_backtest`, `compute_metrics`), `ml_filter.py` (features + outcome labels), `experiment.py` (`get_bars`, `load_funding`, splits, `evaluate`) |
 | Tests | `test_engine.py` — hand-computed trade, differential test, cost monotonicity, no-look-ahead, post-only fills |
@@ -119,12 +152,14 @@ where this does not hold is a bug — `ledger.verify_arithmetic()` checks it.
 ## 3. Commands
 
 Python 3.11+ (developed on 3.13). Scripts are run from the repo root.
+All commands act on `$SYMBOL` (default `BTCUSDT`); prefix with e.g.
+`SYMBOL=ETHUSDT` for another coin.
 
 ```bash
 pip install -r requirements.txt
 
 python src/test_engine.py            # must pass before trusting any number
-python src/datafeed.py               # download missing zips (~240 MB first time) + build data/cache/*.parquet
+python src/datafeed.py               # download missing zips (~240 MB for BTC) + build data/cache/<SYMBOL>/
 python src/verify_resample.py        # diff vs native Binance files (needs network)
 
 python src/sweep.py 20               # Exp 003 leak-free sweep
@@ -135,9 +170,9 @@ python src/definitive.py 15 "1.0,2.0,3.5,5.0"   # Exp 007/010 headline
 python src/round3_maker.py 15        # Exp 008/010 post-only
 python src/round4_holdperiod.py      # Exp 009
 
-python src/ledger.py                 # rebuild results/ledger.csv
-python src/ledger_report.py          # rebuild journal/ledger.md
-python src/report_data.py && python src/make_report.py   # rebuild report.html
+python src/ledger.py                 # rebuild results/<SYMBOL>/ledger.csv
+python src/ledger_report.py          # rebuild journal/<SYMBOL>/ledger.md
+python src/report_data.py && python src/make_report.py   # rebuild results/<SYMBOL>/report.html
 ```
 
 Heavy scripts use multiprocessing and set `OMP_NUM_THREADS=1` etc. before
@@ -147,7 +182,8 @@ importing numpy — keep that at the top of any new parallel script.
 
 ## 4. Journal entry template
 
-Append to `journal/experiments.md`, numbering sequentially (next is **Exp 011**):
+Append to `journal/<SYMBOL>/experiments.md`, numbering sequentially per coin
+(next for BTCUSDT is **Exp 011**):
 
 ```markdown
 ---
@@ -161,12 +197,12 @@ Append to `journal/experiments.md`, numbering sequentially (next is **Exp 011**)
 What you expect and why. State it before looking at results.
 
 ### Method
-Script + exact command, data window, split (train/test/walk-forward),
+Symbol, script + exact command, data window, split (train/test/walk-forward),
 timeframe, stop scale, execution mode, number of configs tried.
 
 ### Result
 Table with trades, gross_r, cost_r, exp_r, 95% CI, CAGR, maxDD.
-Results file: `results/<file>.csv`, log: `data/<file>.log`.
+Results file: `results/<SYMBOL>/<file>.csv`, log: `data/logs/<SYMBOL>/<file>.log`.
 
 ### Verdict
 KEEP | WATCH | REJECT | INCONCLUSIVE — with one paragraph of reasoning.
@@ -186,4 +222,6 @@ promising, not verified OOS; `REJECT` failed; `INCONCLUSIVE` not decisive.
 - Keep code style consistent with the existing files: plain numpy/pandas,
   no TA libraries, docstrings that explain *why*, `from __future__ import
   annotations`, type hints on public functions.
-- Write the journal in English. `report.html` is in Thai for the owner.
+- Write the journal in English. `report.html` is in Thai for the owner;
+  its prose in `src/make_report.py` is written about BTCUSDT and must be
+  generalised before generating a report for another coin.

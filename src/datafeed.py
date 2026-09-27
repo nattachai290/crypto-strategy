@@ -216,7 +216,7 @@ def validate() -> bool:
         big = step[step > tf * 3]
         print(f"[validate] {name:>4}: rows={len(t):>9,}  "
               f"{t.min().date()} .. {t.max().date()}  "
-              f"months={len(months)}/80  dup={dup}  gaps>3x={len(big)}"
+              f"months={len(months)}/{len(C.month_range())}  dup={dup}  gaps>3x={len(big)}"
               + (f"  MISSING={missing}" if missing else ""))
         if missing or dup or len(big):
             ok = False
