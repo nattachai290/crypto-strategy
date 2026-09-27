@@ -76,6 +76,22 @@ python src\run_ml.py 15 2.0
 python src\definitive.py 15 "1.0,2.0,3.5,5.0"
 ```
 
+## Data cache
+
+`.parquet` files in `data/cache/` are **generated** by `src/datafeed.py` from raw
+Binance monthly zips (`data/raw/`). These cached files speed up subsequent runs
+by 50x+ but are **not committed to git** — they are rebuilt on each fresh clone
+via step 1 above.
+
+To regenerate caches after cloning:
+```powershell
+python src\datafeed.py
+```
+
+The raw `.zip` files are also git-ignored (too large for GitHub); you can download
+them manually or use the datafeed script to fetch them from Binance.
+
+
 ## Headline result
 
 **No statistically demonstrated edge** in intraday BTCUSDT futures at retail

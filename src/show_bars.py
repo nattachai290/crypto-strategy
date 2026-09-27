@@ -31,46 +31,27 @@ def section_files() -> None:
         for p in sorted(d.glob("*")):
             if p.is_file():
                 print(f"   {p.name:<38} {p.stat().st_size/1024/1024:>8.1f} MB")
-    print("\n   -> there is NO 3m/5m/15m/30m file. Every timeframe above 1m is")
-    print("      produced in memory by experiment.get_bars(tf) -> resample(1m, tf)")
+    print("\n   -> every timeframe is Binance's OWN file. Nothing is resampled.")
+    print("      experiment.get_bars(tf) reads the native parquet and raises if it")
+    print("      is missing. Deriving bars locally cost a silent one-bar offset")
+    print("      that invalidated nine experiments (journal Exp 010).")
 
 
 def section_sample() -> None:
     print("\n" + "=" * 78)
-    print(f"2. DERIVED BARS COVERING {STAMP}")
+    print(f"2. BARS COVERING {STAMP}  (each read from Binance's own file)")
     print("=" * 78)
-    m1 = E.get_bars(1)
-    print("\n1m (source, the only thing on disk):")
-    win = m1.loc[STAMP: STAMP + pd.Timedelta(minutes=4)]
-    print(win[["open", "high", "low", "close", "volume", "trades"]]
-          .to_string(float_format=lambda v: f"{v:,.2f}"))
-    for tf in (3, 5, 15, 30):
+    for tf in (1, 3, 5, 15, 30):
         b = E.get_bars(tf)
-        lo = STAMP - pd.Timedelta(minutes=tf - 1)
-        row = b.loc[STAMP - pd.Timedelta(minutes=0) % pd.Timedelta(minutes=tf)]
-        # find the bar whose window contains STAMP
         cand = b[(b.index <= STAMP) &
                  (b.index > STAMP - pd.Timedelta(minutes=tf))]
         if not len(cand):
             continue
         row = cand.iloc[[-1]]
         ts = cand.index[-1]
-        lo = ts
-        hi = ts + pd.Timedelta(minutes=tf)
-        src = m1.loc[lo: hi - pd.Timedelta(minutes=1)]
-        print(f"\n{tf}m (derived from {len(src)} x 1m bars "
-              f"{lo:%H:%M}-{hi - pd.Timedelta(minutes=1):%H:%M}):")
-        print(f"   window     {lo:%Y-%m-%d %H:%M} .. {hi:%H:%M}")
-        print(f"   open       {row['open'].iloc[0]:,.2f}   "
-              f"(= 1m open at {lo:%H:%M})")
-        print(f"   high       {row['high'].iloc[0]:,.2f}   "
-              f"(= max of 1m highs)")
-        print(f"   low        {row['low'].iloc[0]:,.2f}    "
-              f"(= min of 1m lows)")
-        print(f"   close      {row['close'].iloc[0]:,.2f}  "
-              f"(= 1m close at {hi - pd.Timedelta(minutes=1):%H:%M})")
-        print(f"   volume     {row['volume'].iloc[0]:,.3f}   "
-              f"(= sum of 1m volumes)")
+        print(f"\n{tf}m  (Binance native, {len(b):,} bars on disk)")
+        print(row[["open", "high", "low", "close", "volume", "trades"]]
+              .to_string(float_format=lambda v: f"{v:,.2f}"))
 
 
 def section_counts() -> None:

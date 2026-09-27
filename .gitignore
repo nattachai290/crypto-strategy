@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Data cache - generated files (run datafeed.py to recreate)
+data/cache/*.parquet
+
+# Raw downloaded data - too large for git
+data/raw/*.zip
+data/raw/*.CHECKSUM
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
