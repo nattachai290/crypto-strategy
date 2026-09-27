@@ -25,7 +25,7 @@ configurations found **no proven edge** (see STATUS.md). So:
   idea.
 - Never make a result look better than it is. Owner money depends on it.
 
-### Start-of-session checklist (run these, in order)
+### Start-of-session checklist (Python 3.12+; run these in order)
 
 ```bash
 pip install -r requirements.txt
@@ -155,17 +155,23 @@ together. Never report only a return, a win rate, or a Sharpe.
    the owner asks.
 10. **Never** report a number you did not produce or cannot point to in
     `results/<SYMBOL>/`.
+11. **Never** add files to `results/<SYMBOL>/legacy/`, and never add loose
+    CSVs or logs next to `evaluations.csv`. All new research goes through
+    `evaluate.py`, which writes only `evaluations.csv`, `holdout_log.csv`,
+    `eval_trades/` and `journal/<SYMBOL>/evaluations.md`. If a new script
+    really needs its own output, ask the owner first and write it to
+    `results/<SYMBOL>/<script_name>/`.
 
 ## 4. Hard rules — ALWAYS
 
-11. **Always** run `python src/test_engine.py` after changing anything in
+12. **Always** run `python src/test_engine.py` after changing anything in
     `src/` and before committing. It must print `ALL CHECKS PASSED`.
-12. **Always** write the hypothesis before running.
-13. **Always** keep a REJECT in the records. Negative results stop the next
+13. **Always** write the hypothesis before running.
+14. **Always** keep a REJECT in the records. Negative results stop the next
     agent from repeating your work.
-14. **Always** say how many ideas you tried when you report a PASS. Out of 50
+15. **Always** say how many ideas you tried when you report a PASS. Out of 50
     ideas, a couple can pass by luck; that is why the holdout exists.
-15. **Always** commit your work at the end of a session (§10).
+16. **Always** commit your work at the end of a session (§10).
 
 ---
 
@@ -185,8 +191,8 @@ not yours to change at any level.
 ## 6. One folder per coin
 
 - Everything coin-specific lives under `<SYMBOL>/` (Binance symbol, upper
-  case): `data/raw/<SYMBOL>/`, `data/cache/<SYMBOL>/`, `data/logs/<SYMBOL>/`,
-  `results/<SYMBOL>/`, `journal/<SYMBOL>/`.
+  case): `data/raw/<SYMBOL>/`, `data/cache/<SYMBOL>/`, `results/<SYMBOL>/`,
+  `journal/<SYMBOL>/`.
 - Code in `src/` and idea files in `ideas/` are shared by all coins. Never
   hard-code a symbol or path. Use `config.py` (`C.SYMBOL`, `C.RESULTS`,
   `C.JOURNAL`, …).
@@ -220,8 +226,8 @@ results/<SYMBOL>/
     evaluations.csv         every evaluate.py run (one row each)
     holdout_log.csv         every holdout use (the lock)
     eval_trades/            trade lists per evaluation (git-ignored, regenerable)
-    *.csv, report.html      output of older experiment scripts (Exp 003–010)
-data/{raw,cache,logs}/<SYMBOL>/   zips, parquet (both git-ignored), run logs
+    legacy/                 Exp 003–010 outputs + logs/, read-only history (see its README)
+data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 ```
 
 | `src/` file | Role |
@@ -235,7 +241,7 @@ data/{raw,cache,logs}/<SYMBOL>/   zips, parquet (both git-ignored), run logs
 | `experiment.py` | `get_bars(tf)`, `load_funding()`, older helpers |
 | `datafeed.py` | download + cache + `validate()` |
 | `test_engine.py` | engine and block tests; must pass |
-| `ml_filter.py`, `run_ml.py`, `definitive.py`, `sweep.py`, `cost_lab.py`, `round*.py`, `diagnose.py` | older experiments (Exp 003–010), see journal |
+| `ml_filter.py`, `run_ml.py`, `definitive.py`, `sweep.py`, `cost_lab.py`, `round*.py`, `diagnose.py` | older experiments (Exp 003–010); they write to `results/<SYMBOL>/legacy/` (`C.LEGACY`) |
 | `ledger*.py`, `report_data.py`, `make_report.py` | reporting for the older experiments |
 
 Engine facts to remember:

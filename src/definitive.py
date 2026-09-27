@@ -146,7 +146,7 @@ def main() -> None:
                   f"CAGR {r['cagr']*100:+.1f}%, maxDD {r['max_dd']*100:.1f}%){star}")
 
     df = pd.DataFrame(results)
-    df.to_csv(C.RESULTS / "definitive_oos.csv", index=False)
+    df.to_csv(C.LEGACY / "definitive_oos.csv", index=False)
     pd.set_option("display.width", 220)
     print("\n" + "=" * 104)
     print("DEFINITIVE OUT-OF-SAMPLE  (9 walk-forward folds, executed trades only)")

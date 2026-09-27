@@ -148,7 +148,7 @@ def main() -> None:
                       f"{'['+format(r['ci_lo'],'+.3f')+','+format(r['ci_hi'],'+.3f')+']':>22}"
                       f"{r['cagr']*100:>+7.1f}%{r['max_dd']*100:>7.1f}%", flush=True)
     df = pd.DataFrame(rows)
-    df.to_csv(C.RESULTS / "round4_holdperiod.csv", index=False)
+    df.to_csv(C.LEGACY / "round4_holdperiod.csv", index=False)
     print(f"\n{'='*112}\nVERDICT\n{'='*112}")
     excl = df[df["ci_lo"] > 0]
     print(f"configurations tested: {len(df)}   "

@@ -157,7 +157,7 @@ def evaluate(name: str, params: dict, minutes: int, *, split: dict | None = None
 
 
 def append_result(row: dict, path: Path | None = None) -> None:
-    path = path or (C.RESULTS / "results.csv")
+    path = path or (C.LEGACY / "results.csv")
     df = pd.DataFrame([row])
     if path.exists():
         old = pd.read_csv(path)
@@ -207,7 +207,7 @@ def run_baseline() -> pd.DataFrame:
         cols = [c for c in cols if c in df.columns]
         print("\n=== SUMMARY (full sample) ===")
         print(df[cols].sort_values("sharpe", ascending=False).to_string(index=False))
-        df.to_csv(C.RESULTS / "baseline_summary.csv", index=False)
+        df.to_csv(C.LEGACY / "baseline_summary.csv", index=False)
     return df
 
 

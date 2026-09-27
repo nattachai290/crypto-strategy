@@ -85,7 +85,7 @@ def main() -> None:
         "by_year": by_year,
         "exit_mix": exit_mix,
     }
-    (C.RESULTS / "report_best.json").write_text(
+    (C.LEGACY / "report_best.json").write_text(
         json.dumps(payload, indent=1), encoding="utf-8")
     print(json.dumps({k: v for k, v in payload.items()
                       if k not in ("equity_path", "folds")}, indent=1)[:1600])

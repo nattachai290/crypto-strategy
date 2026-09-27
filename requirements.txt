@@ -1,3 +1,4 @@
+# Python 3.12+ (src/make_report.py uses 3.12 f-string syntax)
 numpy
 pandas
 pyarrow      # parquet cache in data/cache/

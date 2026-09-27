@@ -36,8 +36,8 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config as C
 
-LEDGER_CSV = C.RESULTS / "ledger.csv"
-LEDGER_JSONL = C.RESULTS / "ledger.jsonl"
+LEDGER_CSV = C.LEGACY / "ledger.csv"
+LEDGER_JSONL = C.LEGACY / "ledger.jsonl"
 
 # metric name in source CSVs -> ledger column
 METRIC_MAP = {
@@ -94,8 +94,8 @@ def _blank_ci(lo, hi):
 # --------------------------------------------------------------------------
 def collect_sweep() -> pd.DataFrame:
     """Exp 003 - 82 configs, train then a shortlist on test."""
-    tr = pd.read_csv(C.RESULTS / "sweep_train.csv")
-    te = pd.read_csv(C.RESULTS / "sweep_test.csv")
+    tr = pd.read_csv(C.LEGACY / "sweep_train.csv")
+    te = pd.read_csv(C.LEGACY / "sweep_test.csv")
     frames = []
     for df, split, tag in ((tr, "train", "tr_"), (te, "test", "")):
         if df.empty or "error" in df.columns and df["error"].notna().all():
@@ -114,7 +114,7 @@ def collect_sweep() -> pd.DataFrame:
 
 def collect_cost_lab() -> pd.DataFrame:
     """Exp 004 - stop width x execution scenario, full history."""
-    df = pd.read_csv(C.RESULTS / "cost_lab.csv")
+    df = pd.read_csv(C.LEGACY / "cost_lab.csv")
     cols = {"strategy": "strategy", "tf": "tf", "exec": "note",
             "stop_mult": "sm", "stop_pct": "stop_pct"}
     for src, dst in METRIC_MAP.items():
@@ -134,7 +134,7 @@ def collect_stopwidth() -> pd.DataFrame:
     specs = [("round2_stopwidth_train.csv", "train", "004b", ""),
              ("round2_stopwidth_test.csv", "test", "004b", "te_")]
     for fn, split, exp, pre in specs:
-        p = C.RESULTS / fn
+        p = C.LEGACY / fn
         if not p.exists():
             continue
         df = pd.read_csv(p)
@@ -158,7 +158,7 @@ def collect_ml() -> pd.DataFrame:
     frames = []
     for fn, sc in (("ml_walkforward_15m.csv", 1.0),
                    ("ml_walkforward_15m_s2.0.csv", 2.0)):
-        p = C.RESULTS / fn
+        p = C.LEGACY / fn
         if not p.exists():
             continue
         df = pd.read_csv(p)
@@ -179,7 +179,7 @@ def collect_ml() -> pd.DataFrame:
 
 def collect_definitive() -> pd.DataFrame:
     """Exp 007 - the 24 headline configurations, pooled executed trades."""
-    p = C.RESULTS / "definitive_oos.csv"
+    p = C.LEGACY / "definitive_oos.csv"
     if not p.exists():
         return pd.DataFrame()
     df = pd.read_csv(p)
@@ -201,7 +201,7 @@ def collect_definitive() -> pd.DataFrame:
 
 def collect_maker() -> pd.DataFrame:
     """Exp 008 - post-only execution model, walk-forward, pooled trades."""
-    p = C.RESULTS / "round3_maker.csv"
+    p = C.LEGACY / "round3_maker.csv"
     if not p.exists():
         return pd.DataFrame()
     df = pd.read_csv(p).rename(columns={
@@ -228,7 +228,7 @@ def collect_maker() -> pd.DataFrame:
 
 def collect_holdperiod() -> pd.DataFrame:
     """Exp 009 - holding period sweep, post-only, 5m and 15m."""
-    p = C.RESULTS / "round4_holdperiod.csv"
+    p = C.LEGACY / "round4_holdperiod.csv"
     if not p.exists():
         return pd.DataFrame()
     df = pd.read_csv(p).rename(columns={
@@ -258,7 +258,7 @@ def collect_holdperiod() -> pd.DataFrame:
 def collect_json_extras() -> pd.DataFrame:
     """Anything a script reported as JSON (e.g. cost-in-R diagnostics)."""
     rows = []
-    for p in C.RESULTS.glob("diag_*.json"):
+    for p in C.LEGACY.glob("diag_*.json"):
         try:
             d = json.loads(p.read_text(encoding="utf-8"))
         except Exception:

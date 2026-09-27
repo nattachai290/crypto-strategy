@@ -102,7 +102,7 @@ def main() -> pd.DataFrame:
                 })
         print(f"  done {name} {tf}m", flush=True)
     df = pd.DataFrame(rows)
-    df.to_csv(C.RESULTS / "cost_lab.csv", index=False)
+    df.to_csv(C.LEGACY / "cost_lab.csv", index=False)
     return df
 
 

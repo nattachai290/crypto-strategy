@@ -187,7 +187,7 @@ def main(top_k: int = 20, workers: int = 12) -> None:
             for _, b in bad.iterrows():
                 print("  ", b["strategy"], b.get("params", ""), b["error"])
         tr = tr[tr["error"].isna() | (tr["error"] == "")].drop(columns=["error"])
-    tr.to_csv(C.RESULTS / "sweep_train.csv", index=False)
+    tr.to_csv(C.LEGACY / "sweep_train.csv", index=False)
     print(f"\ntrain results: {len(tr)}")
 
     # shortlist: need enough trades for the number to mean anything
@@ -234,7 +234,7 @@ def main(top_k: int = 20, workers: int = 12) -> None:
             te.append(r)
             print(f"  test {i}/{len(jobs)}", flush=True)
     tedf = pd.DataFrame(te)
-    tedf.to_csv(C.RESULTS / "sweep_test.csv", index=False)
+    tedf.to_csv(C.LEGACY / "sweep_test.csv", index=False)
 
     mrg = short.reset_index(drop=True)
     for c in tedf.columns:
@@ -248,8 +248,8 @@ def main(top_k: int = 20, workers: int = 12) -> None:
     show = [c for c in show if c in mrg.columns]
     out = mrg.sort_values("te_sharpe", ascending=False)
     print(out[show].to_string(index=False))
-    mrg.to_csv(C.RESULTS / "sweep_merged.csv", index=False)
-    print(f"\nwritten: {C.RESULTS/'sweep_merged.csv'}")
+    mrg.to_csv(C.LEGACY / "sweep_merged.csv", index=False)
+    print(f"\nwritten: {C.LEGACY/'sweep_merged.csv'}")
 
 
 if __name__ == "__main__":

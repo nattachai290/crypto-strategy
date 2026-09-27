@@ -187,7 +187,7 @@ def main(tf: int = 5, stop_scale: float = 1.0) -> None:
         ).reset_index()
         print("\n=== walk-forward summary ===")
         print(agg.to_string(index=False))
-        df.to_csv(C.RESULTS / f"ml_walkforward_{tf}m_s{stop_scale}.csv", index=False)
+        df.to_csv(C.LEGACY / f"ml_walkforward_{tf}m_s{stop_scale}.csv", index=False)
 
 
 def _score(bars, funding, sp, method, thr, subset, tag) -> dict:
