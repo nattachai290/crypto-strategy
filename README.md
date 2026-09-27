@@ -88,9 +88,12 @@ To regenerate caches after cloning:
 python src\datafeed.py
 ```
 
-The raw `.zip` files are also git-ignored (too large for GitHub); you can download
-them manually or use the datafeed script to fetch them from Binance.
-
+The raw `.zip` files are also git-ignored (too large for GitHub). The datafeed script
+will automatically download them from Binance, or you can manually download from:
+- **Binance Futures Klines:** https://data.binance.vision/?prefix=data/futures/um/daily/klines/BTCUSDT/
+  - Select timeframe (1m, 3m, 5m, 15m, 30m, 1h, etc.)
+  - Download monthly zips into `data/raw/` folder
+  - Example files: `BTCUSDT-1h-2024-01.zip`, `BTCUSDT-1h-2024-02.zip`, etc.
 
 ## Headline result
 
