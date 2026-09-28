@@ -103,8 +103,8 @@ def load_idea(path: Path) -> dict:
     if idea["strategy"] != "recipe" and idea["strategy"] not in S.REGISTRY:
         raise SystemExit(f"unknown strategy {idea['strategy']!r}; use 'recipe' or one of "
                          f"{', '.join(S.REGISTRY)}")
-    if int(idea["tf"]) not in (1, 3, 5, 15, 30):
-        raise SystemExit("tf must be one of 1, 3, 5, 15, 30 (native Binance files)")
+    if int(idea["tf"]) not in (1, 3, 5, 15, 30, 60, 240):
+        raise SystemExit("tf must be one of 1, 3, 5, 15, 30, 60, 240 (native Binance files)")
     for k, v in idea["grid"].items():
         if not isinstance(v, list) or not v:
             raise SystemExit(f"grid '{k}' must be a non-empty list")
@@ -139,9 +139,53 @@ def _hash(*parts) -> str:
     return hashlib.sha1(s.encode()).hexdigest()[:10]
 
 
+def signature(strategy: str, tf: int, params: dict) -> str:
+    """The STRUCTURE of an idea: timeframe, trigger types, filter types and
+    direction - not its numbers. Two ideas that differ only in stop width,
+    thresholds or execution are versions of one idea, whatever their file
+    names say, and share a version budget (EVAL_MAX_VERSIONS)."""
+    if strategy != "recipe":
+        return f"{strategy}|{tf}m"
+    trig = "+".join(sorted(t.get("type", "?") for t in params.get("triggers", [])))
+    filt = "+".join(sorted(f.get("type", "?") for f in params.get("filters", []) or []))
+    return f"recipe|{tf}m|{trig}|{filt or '-'}|{params.get('direction', 'both')}"
+
+
+def _prior_signature(row: pd.Series) -> str:
+    try:
+        return signature(row["strategy"], int(row["tf"]), json.loads(row["chosen_params"]))
+    except (TypeError, ValueError, KeyError):
+        return ""
+
+
 # --------------------------------------------------------------------------
 # running
 # --------------------------------------------------------------------------
+def _init_worker(tf: int) -> None:
+    """Load the data in each worker. With fork (Linux) the parent's _G is
+    already copied in; with spawn (Windows, macOS) it starts empty and every
+    combo would die with KeyError: 'bars'."""
+    if "bars" not in _G:
+        _G["bars"] = E.get_bars(tf)
+        _G["funding"] = E.load_funding()
+
+
+def save_trades(res, eval_id: str, split: str) -> Path:
+    """Trade list of one run -> results/<SYMBOL>/eval_trades/<eval_id>_<split>.csv.gz
+
+    Floats are rounded to 6 decimals and the file is gzip-compressed (about 1/5
+    of the plain size), so every evaluation's trades can live in git.
+    Read it back with pd.read_csv(path) - pandas decompresses by itself."""
+    TRADES_DIR.mkdir(parents=True, exist_ok=True)
+    path = TRADES_DIR / f"{eval_id}_{split}.csv.gz"
+    df = res.to_trades_df()
+    if len(df):
+        num = df.select_dtypes("float").columns
+        df[num] = df[num].round(6)
+    df.to_csv(path, index=False, compression={"method": "gzip", "mtime": 0})
+    return path
+
+
 def signals_for(strategy: str, params: dict) -> pd.DataFrame:
     bars, funding = _G["bars"], _G["funding"]
     if strategy == "recipe":
@@ -277,6 +321,9 @@ def main() -> None:
     ap.add_argument("--final", action="store_true", help="also run the one-time HOLDOUT (PASS only)")
     ap.add_argument("--rerun", action="store_true", help="evaluate again even if this exact idea was run")
     ap.add_argument("--list", action="store_true", help="list recipe building blocks and strategies")
+    ap.add_argument("--trades-only", action="store_true",
+                    help="re-create the VALID trade file of an idea that was already evaluated; "
+                         "records nothing and never touches the holdout")
     ap.add_argument("--workers", type=int, default=min(8, os.cpu_count() or 1))
     a = ap.parse_args()
 
@@ -295,6 +342,27 @@ def main() -> None:
                     idea["execution"], C.DATA_START, C.VALID_START, C.HOLDOUT_START)
 
     prior = pd.read_csv(EVAL_CSV) if EVAL_CSV.exists() else pd.DataFrame()
+
+    if a.trades_only:
+        # Re-run only the recorded, frozen choice on VALID and write its trades.
+        # No grid, no record, no holdout. The trade count and mean R must match
+        # the recorded row, or the code has changed since the evaluation.
+        if not (len(prior) and eval_id in set(prior["eval_id"])):
+            raise SystemExit(f"{eval_id} has not been evaluated; run it normally first")
+        r = prior[prior["eval_id"] == eval_id].iloc[-1]
+        _G["bars"] = E.get_bars(tf)
+        _G["funding"] = E.load_funding()
+        p_rec, ex_rec = json.loads(r["chosen_params"]), json.loads(r["chosen_exec"])
+        res = backtest(signals_for(idea["strategy"], p_rec), T_VALID, T_HOLD, ex_rec)
+        path = save_trades(res, eval_id, "valid")
+        t = res.to_trades_df()
+        n, m = len(t), (float(t["r_multiple"].mean()) if len(t) else float("nan"))
+        same = n == int(r["valid_trades"]) and (n == 0 or abs(m - float(r["valid_mean_r"])) < 1e-9)
+        print(f"{eval_id} {idea['name']}: {n} trades, mean R {m:+.4f} -> {path.name}"
+              + ("" if same else f"  !! MISMATCH with the record ({int(r['valid_trades'])} trades, "
+                                 f"{float(r['valid_mean_r']):+.4f}): code changed since the evaluation"))
+        return
+
     if len(prior) and eval_id in set(prior["eval_id"]):
         r = prior[prior["eval_id"] == eval_id].iloc[-1]
         if a.final and r["verdict"] != "PASS":
@@ -307,7 +375,22 @@ def main() -> None:
                   f"{r['valid_ci_hi']:+.4f}]). Change the idea, or pass --rerun.")
             return
 
+    # ---- version budget: same structure = same idea, whatever the file name --
+    sig_id = signature(idea["strategy"], tf, idea["params"])
+    if len(prior) and not a.rerun and not a.final:
+        same = prior[prior.apply(_prior_signature, axis=1) == sig_id]
+        if len(same) >= C.EVAL_MAX_VERSIONS:
+            names = ", ".join(f"{n} ({v})" for n, v in zip(same["name"], same["verdict"]))
+            print(f"refused: {len(same)} evaluations already share this idea's structure\n"
+                  f"  {sig_id}\n  {names}\n"
+                  f"Changing only numbers (stop, thresholds, offsets, holding time) is a new "
+                  f"VERSION, and the limit is {C.EVAL_MAX_VERSIONS} - more would be tuning on "
+                  f"the validation period. Test a structurally different hypothesis: another "
+                  f"trigger, a different filter set, another direction or timeframe.")
+            return
+
     print(f"{C.SYMBOL} {tf}m  idea={idea['name']}  combos={len(grid)}  eval_id={eval_id}")
+    print(f"structure {sig_id}")
     print(f"TRAIN {T0.date()}..{T_VALID.date()}  VALID {T_VALID.date()}..{T_HOLD.date()}  "
           f"HOLDOUT {T_HOLD.date()}..{T_END.date()} (locked)")
     print(f"this is evaluation #{len(prior) + 1} for {C.SYMBOL} - the more ideas are tried, "
@@ -319,7 +402,7 @@ def main() -> None:
     # ---- 1. TRAIN: every combo -------------------------------------------
     jobs = [(i, idea["strategy"], p, ex) for i, (p, ex) in enumerate(grid)]
     if a.workers > 1 and len(jobs) > 1:
-        with ProcessPoolExecutor(a.workers) as pool:
+        with ProcessPoolExecutor(a.workers, initializer=_init_worker, initargs=(tf,)) as pool:
             rows = list(pool.map(_train_one, jobs))
     else:
         rows = [_train_one(j) for j in jobs]
@@ -348,8 +431,21 @@ def main() -> None:
     if elig.empty:
         verd = "INCONCLUSIVE"
 
-    TRADES_DIR.mkdir(parents=True, exist_ok=True)
-    res_v.to_trades_df().to_csv(TRADES_DIR / f"{eval_id}_valid.csv", index=False)
+    # A change that did nothing (e.g. a filter loose enough to block no trade)
+    # reproduces an earlier validation result exactly. It is not new evidence,
+    # and it must not become a second ticket to the holdout.
+    duplicate_of = ""
+    if len(prior) and "valid_trades" in prior:
+        hit = prior[(prior["valid_trades"] == v["trades"])
+                    & ((prior["valid_mean_r"] - v["mean_r"]).abs() < 1e-12)
+                    & (prior["eval_id"] != eval_id)]
+        if len(hit):
+            duplicate_of = str(hit.iloc[0]["eval_id"])
+            verd = "DUPLICATE"
+            print(f"\nDUPLICATE: validation result is identical to {duplicate_of} "
+                  f"({hit.iloc[0]['name']}) - the change had no effect on any trade.")
+
+    save_trades(res_v, eval_id, "valid")
 
     row = {
         "eval_id": eval_id, "timestamp": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -364,7 +460,8 @@ def main() -> None:
         **{f"valid_{k}": (json.dumps(val) if isinstance(val, dict) else val) for k, val in v.items()},
         "stress_mean_r": stress["mean_r"], "verdict": verd,
         "gates_failed": ";".join(k for k, ok in gates.items() if not ok),
-        "holdout_verdict": "", "data_version": "native",
+        "holdout_verdict": "", "data_version": "native", "structure": sig_id,
+        "duplicate_of": duplicate_of,
         "splits": f"{C.DATA_START}|{C.VALID_START}|{C.HOLDOUT_START}|{C.DATA_END}",
     }
 
@@ -386,7 +483,7 @@ def main() -> None:
                   and h_stress["mean_r"] > 0 and hold["p_gt_0"] >= 0.90
                   and hold["max_dd"] <= C.EVAL_MAX_DD)
             row["holdout_verdict"] = "CONFIRMED" if ok else "FAILED"
-            res_h.to_trades_df().to_csv(TRADES_DIR / f"{eval_id}_holdout.csv", index=False)
+            save_trades(res_h, eval_id, "holdout")
             _append_csv(HOLDOUT_CSV, {
                 "holdout_key": hkey, "eval_id": eval_id, "timestamp": row["timestamp"],
                 "name": idea["name"], "tf": tf, "params": row["chosen_params"], "exec": row["chosen_exec"],

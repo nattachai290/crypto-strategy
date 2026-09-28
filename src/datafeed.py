@@ -129,7 +129,7 @@ def _read_one_zip(path: Path, cols: list[str]) -> pd.DataFrame:
 # own bars cost a silent one-bar labelling error that invalidated nine
 # experiments (journal Exp 010), so the pipeline no longer offers to do it.
 # Binance's own naming: hourly is "1h", not "60m".
-NATIVE_TFS = [1, 3, 5, 15, 30]
+NATIVE_TFS = [1, 3, 5, 15, 30, 60, 240]
 TF_NAME = {1: "1m", 3: "3m", 5: "5m", 15: "15m", 30: "30m",
            60: "1h", 120: "2h", 240: "4h", 360: "6h", 480: "8h", 720: "12h"}
 
