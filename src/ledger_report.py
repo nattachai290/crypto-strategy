@@ -157,7 +157,7 @@ def summarise(df: pd.DataFrame) -> str:
 
 
 if __name__ == "__main__":
-    p = C.RESULTS / "ledger.csv"
+    p = C.LEGACY / "ledger.csv"
     if not p.exists():
         raise SystemExit("run src/ledger.py first")
     d = pd.read_csv(p)

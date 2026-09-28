@@ -43,11 +43,11 @@ MARKET = "um"  # USDT-margined
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / SYMBOL          # Binance zips (git-ignored)
 CACHE = ROOT / "data" / "cache" / SYMBOL      # parquet (git-ignored)
-LOGS = ROOT / "data" / "logs" / SYMBOL        # console logs of runs
-RESULTS = ROOT / "results" / SYMBOL           # CSV/JSON output + report.html
-JOURNAL = ROOT / "journal" / SYMBOL           # experiments.md + ledger.md
+RESULTS = ROOT / "results" / SYMBOL           # evaluate.py records (current workflow)
+LEGACY = RESULTS / "legacy"                   # Exp 003-010 scripts' CSVs, report, logs/
+JOURNAL = ROOT / "journal" / SYMBOL           # STATUS, experiments, evaluations, ledger
 
-for _d in (RAW, CACHE, LOGS, RESULTS, JOURNAL):
+for _d in (RAW, CACHE, RESULTS, LEGACY, JOURNAL):
     _d.mkdir(parents=True, exist_ok=True)
 
 # --------------------------------------------------------------------------

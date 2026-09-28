@@ -87,26 +87,10 @@ it as a candidate, never as an edge. See Exp 013 in `experiments.md`.
 
 ## Which result files can be trusted
 
-Exp 010 found that every experiment before it (003–009) ran on bars shifted
-one window into the past. The pipeline now loads native Binance files only.
-Status of each file in `results/BTCUSDT/`:
-
-| File | Experiment | Data | Trust |
-|---|---|---|---|
-| `definitive_oos.csv` | 007 / 010 | fixed | ✅ current headline |
-| `round3_maker.csv` | 008 / 010 | fixed | ✅ |
-| `sweep_train.csv`, `sweep_test.csv`, `sweep_merged.csv` | 003 | shifted | ⚠️ stale — rerun |
-| `results.csv` | early baseline | shifted | ⚠️ stale |
-| `cost_lab.csv` | 004 | shifted | ⚠️ stale (mechanism still valid) |
-| `round2_stopwidth_train.csv`, `_test.csv` | 004b | shifted | ⚠️ stale |
-| `ml_walkforward_15m*.csv` | 006 | shifted | ⚠️ stale |
-| `final_eval_15m_s2.0.csv` | 007 | shifted | ⚠️ stale |
-| `round4_holdperiod.csv` | 009 | shifted | ⚠️ stale |
-| `report_best.json` → `report.html` | 007 best (154 trades, +0.038 R) | shifted | ⚠️ stale — report shows pre-fix numbers |
-| `ledger.csv` / `journal/BTCUSDT/ledger.md` | all | **mixed** | ⚠️ contains both pre- and post-fix rows without a flag |
-
-(Trust status inferred by matching file contents against the numbers in the
-journal; verify before relying on it.)
+- `results/BTCUSDT/evaluations.csv` and `holdout_log.csv`: current workflow,
+  fixed engine, native data. ✅
+- `results/BTCUSDT/legacy/`: Exp 003–010 outputs. Mostly stale (shifted
+  data). A per-file trust table is in `results/BTCUSDT/legacy/README.md`.
 
 ## Known issues / loose ends
 

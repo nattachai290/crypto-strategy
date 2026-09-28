@@ -89,8 +89,8 @@ def main() -> None:
 
     tr = pd.DataFrame(train_rows)
     te = pd.DataFrame(test_rows)
-    tr.to_csv(C.RESULTS / "round2_stopwidth_train.csv", index=False)
-    te.to_csv(C.RESULTS / "round2_stopwidth_test.csv", index=False)
+    tr.to_csv(C.LEGACY / "round2_stopwidth_train.csv", index=False)
+    te.to_csv(C.LEGACY / "round2_stopwidth_test.csv", index=False)
 
     pd.set_option("display.width", 220)
     print("\n" + "=" * 110)
