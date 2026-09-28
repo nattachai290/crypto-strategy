@@ -103,8 +103,8 @@ def load_idea(path: Path) -> dict:
     if idea["strategy"] != "recipe" and idea["strategy"] not in S.REGISTRY:
         raise SystemExit(f"unknown strategy {idea['strategy']!r}; use 'recipe' or one of "
                          f"{', '.join(S.REGISTRY)}")
-    if int(idea["tf"]) not in (1, 3, 5, 15, 30):
-        raise SystemExit("tf must be one of 1, 3, 5, 15, 30 (native Binance files)")
+    if int(idea["tf"]) not in (1, 3, 5, 15, 30, 60, 240):
+        raise SystemExit("tf must be one of 1, 3, 5, 15, 30, 60, 240 (native Binance files)")
     for k, v in idea["grid"].items():
         if not isinstance(v, list) or not v:
             raise SystemExit(f"grid '{k}' must be a non-empty list")

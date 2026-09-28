@@ -62,6 +62,12 @@ filters and exits in the `recipe` format.
 combinations (enforced). Sweep the things the hypothesis is actually about.
 Fix everything else at a sensible value.
 
+**Step 4b — Make the timeframe variants.** Every idea is tested on all
+seven native timeframes (1m 3m 5m 15m 30m 1h 4h), never just one:
+`python src/tf_variants.py ideas/NNN_short_name.json` writes the six other
+files. Evaluate each. Read the docstring of `src/tf_variants.py` for what it
+rescales, and never rescale by hand.
+
 **Step 5 — Run it:**
 ```bash
 python src/evaluate.py ideas/NNN_short_name.json
@@ -239,6 +245,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 |---|---|
 | `evaluate.py` | **the research gate**: idea file → TRAIN select → VALID verdict → optional one-time HOLDOUT |
 | `recipes.py` | building blocks: `TRIGGERS`, `FILTERS`, and `recipe()` that combines them with exits |
+| `tf_variants.py` | writes an idea's variants for every other timeframe (chart mode default, `--mode time` optional) |
 | `strategies.py` | older hand-written strategies (`REGISTRY`), also usable in idea files |
 | `backtest.py` | the engine (`run_backtest`): next-bar-open fills, taker/maker fees, slippage, funding, stop-first, BE/trailing, post-only entries |
 | `indicators.py` | causal indicators (EMA, ATR, RSI, ADX, BB, VWAP, supertrend, …) |

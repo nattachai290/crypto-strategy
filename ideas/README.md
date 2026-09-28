@@ -45,7 +45,7 @@ after it was evaluated.
 | `name` | yes | same as the file name without `.json` |
 | `hypothesis` | yes | why it should work |
 | `strategy` | no (default `recipe`) | `recipe`, or a name from `strategies.REGISTRY` (see `evaluate.py --list`) |
-| `tf` | yes | bar minutes: 1, 3, 5, 15, 30 |
+| `tf` | yes | bar minutes: 1, 3, 5, 15, 30, 60, 240. Write the idea at one of them, then make the others with `python src/tf_variants.py ideas/<file>.json` |
 | `params` | yes | recipe fields below, or the strategy's keyword arguments |
 | `grid` | no | parameters to choose on TRAIN; ≤ 64 combinations, keep ≤ 4 keys |
 | `execution` | no | `entry_mode` (`taker` / `post_only`), `entry_offset_atr`, `entry_fill_ratio` |

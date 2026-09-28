@@ -41,7 +41,7 @@ def section_sample() -> None:
     print("\n" + "=" * 78)
     print(f"2. BARS COVERING {STAMP}  (each read from Binance's own file)")
     print("=" * 78)
-    for tf in (1, 3, 5, 15, 30):
+    for tf in (1, 3, 5, 15, 30, 60, 240):
         b = E.get_bars(tf)
         cand = b[(b.index <= STAMP) &
                  (b.index > STAMP - pd.Timedelta(minutes=tf))]

@@ -7,7 +7,9 @@ _Last updated: 2026-09-28, after Exp 012. Rules for agents: `AGENTS.md`._
 > (AGENTS.md §1). Ideas to try: `docs/research/TECHNIQUES.md` §6. Every
 > evaluation so far: `journal/BTCUSDT/evaluations.md`.
 
-> **Research plan:** `docs/research/PLAN.md` (Rounds 1–4). The Windows
+> **Research plan:** `docs/research/PLAN.md` (Rounds 1–4). Native 1h and 4h data
+> are now available (7 timeframes in total), and every idea is run on all of them via
+> `src/tf_variants.py`. The Windows
 > `--workers` crash is fixed. `evaluate.py` now also refuses a 4th evaluation
 > of the same idea structure, so idea 010's structure is closed, and flags
 > results identical to an earlier one as `DUPLICATE`.

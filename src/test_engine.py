@@ -321,6 +321,7 @@ def main() -> None:
     test_post_only()
     test_dynamic_exits()
     test_recipe_blocks_causal()
+    test_tf_variants()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -437,6 +438,47 @@ def test_recipe_blocks_causal() -> None:
           f"{len(act)} signals")
     check("recipe max_hold converts hours to bars (2h on 5m = 24)",
           bool((act["max_hold"] == 24).all()))
+
+
+# --------------------------------------------------------------------------
+# 8. Timeframe variants rescale the right parameters and nothing else
+# --------------------------------------------------------------------------
+def test_tf_variants() -> None:
+    print("\n8. tf_variants: chart and time modes rescale only what they should")
+    import tf_variants as TV
+    idea = {"name": "t", "hypothesis": "h", "strategy": "recipe", "tf": 15,
+            "params": {"triggers": [{"type": "donchian_break", "n": 48},
+                                    {"type": "supertrend_flip", "n": 10, "mult": 3.0}],
+                       "filters": [{"type": "htf_trend", "n": 50, "mult": 4},
+                                   {"type": "adx_min", "n": 14, "min": 20}],
+                       "stop": {"type": "pct", "pct": 0.02, "min_atr": 1.5, "max_atr": 8.0},
+                       "tp": {"type": "r", "r": 2.0}, "be_at": 1.0, "trail_at": 1.5,
+                       "trail_atr": 2.5, "max_hold_hours": 8, "cooldown_bars": 4},
+            "grid": {"stop.pct": [0.015, 0.02], "triggers.0.n": [24, 48],
+                     "filters.1.min": [20, 25]},
+            "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1}}
+    c = TV.make_variant(idea, 60, "chart")
+    cp = c["params"]
+    check("chart: bar counts and ATR multiples unchanged",
+          cp["triggers"][0]["n"] == 48 and cp["filters"][1]["n"] == 14
+          and cp["trail_atr"] == 2.5 and cp["stop"]["max_atr"] == 8.0
+          and c["execution"]["entry_offset_atr"] == 0.1)
+    check("chart: hold x4 and pct stop x2 going 15m -> 60m",
+          cp["max_hold_hours"] == 32 and abs(cp["stop"]["pct"] - 0.04) < 1e-9
+          and c["grid"]["stop.pct"] == [0.03, 0.04])
+    t = TV.make_variant(idea, 5, "time")
+    tp_ = t["params"]
+    check("time: bar counts x3 going 15m -> 5m (params and grid)",
+          tp_["triggers"][0]["n"] == 144 and tp_["filters"][0]["n"] == 150
+          and tp_["cooldown_bars"] == 12 and t["grid"]["triggers.0.n"] == [72, 144])
+    check("time: ATR multiples x sqrt(3), htf_trend mult untouched",
+          abs(tp_["trail_atr"] - round(2.5 * 3 ** 0.5, 3)) < 1e-9
+          and abs(tp_["triggers"][1]["mult"] - round(3.0 * 3 ** 0.5, 3)) < 1e-9
+          and tp_["filters"][0]["mult"] == 4)
+    check("both: R, %, hours and thresholds untouched in time mode",
+          tp_["stop"]["pct"] == 0.02 and tp_["tp"]["r"] == 2.0 and tp_["be_at"] == 1.0
+          and tp_["max_hold_hours"] == 8 and tp_["filters"][1]["min"] == 20
+          and t["grid"]["filters.1.min"] == [20, 25])
 
 
 # --------------------------------------------------------------------------
