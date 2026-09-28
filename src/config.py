@@ -128,6 +128,7 @@ EVAL_MIN_ANY_TRADES = 30      # below this the verdict is INCONCLUSIVE
 EVAL_STRESS_COST = 1.5        # fees and slippage x this for the stress test
 EVAL_MAX_DD = 0.20            # PASS needs validation max drawdown <= this
 EVAL_BOOTSTRAP = 10000        # bootstrap resamples for the CI
+EVAL_MAX_VERSIONS = 3         # evaluations allowed per idea STRUCTURE (evaluate.signature)
 
 # Annualisation factor for minute bars
 MINUTES_PER_YEAR = 365 * 24 * 60

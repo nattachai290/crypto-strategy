@@ -78,6 +78,7 @@ It selects parameters on TRAIN (2020–2022), tests the frozen choice on VALID
 | `WATCH` | Positive on train, valid and cost stress, but CI touches 0 or DD too big | You may make **up to 2** improved versions (`NNN_name_v2.json`, `_v3`). Each change must be explained by a diagnosis (step 8), not by trying numbers |
 | `REJECT` | Failed | Record one line of *why* (step 8). Move to a **different** idea |
 | `INCONCLUSIVE` | Fewer than 30 validation trades | Make the idea trade more (looser filter, lower tf) or drop it |
+| `DUPLICATE` | Validation result identical to an earlier evaluation: your change affected no trade | Not new evidence. Record why the change was inert and move on. It can never go to `--final` |
 
 **Step 7 — Holdout (only after PASS):**
 ```bash
@@ -141,7 +142,11 @@ together. Never report only a return, a win rate, or a Sharpe.
 4. **Never** run `--final` on anything that is not `PASS`. Never delete or
    edit `results/<SYMBOL>/holdout_log.csv` or `evaluations.csv`.
 5. **Never** edit an idea file after it was evaluated. Make `_v2` instead.
-   Maximum 3 versions per idea; after that, move on.
+   Maximum 3 versions per idea; after that, move on. `evaluate.py` enforces
+   this by **structure** (timeframe + trigger types + filter types +
+   direction), not by file name: an idea that changes only numbers (stop,
+   thresholds, offsets, hold time) counts as a version of the earlier one
+   and is refused after 3. Renaming a file does not get around it.
 6. **Never** weaken, skip or delete a test to make it pass. Never edit past
    journal entries (append-only). Never edit generated files
    (`evaluations.md`, `ledger.md`, `ledger.csv`) by hand.
@@ -298,6 +303,8 @@ holdout is `CONFIRMED`.
 | `grid has N combinations; the limit is 64` | fewer values per grid key |
 | `already evaluated as ...` | the exact idea exists. Change the idea (new file) — `--rerun` only after a code fix |
 | `--final refused` | working as intended. Do not bypass it |
+| `refused: N evaluations already share this idea's structure` | the version budget for this idea is used up. Test a structurally different hypothesis. Never add a do-nothing filter just to change the structure |
+| Windows: every combo crashed | fixed; if it recurs, run with `--workers 1` and report it |
 | `test_engine.py` shows FAIL | undo your last change to `src/`, or fix it. Never edit the test to pass |
 | A result looks amazing (mean R > 0.3, win rate > 70%, DD < 2%) | assume a bug: look-ahead, a too-small sample, or a single year. Check the trades file |
 | Unsure what to do | re-read §1. Still unsure: ask the owner. Never guess on rules §3 |

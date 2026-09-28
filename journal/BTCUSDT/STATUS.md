@@ -7,9 +7,10 @@ _Last updated: 2026-09-28, after Exp 012. Rules for agents: `AGENTS.md`._
 > (AGENTS.md §1). Ideas to try: `docs/research/TECHNIQUES.md` §6. Every
 > evaluation so far: `journal/BTCUSDT/evaluations.md`.
 
-> **Run with `--workers 1` on Windows.** `evaluate.py` assumes `fork`; Windows
-> spawns, the child processes get an empty `_G`, and every combo dies with
-> `KeyError: 'bars'`. Known platform bug, not patched (AGENTS.md §5).
+> **Research plan:** `docs/research/PLAN.md` (Rounds 1–4). The Windows
+> `--workers` crash is fixed. `evaluate.py` now also refuses a 4th evaluation
+> of the same idea structure, so idea 010's structure is closed, and flags
+> results identical to an earlier one as `DUPLICATE`.
 
 > **New stop type: `{"type": "pct", "pct": 0.02, "min_atr": .., "max_atr": ..}`.**
 > A stop as a fraction of PRICE, not a multiple of ATR. See Exp 012 — this is
@@ -120,8 +121,8 @@ it as a candidate, never as an edge. See Exp 013 in `experiments.md`.
 
 ## Suggested next steps (in order)
 
-1. Run the start-of-session checklist in `AGENTS.md` §0, with
-   `--workers 1` on Windows (see the top of this file).
+1. Run the start-of-session checklist in `AGENTS.md` §0, then follow
+   `docs/research/PLAN.md`.
 2. Do **not** grind more variants of idea 010. Exp 012 showed why: raising
    mean R always cut the trade count, and PASS needs mean R > 1.568/sqrt(n),
    so precision got worse, not better. A genuinely different mechanism is
