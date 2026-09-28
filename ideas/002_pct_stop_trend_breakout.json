@@ -1,0 +1,27 @@
+{
+  "name": "002_pct_stop_trend_breakout",
+  "hypothesis": "Idea 001 measured a real gross edge on 15m Donchian breakouts (+0.125 R train, +0.155 R valid) and still lost, because an ATR-multiple stop is not a constant price distance: the same 3.0x ATR was 1.28% of price in 2020-2022 but 0.78% in 2023-2024, so cost_r rose from 0.109 to 0.179 and exceeded the gross edge. The counterparty and the continuation behaviour are unchanged; only the cost accounting was regime-dependent. Fixing the stop at a fraction of PRICE makes cost_r a constant 0.14%/pct, independent of the volatility regime, which is the single change that decides whether this gross edge survives. This idea therefore tests one mechanism, not a parameter search: a 1.5% stop costs 0.093 R whether ATR is 0.3% or 1.0% of price.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 48}],
+    "filters": [
+      {"type": "htf_trend", "n": 50, "mult": 4},
+      {"type": "adx_min", "n": 14, "min": 20}
+    ],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.015, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 12,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [0.012, 0.015, 0.02],
+    "max_hold_hours": [8, 12],
+    "trail_atr": [2.5, 3.5]
+  },
+  "execution": {"entry_mode": "taker"}
+}

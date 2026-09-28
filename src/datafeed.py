@@ -15,6 +15,7 @@ import io
 import sys
 import time
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
@@ -168,10 +169,26 @@ def build(dataset: str) -> Path:
     # instead of silently picking up whatever months Binance has added since.
     wanted = set(C.month_range())
     keys = [k for k in list_keys(prefix) if k[-11:-4] in wanted]
-    print(f"[{dataset}] {len(keys)} files in {C.DATA_START}..{C.DATA_END}")
+    print(f"[{dataset}] {len(keys)} files in {C.DATA_START}..{C.DATA_END}", flush=True)
+    t0 = time.time()
+    # Download in parallel, then read sequentially in key order. Network I/O is
+    # the bottleneck (480 files); the parse stays single-threaded and the output
+    # order is identical to a serial run, so the cache is byte-for-byte the same.
+    workers = 8
+    paths = [None] * len(keys)
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = {ex.submit(fetch_zip, k): i for i, k in enumerate(keys)}
+        done = 0
+        for fut, i in futs.items():
+            try:
+                paths[i] = fut.result()
+            except Exception as e:  # noqa: BLE001 - report, never hide
+                print(f"  !! {keys[i]}: {e}")
+            done += 1
+            if done % 20 == 0 or done == len(keys):
+                print(f"  fetched {done}/{len(keys)}", flush=True)
     frames = []
-    for i, key in enumerate(keys, 1):
-        z = fetch_zip(key)
+    for z in paths:
         if z is None:
             continue
         try:
@@ -179,8 +196,6 @@ def build(dataset: str) -> Path:
         except Exception as e:  # noqa: BLE001
             print(f"  !! {z.name}: {e}")
             continue
-        if i % 10 == 0 or i == len(keys):
-            print(f"  [{i}/{len(keys)}] {z.name}")
 
     df = pd.concat(frames, ignore_index=True)
     tcol = "open_time" if "open_time" in df.columns else "calc_time"
@@ -188,7 +203,7 @@ def build(dataset: str) -> Path:
     df = df.sort_values(tcol).drop_duplicates(subset=tcol).reset_index(drop=True)
     df.to_parquet(out, index=False)
     print(f"[{dataset}] wrote {out.name}  rows={len(df):,}  "
-          f"{df[tcol].min()} .. {df[tcol].max()}")
+          f"{df[tcol].min()} .. {df[tcol].max()}  ({time.time() - t0:.0f}s)", flush=True)
     return out
 
 

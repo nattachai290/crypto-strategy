@@ -1,0 +1,28 @@
+{
+  "name": "003_funding_fade",
+  "hypothesis": "Extreme funding is a crowding measurement, not a signal by itself: a positive rate means longs are paying to hold, so the crowd is long and its exit is forced by cost rather than by conviction. When that crowded funding coincides with a price that is stretched far from its own recent mean, the stretched side is the one paying, and the reversion is caused by the crowd unwinding against itself. Requiring BOTH conditions (extreme funding AND a stretched z-score, within 8 bars of each other) should separate a real crowded unwind from ordinary drift.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {"type": "funding_extreme", "thresh": 0.00025},
+      {"type": "zscore_revert", "n": 96, "z": 2.0}
+    ],
+    "trigger_mode": "all",
+    "confirm_bars": 8,
+    "filters": [],
+    "direction": "both",
+    "stop": {"type": "atr", "mult": 3.5},
+    "tp": {"type": "r", "r": 2.0},
+    "max_hold_hours": 12,
+    "cooldown_bars": 8,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.thresh": [0.0002, 0.0003],
+    "triggers.1.z": [2.0, 2.5],
+    "stop.mult": [3.0, 4.0],
+    "max_hold_hours": [8, 16]
+  },
+  "execution": {"entry_mode": "taker"}
+}

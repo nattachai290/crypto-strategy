@@ -1,11 +1,20 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-27, after Exp 011. Rules for agents: `AGENTS.md`._
+_Last updated: 2026-09-28, after Exp 012. Rules for agents: `AGENTS.md`._
 
 > **How research is done from Exp 011 on:** write an idea file in `ideas/`,
 > run `python src/evaluate.py ideas/<file>.json`, follow the verdict
 > (AGENTS.md §1). Ideas to try: `docs/research/TECHNIQUES.md` §6. Every
 > evaluation so far: `journal/BTCUSDT/evaluations.md`.
+
+> **Run with `--workers 1` on Windows.** `evaluate.py` assumes `fork`; Windows
+> spawns, the child processes get an empty `_G`, and every combo dies with
+> `KeyError: 'bars'`. Known platform bug, not patched (AGENTS.md §5).
+
+> **New stop type: `{"type": "pct", "pct": 0.02, "min_atr": .., "max_atr": ..}`.**
+> A stop as a fraction of PRICE, not a multiple of ATR. See Exp 012 — this is
+> now the default choice for any new idea, because an ATR multiple makes
+> `cost_r` a function of the volatility regime.
 
 ## One-paragraph summary
 
@@ -32,6 +41,21 @@ Definitive walk-forward, 15m, 9 folds (2022-01 .. 2026-08), native Binance bars:
 
 Post-only entry (taker exit) improves net R by +0.01..+0.10 but no CI
 excludes zero.
+
+## Best candidate so far (Exp 012, idea 010, eval 70fb497bcf) — WATCH
+
+15m, `donchian_break(48)` + `htf_trend(50,4)` + `adx_min(20)`, **short only**,
+`pct` stop 2.0%, no TP, ATR trail 1.5R / 2.5 ATR, 8h hold, post-only @ 0.1 ATR.
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 631 | +0.140 | 0.056 | +0.0839 | | | 12.1% |
+| valid 2023-2024 | 219 | +0.153 | 0.068 | +0.0850 | [−0.030, +0.186] | +6.2% | 8.5% |
+| valid ×1.5 cost | | | | +0.0736 | | | |
+
+Fails **one** gate: `valid_ci_lo > 0`. HOLDOUT 2025-01..2026-08 is still
+**completely unused** — nothing has passed, and only a PASS may spend it.
+Not a profitable strategy; a candidate that has not been proven.
 
 ## Which result files can be trusted
 
@@ -84,12 +108,21 @@ journal; verify before relying on it.)
 
 ## Suggested next steps (in order)
 
-1. Run the start-of-session checklist in `AGENTS.md` §0.
-2. Work through the ★★★ ideas in `docs/research/TECHNIQUES.md` §6 with
-   `evaluate.py`: trend breakout with a wide stop, the exit study (exits
-   were mis-simulated before Exp 011), range mean reversion, and crowded
-   funding.
-3. Batch-summarise every ~5 ideas in `experiments.md` (Exp 012+).
-4. Optional housekeeping, lower priority: the stale Exp 003–009 result files
-   and the ledger `data_version` column (see above). New work does not depend
-   on them.
+1. Run the start-of-session checklist in `AGENTS.md` §0, with
+   `--workers 1` on Windows (see the top of this file).
+2. Do **not** grind more variants of idea 010. Exp 012 showed why: raising
+   mean R always cut the trade count, and PASS needs mean R > 1.568/sqrt(n),
+   so precision got worse, not better. A genuinely different mechanism is
+   needed, not a better parameter.
+3. Untested backlog items that the Exp 012 findings now make interesting:
+   idea 3 range mean reversion and idea 4 crowded funding (both still
+   untested with a `pct` stop — 003 was INCONCLUSIVE because
+   `funding_extreme` is a crossing on 8h data, so use `funding_not_crowded`
+   as a filter on a price trigger instead); idea 7 trend pullback with flow
+   confirmation. Use a `pct` stop in all of them.
+4. Worth considering, and honest about what it is: idea 010's 82% time-exit
+   rate means its gross edge is an 8-hour BTC drift, not a breakout
+   phenomenon. If the next batch cannot raise mean R, the correct conclusion
+   is that the edge is drift, and drift is not tradable at these costs.
+5. Housekeeping, lower priority: the stale Exp 003–009 result files and the
+   ledger `data_version` column (see above).

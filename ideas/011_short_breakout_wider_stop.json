@@ -1,0 +1,26 @@
+{
+  "name": "011_short_breakout_wider_stop",
+  "hypothesis": "In every run of the post-only short breakout (ideas 007, 008, 010) the grid selection landed on stop.pct = 0.02, which was the WIDEST value offered - the optimum is sitting on the edge of the grid, not inside it. That is a diagnosable condition, not a reason to keep tuning: if cost_r = round_trip_cost / stop_pct is the mechanism, the selection must keep moving outward until gross_r starts falling faster than cost_r does. This idea extends the grid outward to 3.0% and adds a fourth level so the optimum can be found rather than pinned at the boundary, and keeps the post-only execution of idea 010 because the mechanism being tested is the same one in both regimes. Prediction if the mechanism is right: cost_r falls monotonically with pct and mean R peaks at an interior value instead of at the last one.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 48}],
+    "filters": [
+      {"type": "htf_trend", "n": 50, "mult": 4},
+      {"type": "adx_min", "n": 14, "min": 20}
+    ],
+    "direction": "short",
+    "stop": {"type": "pct", "pct": 0.02, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 8,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [0.02, 0.025, 0.03, 0.04],
+    "max_hold_hours": [6, 8]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

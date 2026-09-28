@@ -1,0 +1,29 @@
+{
+  "name": "004_squeeze_expansion",
+  "hypothesis": "A Bollinger-width squeeze means liquidity providers have widened their quotes and the breakout traders who sold the compression are now flat or stopped, so the market is thin of both sides. The first expansion bar out of that thin book, if it agrees with the higher-timeframe trend, is a genuine regime change rather than noise: the counterparty is the crowd that bought the bottom of the range and is now short into the expansion. Requiring the ATR ratio to be above 1 at entry ensures we are entering on the expansion, not during the compression.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 24}],
+    "filters": [
+      {"type": "squeeze", "n": 20, "q": 0.2, "lookback": 500},
+      {"type": "vol_regime", "fast": 14, "slow": 100, "lo": 0.8, "hi": 99},
+      {"type": "htf_trend", "n": 50, "mult": 4}
+    ],
+    "direction": "both",
+    "stop": {"type": "atr", "mult": 3.5},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 10,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "filters.1.lo": [0.7, 1.0],
+    "triggers.0.n": [16, 24, 48],
+    "stop.mult": [3.0, 4.0],
+    "max_hold_hours": [8, 12]
+  },
+  "execution": {"entry_mode": "taker"}
+}

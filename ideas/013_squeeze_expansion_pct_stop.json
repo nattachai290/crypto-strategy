@@ -1,0 +1,28 @@
+{
+  "name": "013_squeeze_expansion_pct_stop",
+  "hypothesis": "Idea 004 measured the largest gross edge found anywhere in this project - +0.275 R on train and +0.269 R on valid, roughly double every other entry tested - and still returned REJECT, because it also measured the largest cost: cost_r 0.205. The diagnosis is mechanical. A squeeze filter deliberately selects the calmest periods in the sample, so ATR is at its minimum exactly when the trade is taken, and a 3.0x ATR stop placed there is only ~0.7% of price. That narrow stop both doubles cost_r and stops out 71% of the trades, while the ATR stop that behaves well in idea 010 (calmer ATR, 18% stop-outs) is unusable here. A percentage-of-price stop is regime-independent by construction, so it should keep cost_r near 0.07 and let the expansion trade run past the noise that a volatility-scaled stop cannot distinguish from a real reversal. The squeeze edge is the most valuable thing measured so far; this idea tests whether it was ever affordable.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 48}],
+    "filters": [
+      {"type": "squeeze", "n": 20, "q": 0.2, "lookback": 500},
+      {"type": "vol_regime", "fast": 14, "slow": 100, "lo": 0.7, "hi": 99},
+      {"type": "htf_trend", "n": 50, "mult": 4}
+    ],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.02, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 12,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [0.015, 0.02, 0.025],
+    "max_hold_hours": [8, 12],
+    "exec.entry_offset_atr": [0.0, 0.1]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.0, "entry_fill_ratio": 1.0}
+}

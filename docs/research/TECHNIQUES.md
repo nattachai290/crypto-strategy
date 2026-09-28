@@ -111,6 +111,7 @@ as their **own hypothesis**: keep the entry fixed and grid only the exit keys.
 | technique | JSON | notes |
 |---|---|---|
 | ATR stop | `"stop": {"type": "atr", "mult": 3}` | wider = cheaper in R (see §1) |
+| **% of price** stop | `"stop": {"type": "pct", "pct": 0.02, "min_atr": 1.5, "max_atr": 8}` | **prefer this.** An ATR multiple is not a constant price distance: the same 3.0x ATR was 1.28% of price in 2020-22 and 0.78% in 2023-24, which moved `cost_r` from 0.109 to 0.179 and turned a +0.155 R gross edge negative (Exp 012). `pct` makes `cost_r` regime-independent. The ATR clamp only stops a violent bar from making the stop absurd. |
 | Structure (swing) stop | `"stop": {"type": "swing", "n": 12, "buffer_atr": 0.3, "min_atr": 1.5, "max_atr": 5}` | beyond the recent swing low/high, clamped |
 | TP as R-multiple | `"tp": {"type": "r", "r": 2}` | TP = r × stop distance |
 | TP as ATR multiple | `"tp": {"type": "atr", "mult": 4}` | |
@@ -222,3 +223,13 @@ brackets. Write each as `ideas/NNN_name.json`.
   (few signals in quiet years). Worth retesting with the new gate (idea 4).
 - Break-even/trailing results **before Exp 011** were distorted by an
   engine bug. Retest exit techniques with the fixed engine.
+- Squeeze → expansion and session-open breakouts (Exp 012, ideas 004/005/013):
+  REJECT / negative. The squeeze entry shows a huge `gross_r` (+0.269) that is
+  **not** a large edge — it is a narrow ATR stop in a low-volatility window
+  inflating R while 71% of trades are stopped out. Widen the stop and `gross_r`
+  collapses to +0.129. Compare net R across ideas, never gross R.
+- `taker_flow` as a filter: inert at any threshold that still leaves ~100
+  trades (idea 012) — the taker buy ratio does not deviate far enough from 0.5.
+- `funding_extreme` as a trigger: 23 train trades (idea 003). It is a crossing
+  on 8h data, so it almost never fires on 15m bars. Use `funding_not_crowded`
+  as a filter on a price trigger instead.

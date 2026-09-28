@@ -378,9 +378,23 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
     h, l, c = bars["high"], bars["low"], bars["close"]
     atr = ta.atr_(h, l, c, atr_n).to_numpy(float)
     stop = stop or {"type": "atr", "mult": 2.0}
-    if stop.get("type", "atr") == "atr":
+    stype = stop.get("type", "atr")
+    if stype == "atr":
         stop_dist = stop.get("mult", 2.0) * atr
-    elif stop["type"] == "swing":
+    elif stype == "pct":
+        # Stop width is a fixed FRACTION OF PRICE, not a multiple of ATR, so
+        # cost_r = round_trip_cost / stop_pct stays constant across volatility
+        # regimes. An ATR-multiple stop silently narrows in calm markets and
+        # widens in violent ones: on BTCUSDT 15m the same 3.0x ATR was 1.28%
+        # of price in 2020-2022 but only 0.78% in 2023-2024, which moved cost_r
+        # from 0.109 to 0.179 and turned a +0.155 R gross edge negative
+        # (journal Exp 012). The ATR clamp is only a sanity bound: it lets a
+        # genuinely explosive bar widen the stop instead of placing it inside
+        # the noise, but it never narrows the stop below `pct`.
+        cc = c.to_numpy(float)
+        raw = stop.get("pct", 0.015) * cc
+        stop_dist = np.clip(raw, stop.get("min_atr", 0.0) * atr, stop.get("max_atr", 1e9) * atr)
+    elif stype == "swing":
         # beyond the recent swing low (long) / high (short), plus an ATR buffer,
         # clamped to [min_atr, max_atr] ATR so one bar cannot make it absurd
         sn = int(stop.get("n", 10))
@@ -391,7 +405,7 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
         raw = np.where(side > 0, cc - lo_n, hi_n - cc) + buf * atr
         stop_dist = np.clip(raw, stop.get("min_atr", 1.0) * atr, stop.get("max_atr", 6.0) * atr)
     else:
-        raise ValueError("stop.type must be 'atr' or 'swing'")
+        raise ValueError("stop.type must be 'atr', 'pct' or 'swing'")
 
     tp = tp or {"type": "none"}
     tpt = tp.get("type", "none")

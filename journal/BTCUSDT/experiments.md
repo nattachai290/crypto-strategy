@@ -788,3 +788,124 @@ testing the `--final` lock (it FAILED, -0.23 R); that is recorded in
 ### Verdict
 `KEEP` the engine fixes and the protocol. All results in
 `results/BTCUSDT/evaluations.csv` use the fixed engine and native data.
+
+---
+
+## Exp 012 — Thirteen ideas: the stop is not an ATR multiple, it is a price distance
+
+**Date:** 2026-09-28
+**Status:** complete — 13 ideas, 0 PASS, 8 WATCH, 3 REJECT, 2 INCONCLUSIVE, **holdout not used**
+(only a PASS may spend the holdout, and nothing passed, so HOLDOUT 2025-01..2026-08 is
+still completely untouched).
+
+Infrastructure first: `test_engine.py` → ALL CHECKS PASSED; `datafeed.py` → VALIDATION: OK
+with all five native timeframes at 80/80 months, 0 duplicates, 0 gaps. Two changes were
+needed to get here and neither touches costs, risk, splits or gates:
+
+- `datafeed.py` now fetches the 480 monthly zips through a 8-thread pool instead of
+  one at a time (network I/O only; the parse stays single-threaded and in key order, so
+  the cache is identical). 2.5 h → ~4 min.
+- `evaluate.py` must be run with `--workers 1` on Windows. Its worker pool assumes
+  `fork`, and Windows `ProcessPoolExecutor` spawns instead, so the child processes start
+  with an empty `_G` and every combo dies with `KeyError: 'bars'`. This is a platform
+  bug in the harness, not in an idea; it is reported rather than patched because
+  `evaluate.py` is not ours to edit.
+
+### Ideas tested
+
+| idea file | eval_id | verdict | valid mean R | 95% CI | note |
+|---|---|---|---|---|---|
+| 001_trend_breakout_trail | 252109899e | REJECT | −0.0242 | [−0.143, +0.099] | gross +0.155, cost 0.179 |
+| 002_pct_stop_trend_breakout | 5066a68b70 | WATCH | +0.0389 | [−0.048, +0.127] | cost 0.179 → 0.087 |
+| 003_funding_fade | 55b321947e | INCONCLUSIVE | −0.943 (7 trades) | — | 23 train trades, unusable |
+| 004_squeeze_expansion | d3042109b4 | REJECT | +0.0641 | [−0.153, +0.296] | gross **+0.269**, cost **0.205** |
+| 005_session_open_break | cdde91ae48 | REJECT | −0.0750 | [−0.234, +0.082] | cost 0.167, 2024 −0.141 |
+| 006_long_only_trend | c208dafd61 | INCONCLUSIVE | +0.2437 (42 trades) | [−0.110, +0.645] | train +0.0015 — regime only |
+| 007_direction_ablation | 93ef5c196c | WATCH | +0.0698 | [−0.041, +0.165] | train picked **short**, not long |
+| 008_exit_by_price | 0269bf5d77 | WATCH | +0.0698 | [−0.041, +0.165] | identical: train prefers the SHORTEST hold |
+| 009_short_5m_pct_stop | 32e903fb0d | WATCH | +0.0374 | [−0.108, +0.168] | 5m gave *fewer* trades, not more |
+| **010_short_breakout_post_only** | **70fb497bcf** | **WATCH** | **+0.0850** | **[−0.030, +0.186]** | **best; cost 0.068, DD 8.5%** |
+| 011_wider_stop | 29b6b39400 | WATCH | +0.0637 | [−0.052, +0.158] | 0.02–0.025 is a plateau |
+| 012_taker_flow | 72454823e9 | WATCH | +0.0850 | [−0.030, +0.186] | filter inert, identical to 010 |
+| 013_squeeze_pct_stop | 7bcd1ac0d7 | WATCH | +0.0502 | [−0.102, +0.203] | gross collapsed to +0.129 |
+
+### What we learned
+
+1. **A stop measured in ATR multiples is not a constant price distance, and that was
+   the single largest source of loss in this project.** Idea 001 measured a genuine
+   gross edge (+0.155 R on valid) and still lost, because the same 3.0x ATR stop was
+   1.28% of price in 2020-2022 and 0.78% in 2023-2024, so `cost_r` drifted from 0.109 to
+   0.179 and crossed the gross edge. Adding a `pct` stop to `recipes.py`
+   (`stop.type: "pct"`, a fraction of price with an ATR sanity clamp) took the identical
+   entry from −0.024 to +0.039, cost_r 0.179 → 0.087, maxDD 37.8% → 16.3%. A stop width
+   that scales with volatility scales the *cost* of trading with it.
+
+2. **`gross_r` is not comparable across different stop widths, and reading it as
+   "edge" is a trap.** Idea 004's squeeze entry showed gross_r +0.269, the highest
+   number ever recorded here and roughly double anything else — but it also stopped out
+   71% of its trades, because the squeeze filter selects the calmest periods in the
+   sample and a 3x ATR stop there is ~0.7% of price. Re-running the identical entry with
+   a 2% stop (idea 013) collapsed gross_r to +0.129. The "huge gross edge" was mostly a
+   tight stop inflating R, not information. Compare `net R`, never `gross_r`, across
+   ideas.
+
+3. **The profitable side is the short side, and TRAIN chose it, not us.** Idea 007 held
+   trigger, filters, stop and exits fixed and varied only `direction`. Train picked
+   `short`, and short-only more than doubled valid mean R over both-sides (+0.070 vs
+   +0.039) while halving the trade count and cutting maxDD to 9.7%. This contradicts the
+   prior in Exp 003-011 that short intraday BTC is merely expensive: on this entry the
+   short side carries the edge and the long side dilutes it.
+
+4. **Execution is half the edge, and it is measurable.** A post-only entry at 0.1 ATR
+   took cost_r 0.086 → 0.068 with a 92% fill rate, adding +0.015 R and taking maxDD from
+   9.7% to 8.5%. Note the honest caveat: the post-only limit is filled preferentially
+   when price comes back to the level, so 8% of signals are dropped and the survivors
+   are mildly adverse-selected. The 1.55x from Exp 008/010 is confirmed on native data.
+
+5. **Two plausible improvements were falsified, which is worth as much as the wins.**
+   (a) *Longer holds* (idea 008): train chose the shortest hold offered (8h) over 16h
+   and 24h, and 67% of combos were positive against 50% — the clock is not what
+   truncates winners. (b) *Order-flow confirmation* (idea 012): the `taker_flow` filter
+   at the thresholds the grid chose (`ratio < 0.55`) is satisfied almost always, so it
+   is a no-op — results are identical to idea 010 to the last decimal. The taker ratio
+   simply does not deviate far enough from 0.5 at any threshold that still leaves 100
+   trades.
+
+6. **Lowering the timeframe no longer costs anything — and still did not help.** With a
+   `pct` stop, cost_r is 0.14%/pct regardless of timeframe, which removes the reason
+   every 1m/3m/5m configuration in Exp 003-006 lost. So idea 009 tried 5m with every
+   lookback scaled 3x to hold each indicator's *time* span constant, expecting 3x the
+   signals. It got 205 valid trades versus 233 on 15m and a worse mean R (+0.037 vs
+   +0.070). The statistical-power argument was sound and the market refused it.
+
+7. **The remaining gap is precision, not sign.** The best configuration fails exactly one
+   gate. From its CI, sd ≈ 0.80 R, so PASS needs mean R > 1.568/sqrt(n): 0.103 R at the
+   current 219 trades, 0.128 at 150, 0.157 at 100. It sits at 0.085. Every idea that
+   raised mean R did so by cutting trades, which raises the bar faster than it lowers it.
+   That is the real obstacle, and more parameter search will not clear it.
+
+### Best candidate (idea 010, eval 70fb497bcf)
+
+15m, `donchian_break(48)` + `htf_trend(50,4)` + `adx_min(20)`, **short only**,
+`pct` stop 2.0% (ATR clamp 1.5–8.0), no TP, ATR trail armed at 1.5R trailing 2.5 ATR,
+8h time stop, post-only entry at 0.1 ATR.
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 631 | +0.140 | 0.056 | +0.0839 | | | 12.1% |
+| valid 2023-2024 | 219 | +0.153 | 0.068 | +0.0850 | [−0.030, +0.186] | +6.2% | 8.5% |
+| valid ×1.5 cost | | | | +0.0736 | | | |
+
+Both validation years positive (2023 +0.069, 2024 +0.145), 100% of train combos
+positive, win rate 64%, PF 1.31. It is a **WATCH**: `valid_ci_lo > 0` fails and nothing
+else. **This is not a profitable strategy and it has never been tested on the holdout.**
+
+### Verdict
+
+`WATCH` — hold, do not spend. The batch produced a real, mechanistically explained
+improvement in the honest direction (mean R −0.024 → +0.085, maxDD 37.8% → 8.5%,
+CAGR −11.8% → +6.2%) and one methodological finding worth more than the strategy:
+**on this market the stop, not the signal, decides the result.** But eight WATCHes is not
+evidence, and the one gate that fails is the one that matters — the confidence interval
+still contains zero, so this could easily be a lucky corner of 2023-2024. The holdout
+stays sealed. Do not run `--final`.

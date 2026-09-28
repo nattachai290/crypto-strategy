@@ -1,0 +1,27 @@
+{
+  "name": "007_direction_ablation_pct_stop",
+  "hypothesis": "Idea 002 (both sides) and idea 006 (long only, 30m EMA cross) disagree by an order of magnitude on valid: +0.039 R versus +0.244 R. The two differ in trigger, timeframe and direction at once, so the difference cannot be attributed. This idea holds the trigger, filters, stop and exits at idea 002's proven configuration and varies ONLY the direction, so the size of the short side's contribution is measured rather than assumed. If long-only is materially better on the same signals, then the negative results recorded against short intraday BTC in Exp 003-011 are a statement about that side of the book, and the honest candidate is a one-sided trend system.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 48}],
+    "filters": [
+      {"type": "htf_trend", "n": 50, "mult": 4},
+      {"type": "adx_min", "n": 14, "min": 20}
+    ],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.015, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 12,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "direction": ["both", "long", "short"],
+    "stop.pct": [0.015, 0.02],
+    "max_hold_hours": [8, 12]
+  },
+  "execution": {"entry_mode": "taker"}
+}

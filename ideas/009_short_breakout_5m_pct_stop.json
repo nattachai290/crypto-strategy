@@ -1,0 +1,27 @@
+{
+  "name": "009_short_breakout_5m_pct_stop",
+  "hypothesis": "Idea 007/008 fail on exactly one gate: 233 validation trades give a 95% CI of [-0.041, +0.165] around a mean R of +0.070, so the estimate is too imprecise, not negative. In every earlier experiment of this project a lower timeframe lost, and the reason was always cost_r: the same round trip costs more R when the stop is narrow. That reason no longer applies, because idea 002's percentage-of-price stop makes cost_r = 0.14%/2% = 0.07 R independent of the timeframe. A 5m version of the same setup should therefore keep the same cost_r, produce roughly three times the signals, and shrink the confidence interval by about sqrt(3) without needing a better edge. Every lookback is scaled by 3x (Donchian 48->144, ADX 14->42, ATR 14->42, HTF 50->150, cooldown 4->12) so that every indicator covers the same span of TIME and the only variable that changes is how finely the market is sampled.",
+  "strategy": "recipe",
+  "tf": 5,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 144}],
+    "filters": [
+      {"type": "htf_trend", "n": 150, "mult": 4},
+      {"type": "adx_min", "n": 42, "min": 20}
+    ],
+    "direction": "short",
+    "stop": {"type": "pct", "pct": 0.02, "min_atr": 0.5, "max_atr": 24.0},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 8,
+    "cooldown_bars": 12,
+    "atr_n": 42
+  },
+  "grid": {
+    "stop.pct": [0.015, 0.02],
+    "max_hold_hours": [6, 8, 12],
+    "trail_atr": [2.5, 3.5]
+  },
+  "execution": {"entry_mode": "taker"}
+}
