@@ -99,7 +99,8 @@ make a copy with a tiny change just to get another holdout try.
 **Step 8 — Diagnose, don't guess.** Before a v2, look at the numbers in the
 report: `gross_r` vs `cost_r`, exit mix (stop/tp/time %), avg hold,
 long vs short, per-year R. Also look at the trades file
-`results/<SYMBOL>/eval_trades/<eval_id>_valid.csv`. Typical diagnoses:
+`results/<SYMBOL>/eval_trades/<eval_id>_valid.csv.gz` (gzip, written by
+`evaluate.py`; `pd.read_csv` opens it directly). Typical diagnoses:
 - `cost_r` ≥ `gross_r` → stop too tight or too many trades: widen the stop, add a filter, use a higher tf.
 - `time_rate` very high → trades go nowhere: shorter `max_hold_hours`, or a better trigger.
 - TP rarely hit, stop often hit → TP too far, or the trigger is late.
@@ -236,7 +237,8 @@ journal/<SYMBOL>/
 results/<SYMBOL>/
     evaluations.csv         every evaluate.py run (one row each)
     holdout_log.csv         every holdout use (the lock)
-    eval_trades/            trade lists per evaluation (git-ignored, regenerable)
+    eval_trades/            trade list per evaluation, <eval_id>_valid.csv.gz (committed;
+                            re-create a missing one with evaluate.py <idea> --trades-only)
     legacy/                 Exp 003–010 outputs + logs/, read-only history (see its README)
 data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 ```

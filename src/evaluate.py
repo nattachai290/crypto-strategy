@@ -170,6 +170,22 @@ def _init_worker(tf: int) -> None:
         _G["funding"] = E.load_funding()
 
 
+def save_trades(res, eval_id: str, split: str) -> Path:
+    """Trade list of one run -> results/<SYMBOL>/eval_trades/<eval_id>_<split>.csv.gz
+
+    Floats are rounded to 6 decimals and the file is gzip-compressed (about 1/5
+    of the plain size), so every evaluation's trades can live in git.
+    Read it back with pd.read_csv(path) - pandas decompresses by itself."""
+    TRADES_DIR.mkdir(parents=True, exist_ok=True)
+    path = TRADES_DIR / f"{eval_id}_{split}.csv.gz"
+    df = res.to_trades_df()
+    if len(df):
+        num = df.select_dtypes("float").columns
+        df[num] = df[num].round(6)
+    df.to_csv(path, index=False, compression={"method": "gzip", "mtime": 0})
+    return path
+
+
 def signals_for(strategy: str, params: dict) -> pd.DataFrame:
     bars, funding = _G["bars"], _G["funding"]
     if strategy == "recipe":
@@ -305,6 +321,9 @@ def main() -> None:
     ap.add_argument("--final", action="store_true", help="also run the one-time HOLDOUT (PASS only)")
     ap.add_argument("--rerun", action="store_true", help="evaluate again even if this exact idea was run")
     ap.add_argument("--list", action="store_true", help="list recipe building blocks and strategies")
+    ap.add_argument("--trades-only", action="store_true",
+                    help="re-create the VALID trade file of an idea that was already evaluated; "
+                         "records nothing and never touches the holdout")
     ap.add_argument("--workers", type=int, default=min(8, os.cpu_count() or 1))
     a = ap.parse_args()
 
@@ -323,6 +342,27 @@ def main() -> None:
                     idea["execution"], C.DATA_START, C.VALID_START, C.HOLDOUT_START)
 
     prior = pd.read_csv(EVAL_CSV) if EVAL_CSV.exists() else pd.DataFrame()
+
+    if a.trades_only:
+        # Re-run only the recorded, frozen choice on VALID and write its trades.
+        # No grid, no record, no holdout. The trade count and mean R must match
+        # the recorded row, or the code has changed since the evaluation.
+        if not (len(prior) and eval_id in set(prior["eval_id"])):
+            raise SystemExit(f"{eval_id} has not been evaluated; run it normally first")
+        r = prior[prior["eval_id"] == eval_id].iloc[-1]
+        _G["bars"] = E.get_bars(tf)
+        _G["funding"] = E.load_funding()
+        p_rec, ex_rec = json.loads(r["chosen_params"]), json.loads(r["chosen_exec"])
+        res = backtest(signals_for(idea["strategy"], p_rec), T_VALID, T_HOLD, ex_rec)
+        path = save_trades(res, eval_id, "valid")
+        t = res.to_trades_df()
+        n, m = len(t), (float(t["r_multiple"].mean()) if len(t) else float("nan"))
+        same = n == int(r["valid_trades"]) and (n == 0 or abs(m - float(r["valid_mean_r"])) < 1e-9)
+        print(f"{eval_id} {idea['name']}: {n} trades, mean R {m:+.4f} -> {path.name}"
+              + ("" if same else f"  !! MISMATCH with the record ({int(r['valid_trades'])} trades, "
+                                 f"{float(r['valid_mean_r']):+.4f}): code changed since the evaluation"))
+        return
+
     if len(prior) and eval_id in set(prior["eval_id"]):
         r = prior[prior["eval_id"] == eval_id].iloc[-1]
         if a.final and r["verdict"] != "PASS":
@@ -405,8 +445,7 @@ def main() -> None:
             print(f"\nDUPLICATE: validation result is identical to {duplicate_of} "
                   f"({hit.iloc[0]['name']}) - the change had no effect on any trade.")
 
-    TRADES_DIR.mkdir(parents=True, exist_ok=True)
-    res_v.to_trades_df().to_csv(TRADES_DIR / f"{eval_id}_valid.csv", index=False)
+    save_trades(res_v, eval_id, "valid")
 
     row = {
         "eval_id": eval_id, "timestamp": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -444,7 +483,7 @@ def main() -> None:
                   and h_stress["mean_r"] > 0 and hold["p_gt_0"] >= 0.90
                   and hold["max_dd"] <= C.EVAL_MAX_DD)
             row["holdout_verdict"] = "CONFIRMED" if ok else "FAILED"
-            res_h.to_trades_df().to_csv(TRADES_DIR / f"{eval_id}_holdout.csv", index=False)
+            save_trades(res_h, eval_id, "holdout")
             _append_csv(HOLDOUT_CSV, {
                 "holdout_key": hkey, "eval_id": eval_id, "timestamp": row["timestamp"],
                 "name": idea["name"], "tf": tf, "params": row["chosen_params"], "exec": row["chosen_exec"],

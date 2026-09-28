@@ -149,11 +149,11 @@ below is only the source timeframe the idea is written in.
 whether *other* short structures work, which would show that the short edge
 is real and not one lucky pattern.
 
-**R1.0 — Analysis of idea 010, no new evaluation.** Load
-`results/BTCUSDT/eval_trades/70fb497bcf_valid.csv` (regenerate it with
-`python src/evaluate.py ideas/010_short_breakout_post_only.json --rerun` if
-missing; the new row is fine). Write a short analysis in the Round 1
-pre-registration entry:
+**R1.0 — Analysis of idea 010, no new evaluation.** Load its trades with
+`pd.read_csv("results/BTCUSDT/eval_trades/70fb497bcf_valid.csv.gz")` (in git;
+if it is ever missing, `python src/evaluate.py ideas/010_short_breakout_post_only.json --trades-only`
+re-creates it without recording anything). Write a short analysis in the
+Round 1 pre-registration entry:
 - R by hour of day (UTC), by weekday, by month
 - R vs the 8h return of BTC *before* entry (is it just "short after a drop"?)
 - R vs the funding rate at entry
