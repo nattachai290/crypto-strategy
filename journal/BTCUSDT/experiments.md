@@ -995,3 +995,142 @@ honest next question is not another parameter but the one Exp 013 could not answ
 does a 12-hour Donchian break, taken short in a downtrend, revert often enough to win 64%
 of the time — and if the answer is "because BTC drifts down", that is a statement about
 the asset, not an edge, and should be written down as such.
+
+---
+
+## Exp 014 — STOPPED: the engine had the wrong sign on every short trade
+
+**Date:** 2026-09-29
+**Status:** interrupted. Round 1 was NOT started. No idea was evaluated in this entry.
+
+Found while executing R1.0 of `docs/research/PLAN.md` (the analysis of idea 010, which
+reads its trade list directly). R1.0 is analysis only, so it is unaffected; everything
+that depends on the engine's PnL is.
+
+### The bug
+
+`src/backtest.py`, inside `close_position()`:
+
+```python
+net   = pos_qty * (px_adj - pos_entry) - fee - pos_fees + pos_funding   # line 308
+gross = pos_qty * (px_adj - pos_entry)                                   # line 326
+```
+
+`pos_side` is missing. For a long that expression is right; for a short the PnL is
+`pos_qty * (pos_entry - px_adj)` and the sign is inverted. Everything else in the
+function's neighbourhood carries the sign correctly, which is what makes this an
+oversight rather than a convention:
+
+| place | expression | correct? |
+|---|---|---|
+| entry slippage (l.363) | `o[i] * (1.0 + slip * want)` | yes |
+| stop / target placement (l.403-404) | `entry -/+ want * sd` | yes |
+| funding (l.429-430) | `... * (1.0 if pos_side > 0 else -1.0)` | yes |
+| mark-to-market equity (l.491) | `pos_qty * pos_side * (c[i] - pos_entry)` | yes |
+| **realised PnL / R (l.308, 314, 326)** | **`pos_qty * (px_adj - pos_entry)`** | **NO** |
+
+### Proof: a long and a short on identical signals are mirror images
+
+One synthetic series, price falling cleanly 100.00 -> 99.00, zero costs, stop 2.0 wide,
+no target, time exit after 5 bars. The only difference between the two runs is `side`.
+
+| run | entry | exit | gross_pnl | r_multiple |
+|---|---|---|---|---|
+| `side = -1` (should **profit**: price fell) | 99.9831 | 99.9153 | **−0.033898** | **−0.0339** |
+| `side = +1` (should **lose**) | 99.9831 | 99.9153 | **−0.033898** | **−0.0339** |
+
+Identical to six decimals. A long and a short on the same trade cannot have the same
+P&L, so the engine is wrong for one of them, and the short's sign is the one that is.
+
+### Why the test suite passed
+
+Two independent reasons, and both are worth recording:
+
+1. **The hand-computed test is a long.** `test_engine.py` §1 is titled "flat market
+   that drifts down into the stop of a long". There is no hand-computed short anywhere
+   in the file.
+2. **The differential reference shares the bug.** `reference_backtest()` was written
+   "independently" but from the same reading, and at `test_engine.py:100` it has the
+   identical line `pnl = pos["qty"] * (px_adj - pos["entry"])`. §2 compares the engine
+   against that reference over random signals that *do* include shorts
+   (`p=[0.7, 0.15, 0.15]` for 0/+1/-1), so it exercises the broken path on every seed
+   - and the two implementations agree perfectly, because they are wrong in the same
+   way. A differential test can only catch a discrepancy, never a shared assumption.
+
+The test that would have caught it is one line: the same synthetic bar series run once
+with `side = +1` and once with `side = -1`, asserting the two P&Ls are exact negatives
+of each other. That is a symmetry property, not a hand-computed constant, so it does
+not depend on anyone remembering the sign convention.
+
+### Impact on every result recorded so far
+
+The R of a short trade can be recovered exactly from the committed trade lists, because
+the only error is the sign of the price-difference term:
+
+```
+D      = (fees - funding) / (qty * stop_dist)      # cost in R
+r_true = -r_reported - 2*D                          # side = -1
+r_true =  r_reported                                # side = +1
+```
+
+| eval_id | idea | n | n short | reported mean R | **true mean R** | true 95% CI |
+|---|---|---|---|---|---|---|
+| 70fb497bcf | 010 short breakout post-only | 219 | 219 | +0.0850 | **−0.1721** | [−0.274, −0.057] |
+| 72454823e9 | 012 same + taker_flow | 219 | 219 | +0.0850 | **−0.1721** | [−0.274, −0.057] |
+| 942d22a978 | 014 same + funding filter | 219 | 219 | +0.0850 | **−0.1721** | [−0.274, −0.057] |
+| 93ef5c196c | 007 direction ablation, short leg | 233 | 233 | +0.0698 | **−0.1944** | [−0.291, −0.084] |
+| 0269bf5d77 | 008 exit study, short leg | 233 | 233 | +0.0698 | **−0.1944** | [−0.291, −0.084] |
+| 32e903fb0d | 009 5m short | 205 | 205 | +0.0374 | **−0.1734** | [−0.305, −0.026] |
+| 785b9ba3b1 | 015 supertrend short | 147 | 147 | +0.0384 | **−0.1396** | [−0.250, −0.023] |
+| 29b6b39400 | 011 wider stop, short | 202 | 202 | +0.0637 | **−0.1438** | [−0.239, −0.027] |
+| 5066a68b70 | 002 pct stop, both sides | 455 | 209 | +0.0389 | **−0.0356** | [−0.122, +0.054] |
+| 7bcd1ac0d7 | 013 squeeze pct stop, both | 166 | 63 | +0.0502 | **−0.0911** | [−0.237, +0.062] |
+| bd648a5e36 | example trend breakout | 497 | 222 | +0.0160 | **−0.0087** | [−0.105, +0.090] |
+| 252109899e | 001 both sides | 699 | 316 | −0.0242 | **−0.0683** | [−0.186, +0.058] |
+| c89e3474cc | example range reversion | 112 | 68 | +0.0596 | **−0.2183** | [−0.373, −0.059] |
+| d3042109b4 | 004 squeeze, both | 195 | 70 | +0.0641 | **−0.2092** | [−0.435, +0.040] |
+| 55b321947e | 003 funding fade | 7 | 7 | −0.9430 | +0.7514 | [−0.110, +1.586] |
+| cdde91ae48 | 005 session open, both | 318 | 142 | −0.0750 | +0.0258 | [−0.131, +0.187] |
+| c208dafd61 | 006 long-only trend, 30m | 42 | **0** | +0.2437 | +0.2437 | [−0.110, +0.645] |
+| dc08ab8828 | 016 long reversion | 74 | **0** | −0.0614 | −0.0614 | [−0.279, +0.164] |
+
+- **16 of 18 evaluations traded the short side. 13 of 18 have the sign of their edge
+  flipped.**
+- The two long-only evaluations are untouched, and they are the only numbers in the
+  project that survive as they stand.
+- The best candidate of Exp 012-013 (idea 010, the WATCH) is in truth a **significantly
+  losing** strategy: −0.1721 R with a CI that excludes zero on the wrong side.
+- The grid selections on TRAIN were made on inverted expectancy, so every short-side
+  parameter choice in Exp 012-013 is void, not just the reported verdicts.
+- Mixed long/short runs are also wrong in a second-order way: after a short closes,
+  `cash` is wrong, so later position sizes are wrong. Only pure long-only runs are
+  exactly correct.
+
+### What this does to the conclusions of Exp 012 and Exp 013
+
+They are backwards, and specifically:
+
+- "The short side is the only place with any positive signal, and TRAIN chose it" - the
+  short side is the only place that loses *significantly*, and TRAIN chose it because
+  the inverted number looked best.
+- "The effect is specific to the 12h Donchian break, because Supertrend shorts gave
+  0% of train combos positive" - both lose. The comparison was between two inverted
+  results, so it carried no information.
+- "The edge survives lower timeframes / post-only / wider stops" - all of those were
+  measured on inverted PnL.
+- What *does* survive: the cost-mechanism findings, which are about `cost_r`, not about
+  the sign of the edge. A stop must be a price distance rather than an ATR multiple
+  (Exp 012), and post-only is worth ~+0.015 R. Those statements are unaffected, because
+  the sign error applies equally to the gross and the cost side of any single trade.
+  Exp 012's "compare net R, never gross R" advice also survives.
+- The only surviving result of any size is **idea 006: long-only, 30m EMA cross,
+  +0.2437 R on 42 validation trades** - too few trades to be anything, but it is now the
+  most interesting number in `results/BTCUSDT/`.
+
+### Verdict
+
+`REJECT` the whole of Exp 012-013's conclusions; keep the cost mechanism. Do **not**
+start Round 1: `PLAN.md` §2 is built on "the short side is the only positive signal" and
+on "no new long-only ideas in Rounds 1-2", and both of those are now false, so the plan
+needs revising before it is executed. This is a Level 3 change (`src/backtest.py`) and
+AGENTS.md §5 / PLAN.md §9 require the owner's yes before the fix is made.

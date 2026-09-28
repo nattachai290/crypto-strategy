@@ -1,6 +1,33 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-28, after Exp 012. Rules for agents: `AGENTS.md`._
+_Last updated: 2026-09-29, after Exp 014. Rules for agents: `AGENTS.md`._
+
+> 🛑 # READ THIS FIRST — the engine is WRONG for short trades (Exp 014)
+>
+> `src/backtest.py` `close_position()` computes realised PnL as
+> `pos_qty * (px_adj - pos_entry)` **without `pos_side`**. For a short that
+> inverts the sign of the P&L. Entry slippage, stop/target placement, funding
+> and the mark-to-market equity line all carry the sign correctly, so this is an
+> oversight in one place, not a convention.
+>
+> **Consequence: every evaluation that traded the short side is wrong.** 16 of
+> the 18 evaluations on record did, and 13 of them have the sign of their edge
+> flipped. The best candidate of Exp 012-013 (idea 010, WATCH at +0.085 R) is
+> really **−0.1721 R**, CI [−0.274, −0.057] — significantly *losing*.
+>
+> The trade *lists* are still valid (entry/exit decisions never used the P&L),
+> and a short trade's true R is recoverable exactly from them:
+> `r_true = -r_reported - 2*(fees - funding)/(qty*stop_dist)`.
+>
+> `test_engine.py` passes and cannot catch this: its hand-computed test is a
+> long, and the "independent" reference implementation at `test_engine.py:100`
+> contains the identical wrong line, so the differential test only proves the
+> two agree.
+>
+> **The fix is a Level 3 change and is waiting on the owner. Do not run
+> `evaluate.py` again until it is decided — every new number would be built on
+> a wrong engine.** Full evidence and the corrected table for all 18
+> evaluations: `experiments.md`, Exp 014.
 
 > **How research is done from Exp 011 on:** write an idea file in `ideas/`,
 > run `python src/evaluate.py ideas/<file>.json`, follow the verdict
@@ -45,31 +72,36 @@ Definitive walk-forward, 15m, 9 folds (2022-01 .. 2026-08), native Binance bars:
 Post-only entry (taker exit) improves net R by +0.01..+0.10 but no CI
 excludes zero.
 
-## Best candidate so far (Exp 012, idea 010, eval 70fb497bcf) — WATCH
+## Best candidate so far (Exp 012, idea 010) — **WITHDRAWN, see Exp 014**
 
-15m, `donchian_break(48)` + `htf_trend(50,4)` + `adx_min(20)`, **short only**,
-`pct` stop 2.0%, no TP, ATR trail 1.5R / 2.5 ATR, 8h hold, post-only @ 0.1 ATR.
+~~15m, `donchian_break(48)` + `htf_trend(50,4)` + `adx_min(20)`, **short only**,
+`pct` stop 2.0%, no TP, ATR trail 1.5R / 2.5 ATR, 8h hold, post-only @ 0.1 ATR.~~
 
-| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
-|---|---|---|---|---|---|---|---|
-| train 2020-2022 | 631 | +0.140 | 0.056 | +0.0839 | | | 12.1% |
-| valid 2023-2024 | 219 | +0.153 | 0.068 | +0.0850 | [−0.030, +0.186] | +6.2% | 8.5% |
-| valid ×1.5 cost | | | | +0.0736 | | | |
+**This is not a candidate. The engine inverted every short trade's P&L (Exp 014).**
+Its reported valid +0.0850 R is really **−0.1721 R**, CI [−0.274, −0.057]. Its TRAIN
+parameter selection was made on inverted expectancy too, so nothing about it survives.
+The same applies to ideas 001, 002, 003, 004, 005, 007, 008, 009, 011, 012, 013, 014,
+`example_trend_breakout` and `example_range_reversion`.
 
-Fails **one** gate: `valid_ci_lo > 0`. HOLDOUT 2025-01..2026-08 is still
-**completely unused** — nothing has passed, and only a PASS may spend it.
-Not a profitable strategy; a candidate that has not been proven.
+The **only** evaluations that stand as recorded are the two that never took a short:
 
-**Exp 013 weakened this case rather than strengthening it.** Three neighbouring
-hypotheses all failed to move it, and one of them is direct evidence against a
-general explanation: a Supertrend short entry on the same trades and the same
-costs gives train mean R **−0.0212 with 0% of combos positive** (vs **+0.0839
-with 100%** for the Donchian version). Funding-crowding and taker-flow filters
-are inert at any threshold that keeps ~100 trades. So the effect is specific to
-the 12h Donchian break, short, in a downtrend — and it is **unexplained**. Treat
-it as a candidate, never as an edge. See Exp 013 in `experiments.md`.
+| eval_id | idea | n valid | mean R | 95% CI | verdict |
+|---|---|---|---|---|---|
+| c208dafd61 | 006 long-only trend, 30m EMA cross | 42 | +0.2437 | [−0.110, +0.645] | INCONCLUSIVE (too few) |
+| dc08ab8828 | 016 long mean reversion, 15m | 74 | −0.0614 | [−0.279, +0.164] | REJECT |
+
+Idea 006 is now the most interesting number in the project and the natural starting
+point once the engine is fixed — but 42 validation trades is far too few, and its TRAIN
+mean R was +0.0015, so it is a lead, not a result.
+
+**Exp 013's comparison was also void** (both legs were inverted): a Supertrend
+short on the same trades gave TRAIN −0.0212 with 0% of combos positive, but every
+number in that comparison was an inverted P&L, so it carried no information.
 
 ## What is actually settled (reusable, any symbol)
+
+These survive Exp 014 because they are about the cost side of a trade, not the
+sign of its P&L.
 
 - **A stop must be a price distance, not a volatility multiple.** `cost_r =
   round_trip_cost / stop_pct`. The same 3.0x ATR was 1.28% of price in
@@ -78,22 +110,27 @@ it as a candidate, never as an edge. See Exp 013 in `experiments.md`.
 - **`gross_r` is not comparable across stop widths** and must never be read as
   "edge" on its own. A narrow ATR stop inflates R and produces large gross_r
   *because* it stops out most of the trades.
-- **Post-only entry is worth ~+0.015 R** at a 92% fill rate (cost_r 0.086 →
-  0.068), confirmed on native data. The 8% unfilled signals are mildly
-  adverse-selected.
-- **The long side of intraday BTCUSDT has produced nothing** in 16 evaluations:
-  continuation negative, mean reversion gross_r ≈ +0.02, long-only trend
-  +0.0015 on train.
+- **Post-only entry cuts the round trip from 0.14% to 0.09%** of price
+  (measured in Exp 008/010), at a ~92% fill rate; the unfilled signals are
+  mildly adverse-selected. The per-trade saving is real; the "+0.015 R" figure
+  in Exp 012 was measured on inverted P&L and should be re-measured.
 - **Lower timeframes no longer carry a cost penalty** (a `pct` stop makes
-  cost_r timeframe-independent) — and 5m still did not produce more trades or
-  better mean R than 15m.
+  cost_r timeframe-independent). The 5m comparison that "failed" was on
+  inverted P&L and should be re-run.
 
 ## Which result files can be trusted
 
-- `results/BTCUSDT/evaluations.csv` and `holdout_log.csv`: current workflow,
-  fixed engine, native data. ✅
-- `results/BTCUSDT/legacy/`: Exp 003–010 outputs. Mostly stale (shifted
-  data). A per-file trust table is in `results/BTCUSDT/legacy/README.md`.
+- `results/BTCUSDT/eval_trades/*.csv.gz`: the trade *lists* are valid — entry
+  and exit decisions never used the P&L. A short trade's true R is recoverable
+  exactly: `r_true = -r_reported - 2*(fees - funding)/(qty*stop_dist)`.
+- `results/BTCUSDT/evaluations.csv` and `holdout_log.csv`: native data and the
+  Exp 011 exit fixes are fine, but **every row that traded the short side has a
+  wrong mean R, wrong CI, wrong CAGR and wrong verdict.** Only the two long-only
+  rows stand. Do not edit this file (AGENTS.md rule 4); the corrected table is
+  in `experiments.md` Exp 014.
+- `results/BTCUSDT/legacy/`: Exp 003–010 outputs. Mostly stale (shifted data)
+  and, where they traded shorts, affected by the same bug. A per-file trust
+  table is in `results/BTCUSDT/legacy/README.md`.
 
 ## Known issues / loose ends
 
@@ -120,25 +157,26 @@ it as a candidate, never as an edge. See Exp 013 in `experiments.md`.
 6. `SESSION_START_HOUR=0 / SESSION_END_HOUR=24` with `FLAT_AT_SESSION_END=True`
    — the session filter is effectively off; holding limits come from each
    strategy's `max_hold`.
+7. 🛑 **The short-side P&L sign bug (Exp 014) is still unfixed and is waiting
+   on the owner.** It is a Level 3 change to `src/backtest.py`
+   (AGENTS.md §5, PLAN.md §9).
 
 ## Suggested next steps (in order)
 
-1. Run the start-of-session checklist in `AGENTS.md` §0, then follow
-   `docs/research/PLAN.md`.
-2. Do **not** grind more variants of idea 010. Exp 012 showed why: raising
-   mean R always cut the trade count, and PASS needs mean R > 1.568/sqrt(n),
-   so precision got worse, not better. A genuinely different mechanism is
-   needed, not a better parameter.
-3. Untested backlog items that the Exp 012–013 findings now make interesting:
-   idea 7 trend pullback on the short side (`pullback` + `trend_ema`), since
-   every short idea so far has been a breakout; and idea 13 long-vs-short on
-   the Donchian entry with a `pct` stop, to check whether the short/long
-   asymmetry of idea 007 holds on native data. Use a `pct` stop in both.
-   **Do not** re-run mean reversion or funding crowding: ideas 003, 014 and 016
-   have now answered them.
-4. The open question worth more than another sweep: idea 010's 82% time-exit
-   rate and its unexplained nature. If the answer turns out to be "BTC drifts
-   down over 8 hours", that is a statement about the asset, not an edge, and it
-   should be recorded as such rather than traded.
+1. 🛑 **Fix the engine first.** Nothing else is worth doing until
+   `close_position()` carries `pos_side`, and until `test_engine.py` has a
+   test that a long and a short on the same bar series produce exactly
+   opposite P&Ls. Owner approval required.
+2. Re-run the two surviving long-only ideas (006, 016) to confirm the
+   corrected engine reproduces their numbers — that is the acceptance test for
+   the fix, and 006 (+0.2437 on 42 valid trades) is the only lead left.
+3. **Revise `docs/research/PLAN.md` before starting Round 1.** §2 of the plan
+   rests on two statements that Exp 014 falsified: "the short side is the
+   only positive signal" (it is the only side that loses significantly) and
+   "no new long-only ideas in Rounds 1–2". The research direction is now the
+   opposite of what the plan says.
+4. Re-measure, on the fixed engine, the two cost findings that survive:
+   post-only's per-trade benefit, and the 5m-vs-15m comparison. Both were
+   reported as differences between inverted P&Ls.
 5. Housekeeping, lower priority: the stale Exp 003–009 result files and the
    ledger `data_version` column (see above).
