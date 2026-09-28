@@ -57,6 +57,34 @@ Fails **one** gate: `valid_ci_lo > 0`. HOLDOUT 2025-01..2026-08 is still
 **completely unused** — nothing has passed, and only a PASS may spend it.
 Not a profitable strategy; a candidate that has not been proven.
 
+**Exp 013 weakened this case rather than strengthening it.** Three neighbouring
+hypotheses all failed to move it, and one of them is direct evidence against a
+general explanation: a Supertrend short entry on the same trades and the same
+costs gives train mean R **−0.0212 with 0% of combos positive** (vs **+0.0839
+with 100%** for the Donchian version). Funding-crowding and taker-flow filters
+are inert at any threshold that keeps ~100 trades. So the effect is specific to
+the 12h Donchian break, short, in a downtrend — and it is **unexplained**. Treat
+it as a candidate, never as an edge. See Exp 013 in `experiments.md`.
+
+## What is actually settled (reusable, any symbol)
+
+- **A stop must be a price distance, not a volatility multiple.** `cost_r =
+  round_trip_cost / stop_pct`. The same 3.0x ATR was 1.28% of price in
+  2020-22 and 0.78% in 2023-24, moving cost_r 0.109 → 0.179 across a single
+  configuration. Use `"stop": {"type": "pct", ...}`.
+- **`gross_r` is not comparable across stop widths** and must never be read as
+  "edge" on its own. A narrow ATR stop inflates R and produces large gross_r
+  *because* it stops out most of the trades.
+- **Post-only entry is worth ~+0.015 R** at a 92% fill rate (cost_r 0.086 →
+  0.068), confirmed on native data. The 8% unfilled signals are mildly
+  adverse-selected.
+- **The long side of intraday BTCUSDT has produced nothing** in 16 evaluations:
+  continuation negative, mean reversion gross_r ≈ +0.02, long-only trend
+  +0.0015 on train.
+- **Lower timeframes no longer carry a cost penalty** (a `pct` stop makes
+  cost_r timeframe-independent) — and 5m still did not produce more trades or
+  better mean R than 15m.
+
 ## Which result files can be trusted
 
 Exp 010 found that every experiment before it (003–009) ran on bars shifted
@@ -114,15 +142,16 @@ journal; verify before relying on it.)
    mean R always cut the trade count, and PASS needs mean R > 1.568/sqrt(n),
    so precision got worse, not better. A genuinely different mechanism is
    needed, not a better parameter.
-3. Untested backlog items that the Exp 012 findings now make interesting:
-   idea 3 range mean reversion and idea 4 crowded funding (both still
-   untested with a `pct` stop — 003 was INCONCLUSIVE because
-   `funding_extreme` is a crossing on 8h data, so use `funding_not_crowded`
-   as a filter on a price trigger instead); idea 7 trend pullback with flow
-   confirmation. Use a `pct` stop in all of them.
-4. Worth considering, and honest about what it is: idea 010's 82% time-exit
-   rate means its gross edge is an 8-hour BTC drift, not a breakout
-   phenomenon. If the next batch cannot raise mean R, the correct conclusion
-   is that the edge is drift, and drift is not tradable at these costs.
+3. Untested backlog items that the Exp 012–013 findings now make interesting:
+   idea 7 trend pullback on the short side (`pullback` + `trend_ema`), since
+   every short idea so far has been a breakout; and idea 13 long-vs-short on
+   the Donchian entry with a `pct` stop, to check whether the short/long
+   asymmetry of idea 007 holds on native data. Use a `pct` stop in both.
+   **Do not** re-run mean reversion or funding crowding: ideas 003, 014 and 016
+   have now answered them.
+4. The open question worth more than another sweep: idea 010's 82% time-exit
+   rate and its unexplained nature. If the answer turns out to be "BTC drifts
+   down over 8 hours", that is a statement about the asset, not an edge, and it
+   should be recorded as such rather than traded.
 5. Housekeeping, lower priority: the stale Exp 003–009 result files and the
    ledger `data_version` column (see above).

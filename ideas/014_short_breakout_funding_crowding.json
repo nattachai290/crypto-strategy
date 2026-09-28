@@ -1,0 +1,27 @@
+{
+  "name": "014_short_breakout_funding_crowding",
+  "hypothesis": "Idea 010's short breakout wins 64% of its trades and we still cannot say why, which means we cannot tell whether it will survive the next regime. There is one mechanism that would make SHORT breakouts specifically work rather than breakouts in general: crowding. A leveraged long crowd pays funding, so it is structurally short of patience; when price makes a new 12-hour low that crowd is liquidated and its forced selling is what extends the move. Under that mechanism the edge must be concentrated where longs are the crowded side - positive funding - and must disappear when funding is negative and the crowd is already short. This idea therefore blocks the short side when funding is extreme on the short side, which is the only condition under which the crowding story predicts the trade should NOT be taken. If mean R rises materially, the edge has a reason and a defined population; if it is unchanged, idea 010 is unexplained drift and should not be trusted.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 48}],
+    "filters": [
+      {"type": "htf_trend", "n": 50, "mult": 4},
+      {"type": "adx_min", "n": 14, "min": 20},
+      {"type": "funding_not_crowded", "thresh": 0.0003}
+    ],
+    "direction": "short",
+    "stop": {"type": "pct", "pct": 0.02, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 8,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "filters.2.thresh": [0.0001, 0.0002, 0.0003, 0.0005],
+    "stop.pct": [0.015, 0.02]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

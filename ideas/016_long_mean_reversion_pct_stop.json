@@ -1,0 +1,24 @@
+{
+  "name": "016_long_mean_reversion_pct_stop",
+  "hypothesis": "Every long-side idea in this project has been a continuation idea, and every continuation idea has lost; every idea that showed gross_r worth having was short. The untested corner is the opposite trade: after BTC has been pushed away from its own recent mean, does it come back? The counterparty is specific and identifiable - the traders who bought the extension are underwater, and a bounce is the price at which they can exit without admitting the loss, so their selling caps the bounce and the move reverts. Crucially this is the one idea where a percentage-of-price stop makes sense on its own terms rather than as a cost hack: a reversion has a known destination (the mean), so the stop is placed below the stretch, not at a volatility multiple. The old range-reversion example failed on train, but it used a swing stop clamped to 3 ATR minimum, so its risk was never controlled. This tests the only long-side mechanism left, with the cost side fixed.",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "zscore_revert", "n": 96, "z": 2.0}],
+    "filters": [
+      {"type": "adx_max", "n": 14, "max": 25}
+    ],
+    "direction": "long",
+    "stop": {"type": "pct", "pct": 0.015, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "r", "r": 2.0},
+    "max_hold_hours": 12,
+    "cooldown_bars": 8,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.z": [2.0, 2.5],
+    "filters.0.max": [20, 28],
+    "stop.pct": [0.012, 0.015]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

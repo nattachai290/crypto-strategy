@@ -909,3 +909,89 @@ CAGR −11.8% → +6.2%) and one methodological finding worth more than the stra
 evidence, and the one gate that fails is the one that matters — the confidence interval
 still contains zero, so this could easily be a lucky corner of 2023-2024. The holdout
 stays sealed. Do not run `--final`.
+
+---
+
+## Exp 013 — Asking why the short edge exists, and not finding out
+
+**Date:** 2026-09-28
+**Status:** complete — 3 ideas, 1 WATCH (identical to 010), 2 REJECT. **Holdout still
+never touched.** 16 evaluations run in total; 0 PASS.
+
+Exp 012 ended with a WATCH and one uncomfortable possibility: idea 010's edge had never
+been explained, and an unexplained edge that was found by trying thirteen things is
+exactly the kind of edge that is a coincidence. These three ideas attack that
+possibility directly instead of trying to improve the number.
+
+### Ideas tested
+
+| idea file | eval_id | verdict | valid mean R | 95% CI | train combos positive | note |
+|---|---|---|---|---|---|---|
+| 014_short_breakout_funding_crowding | 942d22a978 | WATCH | +0.0850 | [−0.030, +0.186] | 100% | **identical to 010** — filter inert |
+| 015_short_supertrend_robustness | 785b9ba3b1 | REJECT | +0.0384 | [−0.077, +0.149] | **0%** | edge does **not** reproduce |
+| 016_long_mean_reversion_pct_stop | dc08ab8828 | REJECT | −0.0614 | [−0.279, +0.164] | 0% | long side has no gross edge |
+
+### What we learned
+
+1. **The short edge is not a crowding edge.** Idea 014 blocked shorts when funding was
+   extreme *on the short side* — the one condition under which the liquidation-crowding
+   story predicts the trade should be skipped. Train selected the loosest threshold in
+   the grid (0.0001), which blocks essentially nothing, and valid came back identical to
+   idea 010 to the last decimal: 219 trades, +0.0850. The leveraged-long-crowd
+   explanation for short breakouts is not supported. Funding is not where this lives.
+
+2. **The short edge is not "short BTC in a downtrend" either. It is a narrow pattern.**
+   This is the important result. Idea 015 swapped the Donchian channel for a Supertrend
+   flip — a completely unrelated mechanism, an ATR trailing stop instead of a price
+   channel — keeping only direction, the trend filter and the stop. Train mean R was
+   **−0.0212 with 0% of combos positive**, against **+0.0839 with 100% positive** for the
+   Donchian version on the same period. Same market, same direction, same costs, same
+   stop width, opposite result. So the +0.085 R belongs to the 12-hour Donchian break
+   specifically, not to shorting, not to the trend, not to the execution.
+
+3. **The long side has no gross edge of any kind.** Idea 016 tested the one long
+   mechanism never tried — reversion after a 2-2.5 sigma stretch, with a stop placed
+   below the stretch where it belongs rather than at a volatility multiple. gross_r was
+   +0.020 on train and +0.033 on valid: indistinguishable from zero, in both periods,
+   in both years, and 0% of train combos positive. Combined with Exp 012's idea 006
+   (long-only trend, +0.0015 on train), the long side of intraday BTCUSDT at retail costs
+   produced nothing worth trading in sixteen evaluations. Every candidate with a gross
+   edge in this project has been short.
+
+4. **Two consecutive ideas returned results bit-identical to idea 010.** Ideas 012, 014
+   and 015 together establish something the numbers alone hide: idea 010 sits in a wide
+   basin, not on a spike. Nothing in its neighbourhood — order flow, funding crowding, a
+   different entry mechanism — moves it. A wide basin is genuinely reassuring about
+   *robustness of the estimate within this sample*, and it is exactly what a
+   parameter-sweep artefact does not look like. It is not reassuring about the sample.
+
+### Where this leaves the best candidate
+
+Idea 010 is unchanged and still the best thing here: valid 219 trades, gross +0.153,
+cost 0.068, mean R +0.0850, CI [−0.030, +0.186], CAGR +6.2%, maxDD 8.5%, both years
+positive, 100% of train combos positive, and now three neighbouring hypotheses that all
+fail to move it. What Exp 013 removed is the *explanation*. There is no mechanism left
+that predicts it, and idea 015 is direct evidence that a plausible alternative mechanism
+operating on the same trades produces a loss instead of a gain. An unexplained effect
+found by searching thirteen configurations, whose closest relative loses money, with a
+confidence interval that still spans zero, should be treated as a candidate and not as a
+strategy.
+
+### Verdict
+
+`WATCH`, and the case is now weaker than after Exp 012 rather than stronger. The
+reusable, well-supported result from these two batches is not the strategy — it is the
+cost mechanism: **a stop must be a price distance, not a volatility multiple**
+(`cost_r = round_trip_cost / stop_pct`, Exp 012), and post-only execution is worth about
++0.015 R at a 92% fill rate. Both are now in TECHNIQUES.md and will apply to any future
+work on any symbol. The strategy result is that sixteen ideas across both sides, four
+timeframes, two execution models and a fixed cost structure produced no configuration
+whose confidence interval excludes zero — which is the same answer this project gave
+after 106 configurations before Exp 012, now reached again by a different route and with
+a materially better understanding of why.
+
+Do not run `--final`. Do not report any of this as profitable. If work continues, the
+honest next question is not another parameter but the one Exp 013 could not answer: why
+does a 12-hour Donchian break, taken short in a downtrend, revert often enough to win 64%
+of the time — and if the answer is "because BTC drifts down", that is a statement about
+the asset, not an edge, and should be written down as such.
