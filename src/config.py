@@ -29,6 +29,17 @@ SYMBOL_SPECS: dict[str, dict] = {
         valid_start="2023-01",
         holdout_start="2025-01",
     ),
+    # Added in Exp 029 / ETH Exp 000 (owner-approved). Binance USDT-M ETHUSDT:
+    # quantity step 0.001 ETH, minimum order notional 20 USDT. Same splits as
+    # BTC so results line up by calendar; the ETH holdout is untouched.
+    "ETHUSDT": dict(
+        qty_step=0.001,
+        min_notional=20.0,
+        data_start="2020-01",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+    ),
 }
 SYMBOL = os.environ.get("SYMBOL", "BTCUSDT").upper()
 if SYMBOL not in SYMBOL_SPECS:

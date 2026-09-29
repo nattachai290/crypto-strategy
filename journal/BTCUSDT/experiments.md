@@ -3188,3 +3188,50 @@ move that reproduces on unseen data, in every year, at a 12.5:1 gross-to-cost
 ratio - and an entry that adds nothing to it. Everything else in the round is
 either a clean family kill (040) or a configuration that cannot be measured
 (042).
+
+---
+
+## Exp 029 — BTCUSDT closed; corrections to Round 6
+
+**Date:** 2026-09-29
+**Status:** complete (review; no evaluation)
+
+### Review of Exp 028
+The process followed the plan:
+- five pre-registered ideas;
+- signal counts re-checked on TRAIN;
+- the three pre-`--final` checks written down before the run, including the
+  warnings that 5m was the best of seven clocks and that 2023 carried the
+  result;
+- `--final` run once, on the one PASS + ALPHA;
+- earlier rows of `evaluations.csv` and `holdout_log.csv` unchanged when
+  compared field by field;
+- `size_skips` 0 everywhere.
+
+040 (stop-hunt trap) being negative at all seven clocks is a clean, useful kill.
+
+### Corrections (FINAL_REPORT.md and STATUS.md edited with a note)
+1. **"The edge was real but 1/8 the size" and "the moves are real" are
+   withdrawn.** 039's holdout result:
+   - mean R +0.0129, CI [−0.158, +0.204], P(>0) 0.55, which is
+     indistinguishable from zero;
+   - random entries with the same stop, hold and filters did **better**
+     (median +0.0380).
+
+   A gross of +0.032 R that random entries match is exposure, not a measured
+   move produced by the structure.
+2. 039's TRAIN mean R is near zero at every clock (−0.012 to +0.035). Its
+   positive VALID row across seven clocks is a VALID-period effect, the same
+   shape as 022 and 038.
+3. 041@15m (SKILL, WATCH, 88 trades, NO_EDGE) is the only SKILL result among
+   041's seven clocks. It stays a WATCH and gets no holdout: choosing the one
+   clock that passed is a selection.
+
+### Verdict
+The stop rule agreed before Round 6 has fired: **BTCUSDT research is closed.**
+- 208 evaluations, holdout 4 of 4 FAILED, 0 CONFIRMED;
+- no tested entry adds anything over a random entry with the same exits after
+  costs.
+
+The owner approved moving the research to **ETHUSDT** (Exp 000 in
+`journal/ETHUSDT/experiments.md`, `PLAN.md` §11).

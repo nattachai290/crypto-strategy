@@ -1,4 +1,6 @@
-"""Download + cache Binance USDT-M futures public data for BTCUSDT.
+"""Download + cache Binance USDT-M futures public data for one symbol
+(C.SYMBOL, BTCUSDT by default; SYMBOL=ETHUSDT python src/datafeed.py for ETH).
+The paths below show BTCUSDT as the example.
 
 Only what's needed for intraday research:
   * 1m klines   (trades)      data/futures/um/monthly/klines/BTCUSDT/1m/
