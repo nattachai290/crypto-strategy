@@ -11,6 +11,10 @@ Research plan: `docs/research/PLAN.md`._
 > the entries. Every WATCH/PASS must now pass `src/baseline.py` (SKILL), and
 > `evaluate.py --final` refuses without it. Details: `experiments.md` Exp 017,
 > `journal/BTCUSDT/baselines.md`.
+>
+> **Exp 018:** Round 3 (PLAN.md) now asks "when to be long BTC" and judges ideas
+> against **buy & hold** with `src/benchmark.py` (alpha, Sharpe, drawdown).
+> 018@30m and 019@1h: alpha ≈ 0, Sharpe below buy & hold → NO_EDGE.
 
 ## Where things stand
 

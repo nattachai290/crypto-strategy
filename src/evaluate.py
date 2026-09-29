@@ -170,6 +170,21 @@ def baseline_verdict(eval_id: str) -> str:
     return json.loads(f.read_text(encoding="utf-8")).get("verdict", "MISSING")
 
 
+def benchmark_verdict(eval_id: str) -> str:
+    """'ALPHA', 'RISK_EDGE', 'NO_EDGE' or 'MISSING' from benchmark.py's output."""
+    f = C.RESULTS / "benchmark" / f"{eval_id}.json"
+    if not f.exists():
+        return "MISSING"
+    return json.loads(f.read_text(encoding="utf-8")).get("verdict", "MISSING")
+
+
+def holdout_ticket(eval_id: str) -> bool:
+    """A PASS may spend the holdout only if its entries beat random timing
+    (baseline.py SKILL) or it adds return beyond its BTC exposure
+    (benchmark.py ALPHA)."""
+    return baseline_verdict(eval_id) == "SKILL" or benchmark_verdict(eval_id) == "ALPHA"
+
+
 def _init_worker(tf: int) -> None:
     """Load the data in each worker. With fork (Linux) the parent's _G is
     already copied in; with spawn (Windows, macOS) it starts empty and every
@@ -382,10 +397,11 @@ def main() -> None:
             print(f"--final refused: {eval_id} was evaluated as {r['verdict']}; "
                   f"the holdout is only for PASS.")
             return
-        if a.final and idea["strategy"] == "recipe" and baseline_verdict(eval_id) != "SKILL":
-            print(f"--final refused: random-entry baseline for {eval_id} is "
-                  f"{baseline_verdict(eval_id)}. Run `python src/baseline.py {idea_path}` first; "
-                  f"the holdout is only for a PASS whose entries beat random timing (SKILL).")
+        if a.final and idea["strategy"] == "recipe" and not holdout_ticket(eval_id):
+            print(f"--final refused: {eval_id} has baseline {baseline_verdict(eval_id)} and "
+                  f"benchmark {benchmark_verdict(eval_id)}. The holdout needs a PASS whose "
+                  f"entries beat random timing (`python src/baseline.py {idea_path}` -> SKILL) "
+                  f"or that beats buy & hold (`python src/benchmark.py {idea_path}` -> ALPHA).")
             return
         if not (a.rerun or a.final):
             print(f"already evaluated as {eval_id}: verdict {r['verdict']} "
@@ -490,9 +506,9 @@ def main() -> None:
         used = pd.read_csv(HOLDOUT_CSV) if HOLDOUT_CSV.exists() else pd.DataFrame()
         if verd != "PASS":
             print(f"\n--final refused: verdict is {verd}, the holdout is only for PASS.")
-        elif idea["strategy"] == "recipe" and baseline_verdict(eval_id) != "SKILL":
-            print(f"\n--final refused: random-entry baseline is {baseline_verdict(eval_id)}; "
-                  f"run src/baseline.py first (SKILL required).")
+        elif idea["strategy"] == "recipe" and not holdout_ticket(eval_id):
+            print(f"\n--final refused: needs baseline SKILL or benchmark ALPHA "
+                  f"(have {baseline_verdict(eval_id)} / {benchmark_verdict(eval_id)}).")
         elif len(used) and hkey in set(used["holdout_key"]):
             print(f"\n--final refused: holdout already used for this exact config ({hkey}). "
                   f"Result stands; see {HOLDOUT_CSV.name}.")

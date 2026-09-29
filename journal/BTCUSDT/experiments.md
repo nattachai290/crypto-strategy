@@ -1539,3 +1539,43 @@ about the same number of VALID signals. It runs 200 seeds × 2 modes:
 The Round 1 WATCHes are `DRIFT`: leads for a *regime* question ("when should
 one be long BTC?"), not entry techniques. Round 2's exit study may still run
 on 018@30m, but every result is judged against the baseline too.
+
+---
+
+## Exp 018 — Tools for Round 3: `trend_state` trigger and buy-and-hold benchmark
+
+**Date:** 2026-09-29
+**Status:** complete (tooling; no idea evaluated into the records).
+
+After Exp 017 the research question became "when should one be long BTC?",
+and for that the opponent is buy & hold, not random entries. Added:
+
+- **`trend_state` trigger** (`recipes.py`): fires on every bar, long while
+  close > EMA(n), short while below. With direction long and `max_hold_hours`
+  as the re-check interval, it expresses "be long while the regime is up".
+  Causal (test 7).
+- **`src/benchmark.py`**: daily account returns vs 1x buy & hold on TRAIN and
+  VALID. Beta, alpha per year with a 20-day block-bootstrap 95% CI, CAGR, max
+  drawdown, Sharpe. Verdicts ALPHA / RISK_EDGE / NO_EDGE.
+- `evaluate.py --final` now needs PASS + (baseline SKILL **or** benchmark
+  ALPHA).
+
+Reference runs (recorded in `journal/BTCUSDT/benchmarks.md`):
+
+| config | period | beta | alpha / yr [95% CI] | Sharpe idea / B&H | maxDD idea / B&H | verdict |
+|---|---|---|---|---|---|---|
+| 018@30m | TRAIN | 0.07 | +2.7% [−8.2%, +13.7%] | 0.61 / 0.76 | 19.7% / 76.7% | NO_EDGE |
+| | VALID | 0.12 | −0.6% [−12.2%, +10.3%] | 1.09 / 2.01 | 9.4% / 26.3% | |
+| 019@1h | TRAIN | 0.05 | +2.7% [−4.7%, +9.7%] | 0.67 / 0.76 | 7.0% / 76.7% | NO_EDGE |
+| | VALID | 0.07 | +1.0% [−7.6%, +7.8%] | 1.25 / 2.01 | 6.3% / 26.3% | |
+
+**Disclosure.** While building the tool, one smoke test of a regime idea was
+run against scratch copies of the records (not in `evaluations.csv`): 1h
+`trend_state` n ∈ {100, 300}, long, 48 h re-check, 10% pct stop, taker. It
+got WATCH (valid +0.037 R, 269 trades) and benchmark NO_EDGE (alpha −1.7%/yr
+VALID, CI [−4.3%, +0.5%]; Sharpe 1.17 vs 2.01; 63–73% time in market, beta
+0.04–0.06). Round 3's R3.1 should count this as one earlier look at VALID
+for that structure.
+
+### Verdict
+`KEEP` the tools. PLAN.md Round 3 is rewritten around them.

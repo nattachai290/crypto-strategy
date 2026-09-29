@@ -179,6 +179,15 @@ def t_failed_break(b, f, n=48, n_bars=8):
     return _side(back_in_up, back_in_dn)
 
 
+def t_trend_state(b, f, n=200):
+    """Regime state, fires on EVERY bar: long while close > EMA(n), short while
+    below. For 'when to be in the market' ideas (PLAN.md Round 3): with
+    direction long it re-enters whenever flat and the regime is up."""
+    e = ta.ema(b["close"], n)
+    c = b["close"]
+    return _side((c > e).to_numpy(), (c < e).to_numpy())
+
+
 def t_random(b, f, p=0.01, seed=0):
     """NULL MODEL, not a strategy: fires on each bar with probability p, long or
     short at random. Used by baseline.py to ask whether an idea's entries beat
@@ -201,6 +210,7 @@ TRIGGERS = {
     "range_break": t_range_break,
     "funding_extreme": t_funding_extreme,
     "failed_break": t_failed_break,
+    "trend_state": t_trend_state,
     "random": t_random,
 }
 

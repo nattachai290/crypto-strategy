@@ -587,6 +587,8 @@ def test_random_null_model() -> None:
           not np.array_equal(s1, s2) and np.array_equal(s1, RC.t_random(bars, None, p=0.05, seed=1)))
     check("--final gate: an unknown eval_id has no baseline (MISSING)",
           EV.baseline_verdict("0000000000") == "MISSING")
+    check("--final gate: no baseline and no benchmark -> no holdout ticket",
+          EV.benchmark_verdict("0000000000") == "MISSING" and not EV.holdout_ticket("0000000000"))
 
 
 # --------------------------------------------------------------------------
