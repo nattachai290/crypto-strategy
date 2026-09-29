@@ -12,7 +12,9 @@ What it does, always the same way, so no step can be skipped or fudged:
   3. VALID  [valid_start, holdout_start): run ONLY that frozen choice. Report
      trades, gross_r, cost_r, mean R, bootstrap 95% CI, a cost-stress run
      (fees and slippage x1.5), CAGR, max drawdown, per-year mean R.
-  4. Apply fixed gates -> PASS / WATCH / REJECT / INCONCLUSIVE.
+  4. Apply fixed gates -> PASS / WATCH / REJECT / INCONCLUSIVE, or UNSIZABLE
+     when the research account could not size some signals (size_skips > 0 on
+     TRAIN or VALID) and the result would otherwise not be a REJECT.
   5. --final (only after PASS): run the frozen choice ONCE on the HOLDOUT
      [holdout_start, data_end]. Each (symbol, strategy, params) gets exactly
      one holdout run, ever - it is recorded and a second attempt is refused.
@@ -178,11 +180,31 @@ def benchmark_verdict(eval_id: str) -> str:
     return json.loads(f.read_text(encoding="utf-8")).get("verdict", "MISSING")
 
 
-def holdout_ticket(eval_id: str) -> bool:
+# Triggers that describe a market STATE (they fire on every bar of a regime)
+# rather than an entry moment. For them the trigger is the filter, so the
+# random-entry baseline's two modes are the same experiment and SKILL only says
+# "being long in up-regimes beat being long at random" (Exp 020/021). Such an
+# idea is a when-to-hold-BTC rule and must beat holding BTC: ALPHA only.
+REGIME_TRIGGERS = {"trend_state"}
+
+
+def is_regime_rule(params: dict | None) -> bool:
+    return any(t.get("type") in REGIME_TRIGGERS
+               for t in (params or {}).get("triggers", []) or [])
+
+
+def holdout_ticket(eval_id: str, params: dict | None = None) -> bool:
     """A PASS may spend the holdout only if its entries beat random timing
     (baseline.py SKILL) or it adds return beyond its BTC exposure
-    (benchmark.py ALPHA)."""
+    (benchmark.py ALPHA). A regime rule (REGIME_TRIGGERS) needs ALPHA."""
+    if is_regime_rule(params):
+        return benchmark_verdict(eval_id) == "ALPHA"
     return baseline_verdict(eval_id) == "SKILL" or benchmark_verdict(eval_id) == "ALPHA"
+
+
+def _ticket_rule(params: dict | None) -> str:
+    return ("a regime rule needs benchmark ALPHA (it must beat holding BTC; SKILL does not count)"
+            if is_regime_rule(params) else "needs baseline SKILL or benchmark ALPHA")
 
 
 def _init_worker(tf: int) -> None:
@@ -230,7 +252,8 @@ def _train_one(args) -> dict:
         m = backtest(signals_for(strategy, p), T0, T_VALID, ex).metrics
         return {"i": i, "trades": m["trades"], "mean_r": m.get("avg_r", float("nan")),
                 "gross_r": m.get("avg_gross_r", float("nan")),
-                "cost_r": m.get("avg_cost_r", float("nan")), "max_dd": m["max_dd"]}
+                "cost_r": m.get("avg_cost_r", float("nan")), "max_dd": m["max_dd"],
+                "size_skips": int(m.get("size_skips", 0))}
     except Exception as e:  # noqa: BLE001 - report, never hide
         return {"i": i, "error": f"{type(e).__name__}: {e}"}
 
@@ -268,7 +291,11 @@ def summarise(res, tf: int) -> dict:
     }
 
 
+SKIP_GATE = "size_skips==0"
+
+
 def verdict(train: dict, v: dict, stress: dict) -> tuple[str, dict]:
+    skips = int(train.get("size_skips", 0) or 0) + int(v.get("size_skips", 0) or 0)
     gates = {
         "valid_trades>=%d" % C.EVAL_MIN_VALID_TRADES: v["trades"] >= C.EVAL_MIN_VALID_TRADES,
         "train_mean_r>0": train["mean_r"] > 0,
@@ -276,14 +303,26 @@ def verdict(train: dict, v: dict, stress: dict) -> tuple[str, dict]:
         "valid_ci_lo>0": v["ci_lo"] > 0,
         "stress_mean_r>0": stress["mean_r"] > 0,
         "valid_max_dd<=%.0f%%" % (C.EVAL_MAX_DD * 100): v["max_dd"] <= C.EVAL_MAX_DD,
+        SKIP_GATE: skips == 0,
     }
+    core = [ok for k, ok in gates.items() if k != SKIP_GATE]
     if v["trades"] < C.EVAL_MIN_ANY_TRADES:
-        return "INCONCLUSIVE", gates
-    if all(gates.values()):
-        return "PASS", gates
-    if gates["train_mean_r>0"] and gates["valid_mean_r>0"] and gates["stress_mean_r>0"]:
-        return "WATCH", gates
-    return "REJECT", gates
+        verd = "INCONCLUSIVE"
+    elif all(core):
+        verd = "PASS"
+    elif gates["train_mean_r>0"] and gates["valid_mean_r>0"] and gates["stress_mean_r>0"]:
+        verd = "WATCH"
+    else:
+        verd = "REJECT"
+    # Signals the research account could not size (qty below the contract
+    # step) were dropped, so the trade list is not the rule's trade list: a
+    # stop too wide for the account at high prices trades only when BTC is
+    # cheap (Exp 021: 023 at 4h, 807 skips). Such a result is no evidence
+    # either way. A REJECT stays REJECT (skips there come from a drawn-down
+    # account, and the report flags them).
+    if skips and verd != "REJECT":
+        verd = "UNSIZABLE"
+    return verd, gates
 
 
 # --------------------------------------------------------------------------
@@ -330,9 +369,9 @@ def report_block(row: dict, v: dict, gates: dict, hold: dict | None) -> str:
           f"avg hold {_fmt(v['avg_hold_h'], '{:.1f}')} h, long/short {v['long_trades']}/{v['short_trades']}, "
           f"exits stop/tp/time {_fmt(v['stop_rate'], '{:.0%}')}/{_fmt(v['tp_rate'], '{:.0%}')}/"
           f"{_fmt(v['time_rate'], '{:.0%}')}, fill {_fmt(v['fill_rate'], '{:.0%}')}, "
-          f"size skips {v.get('size_skips', 0)}"
-          + (" ⚠️ trades skipped because the account could not size them"
-             if v.get("size_skips", 0) else ""),
+          f"size skips {v.get('size_skips', 0)} (train {row.get('train_size_skips', 0)})"
+          + (" ⚠️ signals skipped because the account could not size them"
+             if v.get("size_skips", 0) or row.get("train_size_skips", 0) else ""),
           f"- valid per year (mean R, trades): {v['per_year']}",
           "- gates: " + ", ".join(f"{k} {'✅' if ok else '❌'}" for k, ok in gates.items())]
     if hold:
@@ -397,11 +436,18 @@ def main() -> None:
             print(f"--final refused: {eval_id} was evaluated as {r['verdict']}; "
                   f"the holdout is only for PASS.")
             return
-        if a.final and idea["strategy"] == "recipe" and not holdout_ticket(eval_id):
+        if a.final and (float(r.get("valid_size_skips", 0) or 0) > 0
+                        or float(r.get("train_size_skips", 0) or 0) > 0):
+            print(f"--final refused: {eval_id} skipped signals the account could not size "
+                  f"(UNSIZABLE since Exp 021); its trade list is not the rule's.")
+            return
+        rec_params = json.loads(r["chosen_params"]) if isinstance(r.get("chosen_params"), str) \
+            else idea["params"]
+        if a.final and idea["strategy"] == "recipe" and not holdout_ticket(eval_id, rec_params):
             print(f"--final refused: {eval_id} has baseline {baseline_verdict(eval_id)} and "
-                  f"benchmark {benchmark_verdict(eval_id)}. The holdout needs a PASS whose "
-                  f"entries beat random timing (`python src/baseline.py {idea_path}` -> SKILL) "
-                  f"or that beats buy & hold (`python src/benchmark.py {idea_path}` -> ALPHA).")
+                  f"benchmark {benchmark_verdict(eval_id)}; {_ticket_rule(rec_params)}. "
+                  f"Run `python src/baseline.py {idea_path}` (SKILL) and "
+                  f"`python src/benchmark.py {idea_path}` (ALPHA).")
             return
         if not (a.rerun or a.final):
             print(f"already evaluated as {eval_id}: verdict {r['verdict']} "
@@ -460,7 +506,8 @@ def main() -> None:
     res_v = backtest(sig, T_VALID, T_HOLD, ex_best)
     v = summarise(res_v, tf)
     stress = summarise(backtest(sig, T_VALID, T_HOLD, ex_best, C.EVAL_STRESS_COST), tf)
-    train_s = {"mean_r": float(bt["mean_r"]), "trades": int(bt["trades"])}
+    train_s = {"mean_r": float(bt["mean_r"]), "trades": int(bt["trades"]),
+               "size_skips": int(bt["size_skips"])}
     verd, gates = verdict(train_s, v, stress)
     if elig.empty:
         verd = "INCONCLUSIVE"
@@ -490,7 +537,7 @@ def main() -> None:
         "chosen_params": json.dumps(p_best, sort_keys=True), "chosen_exec": json.dumps(ex_best, sort_keys=True),
         "train_trades": int(bt["trades"]), "train_mean_r": float(bt["mean_r"]),
         "train_gross_r": float(bt["gross_r"]), "train_cost_r": float(bt["cost_r"]),
-        "train_max_dd": float(bt["max_dd"]),
+        "train_max_dd": float(bt["max_dd"]), "train_size_skips": int(bt["size_skips"]),
         **{f"valid_{k}": (json.dumps(val) if isinstance(val, dict) else val) for k, val in v.items()},
         "stress_mean_r": stress["mean_r"], "verdict": verd,
         "gates_failed": ";".join(k for k, ok in gates.items() if not ok),
@@ -506,8 +553,8 @@ def main() -> None:
         used = pd.read_csv(HOLDOUT_CSV) if HOLDOUT_CSV.exists() else pd.DataFrame()
         if verd != "PASS":
             print(f"\n--final refused: verdict is {verd}, the holdout is only for PASS.")
-        elif idea["strategy"] == "recipe" and not holdout_ticket(eval_id):
-            print(f"\n--final refused: needs baseline SKILL or benchmark ALPHA "
+        elif idea["strategy"] == "recipe" and not holdout_ticket(eval_id, p_best):
+            print(f"\n--final refused: {_ticket_rule(p_best)} "
                   f"(have {baseline_verdict(eval_id)} / {benchmark_verdict(eval_id)}).")
         elif len(used) and hkey in set(used["holdout_key"]):
             print(f"\n--final refused: holdout already used for this exact config ({hkey}). "

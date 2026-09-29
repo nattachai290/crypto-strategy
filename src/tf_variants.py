@@ -31,6 +31,14 @@ Never rescaled, in either mode: anything in R (be_at, trail_at, tp.r),
 thresholds on indicator values (RSI levels, z, ADX levels, band k), UTC hours
 and weekdays, and htf_trend's `mult` (a multiple of its own n).
 Grid values follow the same rules, then are de-duplicated.
+
+Sizing check: chart mode widens a pct stop on higher timeframes (x2 from 1h to
+4h). The research account (C.EVAL_EQUITY, 1% risk) can only size a trade while
+equity x risk / (stop x price) >= the contract's qty step, so a wide stop at a
+high BTC price is skipped, and evaluate.py then says UNSIZABLE (Exp 021: 023 at
+4h had a 20% stop and 807 skipped signals). Each variant whose widest pct stop
+cannot be sized at the TRAIN+VALID price peak gets a warning; narrow the stop
+in the source idea or drop that timeframe with --tfs.
 """
 from __future__ import annotations
 
@@ -42,6 +50,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import config as C  # noqa: E402
 import datafeed  # noqa: E402
 
 BAR_KEYS = {"n", "fast", "slow", "range_n", "atr_n", "z_n", "lookback",
@@ -153,6 +162,46 @@ def make_variant(idea: dict, tf: int, mode: str = "chart") -> dict:
     return out
 
 
+def max_price_for_stop(stop_pct: float) -> float:
+    """Highest price at which the research account can size a trade with this
+    stop: equity * risk / (stop_pct * price) >= qty_step."""
+    return C.EVAL_EQUITY * C.RISK_PER_TRADE / (stop_pct * C.QTY_STEP)
+
+
+def widest_pct_stop(idea: dict) -> float | None:
+    stop = idea["params"].get("stop", {}) or {}
+    if stop.get("type") != "pct":
+        return None
+    vals = [stop.get("pct")] + list(idea.get("grid", {}).get("stop.pct", []))
+    vals = [float(x) for x in vals if isinstance(x, (int, float))]
+    return max(vals) if vals else None
+
+
+def _peak_price() -> float | None:
+    """Highest 4h high before the holdout (TRAIN + VALID), or None without data."""
+    try:
+        import experiment as E
+        b = E.get_bars(240)
+    except Exception:  # noqa: BLE001 - no data yet: skip the check, never fail
+        return None
+    import pandas as pd
+    t = pd.Timestamp(C.HOLDOUT_START)
+    t = t.tz_localize(b.index.tz) if b.index.tz is not None and t.tz is None else t
+    return float(b.loc[b.index < t, "high"].max())
+
+
+def sizing_warning(idea: dict, peak: float | None) -> str:
+    pct = widest_pct_stop(idea)
+    if pct is None or peak is None:
+        return ""
+    cap = max_price_for_stop(pct)
+    if cap >= peak:
+        return ""
+    return (f"  !! {idea['name']}: a {pct:.2%} stop can be sized only while {C.SYMBOL} < "
+            f"{cap:,.0f} (peak before the holdout {peak:,.0f}; before any ATR clamp). "
+            f"Signals above that are skipped, and if any is, evaluate.py says UNSIZABLE.")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("idea")
@@ -162,6 +211,11 @@ def main() -> None:
     src = Path(a.idea)
     idea = json.loads(src.read_text(encoding="utf-8"))
     tfs = ([int(x) for x in a.tfs.split(",")] if a.tfs else datafeed.NATIVE_TFS)
+    peak = _peak_price()
+    if peak is None:
+        print("(no 4h data: sizing check skipped - run python src/datafeed.py)")
+    elif sizing_warning(idea, peak):
+        print(sizing_warning(idea, peak))
     for tf in tfs:
         if tf == int(idea["tf"]):
             continue
@@ -170,6 +224,9 @@ def main() -> None:
         v = make_variant(idea, tf, a.mode)
         suffix = f"_tf{tf}" if a.mode == "chart" else f"_tf{tf}_time"
         v["name"] = f"{idea['name']}{suffix}"
+        warn = sizing_warning(v, peak)
+        if warn:
+            print(warn)
         dst = src.with_name(f"{src.stem}{suffix}.json")
         if dst.exists():
             print(f"exists, not overwritten: {dst}")

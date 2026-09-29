@@ -598,6 +598,40 @@ def test_random_null_model() -> None:
     check("SKILL when the idea beats both modes' 95th pct on TRAIN and VALID",
           BL.skill_check(real_train=0.30, real_valid=0.30, runs=runs)["skill"])
 
+    # Exp 021: a regime rule (trigger = market state) needs ALPHA; SKILL is not enough
+    regime = {"triggers": [{"type": "trend_state", "n": 200}], "filters": []}
+    entry = {"triggers": [{"type": "donchian_break", "n": 24}], "filters": []}
+    saved = EV.baseline_verdict, EV.benchmark_verdict
+    try:
+        EV.baseline_verdict, EV.benchmark_verdict = (lambda _e: "SKILL"), (lambda _e: "NO_EDGE")
+        check("--final gate: an entry idea with SKILL gets a ticket",
+              EV.holdout_ticket("x", entry) and EV.holdout_ticket("x"))
+        check("--final gate: a regime rule with SKILL but NO_EDGE gets no ticket",
+              not EV.holdout_ticket("x", regime))
+        EV.benchmark_verdict = lambda _e: "ALPHA"
+        check("--final gate: a regime rule with ALPHA gets a ticket", EV.holdout_ticket("x", regime))
+    finally:
+        EV.baseline_verdict, EV.benchmark_verdict = saved
+
+    # Exp 021: signals the account could not size make a result UNSIZABLE
+    good = {"trades": 300, "mean_r": 0.2, "ci_lo": 0.05, "max_dd": 0.05, "size_skips": 0}
+    tr_ok = {"mean_r": 0.1, "trades": 300, "size_skips": 0}
+    stress = {"mean_r": 0.15}
+    check("verdict: all gates and no skips -> PASS", EV.verdict(tr_ok, good, stress)[0] == "PASS")
+    check("verdict: a PASS with VALID skips -> UNSIZABLE",
+          EV.verdict(tr_ok, {**good, "size_skips": 3}, stress)[0] == "UNSIZABLE")
+    check("verdict: a PASS with TRAIN skips -> UNSIZABLE",
+          EV.verdict({**tr_ok, "size_skips": 1}, good, stress)[0] == "UNSIZABLE")
+    check("verdict: a losing result with skips stays REJECT",
+          EV.verdict(tr_ok, {**good, "mean_r": -0.1, "ci_lo": -0.2, "size_skips": 5},
+                     {"mean_r": -0.2})[0] == "REJECT")
+    import tf_variants as TV
+    wide = {"name": "w", "tf": 240, "params": {"stop": {"type": "pct", "pct": 0.20}}, "grid": {}}
+    check("tf_variants: a 20% stop at 1000 USDT is only sizable below 50,000",
+          abs(TV.max_price_for_stop(0.20) - C.EVAL_EQUITY * C.RISK_PER_TRADE / (0.20 * C.QTY_STEP)) < 1e-6
+          and TV.sizing_warning(wide, 100_000.0) != ""
+          and TV.sizing_warning({**wide, "params": {"stop": {"type": "pct", "pct": 0.02}}}, 100_000.0) == "")
+
 
 # --------------------------------------------------------------------------
 # 5. Post-only execution model

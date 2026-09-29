@@ -1,6 +1,6 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-29, after Exp 017 (random-entry baseline). Rules for agents: `AGENTS.md`.
+_Last updated: 2026-09-29, after Exp 021 (Round 3 review). Rules for agents: `AGENTS.md`.
 Research plan: `docs/research/PLAN.md`._
 
 > **Exp 017 — read before anything below.** All 5 Round 1 WATCHes (018@30m,
@@ -41,13 +41,23 @@ Research plan: `docs/research/PLAN.md`._
 > runs. **Two PASSes** - 023 (long/flat regime, 1h: valid +0.1148, CI
 > [+0.014, +0.220], cost_r **0.022**, maxDD 4.8%) and 027 (multi-day pullback,
 > 30m: valid +0.1967, CI [+0.025, +0.373], cost_r 0.036) - and **every
-> `benchmark.py` run in the project is NO_EDGE: 21 of 21.** No configuration has
+> `benchmark.py` run in the project is NO_EDGE: 20 of 20** (Exp 021 correction; Exp 020 said 21). No configuration has
 > alpha and none is RISK_EDGE. **No tested timing rule beats simply holding BTC
 > after costs.** 027 is DRIFT (its TRAIN sits below random entries, caught by
 > the Exp 019 tightening); 023 is NO_EDGE by its own benchmark, Sharpe 1.59
 > against buy & hold's 2.01 on VALID despite a sixth of its drawdown. The
 > holdout was **not** spent - see the owner question in `experiments.md`
 > Exp 020.
+>
+> **Exp 021 (review of Round 3) - owner decision: 023 does NOT go to the
+> holdout.** A regime rule (`trend_state`) now needs benchmark **ALPHA** for
+> `--final`; SKILL does not count for it, and `evaluate.py` enforces this.
+> New verdict **`UNSIZABLE`**: any `size_skips` on TRAIN or VALID (the 1,000
+> USDT account could not size a signal) turns PASS/WATCH/INCONCLUSIVE into
+> UNSIZABLE. The four Round 3 4h variants (023/025/026/027@4h, 20% stops,
+> sizable only below BTC 50,000) and 019@4h are UNSIZABLE, not evidence.
+> Benchmark count corrected: **20/20** NO_EDGE. `tf_variants.py` now warns when
+> a stop is too wide to size. **Next: Round 4.**
 
 ## Where things stand
 
@@ -57,7 +67,8 @@ Research plan: `docs/research/PLAN.md`._
   FAILED.** Details: `experiments.md` Exp 017.
 - **Round 3 is done: 35 evaluations, 2 PASS, 11 WATCH, 19 REJECT, 3 INCONCLUSIVE.**
   Project total 96. **Answer: no timing rule beats holding BTC.** Every
-  `benchmark.py` run in the project is NO_EDGE (21/21). Details: Exp 020.
+  `benchmark.py` run in the project is NO_EDGE (20/20; Exp 020 said 21).
+  The 4h variants are UNSIZABLE (Exp 021). Details: Exp 020, Exp 021.
 - **The cost finding holds and is the most reusable thing here.** Every long
   structure tested is negative at 1m/3m/5m and positive at 30m/1h/4h, on TRAIN
   as well as on VALID, for two different entries. The cause is measured, not
@@ -145,7 +156,7 @@ Neighbouring timeframes agree (1h: train +0.099 / valid +0.110; 4h: +0.058 /
 ## Next step
 
 Round 3's answer is negative and it closes the whole "when to be long BTC"
-family: 96 evaluations, 21/21 NO_EDGE on the benchmark, one PASS whose holdout
+family: 96 evaluations, 20/20 NO_EDGE on the benchmark, one PASS whose holdout
 failed, and two PASSes that the benchmark says are dominated by owning the asset.
 
 Round 4 is the last round and the plan says it should look for edges that do
