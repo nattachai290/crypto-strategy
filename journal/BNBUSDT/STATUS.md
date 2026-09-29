@@ -1,7 +1,7 @@
-# BNBUSDT — status and handoff
+# BNBUSDT - status and handoff
 
 _Last updated: 2026-09-29, Exp 000 (setup). Rules: `AGENTS.md`. Plan:
-`docs/research/PLAN.md` §12._
+`docs/research/PLAN.md` section 12._
 
 ## Where things stand
 
@@ -16,9 +16,9 @@ _Last updated: 2026-09-29, Exp 000 (setup). Rules: `AGENTS.md`. Plan:
    BTC Exp 030) and end with ALL CHECKS PASSED.
 2. `SYMBOL=BNBUSDT python src/datafeed.py` until `VALIDATION: OK`.
 3. **Exp 001, pre-registration**, then the round: the seven cost-first
-   families, run unchanged, 49 evaluations (`PLAN.md` §12).
+   families, run unchanged, 49 evaluations (`PLAN.md` section 12).
 
-Stop rule: no holdout CONFIRMED on BNBUSDT → research on BNBUSDT stops.
+Stop rule: no holdout CONFIRMED on BNBUSDT means research on BNBUSDT stops.
 
 ## What BTC and ETH taught (method, not verdicts)
 
@@ -26,7 +26,7 @@ Stop rule: no holdout CONFIRMED on BNBUSDT → research on BNBUSDT stops.
   32/32 controls DRIFT.
 - Cost is ~0.11% of price per trade at every timeframe. Only multi-day holds
   leave room for an edge.
-- Trade both directions with no trend filter, or the 2023–24 bull market
+- Trade both directions with no trend filter, or the 2023-24 bull market
   passes as skill. Run the random-entry baseline and the buy & hold
   benchmark on every WATCH/PASS.
 - A result positive on every clock (BTC 039) still failed its holdout.
