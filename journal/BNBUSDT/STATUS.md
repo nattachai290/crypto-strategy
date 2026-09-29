@@ -1,5 +1,7 @@
 # BNBUSDT - status and handoff
 
+> **Review note (SOL Exp 004, planner):** Round B1 **has run**: 49 evaluations recorded, **0 PASS**, 10 WATCH, 33 REJECT, 6 INCONCLUSIVE. The holdout is untouched. By the stop rule, BNB research stops. The text below is out of date. Still missing: the results entry in `experiments.md`, and `baseline.py`/`benchmark.py` on 041@3m and 043@1m.
+
 _Last updated: 2026-09-29, Exp 000 (setup). Rules: `AGENTS.md`. Plan:
 `docs/research/PLAN.md` section 12._
 

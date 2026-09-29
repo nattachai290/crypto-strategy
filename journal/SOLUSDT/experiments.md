@@ -518,3 +518,69 @@ The finding worth carrying forward is not a strategy. It is that **skill and
 significance are different things, and this project has now measured both
 separately on unseen data**: the skill was real, the size was not enough, and
 the one-shot holdout that could tell them apart cost the whole question.
+
+---
+
+## Exp 004 — Review of Round S1 and B1 (planner): missing controls and corrections
+
+**Date:** 2026-09-29
+**Status:** review (no evaluation; the SOL holdout record stands as run)
+
+### What was done right
+- The Binance data gaps (2022-02-25..03-01 and 2022-03-31..04-03, both in
+  TRAIN) were stopped on and put to the owner before any evaluation. The
+  owner's decision was recorded (Exp 001b).
+- Idea files were not changed, and the pre-`--final` checks were written
+  before the holdout. `--final` ran once, after the owner saw the record.
+- `src/` and the BTC/ETH records are untouched, `size_skips` is 0 on every
+  row, and `test_engine.py` (including 1b, the funding fix) passes.
+
+### Process gaps (AGENTS.md step 6b/6c, §10)
+1. **The controls were run on 1 of 20 SOL WATCH/PASS rows.** Step 6b/6c
+   requires `baseline.py` and `benchmark.py` on every WATCH and PASS. Missing on
+   SOL:
+   - 035 @4h, 1h, 30m, 15m;
+   - 036 @4h, 1h, 30m, 15m;
+   - 038 @30m;
+   - 039 @1h, 30m, 15m, 3m;
+   - 041 @1h, 30m, 15m, 3m;
+   - 043 @30m, 15m.
+
+   On BNB, 2 of 10 are missing: 041 @3m and 043 @1m.
+2. **BNB has no results entry.** 49 evaluations are recorded (0 PASS, 10
+   WATCH, 33 REJECT, 6 INCONCLUSIVE), but `journal/BNBUSDT/experiments.md`
+   stops at the pre-registration, and `journal/BNBUSDT/STATUS.md` still says
+   nothing was evaluated.
+
+Both are for the research agent to complete. The stop rule already decides
+each coin: SOL's holdout FAILED and BNB has no PASS.
+
+### Corrections to Exp 003 (and to the same text in STATUS.md)
+1. **"A genuinely skillful entry, one that beats random timing on data it
+   has never seen" is withdrawn.**
+   - On the holdout, 041@5m made mean R **+0.054, CI [−0.174, +0.298],
+     P(>0) 0.67**, which is indistinguishable from zero.
+   - Being above the **median** random entry (−0.006 / −0.030) is the
+     `CONFIRMED` side-condition, not evidence of skill. Skill in `baseline.py`
+     means above the **95th percentile**, and the holdout control does not
+     measure that.
+   - The honest reading is "no evidence of an edge", not "an edge that is too
+     small to prove". Both statements fit +0.054 R with that CI, and the data
+     cannot choose between them.
+2. **The TRAIN SKILL was at the boundary.** 041@5m's TRAIN mean R is
+   +0.19987 against a mode-A 95th percentile of +0.19905: a margin of
+   0.0008 R. 5% of random runs matched or beat it, which is exactly the
+   threshold. That TRAIN period contains the two SOL data gaps (Exp 001b). The
+   SKILL verdict is correct by the rule, but it is not strong evidence.
+3. **"022 SKILL (vacuous, a regime rule)" is wrong.** 022 was a long Donchian
+   breakout with a 1% stop, not a regime rule. It was SKILL under the pre-Exp
+   019 rule (VALID only) and DRIFT under the current one (BTC Exp 019). The
+   vacuous-SKILL regime rule was 023 (BTC Exp 021).
+4. **The "~983 trades needed" figure** assumes a per-trade standard deviation
+   of 1 R (the `1.568/√n` shortcut). It shows the order of magnitude, not a
+   measured requirement.
+
+### Standing result, four coins
+357 evaluations, 5 holdout runs, 5 FAILED, **0 CONFIRMED**. The per-coin stop
+rules have fired for SOL and BNB, as they did for BTC and ETH. Nothing in this
+project is a tested strategy, and no real money should follow from it.
