@@ -408,3 +408,113 @@ the reasoning is specific rather than optimistic: the prior from 038 and 039 is
 that a DRIFT result dies on the holdout, and this is not a DRIFT result. That is
 the one substantive difference, and the holdout is the instrument that tests it.
 The SOL holdout has never been touched.
+
+---
+
+## Exp 003 - SOLUSDT holdout: FAILED, and the first failure in which the entry beat random timing
+
+**Date:** 2026-09-29
+**Status:** complete. HOLDOUT spent once, on SOLUSDT, and FAILED.
+
+**41 `momentum` + `funding_not_crowded` + `volume_spike` at 5m. The run the
+owner approved after seeing the pre-`--final` record (Exp 002).**
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-10..2022-12 | 132 | +0.212 | 0.012 | +0.1999 | | +11.3% | 11.3% |
+| valid 2023-2024 | 112 | +0.281 | 0.016 | **+0.2656** | [+0.0195, +0.5274] | +15.2% | 7.4% |
+| valid x1.5 cost | | | | +0.2582 | | | |
+| **holdout 2025-01..2026-08** | 93 | **+0.076** | 0.021 | **+0.0544** | **[−0.1742, +0.2975]** | +2.5% | 14.8% |
+
+**FAILED.** P(mean R > 0) = 0.668, and the CI contains zero. The x1.5 cost
+stress held at +0.0470, so the result is not a cost artefact.
+
+**The holdout's own random-entry control: the idea's +0.0544 against a random
+median of −0.0056 (any time) and −0.0300 (same filters) - it beat both.**
+
+### This is the fourth holdout failure and the first one of a different kind
+
+| config | coin | verdict | baseline | benchmark | holdout mean R | beat random on the holdout? |
+|---|---|---|---|---|---|---|
+| 022 | BTC | PASS | SKILL (*vacuous* - a regime rule) | NO_EDGE | −0.0102 | not measured |
+| 038 | BTC | PASS | **DRIFT** | ALPHA | −0.1118 | no (−0.0365) |
+| 039 | BTC | PASS | **DRIFT** | ALPHA | +0.0129 | **no** (+0.0380 in the same filters) |
+| **041@5m** | **SOL** | **PASS** | **SKILL (non-vacuous)** | **ALPHA** | **+0.0544** | **yes, both modes** |
+
+**For the first time, a candidate took a holdout and its entry still beat random
+entries on the holdout data itself.** That is the one thing 038 and 039 could not
+do, and it is the property the whole control apparatus was built to find. It
+survived.
+
+**What did not survive is the size.** The mean R fell from +0.2656 on VALID to
+**+0.0544 on the holdout - a 79% reduction** - and 93 trades cannot resolve an
+effect that small: the gate needs mean R > 1.568/√n, which at n = 93 is **+0.163**,
+and the holdout delivered +0.054. **The verdict is a power problem, not a
+refutation of skill**, and those are very different findings.
+
+**How much data would it take?** To put a +0.05 R effect above the same
+significance bar, n ≈ (1.568 / 0.05)² ≈ **983 independent trades** - about ten
+times what the holdout contains, or about four years of this idea at this
+frequency. That is a concrete, checkable statement about what this harness could
+and could not resolve, and it is the most useful thing the run produced.
+
+### The two things that did not survive, stated plainly
+
+**1. "Both sides are positive" did not hold.** This was the strongest single
+argument for the candidate in Exp 002 - the first result in the project with
+positive legs on both sides. On the holdout:
+
+| leg | VALID mean R | HOLDOUT mean R | HOLDOUT sum R |
+|---|---|---|---|
+| long | **+0.3342** (55 trades) | **−0.0594** (48 trades) | −2.85 |
+| short | **+0.1994** (57 trades) | **+0.1759** (45 trades) | +7.92 |
+
+The short leg held almost exactly. **The long leg went from +0.334 to −0.059 and
+became the whole loss.** The holdout result is a short result wearing the label
+"both directions", and the property that made it the best candidate in the
+project is the property that did not generalise. That is precisely the shape of
+"it is a disguised long after all, and VALID happened to be a bull year" - the
+failing diagnosis for 022, 038 and 039, arriving through a different route.
+
+**2. The year pattern inverted.** VALID was 2023 +0.361 / 2024 +0.170, both
+positive with 56 trades each. The holdout is **2025 −0.0747 on 60 trades and
+2026 +0.2893 on 33 trades** - a negative year and a strong year, the mirror
+image of the bull-year dependence that sank the earlier candidates. A candidate
+whose year split is positive in every year on one period and mixed on the next
+is not showing a stable effect.
+
+### What the round established, coin by coin
+
+| | BTC | ETH | **BNB** | **SOL** |
+|---|---|---|---|---|
+| evaluations | 210 | 49 | **49** | **49** |
+| PASS | 2 | 0 | **0** | **1** |
+| SKILL controls | 3 (one vacuous) | 0 | **1** | **1** |
+| holdout runs | 4 | 0 | **0** | **1** |
+| CONFIRMED | 0 | 0 | **0** | **0** |
+
+**Four coins, 357 evaluations, 0 CONFIRMED, five holdout runs, five failures.**
+
+The result that generalises across all of it is not "no edge exists". It is the
+one 041@5m forced into the open, and it is sharper than anything the earlier
+rounds could say:
+
+> **On this market, a both-sided multi-day rule can have a genuinely skillful
+> entry - one that beats random timing on data it has never seen, in both
+> control modes - and still be worth only ~+0.05 R per trade, which is too small
+> to prove at the number of trades any two-year holdout contains.** The
+> question this project could not answer is not whether skill exists. It is
+> whether an effect of that size can be made large enough to matter, and the
+> honest answer is that nothing tested in 357 evaluations made it larger.
+
+### Verdict
+
+`FAILED`, and the stop rule for SOLUSDT fires: no holdout CONFIRMED on SOL means
+research on SOL stops. **The config is spent - it may not be re-run, and no copy
+of it with a small change may be made to get another holdout try** (AGENTS.md
+step 7).
+
+The finding worth carrying forward is not a strategy. It is that **skill and
+significance are different things, and this project has now measured both
+separately on unseen data**: the skill was real, the size was not enough, and
+the one-shot holdout that could tell them apart cost the whole question.
