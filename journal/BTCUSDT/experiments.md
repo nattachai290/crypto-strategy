@@ -1686,3 +1686,122 @@ filter made money in 2023-24 because BTC went up, and the entry added nothing.**
 The cost-mechanism findings (a `pct` stop; `cost_r` collapsing from 0.505 R on
 1m to 0.019 R on 4h; the gross_r-within-1m-3m-5m-artefact warning) survive and
 are now the most reusable thing this project knows.
+
+---
+
+## Exp 017 - Round 2 results: the first PASS in the project, and the holdout killed it
+
+**Date:** 2026-09-29
+**Status:** complete. 2 evaluations: 1 WATCH, **1 PASS**. The PASS was then tested
+on the locked HOLDOUT and **FAILED**. Project total 61 evaluations.
+
+### The two exit studies, entry frozen at 018@30m's recorded choice
+
+| idea | verdict | train mean R | valid trades | gross_r | cost_r | valid mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|---|---|
+| 021_exit_profit_side | WATCH | +0.0890 (343) | 232 | +0.142 | 0.043 | +0.0991 | [−0.036, +0.240] | +10.9% | 9.1% |
+| 022_exit_risk_side | **PASS** | +0.0936 (391) | 258 | +0.334 | 0.106 | **+0.2276** | **[+0.002, +0.468]** | +30.5% | 12.7% |
+
+Both grids picked a **tighter or altered stop**, and both improved TRAIN a lot
+over the incumbent's +0.0612 — +0.0890 and +0.0936. On VALID, 021 gained nothing
+(+0.1024 → +0.0991) and 022 gained a lot (+0.1024 → +0.2276).
+
+### The controls, and then the holdout
+
+| config | baseline.py | benchmark.py | holdout |
+|---|---|---|---|
+| 021 profit side | **DRIFT** (34% of random-with-filters beat it) | **NO_EDGE** | not eligible |
+| 022 risk side | **SKILL** (0% beat it at any time, 4% with the same filters) | **NO_EDGE** (alpha +6.7%/yr, CI [−15.4, +27.0]) | **FAILED** |
+
+`022` was therefore PASS **and** SKILL, which is what `AGENTS.md` step 7
+requires, so the holdout was spent on it. One run, one shot:
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 391 | +0.189 | 0.095 | +0.0936 | | | 34.3% |
+| valid 2023-2024 | 258 | +0.334 | 0.106 | +0.2276 | [+0.002, +0.468] | +30.5% | 12.7% |
+| **holdout 2025-01..2026-08** | **211** | **+0.098** | **0.108** | **−0.0102** | [−0.202, +0.199] | **−1.9%** | 20.9% |
+
+**FAILED.** The holdout config is now spent and is in
+`results/BTCUSDT/holdout_log.csv`. No copy of it gets another try
+(AGENTS.md rule 4), and the structure
+`recipe|30m|donchian_break|adx_min+htf_trend|long` is also at
+`EVAL_MAX_VERSIONS` (3: 018_tf30, 021, 022), so it is closed on both counts.
+
+### What we learned
+
+1. **The PASS was a period effect wearing the costume of a stop-width result.**
+   The only thing that changed from the DRIFT configuration to the SKILL one was
+   the stop: 2.83% of price → **1.0%**. That is not a small edit. It made the R
+   unit 2.8x smaller, so the *same* price move scores 2.8x more R: `gross_r`
+   went 0.145 → 0.334. It also raised `cost_r` 0.043 → 0.106, and the stop-out
+   rate went 30% → 78%, average hold 20.8h → 12.3h. So a 1% stop on 30m
+   mechanically magnifies whatever edge exists, in both directions, and it made
+   a drift that was invisible at 2.83% look like skill at 1.0%. **On the
+   holdout the gross edge fell to +0.098 — a 71% collapse — while the cost
+   stayed at 0.108.** Gross 0.098 minus cost 0.108 is −0.0102, which is exactly
+   what the holdout reported. There was never an edge; there was a temporarily
+   large gross number being divided by a small R.
+
+2. **The VALID period's advantage was 2023, and it was visible before the
+   holdout.** Valid per year was 2023 **+0.3496** (111 trades) against 2024
+   **+0.1355** (147 trades). A result carried by one year out of two, with a CI
+   whose lower bound is **+0.0023**, is one bootstrap resample away from
+   failing, and it did. The gate worked; the reading of it should have been
+   more cautious than "PASS".
+
+3. **Both grids improved TRAIN and only one improved VALID, and the one that
+   improved VALID is the one that failed out of sample.** 021 (profit side) and
+   022 (risk side) both lifted train mean R from +0.061 to +0.089/+0.094. On
+   VALID, 021 was flat and 022 doubled. So "did the grid's pick transfer to
+   VALID" was a poor predictor of "will it transfer to HOLDOUT" — VALID was one
+   regime, and the grid had already been selected against it twice by the time
+   the holdout arrived.
+
+4. **`SKILL` is measured on VALID only, and that is a real limitation of the
+   control.** 022's baseline said SKILL with only 4% of same-filter random runs
+   beating it — and the holdout says the entry has no edge at all. A control
+   that compares an idea against random timing *within the same period* cannot
+   detect a drift that is stable inside that period. The 2023-24 bull market
+   gave every long entry the same tailwind, and the baseline faithfully measured
+   "this beat other long entries in 2023-24", which is true and useless. **A
+   baseline on the holdout would have caught it, and the holdout is locked, so
+   the check is not available. Worth raising with the owner as a possible
+   design change: run the random-entry control on the holdout as part of the
+   single permitted holdout run, since it uses no information the strategy has
+   not already consumed.**
+
+5. **The exit study did answer its question, negatively.** Round 2 was framed as
+   "can exit management turn a drift into skill?" The answer is no. The exit
+   grid moved mean R from +0.102 to +0.228 on VALID and to −0.010 on the
+   holdout. Exit management redistributes a trade's outcome; it cannot create
+   information that the entry does not contain.
+
+### Verdict
+
+`REJECT`. The first and only PASS in 61 evaluations did not survive the holdout,
+and the mechanism is understood well enough to predict that no exit study could
+have saved it. The structure is closed on both the version budget and the
+holdout lock, so the honest next step is **not** another variant of a long
+Donchian breakout on 30m.
+
+What survives and is worth keeping:
+- **`cost_r` is the first-order term everywhere.** It is 0.505 R on 1m and
+  0.019 R on 4h (Exp 016) and 0.043 vs 0.106 for the same setup at two stop
+  widths here. Everything else in this project is second order.
+- **A stop width changes the units of the measurement, not just the risk.** The
+  same strategy's `gross_r` differs by 2.3x between a 1% and a 2.83% stop, so
+  `gross_r` is not comparable across stop widths — Exp 012's warning, now with
+  a PASS on the line to show what it costs to ignore it.
+- **A CI lower bound of +0.0023 is not evidence.** It passed because the gate is
+  a threshold, and it should be read as "indistinguishable from zero", which is
+  what the holdout then confirmed.
+- **Round 1's five WATCHes are all DRIFT and all NO_EDGE** (Exp 017
+  pre-registration), which is why none of them was a candidate either.
+
+For Round 3: the evidence now says stop looking for entries in the
+"long + trend filter" family - six configurations across four timeframes, all
+either DRIFT or killed by the holdout. Round 3 should test whether anything
+survives at swing horizons with `cost_r` made negligible, and Round 4's
+new blocks (previous-day high/low, opening range, liquidation flush,
+funding windows) are the remaining untested hypotheses in this project.

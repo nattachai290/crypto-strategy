@@ -258,6 +258,32 @@ entries inside the same trend filters do as well. A long-only result on
   sample.
 - `taker_flow` and `funding_not_crowded` remain inert as confirmation (012, 014).
 
+**After Round 2 (Exp 017, the only PASS in 61 evaluations, and its holdout):**
+
+- **A stop width changes the units of the measurement, not just the risk.** The
+  same long Donchian entry at 30m scored `gross_r` +0.145 with a 2.83% stop and
+  **+0.334 with a 1.0% stop** — the R unit is 2.8x smaller, so the same price
+  move counts 2.8x more R, with no new information. That configuration passed
+  every VALID gate (mean R +0.2276, CI [+0.002, +0.468]) and `baseline.py` said
+  **SKILL**; its holdout returned **−0.0102 R** with `gross_r` collapsed to
+  +0.098 against a cost of 0.108. **A tight stop magnifies a temporary gross
+  number; it does not create an edge, and it raises `cost_r` at the same time.**
+  Never compare `gross_r`, or a mean R, across different stop widths.
+- **A CI lower bound of +0.0023 is not evidence.** It passed because the gate is
+  a threshold. Read it as "indistinguishable from zero", which is what the
+  holdout then confirmed. VALID per year was 2023 +0.3496 against 2024 +0.1355:
+  a result carried by one year of two is a regime, not an edge.
+- **`baseline.py` measures skill *within* the period it is given.** A drift
+  that is stable across all of 2023-24 will read as SKILL, because every long
+  entry in a bull market gets the same tailwind. SKILL is a necessary condition,
+  not a sufficient one, and it cannot see a period effect.
+- **Exit management cannot create information the entry does not contain.** Two
+  exit studies on one frozen entry moved VALID from +0.102 to +0.228 and the
+  holdout to −0.010. The grid redistributes outcomes; it does not add edge.
+- **Six configurations of "long + trend filter" are now closed**: five DRIFT
+  (018@30m, 018@1h, 019@30m, 019@1h, 017@1h) and one holdout FAILED (022@30m,
+  whose holdout is spent). Do not open this family again.
+
 **Before the fix (Exp 003–014, history; results unreliable where shorts were involved):**
 
 - Single-indicator strategies (EMA, Donchian, BB, VWAP, Supertrend, ADX,

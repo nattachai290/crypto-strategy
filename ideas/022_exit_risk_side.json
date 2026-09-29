@@ -1,0 +1,27 @@
+{
+  "name": "022_exit_risk_side",
+  "hypothesis": "The risk side of idea 018 at 30m has never been tested: its stop was fixed at 2.83% of price and its hold at 24h by the chart-mode scaling of a 15m source, not by any argument, and 69% of its trades are closed by that clock rather than by price. Three things are being asked here. (1) Stop width: a `pct` stop at 1% costs 0.09 R against it while a 3% stop costs 0.03, and the round has already shown that cost_r is the single largest term, so the optimum may sit much wider than the incumbent. (2) Stop kind: a `swing` stop sits beyond the recent structure instead of at a fixed distance, which is the only way to let the stop follow volatility without the regime-dependence an ATR multiple brings - Exp 012 measured that an ATR multiple cost 0.109 R on train and 0.179 R on valid for the same setup. (3) Hold length: if the edge really is multi-day drift, short holds should destroy it and long holds should not; if it is an 8h artefact, the opposite. The entry is frozen so TRAIN picks the risk side and VALID judges it. The stop dict carries n 16, buffer_atr 0.3, min_atr 1.5 and max_atr 8 so the `swing` branch works; max_atr is 8 rather than 6 because at 30m ATR is 0.52% of price, so a 6-ATR ceiling is 3.09% and would silently clamp the widest stop.pct in the grid - the pct branch must not be distorted by a parameter that exists for the swing branch.",
+  "strategy": "recipe",
+  "tf": 30,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 24}],
+    "filters": [
+      {"type": "htf_trend", "n": 50, "mult": 4},
+      {"type": "adx_min", "n": 14, "min": 20}
+    ],
+    "direction": "long",
+    "stop": {"type": "pct", "pct": 0.0283, "min_atr": 1.5, "max_atr": 8.0, "n": 16, "buffer_atr": 0.3},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 24.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [0.01, 0.015, 0.02, 0.03],
+    "stop.type": ["pct", "swing"],
+    "max_hold_hours": [4, 8, 16, 24]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

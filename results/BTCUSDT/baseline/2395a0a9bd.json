@@ -1,0 +1,32 @@
+{
+  "eval_id": "2395a0a9bd",
+  "name": "021_exit_profit_side",
+  "tf": 30,
+  "n_per_mode": 200,
+  "timestamp": "2026-09-29 00:57 UTC",
+  "idea_valid_mean_r": 0.09913164035967172,
+  "idea_valid_trades": 232,
+  "idea_train_mean_r": 0.08904616133904524,
+  "idea_train_trades": 343,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.027614149573621582,
+    "valid_median": 0.0361878262336245,
+    "valid_p95": 0.10190240716339842,
+    "share_random_ge_idea": 0.085,
+    "valid_trades_median": 274.0,
+    "train_median": 0.00047818216228803,
+    "idea_beats_p95": false
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.0840983516450531,
+    "valid_median": 0.07638825317102213,
+    "valid_p95": 0.14598360350063588,
+    "share_random_ge_idea": 0.34,
+    "valid_trades_median": 222.0,
+    "train_median": 0.04111663359841426,
+    "idea_beats_p95": false
+  },
+  "verdict": "DRIFT"
+}

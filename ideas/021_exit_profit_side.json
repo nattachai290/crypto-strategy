@@ -1,0 +1,28 @@
+{
+  "name": "021_exit_profit_side",
+  "hypothesis": "Round 1's best configuration has inert exits: TP 0%, time exits 69%, average hold 20.8h, because `trail_at` 1.5R against a 2.83% stop needs price to travel 4.2% before the trail arms, and on 30m bars that almost never happens inside the hold. So its +0.102 R is 24-hour drift with a stop attached, not trade management. This study asks the profit-side question only, with the entry frozen: does a take-profit bank the winners, does break-even protect them, and how early should the trail arm? Three of the four keys switch a mechanism on or off (tp.type, be_at, trail_at) precisely because the incumbent has all of them effectively disabled, so the grid is asking which mechanism earns its keep rather than tuning a number that already works.",
+  "strategy": "recipe",
+  "tf": 30,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 24}],
+    "filters": [
+      {"type": "htf_trend", "n": 50, "mult": 4},
+      {"type": "adx_min", "n": 14, "min": 20}
+    ],
+    "direction": "long",
+    "stop": {"type": "pct", "pct": 0.0283, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 24.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "tp.type": ["none", "r"],
+    "tp.r": [1.5, 3.0],
+    "be_at": [0, 0.5, 1.0],
+    "trail_at": [0, 1.0, 2.0]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

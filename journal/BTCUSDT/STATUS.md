@@ -15,15 +15,31 @@ Research plan: `docs/research/PLAN.md`._
 > **Exp 018:** Round 3 (PLAN.md) now asks "when to be long BTC" and judges ideas
 > against **buy & hold** with `src/benchmark.py` (alpha, Sharpe, drawdown).
 > 018@30m and 019@1h: alpha ≈ 0, Sharpe below buy & hold → NO_EDGE.
+>
+> **STOP — the only PASS in 61 evaluations failed its holdout.** Idea 022
+> (018@30m's entry, risk side) changed one thing: the stop from 2.83% of price
+> to **1.0%**. That passed every VALID gate — 258 trades, gross +0.334,
+> cost 0.106, mean R **+0.2276**, CI [+0.002, +0.468], CAGR +30.5%, maxDD 12.7%
+> — and `baseline.py` said **SKILL** (0% of random runs beat it). On the locked
+> HOLDOUT 2025-01..2026-08: **−0.0102 R**, CI [−0.202, +0.199], gross
+> **+0.098** against cost 0.108. **FAILED**, holdout spent, and the structure is
+> also at `EVAL_MAX_VERSIONS`. **Do not make a copy of it for another try.**
+> The mechanism is understood: a 1% stop makes the R unit 2.8x smaller, so the
+> same price move scores 2.8x more R and `gross_r` went 0.145 → 0.334 without
+> any new information. VALID was carried by 2023 (+0.3496) over 2024 (+0.1355),
+> and a CI lower bound of +0.0023 is indistinguishable from zero. See
+> `experiments.md` Exp 017.
 
 ## Where things stand
 
 - **Round 1 is done: 40 evaluations, 0 PASS, 5 WATCH, 29 REJECT, 6 INCONCLUSIVE.**
-  Project total 58. HOLDOUT untouched. Best configuration: **idea 018 at 30m**
-  (see below). Pre-registration and full results: `experiments.md` Exp 016.
-- **The headline finding: the edge is not intraday.** Every long structure
-  tested is negative at 1m/3m/5m and positive at 30m/1h/4h, on TRAIN as well as
-  on VALID, for two different entries. The cause is measured, not guessed:
+  Project total 58. Pre-registration and full results: `experiments.md` Exp 016.
+- **Round 2 is done: 2 evaluations, 1 WATCH (DRIFT/NO_EDGE), 1 PASS whose holdout
+  FAILED.** Project total 61. Details: `experiments.md` Exp 017.
+- **The cost finding holds and is the most reusable thing here.** Every long
+  structure tested is negative at 1m/3m/5m and positive at 30m/1h/4h, on TRAIN
+  as well as on VALID, for two different entries. The cause is measured, not
+  guessed:
   `cost_r` is **0.505 R on 1m** and **0.019 R on 4h** for the same 0.09% round
   trip, because `tf_variants` chart mode scales the `pct` stop by sqrt(tf/15).
   A low-timeframe REJECT in this project is that arithmetic, not a verdict on

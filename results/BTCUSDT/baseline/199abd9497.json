@@ -1,0 +1,32 @@
+{
+  "eval_id": "199abd9497",
+  "name": "022_exit_risk_side",
+  "tf": 30,
+  "n_per_mode": 200,
+  "timestamp": "2026-09-29 00:55 UTC",
+  "idea_valid_mean_r": 0.22762121056739898,
+  "idea_valid_trades": 258,
+  "idea_train_mean_r": 0.0936378397895411,
+  "idea_train_trades": 391,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.027614149573621582,
+    "valid_median": 0.018744009205880742,
+    "valid_p95": 0.13994657010547848,
+    "share_random_ge_idea": 0.0,
+    "valid_trades_median": 311.0,
+    "train_median": -0.021738753833108793,
+    "idea_beats_p95": true
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.0840983516450531,
+    "valid_median": 0.09761699241139196,
+    "valid_p95": 0.22093608601622017,
+    "share_random_ge_idea": 0.04,
+    "valid_trades_median": 265.0,
+    "train_median": 0.025882153197767023,
+    "idea_beats_p95": true
+  },
+  "verdict": "SKILL"
+}
