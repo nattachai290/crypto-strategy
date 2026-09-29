@@ -2433,3 +2433,137 @@ Design checks done for the plan, on TRAIN only:
   per combo, with cost_r 0.028 and 0 skips.
 
 Next entry is **Exp 024** (Round 5 pre-registration).
+
+---
+
+## Exp 024 - Round 5 pre-registration (cost first), and a Round 4 bug found
+
+**Date:** 2026-09-29
+**Status:** pre-registration, written BEFORE any Round 5 evaluation and before
+the corrected re-run of 029. Zero evaluations in this entry;
+`results/BTCUSDT/evaluations.csv` is untouched by it. Project count on entry:
+**131 evaluations**. HOLDOUT sealed.
+
+### Bug: `opening_range` traded long-only for all of Round 4
+
+Found while writing R5.5, not by a test. Every trigger in `recipes.py` returns
+**one signed array** (+1 long, −1 short) via `_side()`. `t_opening_range`, added
+in Exp 022, returned a `(long, short)` tuple instead, and `recipe()` does
+`np.asarray(fn(...))` on whatever a trigger returns, so a `(2, n)` array was
+stacked and then read as `(S > 0).any(axis=0)` - which is true if *either* side
+fired. Every signal became LONG.
+
+The recorded records show it plainly:
+
+| idea | valid long | valid short |
+|---|---|---|
+| 028 prev_day_break | 311 | 250 |
+| **029 opening range** | **798** | **0** |
+| 030 funding window | 288 | 232 |
+| 031 liquidation flush | 234 | 276 |
+| 032 keltner break | 141 | 106 |
+
+**029's Round 4 PASS (286 valid trades at 4h) was a long-only result wearing the
+label "both sides".** What survives of it: the control verdicts. `baseline.py`
+said DRIFT and `benchmark.py` said NO_EDGE, and a long-only result in a bull
+market is exactly the family Exp 017/019/020 closed, so the round's conclusion -
+no edge - is unchanged. What does not survive is the claim that 029 was a
+market-structure both-sided result. The block is fixed (one `_side()` call), now
+fires 1,464 long / 1,417 short on 4h, and the corrected idea is re-tested below
+as **R5.6**, because it is a bug correction rather than a new hypothesis and it
+would otherwise stay untested in a form that can trade both sides.
+
+`month_turn_fade`, written today, hit the same trap and was caught before it ran.
+A check worth keeping: **every trigger returns a 1-D array of 0/+1/-1, every
+filter returns two boolean arrays.** Run after any new block.
+
+### Why Round 5 exists
+
+Rounds 1-4 designed the signal first and measured cost afterwards. Exp 023
+converted gross and cost to % of price per trade for the 105 `pct`-stop
+evaluations (median, TRAIN):
+
+| tf | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| gross move, % of price | 0.020 | 0.022 | 0.026 | 0.053 | 0.195 | 0.361 | 0.237 |
+| cost, % of price | 0.155 | 0.134 | 0.129 | 0.113 | 0.112 | 0.112 | 0.110 |
+
+Cost is flat at ~0.11% of price per trade at **every** timeframe. Only a longer
+hold makes the gross move bigger than that. And every long hold so far was
+long-only, which earns the drift, not an edge. So Round 5 fixes cost first and
+removes the drift by construction.
+
+### The five design constraints, and how each idea meets them
+
+1. **4h source, `--mode time` variants.** Stop stays the same % of price and the
+   hold the same hours on all seven timeframes, so `cost_r` is comparable
+   everywhere and the only thing the timeframe axis asks is whether a finer entry
+   clock helps. Chart mode would shrink a 5% stop to 0.3% at 1m and lose to cost
+   again, which is what every 1m variant in Rounds 1-4 did.
+2. **`pct` stop 4-7%.** Above 7.9% the 1,000 USDT account cannot size a trade at
+   the 2025 price peak of 125,986, so 7% keeps the holdout sizable.
+3. **Hold 48-120 h, expected cost written before running and <= 0.05 R.**
+   `(0.14% + hold_h/8 x 0.01% funding) / stop`:
+   stop 4%: 48h 0.0500, 72h 0.0575*, 96h 0.0650*, 120h 0.0725*
+   stop 5%: 48h 0.0400, 72h 0.0460, 96h 0.0520*, 120h 0.0580*
+   stop 6%: 48h 0.0333, 72h 0.0383, 96h 0.0433, 120h 0.0483
+   stop 7%: 48h 0.0286, 72h 0.0329, 96h 0.0371, 120h 0.0414
+   (* above the limit)
+   **The plan's own R5.1 sketch (stop 5%, hold up to 120 h) violates its own
+   constraint 3 at 0.0580 R.** Constraint 3 wins: R5.1 uses a 6% stop.
+4. **`direction: "both"`, no directional filter.** No `htf_trend`, `trend_ema` or
+   `price_vs_ema` anywhere in this round - a trend filter would make a both-sided
+   idea long in 2023-24 again, which is the failure mode Rounds 1-3 kept hitting.
+5. **>= 150 TRAIN signals, counted before running** (4h, TRAIN 2020-2022 only,
+   counted in this entry). Values below 150 are dropped **now**, not after:
+
+| trigger | value | TRAIN long/short | total | action |
+|---|---|---|---|---|
+| funding_extreme | 0.00015 | 46 / 108 | 154 | keep |
+| funding_extreme | 0.0002 | 26 / 118 | 144 | **DROP** |
+| funding_extreme | 0.0003 | 16 / 113 | 129 | **DROP** |
+| zscore_revert | n30 z2.0 | 128 / 158 | 286 | keep |
+| zscore_revert | n30 z2.5 | 67 / 113 | 180 | keep |
+| zscore_revert | n60 z2.0 | 102 / 135 | 237 | keep |
+| zscore_revert | n60 z2.5 | 48 / 69 | 117 | **DROP** |
+| donchian_break | n30 | 190 / 130 | 320 | keep |
+| donchian_break | n60 | 141 / 83 | 224 | keep |
+| donchian_break | n120 | 90 / 48 | 138 | **DROP** |
+| keltner_break | n20 m2.0 | 152 / 109 | 261 | keep |
+| keltner_break | n20 m3.0 | 45 / 17 | 62 | **DROP** |
+| keltner_break | n50 m2.0 | 166 / 166 | 332 | keep |
+| keltner_break | n50 m3.0 | 130 / 83 | 213 | keep |
+| month_turn_fade | ±2d, lb6 | 519 / 447 | 966 | keep |
+| opening_range | 1h (fixed) | 732 / 707 | 1439 | keep |
+
+Two consequences of dropping inside a product grid, recorded so the grids are not
+mistaken for the plan's: `funding_extreme` keeps only thresh 0.00015, so R5.1's
+grid is thresh x stop, not thresh x hold; `keltner_break` loses n20 m3.0, which
+means mult 3.0 goes with n50 only, so R5.4 grids n x mult and both surviving
+pairs are kept by pairing (20, 2.0) and (50, 3.0) as two explicit values of one
+`n_mult` key.
+
+### The ideas, and what would kill each
+
+| # | file | hypothesis | kill if |
+|---|---|---|---|
+| R5.1 | `033_funding_carry.json` | Funding is a transfer from longs to shorts every 8h. When it is extreme, the paying side is the crowded side, and a crowded book's unwind takes days, not hours. Short the payer and collect the funding while the unwind works. Idea 003 (15m, 12h) never got past 13 trades, so this has never really been tested | TRAIN gross_r <= 0 |
+| R5.2 | `034_multiday_reversal.json` | After a 5-10 day move of more than 2 sigma, late trend followers and forced liquidations have pushed price past fair value and part of it comes back over days. The Exp 016 "never retry mean reversion" ban was about 15m/12h holds whose gross move was under the cost; this is a different horizon and is allowed here | TRAIN gross_r <= 0 |
+| R5.3 | `035_multiday_momentum.json` | A 5-20 day extreme is where trend-following funds add risk. It continued down in 2022 and up in 2023-24, so a both-sided rule should work in both periods if the effect is real - and not only in the bull market | TRAIN gross_r <= 0, **or** one side carries all of it in the period matching the drift (short in 2022, long in 2023-24) |
+| R5.4 | `036_keltner_multiday.json` | 032 (Keltner, 1h, 12h) had Round 4's largest TRAIN gross but was DRIFT with its `htf_trend` filter. Test the channel alone, both sides, held for days, with no directional filter at all | TRAIN gross_r <= 0 |
+| R5.5 | `037_turn_of_month_fade.json` | **My own idea.** Month-end and month-start are calendar events, not price events: risk budgets, index and mandate resets and benchmark rebalancing all push positions one way for a few days, and the flip into the new month is when those mandates stop pushing, so part of the move is handed back. Counterparty: the rebalancing flow itself. It is a *fade*, so it is naturally both-sided and it is orthogonal to BTC's direction - which is the only kind of idea left. New Level 2 block `month_turn_fade(before, after, lookback)` | TRAIN gross_r <= 0 |
+| R5.6 | `038_opening_range_both_sides.json` | **Bug correction, not a new hypothesis.** R4.2's 00:00 opening-range break, re-tested with the block fixed and with the 4-7% stop and 48-120h hold that Round 4 did not have. R4.2's only sub-cost 4h gross of any Round 4 structure was +0.141% of price at 4h, above the 0.11% cost line, so the level is worth re-measuring on both sides | TRAIN gross_r <= 0 |
+
+**Judge:** PASS + `baseline.py` SKILL (TRAIN and VALID) -> `--final`. Because the
+ideas are both-sided and carry no directional filter, SKILL is meaningful here -
+random entries with the same stop and hold take both sides too. `benchmark.py`
+on every WATCH/PASS, and **beta must be near 0**: a beta above 0.1 means the idea
+is secretly long, which is the failure mode this round exists to rule out.
+
+**Budget:** 6 ideas x 7 timeframes with `--mode time` = **42 evaluations**.
+Project total goes to 173. Grids <= 8 combos, because the 1m variant has 3.4M
+bars and `--mode time` scales bar counts up to 7,200.
+
+**Read in the round summary:** `cost_r` per timeframe (should be flat, 0.03-0.05);
+gross % per trade against the 0.11% line; long vs short mean R and trade counts;
+the per-year split (2020, 2021, 2022 against 2023, 2024).

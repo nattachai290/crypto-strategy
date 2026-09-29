@@ -241,7 +241,10 @@ def t_opening_range(b, f, mins=60, hour=0):
     c = b["close"].to_numpy(float)
     up = np.where(ok, _cross_up(c, win_hi), 0.0)
     dn = np.where(ok, _cross_dn(c, win_lo), 0.0)
-    return up, dn
+    # ONE signed array, like every other trigger. Returning a (long, short)
+    # tuple here made recipe() read "either side fired" as LONG, so this block
+    # traded long-only for all of Exp 022: 798 long trades, 0 short.
+    return _side(up, dn)
 
 
 def t_keltner_break(b, f, n=20, mult=2.0):
@@ -277,6 +280,31 @@ def t_flush(b, f, k=2.0, m=1.5, lookback=96, mode="follow", atr_n=14):
     raise ValueError("flush mode must be 'follow' or 'fade'")
 
 
+def t_month_turn_fade(b, f, before=2, after=2, lookback=6):
+    """Fade the move that runs into a month boundary: on bars within `before`
+    days before or `after` the first of a UTC month, take the side opposite to
+    the `lookback`-bar move that got price there. Month-end and month-start are
+    calendar events, not price events: risk budgets, index and mandate resets and
+    benchmark rebalancing all push positions in one direction for a few days,
+    and the flip into the new month is when those same mandates stop pushing,
+    so part of the move is given back. Bars outside the window do not fire."""
+    idx = b.index
+    day = idx.day.to_numpy()
+    # distance in days to the nearest month boundary, from the calendar alone:
+    # days left until the 1st (inclusive), or days since this month's 1st
+    to_next = 32 - day
+    to_prev = day - 1
+    in_win = (to_next <= int(before)) | (to_prev <= int(after))
+    c = b["close"].to_numpy(float)
+    k = max(int(lookback), 1)
+    ref = np.concatenate([np.full(k, np.nan), c[:-k]])
+    moved = np.isfinite(ref) & (c != ref)
+    up = moved & (c > ref)
+    dn = moved & (c < ref)
+    win = in_win
+    return _side(np.where(win, dn, 0.0), np.where(win, up, 0.0))
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -296,6 +324,7 @@ TRIGGERS = {
     "opening_range": t_opening_range,
     "keltner_break": t_keltner_break,
     "flush": t_flush,
+    "month_turn_fade": t_month_turn_fade,
 }
 
 
