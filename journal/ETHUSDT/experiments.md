@@ -333,3 +333,166 @@ weaker but still valid basis, and it no longer needs funding at all.
    by 0.005 R when they fail a gate by 0.0033 to 0.01. Re-running 259
    evaluations to move nothing is not worth it. I would fix the engine, leave the
    records, and note the defect against every multi-day result in the report.
+
+---
+
+## Exp 003 - Round E1 results: 0 PASS, 32 WATCH, and the same DRIFT+ALPHA state for a third time
+
+**Date:** 2026-09-29
+**Status:** complete. **49 evaluations: 0 PASS, 32 WATCH, 14 REJECT, 3
+INCONCLUSIVE.** ETH project total **49**. ETH HOLDOUT untouched - nothing
+qualified for it. `baseline.py` and `benchmark.py` ran on all 32 WATCHes.
+
+### The controls were uniform, which is itself the result
+
+| control | verdict |
+|---|---|
+| `baseline.py`, 32 of 32 | **DRIFT, every one** |
+| `benchmark.py`, 32 of 32 | 31 NO_EDGE, **1 ALPHA** |
+
+Exp 001 predicted this: *"R5.1's nine WATCHes were all DRIFT, so DRIFT is the
+expected outcome and must be reported as such."* On BTC, every single
+cost-first multi-day idea that reached a control was DRIFT, and on ETH not one
+of 32 is anything else. **Thirty-two independent configurations across two
+coins, and the entry beats random timing in none of them.**
+
+### The binding gate is the same one on every near-miss
+
+The top ten VALID results, and which gate each fails:
+
+| config | trades | mean R | needed for n | CI low | stress | maxDD | failed |
+|---|---|---|---|---|---|---|---|
+| 041 @1m | 77 | +0.2760 | 0.1787 | **-0.0033** | +0.2681 | 7.3% | trades<100, **ci_lo** |
+| 039 @1m | 103 | +0.2219 | 0.1545 | **-0.0095** | +0.2139 | 5.3% | **ci_lo** |
+| 038 @1m | 63 | +0.2103 | 0.1975 | -0.0743 | +0.2010 | 4.7% | trades, ci_lo |
+| 043 @5m | 54 | +0.2037 | 0.2134 | -0.1129 | +0.1959 | 5.8% | trades, ci_lo |
+| 039 @5m | 95 | +0.1581 | 0.1609 | -0.0677 | +0.1504 | 5.9% | trades, ci_lo |
+
+**Every one of them fails on `ci_lo` and nothing fails on drawdown or on the
+x1.5 cost stress.** The effects are the right size - the mean R clears the
+`1.568/sqrt(n)` bar comfortably in most rows - and the samples are 54 to 103
+trades, which is simply not enough to put a bootstrap CI above zero. That is a
+power problem, not a finding, and it is the honest description: the round
+produced several effects that are too large to be nothing and too small to be
+separated from noise at this sample size.
+
+### The one ALPHA, and it is the third time this state has appeared
+
+**041 `momentum` + `funding_not_crowded` + `volume_spike` at 1m: WATCH, DRIFT,
+ALPHA.**
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 101 | | | +0.1951 | | +6.4% | 10.6% |
+| valid 2023-2024 | 77 | +0.2954 | 0.0194 | +0.2760 | [-0.0033, +0.6057] | +10.8% | 6.9% |
+| valid x1.5 cost | | | | +0.2681 | | | |
+
+41 long / 36 short, **beta -0.004**, alpha **+10.8%/yr with CI [+0.004, +0.218]**
+on VALID and +9.5%/yr CI [-0.001, +0.187] on TRAIN, Sharpe **1.37 against
+buy & hold's 1.18**, maxDD **6.9% against 45.4%**.
+
+**Two things about it are the healthiest in the project, and one is fatal.**
+
+Healthy, and worth recording:
+- **beta is -0.004.** It is not a disguised long. That was the test Round 5 set
+  for itself and this passes it cleanly.
+- **The per-year split is 2023 +0.2773 on 38 trades against 2024 +0.2749 on 39.**
+  That is 50.5% / 49.5%. Every previous positive result in this project was
+  lopsided: 022 was 2023 +0.3496 over 2024 +0.1355, 038 was +0.0916 over
+  +0.2579, 039 was +0.3192 over +0.1358, and the Round 6/ETH near-misses all
+  leaned on 2023. **A result that is identical in a bull year and a flat year
+  is the only shape of evidence that is not a regime effect**, and this is the
+  first one the project has produced.
+- It is positive on **all seven clocks** (+0.017 to +0.276), and 039 is too
+  (+0.026 to +0.222), so it is not a single-clock artefact.
+
+Fatal: **`baseline.py` says DRIFT.** On TRAIN the idea sits below the 95th
+percentile of random entries with the same stop, hold and filters. So the entry
+has no measured timing skill, and the return comes from being in ETH both ways
+rather than from when it entered.
+
+**This is the third configuration in the project to land on DRIFT + ALPHA, and
+the first two both failed their holdouts:**
+
+| config | coin | verdict | baseline | benchmark | holdout |
+|---|---|---|---|---|---|
+| 038 opening range @4h | BTC | PASS | DRIFT | ALPHA | **FAILED** -0.1118 R |
+| 039 breakout+flow @5m | BTC | PASS | DRIFT | ALPHA | **FAILED** +0.0129 R, beaten by a random entry |
+| **041 impulse @1m** | **ETH** | **WATCH** | **DRIFT** | **ALPHA** | **not run - a WATCH cannot be** |
+
+**`--final` is refused and I did not run it.** AGENTS.md rule 4 is absolute
+("Never run `--final` on anything that is not `PASS`"), and 041@1m fails two
+gates: 77 trades against a floor of 100, and a CI lower bound of -0.0033. It is
+the closest the project has come since 038, and it is still a WATCH. Spending
+the ETH holdout on it is the owner's decision (`PLAN.md` §5), and on the
+evidence of the other two DRIFT+ALPHA results my recommendation is **not to** -
+but it is the owner's call and I have left the holdout sealed.
+
+### What ETH adds that BTC did not: a cross-coin answer
+
+Every one of the 49 ETH rows was matched to its BTC twin (same idea file, same
+frozen config, different coin) and compared as a pair.
+
+| | |
+|---|---|
+| ETH higher on **17** of 49 configs, lower on **32** | |
+| mean difference **-0.0179 R**, median -0.0317 R | 95% CI **[-0.0441, +0.0082]** |
+| BTC's 2 PASSes on ETH | **both become WATCH** |
+| BTC REJECT -> ETH WATCH | 14 |
+| BTC WATCH -> ETH REJECT | 5 |
+
+**My own first impression was wrong and the paired test corrected it.** Reading
+only the top rows, ETH looked markedly better than BTC (041@4h +0.129 against
+BTC's -0.024; 043@5m +0.204 against +0.084). Paired over all 49 configs there is
+**no detectable difference, and if anything ETH is slightly worse.** ETH's 38%
+larger moves buy nothing once the structure is the same.
+
+**The correlation between the two coins' VALID results is only +0.52 Pearson /
++0.43 Spearman.** That is the most useful methodological fact this round
+produced: a structure's result on one coin predicts its result on the other only
+weakly, so the 210 BTC evaluations could not have been "reused" for ETH, and the
+ETH results are substantially independent evidence rather than a rerun.
+
+### Per family, on both coins, how many of the seven clocks are positive
+
+| family | BTC | ETH | BTC median | ETH median | BTC best | ETH best |
+|---|---|---|---|---|---|---|
+| **039 breakout + flow** | **7/7** | **7/7** | +0.145 | +0.102 | +0.2223 (PASS) | +0.2219 |
+| **041 impulse, not crowded** | 6/7 | **7/7** | +0.119 | +0.065 | +0.174 | +0.2760 |
+| 043 squeeze break | 7/7 | 6/7 | +0.099 | +0.027 | +0.144 | +0.204 |
+| 035 multi-day momentum | 7/7 | 4/7 | +0.123 | +0.008 | +0.165 | +0.133 |
+| 038 opening range | 4/7 | 5/7 | +0.016 | +0.040 | +0.1753 (PASS) | +0.210 |
+| 036 Keltner multi-day | 4/7 | 4/7 | +0.001 | +0.018 | +0.097 | +0.111 |
+| 034 multi-day reversal | 0/7 | 3/7 | -0.098 | -0.064 | -0.068 | +0.058 |
+
+**039 is positive on all fourteen clocks across both coins** - the most robust
+positive result this project has produced - and its BTC version is the one that
+PASSed, got ALPHA, and then failed the holdout because a random entry matched
+it. Robustness across coins and across clocks is not what distinguishes an edge
+from a period effect; only the holdout did that, twice.
+
+**034 multi-day reversal is now dead on both coins** (BTC 0/7 positive, ETH
+3/7, and the ETH positives are the smallest numbers in the round at +0.004 to
++0.058). This is the fourth coin-clock to close that family, after 016 at 15m
+and 034's BTC rejection at all seven clocks.
+
+### Verdict
+
+`REJECT`, and the round is complete. **0 PASS, 0 CONFIRMED, the ETH holdout
+untouched.** Nothing here is a strategy: 32 of 32 controls say DRIFT, and the one
+ALPHA has no timing skill and two failed gates.
+
+The stop rule agreed in the pre-registration is therefore live: **if Round E1
+ends with no holdout CONFIRMED on ETH, ETH research stops too, and the project's
+answer stands for both coins.** Round E1 has ended with no PASS, so no holdout
+could be run, so it has ended with no CONFIRMED.
+
+The project's answer, now on two coins and 259 evaluations:
+
+> **At Binance USDT-M VIP0 costs, no entry this harness has been able to
+> construct has an edge that survives a random-entry control.** Multi-day
+> both-sided rules on a 6% stop do produce real positive gross moves that
+> reproduce on unseen data in every year - and the entry is not what produces
+> them. The value, if there is any, is in the cost structure, which is an
+> execution and position-sizing decision rather than a trading technique, and
+> this harness has no instrument for it.
