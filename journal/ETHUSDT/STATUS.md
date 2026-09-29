@@ -1,5 +1,8 @@
 # ETHUSDT - status and handoff
 
+> **CLOSED** (Exp 003 stop rule). The funding defect is fixed (Exp 004). Research continues on
+> **SOLUSDT and BNBUSDT** (`docs/research/PLAN.md` §12).
+
 _Last updated: 2026-09-29, Exp 003 (Round E1 complete). Rules: `AGENTS.md`.
 Plan: `docs/research/PLAN.md` §11. BTCUSDT is closed (BTC Exp 029)._
 

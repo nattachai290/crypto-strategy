@@ -514,3 +514,15 @@ configs were re-run in scratch. VALID mean R changes by a median of
 041@1m, the closest config, goes from +0.2760 to +0.2714, and its CI low
 goes from −0.0033 to −0.0075 (it stays a WATCH). No PASS. The Exp 003 stop rule stands: ETH research stops. Details
 and the BTC side are in `journal/BTCUSDT/experiments.md` Exp 030.
+
+---
+
+## Exp 005 — ETH closed; research moves to SOLUSDT and BNBUSDT
+
+**Date:** 2026-09-29
+**Status:** complete (decision record; no evaluation)
+
+Round E1's stop rule (Exp 001) fired, so ETH research stops. 041@1m stays a
+WATCH and gets no holdout. The owner approved trying SOLUSDT and BNBUSDT with
+the same seven families, run by the research agent (`PLAN.md` §12,
+`journal/SOLUSDT/`, `journal/BNBUSDT/`).
