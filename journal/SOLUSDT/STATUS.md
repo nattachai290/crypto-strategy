@@ -1,5 +1,7 @@
 # SOLUSDT - status and handoff
 
+> **CLOSED (stop rule, Exp 003; review Exp 004).** Holdout used once, FAILED. Controls are still missing on 19 WATCH rows (Exp 004), which is for the research agent to complete.
+
 _Last updated: 2026-09-29, Exp 003 (Round S1 complete, holdout spent and
 FAILED). Rules: `AGENTS.md`. Plan: `docs/research/PLAN.md` section 12. BTCUSDT
 and ETHUSDT are closed. BNBUSDT is active._
@@ -89,6 +91,8 @@ and ETHUSDT are closed. BNBUSDT is active._
 >
 > The finding that generalises is not "no edge exists". It is the one 041@5m
 > forced open, and it is sharper than anything the earlier rounds could say:
+>
+> _[Withdrawn in Exp 004: +0.054 R, CI [−0.174, +0.298] is no evidence of skill; beating the random median is not the 95th-percentile SKILL test, and the TRAIN SKILL margin was 0.0008 R. Read the paragraph below as superseded.]_
 >
 > **On this market a both-sided multi-day rule can have a genuinely skillful
 > entry - one that beats random timing on data it has never seen, in both

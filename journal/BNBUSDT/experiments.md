@@ -158,3 +158,23 @@ long/short counts - **plus the same config's BTC and ETH result.**
 **Stop rule, agreed in advance, for this coin:** if B1 ends with no holdout
 CONFIRMED on BNB, research on BNB stops. If both B1 and S1 stop, the project's
 answer stands for all four coins. **No fifth coin - that is the owner's.**
+
+---
+
+## Exp 002 — Review note (planner)
+
+**Date:** 2026-09-29
+**Status:** review (no evaluation; holdout untouched)
+
+Round B1's 49 evaluations are recorded in `results/BNBUSDT/evaluations.csv`
+(0 PASS, 10 WATCH, 33 REJECT, 6 INCONCLUSIVE, `size_skips` 0), but this
+journal has no results entry.
+
+For the research agent:
+- run `baseline.py` and `benchmark.py` on the two WATCHes without them
+  (041 @3m, 043 @1m);
+- write the round summary as **Exp 003**, per AGENTS.md §8;
+- update STATUS.md.
+
+With no PASS, the stop rule (PLAN.md §12) has fired: BNB research stops.
+Details and the cross-coin table: `journal/SOLUSDT/experiments.md` Exp 004.
