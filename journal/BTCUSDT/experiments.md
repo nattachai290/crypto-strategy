@@ -2367,3 +2367,69 @@ PASS. One reached the holdout and returned -0.0102 R.
 The holdout has been spent exactly twice, on `example_trend_breakout` (the Exp 011
 lock test) and on 022, and **both FAILED**. `PLAN.md` §7 now applies: the
 deliverable is `journal/BTCUSDT/FINAL_REPORT.md`.
+
+---
+
+## Exp 023 — Review of Round 4, FINAL_REPORT corrections, and Round 5 (cost first)
+
+**Date:** 2026-09-29
+**Status:** complete (review + plan; no new evaluation, holdout untouched)
+
+### Review of Exp 022
+Process was clean. Pre-registration came before results. The Round 4 stops
+were designed to stay sizable (every non-REJECT row has 0 skips on TRAIN and
+VALID). Baseline and benchmark ran on the PASS and the WATCH. `--final` on
+029@4h was refused and nothing was written. `holdout_log.csv` is unchanged.
+The five new blocks look causal on reading and pass test 7.
+`evaluations.csv` was re-written with the new `train_size_skips` column: all 95
+earlier rows compared field by field, and no value changed. Benchmarks are
+**22 of 22 NO_EDGE**.
+
+### Corrections (FINAL_REPORT.md edited in place, noted at its end)
+1. Thai summary: 023 was refused because a regime rule needs ALPHA (it was
+   SKILL), not because of DRIFT.
+2. Thai summary: the ATR-stop example is 3.0× ATR = 1.28% → 0.78% of price
+   (the English body was right; "2.83%" was a different stop).
+3. "Holdout used twice, both failed": the first use was the lock test during
+   repo setup. Only one technique, 022, has spent a holdout.
+4. 20 → 22 benchmarks.
+5. **§3's opening-range column is not a same-signal comparison.** An
+   opening-range window cannot be shorter than one bar. At 4h, "the first
+   30/60/120 minutes" is the whole 00:00–04:00 bar, so the grid key `mins` was
+   inert. At 1h all `mins` values are the 00:00 bar. 029@4h's PASS therefore
+   tested "break of the first 4h bar", not the pre-registered first hour. The
+   cost gradient stands on the same-signal rows of Exp 016.
+
+### Why Round 5
+For the 105 evaluations with a `pct` stop (≥ 100 TRAIN trades), gross and cost
+per trade were converted to % of price (gross_r × stop, cost_r × stop).
+Medians on TRAIN:
+
+| tf | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| gross % | 0.020 | 0.022 | 0.026 | 0.053 | 0.195 | 0.361 | 0.237 |
+| cost % | 0.155 | 0.134 | 0.129 | 0.113 | 0.112 | 0.112 | 0.110 |
+
+The net sign is gross % − cost %, and the stop width only sets the unit. Cost
+is flat at ≈ 0.11% of price per trade. Only a longer hold makes the move
+bigger than that, and so far every long hold was long-only, which earns the
+drift. Round 5 (PLAN.md §4) fixes cost first and removes drift by design:
+- 4h source files with `--mode time` variants;
+- 4–7% stops and 48–120 h holds, expected cost ≤ 0.05 R;
+- both directions and no directional filter;
+- ≥ 150 TRAIN signals, counted before running.
+
+Ideas: funding carry, multi-day reversal, multi-week momentum, Keltner at a
+multi-day hold, plus one of the agent's own.
+
+Design checks done for the plan, on TRAIN only:
+- Signal counts on 4h, TRAIN 2020–2022:
+  - `funding_extreme` 0.00015: 46 long / 108 short;
+  - `zscore_revert` n 30, z 2.0: 128 / 158;
+  - `donchian_break` n 60: 141 / 83;
+  - `keltner_break` n 20, mult 2.0: 152 / 109.
+- `tf_variants --mode time` from a 4h source to 1m keeps the 5% stop and the
+  hours, and scales the bar counts (30 → 7,200). A 1m run on TRAIN takes ≈ 20 s
+  per combo, with cost_r 0.028 and 0 skips.
+
+Next entry is **Exp 024** (Round 5 pre-registration).

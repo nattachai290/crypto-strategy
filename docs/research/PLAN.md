@@ -11,6 +11,9 @@
 > - **รอบ 3**: "ควรถือ BTC เมื่อไหร่" หากฎเลือกช่วงเวลาถือ (ถือ/ไม่ถือ/short ตามแนวโน้ม) แล้ว**เทียบกับการซื้อแล้วถือเฉยๆ**
 >   ด้วย `src/benchmark.py` (วัด alpha, Sharpe, drawdown เทียบ buy & hold)
 > - **รอบ 4**: เทคนิคแนวใหม่ที่ต้องเพิ่มบล็อก เช่น แท่งวันก่อนหน้า, opening range, ช่วงจ่าย funding, การล้างพอร์ต
+> - **รอบ 5** (เพิ่มหลัง Exp 023): **ออกแบบจากต้นทุนก่อน** ต้นทุนราว 0.11% ของราคาต่อไม้ในทุก TF จึงต้องถือไม้หลายวัน (48–120 ชม.)
+>   ใช้ stop 4–7% และเข้าได้ทั้งสองทางเพื่อตัดผลจากตลาดขาขึ้นออก ไอเดีย: funding carry, กลับตัวหลายวัน, โมเมนตัมหลายสัปดาห์, Keltner
+>   ทุก TF ใช้ `--mode time` (stop % และชั่วโมงถือเท่ากันทุก TF)
 >
 > ไอเดียไหน PASS → ทดสอบกับข้อมูลที่ล็อกไว้ (2025–26) ครั้งเดียว → ถ้ายืนยันผ่าน ทำใบสรุปกลยุทธ์
 > และทดลองเทรดกระดาษ (สัญญาณอย่างเดียว ไม่ส่งออเดอร์) อย่างน้อย 3 เดือน ก่อนที่คุณจะตัดสินใจเรื่องเงินจริง
@@ -107,7 +110,8 @@ Don't fix one timeframe; run each idea on all seven:
      grid on VALID.
    - 1m/3m variants are slow (3.5M / 1.2M bars): keep their grid ≤ 16 combos
      and use `--workers`.
-5. Optional: `--mode time --tfs <neighbours>` tests "the same trade on a finer
+5. **Round 5 uses `--mode time` for all six variants** (see Round 5 for
+   why). In other rounds it is optional: `--mode time --tfs <neighbours>` tests "the same trade on a finer
    clock" (same hours, same price distances) for timeframes close to the
    source. Use it when chart mode shows a pattern and you want to know
    whether it's about *time* or about *bars*.
@@ -316,6 +320,74 @@ Round 3 summary should say which.
 For each block: implement → `python src/test_engine.py` (must pass) → one
 line in `TECHNIQUES.md` §2/§3 → pre-registered idea file → `evaluate.py`.
 
+### Round 5 — Cost first: multi-day, both-sided trades (≈ 6 h; added after Exp 023)
+
+**Why.** Rounds 1–4 designed the signal first and measured the cost after.
+The records show why that failed. Net mean R has the sign of
+**(gross move per trade − cost per trade), both in % of price**; the stop
+width only changes the unit. Median over the 105 pct-stop evaluations, on
+TRAIN (`evaluations.csv`, gross_r × stop and cost_r × stop):
+
+| tf | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| gross move per trade, % of price | 0.020 | 0.022 | 0.026 | 0.053 | 0.195 | 0.361 | 0.237 |
+| cost per trade, % of price | 0.155 | 0.134 | 0.129 | 0.113 | 0.112 | 0.112 | 0.110 |
+
+The cost is about 0.11% of price per trade at every timeframe. Only a longer
+hold makes the gross move bigger than that. But up to now every long hold was
+long-only, and a long-only hold in 2023–24 earns the drift, not an edge
+(Exp 017, 019, 020). So this round fixes the cost side first and removes the
+drift by design:
+
+**Design constraints (all five, in every idea; state them in the
+pre-registration):**
+1. **Source file at 4h. Make the variants with `--mode time`:**
+   `python src/tf_variants.py ideas/NNN.json --mode time`. The stop stays the
+   same % of price and the hold stays the same number of hours on every
+   timeframe, so `cost_r` is about the same on all seven and the timeframe
+   comparison asks one thing only: does a finer entry clock help? (Chart
+   mode would shrink a 5% stop to 0.3% at 1m and lose to cost again, the
+   same result as every 1m variant in Rounds 1–4.)
+2. **`pct` stop 4–7%.** Cost ≈ 0.14% taker round trip / 4% = 0.035 R, plus
+   funding. Above ≈ 7.9% the 1,000 USDT account cannot size a trade at the
+   2025 price peak (125,986; AGENTS.md §7), so ≤ 7% keeps every timeframe
+   and the holdout sizable. `tf_variants.py` warns if you get this wrong.
+3. **Hold 48–120 h** (`max_hold_hours`), no TP or TP ≥ 2R. Before running,
+   write the expected cost: `(0.14% + hold_h / 8 × 0.01% funding) / stop`.
+   It must be ≤ 0.05 R. After running, report the actual `cost_r`.
+4. **`direction: "both"` and no directional trend filter** (`htf_trend`,
+   `trend_ema`, `price_vs_ema`). A trend filter makes a both-sided idea long
+   in 2023–24 again. Filters that are not directional (`adx_min`,
+   `vol_regime`, `volume_spike`, `funding_window`) are allowed.
+5. **Enough trades.** Count the trigger's signals on **TRAIN only**
+   (2020–2022) in the pre-registration. You need ≥ 150 to hope for ≥ 100
+   VALID trades once holds overlap. If one grid value is below that, drop it
+   **before** running, never after.
+
+| # | Idea (source 4h) | Recipe sketch (grid ≤ 12 combos: the 1m variant has 3.4M bars) | Kill if |
+|---|---|---|---|
+| R5.1 | **Funding carry.** When funding is high, longs pay shorts every 8 h; the crowded side pays, and its unwind takes days, not hours. Short the payer, collect the funding while holding. Idea 003 (15m, 12 h) never got past 13 trades, so this was never really tested | trigger `funding_extreme` alone, thresh [0.00015, 0.0002, 0.0003]; both; stop 5%; hold [72, 120]. On TRAIN, 0.00015 gives 46 long / 108 short signals: likely short-heavy. Report long and short separately | TRAIN gross_r ≤ 0 |
+| R5.2 | **Multi-day reversal.** After a 5–10 day move of more than 2σ, late trend followers and forced liquidations have pushed price past fair value, and it partly comes back over days. The Exp 016 "never retry mean reversion" ban was about 15m / 12 h holds, whose gross move was below cost; this is a different horizon and is allowed here | trigger `zscore_revert`, n [30, 60] (5–10 days), z [2.0, 2.5]; both; stop 5%; hold [48, 96] | TRAIN gross_r ≤ 0 |
+| R5.3 | **Multi-week time-series momentum, both sides.** A 5–20 day high or low is where trend-following funds add risk; it continued in 2022 (down) and 2023–24 (up), so a both-sided rule should work in both periods if the effect is real, and not only in the bull market | trigger `donchian_break`, n [30, 60, 120]; both; stop 6%; hold [72, 120] | TRAIN gross_r ≤ 0, or one side carries all of it in the period where it matches the drift (short in 2022, long in 2023–24) |
+| R5.4 | **Volatility-channel break at a multi-day hold.** 032 (Keltner, 1h, 12 h hold) had the largest TRAIN gross of Round 4 (+0.157 R) but was DRIFT with its `htf_trend` filter; test the channel alone, both sides, held for days | trigger `keltner_break`, n [20, 50], mult [2.0, 3.0]; both; stop 6%; hold [48, 96] | TRAIN gross_r ≤ 0 |
+| R5.5 | **Your own idea**, under all five constraints, with a written hypothesis about who is on the other side | — | pre-register it |
+
+**Judge.** As always: PASS + `baseline.py` SKILL (TRAIN and VALID) →
+`--final`. Because the ideas are both-sided, SKILL is meaningful here: random
+entries with the same stop and hold take both sides too. Run `benchmark.py`
+on every WATCH/PASS and report beta: it should be near 0; a beta above 0.1
+means the idea is secretly long.
+
+**Read these in the round summary:** `cost_r` per timeframe (should be flat,
+about 0.03–0.05); gross % per trade vs the 0.11% line; long vs short mean R
+and trade count; the per-year split (2020, 2021, 2022 vs 2023, 2024).
+
+**Use of the results.** A PASS goes through §5. If nothing survives, add a
+short "Round 5" section to `FINAL_REPORT.md`: cost-first multi-day both-sided
+trading on BTCUSDT also has no edge. With that the plan is complete, and the
+next step (other markets, basis/funding data, VIP fees) is the owner's
+decision, not the agent's.
+
 ---
 
 ## 5. What to do with a PASS
@@ -436,4 +508,5 @@ Never say "profitable" unless the holdout is CONFIRMED.
 | 2 | ≈ 2 h | 2 exit studies (combined grids) at the best timeframe |
 | 3 | ≈ 6 h | 5 regime ideas × 7 timeframes + benchmark.py on each + a reference table |
 | 4 | ≈ 6 h | 4–5 new blocks + ideas × 7 timeframes |
+| 5 | ≈ 6 h | 4–5 cost-first ideas × 7 timeframes (`--mode time`); the 1m variants are the slow part |
 | §6 | 3–4 h to build + ≥ 3 months of paper trading | only after a CONFIRMED |
