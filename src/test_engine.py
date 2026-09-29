@@ -323,6 +323,7 @@ def main() -> None:
     test_recipe_blocks_causal()
     test_tf_variants()
     test_short_side()
+    test_random_null_model()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -566,6 +567,28 @@ def test_short_side() -> None:
     check("D. unsizable trade (10 USDT, 0.001 BTC step) is reported in size_skips",
           len(r.trades) == 0 and r.metrics.get("size_skips", 0) == 1,
           f"trades {len(r.trades)} size_skips {r.metrics.get('size_skips')}")
+
+
+# --------------------------------------------------------------------------
+# 10. Random-entry null model (baseline.py)
+# --------------------------------------------------------------------------
+def test_random_null_model() -> None:
+    print("\n10. random trigger: rate, balance, seeds, and the --final baseline gate")
+    import recipes as RC
+    import evaluate as EV
+    bars, _, _ = _random_case(3, n=20000)
+    s1 = RC.t_random(bars, None, p=0.05, seed=1)
+    s2 = RC.t_random(bars, None, p=0.05, seed=2)
+    rate = float((s1 != 0).mean())
+    longs = float((s1 > 0).sum() / max((s1 != 0).sum(), 1))
+    check("fires at about rate p, long/short about 50/50",
+          0.045 < rate < 0.055 and 0.45 < longs < 0.55, f"rate {rate:.4f} long share {longs:.3f}")
+    check("different seeds give different entries, same seed the same",
+          not np.array_equal(s1, s2) and np.array_equal(s1, RC.t_random(bars, None, p=0.05, seed=1)))
+    check("--final gate: an unknown eval_id has no baseline (MISSING)",
+          EV.baseline_verdict("0000000000") == "MISSING")
+    check("--final gate: no baseline and no benchmark -> no holdout ticket",
+          EV.benchmark_verdict("0000000000") == "MISSING" and not EV.holdout_ticket("0000000000"))
 
 
 # --------------------------------------------------------------------------

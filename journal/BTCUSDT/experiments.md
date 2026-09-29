@@ -1464,3 +1464,118 @@ long structure tested is negative below 15m and positive from 30m up, and the
 reason is measurable rather than mysterious - `cost_r` is 0.505 R on 1m and
 0.019 R on 4h. Round 2 tests whether the exits, which are currently inert, can
 turn +0.102 into something whose confidence interval excludes zero.
+
+
+---
+
+## Exp 017 — Random-entry baseline: every Round 1 WATCH is DRIFT
+
+**Date:** 2026-09-29
+**Status:** complete. Owner requested the control after reviewing Round 1.
+
+### Why
+Every Round 1 WATCH is long-only, and VALID (2023–24) was a strong BTC bull
+market (+156%, +120%). Per-year R of the four best configurations, using their
+frozen parameters over TRAIN + VALID:
+
+| year | BTC | 018@30m | 018@1h | 019@1h | 019@30m |
+|---|---|---|---|---|---|
+| 2020 | +304% | +0.210 | +0.324 | +0.111 | +0.079 |
+| 2021 | +60% | +0.005 | −0.057 | +0.187 | +0.042 |
+| 2022 | −64% | −0.056 | −0.019 | −0.107 | −0.072 |
+| 2023 | +156% | +0.167 | +0.262 | +0.174 | +0.044 |
+| 2024 | +120% | +0.049 | −0.015 | +0.089 | +0.067 |
+
+All four lose in 2022 and earn most in the strongest bull years. That's what
+market drift looks like. It is not proof of it, so it needed a control.
+
+### The control: `src/baseline.py`
+It keeps the idea's frozen exits, direction, cooldown and execution and swaps
+only the entry trigger for a new `random` trigger (a null model in
+`recipes.py`, causal by construction and covered by test 7), calibrated to
+about the same number of VALID signals. It runs 200 seeds × 2 modes:
+- **A**: random entries at any time → what the market's drift pays
+- **B**: random entries where the idea's filters allow → what the regime
+  filter pays without the trigger's timing
+
+**SKILL** only if the idea's VALID mean R beats the 95th percentile of both.
+`evaluate.py --final` now refuses a recipe config without SKILL.
+
+### Result
+
+| idea | eval_id | valid trades | idea valid R | A: median / 95th pct | A ≥ idea | B: median / 95th pct | B ≥ idea | verdict |
+|---|---|---|---|---|---|---|---|---|
+| 018_trend_breakout_long_tf30 | 1e1149a0c2 | 234 | +0.102 | +0.027 / +0.103 | 6% | +0.067 / +0.140 | 25% | **DRIFT** |
+| 018_trend_breakout_long_tf60 | 7bcaa9ca12 | 120 | +0.110 | +0.055 / +0.162 | 17% | +0.089 / +0.196 | 37% | **DRIFT** |
+| 017_session_open_long_tf60 | 9d649f3872 | 80 | +0.021 | +0.046 / +0.177 | 64% | +0.082 / +0.221 | 80% | **DRIFT** |
+| 019_pullback_uptrend_long_tf60 | a16b19bcec | 134 | +0.130 | +0.081 / +0.162 | 21% | +0.105 / +0.184 | 28% | **DRIFT** |
+| 019_pullback_uptrend_long_tf30 | ca0838da05 | 300 | +0.056 | +0.011 / +0.052 | 3% | +0.047 / +0.090 | 35% | **DRIFT** |
+
+### What we learned
+- **None of the Round 1 entries has skill.** Random long entries inside the
+  same trend filters earn a median of +0.05..+0.10 R on VALID, and 25–80% of
+  random runs match or beat the real entries. What made money in 2023–24 was
+  *being long while BTC trended up, with these exits*, not the Donchian,
+  pullback or session-open timing.
+- Mode A's median (random long at any time) is itself positive on VALID
+  (+0.01..+0.08 R) and about zero on TRAIN. That's the bull-market drift in
+  2023–24, measured directly.
+- The trend filter adds a little over pure randomness (B median > A median in
+  every case), which is a regime effect worth studying as such, and is not an
+  entry edge.
+
+### Corrections to the Exp 016 entry (the journal is append-only)
+1. Exp 016 says "every report shows `size_skips 0`". It doesn't: 13
+   evaluations had skips (up to 27,947). All are 1m/3m/5m variants whose
+   account was 90–100% drawn down, all REJECT, so no verdict changes. Their
+   mean R is still unreliable (trades after the blow-up were skipped).
+2. Exp 016 says 018@30m "misses PASS by 0.0001" (1.568/√234 = 0.1025 vs
+   0.1024). That shortcut assumes a per-trade sd of 0.8 R. This idea's
+   bootstrap CI is [−0.031, +0.243], i.e. sd ≈ 1.07 R, so PASS at n = 234 needs
+   ≈ +0.137. It was not a near miss.
+
+### Verdict
+`KEEP` the baseline as a required step (AGENTS.md step 6b, PLAN.md §3 and §5).
+The Round 1 WATCHes are `DRIFT`: leads for a *regime* question ("when should
+one be long BTC?"), not entry techniques. Round 2's exit study may still run
+on 018@30m, but every result is judged against the baseline too.
+
+---
+
+## Exp 018 — Tools for Round 3: `trend_state` trigger and buy-and-hold benchmark
+
+**Date:** 2026-09-29
+**Status:** complete (tooling; no idea evaluated into the records).
+
+After Exp 017 the research question became "when should one be long BTC?",
+and for that the opponent is buy & hold, not random entries. Added:
+
+- **`trend_state` trigger** (`recipes.py`): fires on every bar, long while
+  close > EMA(n), short while below. With direction long and `max_hold_hours`
+  as the re-check interval, it expresses "be long while the regime is up".
+  Causal (test 7).
+- **`src/benchmark.py`**: daily account returns vs 1x buy & hold on TRAIN and
+  VALID. Beta, alpha per year with a 20-day block-bootstrap 95% CI, CAGR, max
+  drawdown, Sharpe. Verdicts ALPHA / RISK_EDGE / NO_EDGE.
+- `evaluate.py --final` now needs PASS + (baseline SKILL **or** benchmark
+  ALPHA).
+
+Reference runs (recorded in `journal/BTCUSDT/benchmarks.md`):
+
+| config | period | beta | alpha / yr [95% CI] | Sharpe idea / B&H | maxDD idea / B&H | verdict |
+|---|---|---|---|---|---|---|
+| 018@30m | TRAIN | 0.07 | +2.7% [−8.2%, +13.7%] | 0.61 / 0.76 | 19.7% / 76.7% | NO_EDGE |
+| | VALID | 0.12 | −0.6% [−12.2%, +10.3%] | 1.09 / 2.01 | 9.4% / 26.3% | |
+| 019@1h | TRAIN | 0.05 | +2.7% [−4.7%, +9.7%] | 0.67 / 0.76 | 7.0% / 76.7% | NO_EDGE |
+| | VALID | 0.07 | +1.0% [−7.6%, +7.8%] | 1.25 / 2.01 | 6.3% / 26.3% | |
+
+**Disclosure.** While building the tool, one smoke test of a regime idea was
+run against scratch copies of the records (not in `evaluations.csv`): 1h
+`trend_state` n ∈ {100, 300}, long, 48 h re-check, 10% pct stop, taker. It
+got WATCH (valid +0.037 R, 269 trades) and benchmark NO_EDGE (alpha −1.7%/yr
+VALID, CI [−4.3%, +0.5%]; Sharpe 1.17 vs 2.01; 63–73% time in market, beta
+0.04–0.06). Round 3's R3.1 should count this as one earlier look at VALID
+for that structure.
+
+### Verdict
+`KEEP` the tools. PLAN.md Round 3 is rewritten around them.

@@ -1,7 +1,20 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-29, after Exp 016 (Round 1 complete). Rules for agents: `AGENTS.md`.
+_Last updated: 2026-09-29, after Exp 017 (random-entry baseline). Rules for agents: `AGENTS.md`.
 Research plan: `docs/research/PLAN.md`._
+
+> **Exp 017 — read before anything below.** All 5 Round 1 WATCHes (018@30m,
+> 018@1h, 019@30m, 019@1h, 017@1h) are **DRIFT**: random long entries inside
+> the same trend filters, with the same exits, earn about the same (median
+> +0.05..+0.10 R on VALID, and 25–80% of random runs match or beat the idea).
+> The profits came from being long while BTC trended up in 2023–24, not from
+> the entries. Every WATCH/PASS must now pass `src/baseline.py` (SKILL), and
+> `evaluate.py --final` refuses without it. Details: `experiments.md` Exp 017,
+> `journal/BTCUSDT/baselines.md`.
+>
+> **Exp 018:** Round 3 (PLAN.md) now asks "when to be long BTC" and judges ideas
+> against **buy & hold** with `src/benchmark.py` (alpha, Sharpe, drawdown).
+> 018@30m and 019@1h: alpha ≈ 0, Sharpe below buy & hold → NO_EDGE.
 
 ## Where things stand
 

@@ -8,7 +8,8 @@
 >   ต่อยอดจากตัวที่มีแววจริง (005 เบรกช่วงเปิดตลาด, 006 long-only) + ไอเดีย "เบรกหลอก"
 >   (เพราะ short ตอนหลุด low แพ้อย่างมีนัยสำคัญ)
 > - **รอบ 2**: เทคนิคปิดไม้ (TP, SL, BE, trailing, time stop) บนจุดเข้าที่ดีที่สุดจากรอบ 1 รวมเป็น 2 การทดสอบ
-> - **รอบ 3**: ถือนานขึ้นแบบ swing (หลายชั่วโมงถึงหลายวัน) และทดสอบฝั่ง long อีกครั้งที่ระยะนี้
+> - **รอบ 3**: "ควรถือ BTC เมื่อไหร่" หากฎเลือกช่วงเวลาถือ (ถือ/ไม่ถือ/short ตามแนวโน้ม) แล้ว**เทียบกับการซื้อแล้วถือเฉยๆ**
+>   ด้วย `src/benchmark.py` (วัด alpha, Sharpe, drawdown เทียบ buy & hold)
 > - **รอบ 4**: เทคนิคแนวใหม่ที่ต้องเพิ่มบล็อก เช่น แท่งวันก่อนหน้า, opening range, ช่วงจ่าย funding, การล้างพอร์ต
 >
 > ไอเดียไหน PASS → ทดสอบกับข้อมูลที่ล็อกไว้ (2025–26) ครั้งเดียว → ถ้ายืนยันผ่าน ทำใบสรุปกลยุทธ์
@@ -128,8 +129,10 @@ with every PASS (AGENTS.md rule 15). The holdout exists for exactly this.
    exactly as pre-registered. Grid ≤ 4 keys; sweep only what the hypothesis
    is about. Then generate the timeframe variants of each (§2b).
 3. **Run each** (source + 6 variants): `python src/evaluate.py ideas/<file>.json`.
-4. **Act on each verdict** (AGENTS.md §1 step 6). WATCH may get ≤ 2 diagnosed
-   versions. PASS → §5 immediately.
+4. **Act on each verdict** (AGENTS.md §1 step 6). Run `python src/baseline.py`
+   on **every WATCH and PASS** (AGENTS.md step 6b) and put SKILL/DRIFT next to
+   it in the round summary. WATCH may get ≤ 2 diagnosed versions; a DRIFT
+   WATCH should get a *different entry*, not a tuned one. PASS → §5.
 5. **Round summary:** append "Exp NNN — Round X results" (template: AGENTS.md
    §8), plus a section **"What this round tells the next round"**: 2–4
    bullets that feed §4 of the next round. Update `STATUS.md` and
@@ -194,6 +197,14 @@ qualifies.
 is kept. Exits were mis-simulated before Exp 011 and have never been studied
 properly.
 
+**Read first (Exp 017):** every Round 1 WATCH, including 018@30m, is
+**DRIFT**: random long entries inside the same trend filters earn about the
+same (+0.05..+0.10 R). The exit study is still worth running, because exits
+decide what is kept from whatever the entries catch. But judge every exit
+result with `baseline.py` too: an exit that "improves" the idea but improves
+random entries just as much is an exit improvement, not an entry edge. Say
+which it is.
+
 Take the chosen entry from Round 1, **at the timeframe where it did best on
 TRAIN**, and keep it exactly as it is. Run **2
 evaluations** on it whose grids are exits only, so TRAIN picks the exit and
@@ -217,30 +228,67 @@ exit mix (stop / tp / time %) of the chosen combo.
   trades reach +1R and then come back to the stop), write a proposal and
   **ask the owner** before any engine change (AGENTS.md §5 Level 3).
 
-### Round 3 — Swing horizons, and the long side again (≈ 6 h)
+### Round 3 — When to be long BTC: regime rules vs buy & hold (≈ 6 h)
 
-**Why:** every hint of an edge needed 6–18 h holds, and the long side has
-only been tested with short holds. These ideas are *designed* for holds of
-many hours to several days. Write them at 1h and let §2b carry them to
-every other timeframe.
+**Why:** Exp 017 showed that Round 1's profits came from *being long while
+BTC trended up*, not from entry timing: random entries inside the same trend
+filters did as well. So the real question is a regime question: **is there a
+rule for when to be in BTC (long, flat, or short) that beats simply holding
+BTC?** For that kind of strategy the opponent isn't random entries, it's
+**buy & hold**, so this round is judged by `src/benchmark.py`.
 
-⚠️ Swing ideas trade less. Design for ≥ 300 valid trades **at 1h** (both
-directions, few filters). The 4h variants will usually be INCONCLUSIVE; that
-is fine and expected (§2b).
+**Tools for this round**
+- Trigger `trend_state` (n): fires on **every bar**, long while close > EMA(n),
+  short while below. With `"direction": "long"` the idea is long whenever
+  the regime is up and flat otherwise.
+- The engine only exits on stop / take-profit / time; it has no "exit when
+  the regime ends". So `max_hold_hours` is the **re-check interval**: at the
+  time exit, if the regime is still on, the next bar re-enters, paying a
+  real round trip each interval. Use 24–72 h. The stop (`pct` 8–15%) is
+  crash protection, not a trading stop.
+- `python src/benchmark.py ideas/<idea>.json`, after `evaluate.py`: daily
+  account returns vs 1x buy & hold on TRAIN and VALID. It reports **beta**
+  (how much BTC exposure the rule carries), **alpha per year** with a 95% CI
+  (return beyond that exposure), CAGR, max drawdown and Sharpe next to buy &
+  hold's. Verdicts:
+  - **ALPHA**: alpha > 0 on TRAIN and VALID, VALID CI above 0. The rule adds
+    return beyond its exposure. A PASS with ALPHA may go to `--final`.
+  - **RISK_EDGE**: no proven alpha, but on both periods Sharpe beats buy &
+    hold **and** max drawdown is under half of buy & hold's. That's a calmer
+    way to hold BTC, not an edge. 🛑 Report it to the owner, who decides.
+  - **NO_EDGE**: holding (a fraction of) BTC does as well.
+- Sizing: 1% risk with a 10% stop means only ~10% of the account in BTC, so
+  beta is small and **CAGR will look tiny next to buy & hold. That is a sizing
+  choice, not a result.** Compare Sharpe and alpha (and its CI), never CAGR.
+  For reference, Round 1's 018@30m and 019@1h scored alpha ≈ 0, beta
+  0.05–0.12, Sharpe below buy & hold → NO_EDGE (`journal/BTCUSDT/benchmarks.md`).
+- `baseline.py` will usually say DRIFT for regime ideas, because their entries
+  are "any bar in the regime" by design. For this round the benchmark is the
+  test that matters. Still run both and report both.
 
 | # | Idea (source tf 1h) | Recipe sketch |
 |---|---|---|
-| R3.1 | Donchian breakout both sides, HTF trend | `donchian_break` 24–48, `htf_trend` (n 50, mult 4), pct stop 3–5%, no TP, trail, hold 2–4 days |
-| R3.2 | Trend pullback, **long** (the long side has never been tested at swing horizons) | `pullback` + `trend_ema` (50/200); long; pct stop 3%; TP 2–3R or trail |
-| R3.3 | Round 1's best structure, redesigned for multi-day holds | copy the structure, hold 1–3 days, wider pct stop |
-| R3.4 | Squeeze → expansion, both sides | `donchian_break` + `squeeze` + `vol_regime lo>1`; pct stop 4%; trail |
-| R3.5 | Weekday-only trend (skip weekend chop) | `ema_cross` + `weekdays` [0..4] + `adx_min` |
-| R3.6 | Supertrend trend following, both sides | `supertrend_flip` + `adx_min`; pct stop 4–6%; hold up to 10 days |
+| R3.1 | **Trend regime, long / flat.** Being long only while BTC is above its multi-day trend avoids most of the big drawdowns (2022 −64%) for a small cost in upside | trigger `trend_state` (n 100–400 on 1h ≈ 4–16 days); long; `max_hold_hours` [24, 72]; pct stop 10% |
+| R3.2 | **Trend regime, long / short.** Does shorting the down-regime add return (2022), or just costs (whipsaw)? | as R3.1 with direction both |
+| R3.3 | **Regime + trend strength.** Stay out of the trend regime when ADX says it's chop | `trend_state` + filter `adx_min` (20–25); long |
+| R3.4 | **Regime without panic periods.** Long in the up-regime, flat when volatility spikes (crashes come with volatility) | `trend_state` + `vol_regime` (hi 1.2–1.5); long |
+| R3.5 | **Multi-day pullback in the up-regime** (entry-based, judged by baseline *and* benchmark) | `pullback` + `trend_ema` (50/200); long; hold 2–4 days; pct stop 4% |
+| R3.6 | **Reference table, no new idea:** run `benchmark.py` on the best configurations of Rounds 1–2, so every Round 3 result has a comparison | — |
 
-**Use:** compare these seven-timeframe tables with Rounds 1–2. If the edge
-appears only from 1h upwards, the project's answer is "BTC has a
-multi-hour/multi-day edge, not an intraday one". Update `STATUS.md` and
-`README.md` accordingly.
+**Use of the results**
+- **ALPHA + PASS** → holdout (§5).
+- **RISK_EDGE** → 🛑 report to the owner with the table (Sharpe, max
+  drawdown, time in market vs buy & hold). It could be worth a strategy card
+  as a "risk-managed BTC holding" rule, but only the owner decides; it is not
+  a trading edge.
+- **All NO_EDGE** → write it down plainly in `STATUS.md` and `README.md`:
+  "no tested timing rule beats holding BTC after costs". That's a strong and
+  useful result, and Round 4 should then look for edges that don't come from
+  BTC's direction at all (e.g. funding, session effects).
+- 🛑 If regime ideas look promising but the re-entry cost from the time-exit
+  workaround is a large share of `cost_r`, propose a Level 3 engine change,
+  "exit when the trigger's regime ends", to the owner instead of working
+  around it.
 
 ### Round 4 — New building blocks (≈ 4 h)
 
@@ -266,11 +314,15 @@ line in `TECHNIQUES.md` §2/§3 → pre-registered idea file → `evaluate.py`.
 
 ## 5. What to do with a PASS
 
-1. Immediately: `python src/evaluate.py ideas/<idea>.json --final` (one time,
-   allowed by AGENTS.md for a PASS).
-2. **FAILED** on holdout → record it (it's now spent for that config), lesson
+1. `python src/baseline.py ideas/<idea>.json` and `python src/benchmark.py ideas/<idea>.json`.
+   Neither SKILL (entries beat random timing) nor ALPHA (beats buy & hold
+   beyond its BTC exposure) → stop here: it is not a strategy. Record it and
+   continue the plan. SKILL or ALPHA → step 2.
+2. `python src/evaluate.py ideas/<idea>.json --final` (one time; refused
+   without PASS + (SKILL or ALPHA)).
+3. **FAILED** on holdout → record it (it's now spent for that config), lesson
    into `TECHNIQUES.md`, continue the plan.
-3. **CONFIRMED** → tell the owner right away (Thai, full table), then build the
+4. **CONFIRMED** → tell the owner right away (Thai, full table), then build the
    strategy card and paper trading (§6). Continue the research rounds in
    parallel only if the owner wants.
 
@@ -372,6 +424,6 @@ Never say "profitable" unless the holdout is CONFIRMED.
 |---|---|---|
 | 1 | ≈ 6 h | 6 ideas × 7 timeframes + analysis of 005/007/010, + one Level 2 block (1m/3m runs are the slow part) |
 | 2 | ≈ 2 h | 2 exit studies (combined grids) at the best timeframe |
-| 3 | ≈ 6 h | 6 swing ideas × 7 timeframes |
+| 3 | ≈ 6 h | 5 regime ideas × 7 timeframes + benchmark.py on each + a reference table |
 | 4 | ≈ 6 h | 4–5 new blocks + ideas × 7 timeframes |
 | §6 | 3–4 h to build + ≥ 3 months of paper trading | only after a CONFIRMED |

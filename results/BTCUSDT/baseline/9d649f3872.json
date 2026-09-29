@@ -1,0 +1,32 @@
+{
+  "eval_id": "9d649f3872",
+  "name": "017_session_open_long_tf60",
+  "tf": 60,
+  "n_per_mode": 200,
+  "timestamp": "2026-09-29 00:42 UTC",
+  "idea_valid_mean_r": 0.021104066928608327,
+  "idea_valid_trades": 80,
+  "idea_train_mean_r": 0.19476936702688002,
+  "idea_train_trades": 103,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.0134435675022613,
+    "valid_median": 0.04611398097150886,
+    "valid_p95": 0.17747165983770122,
+    "share_random_ge_idea": 0.645,
+    "valid_trades_median": 85.0,
+    "train_median": 0.009545623974833214,
+    "idea_beats_p95": false
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.02288494696514371,
+    "valid_median": 0.08236738086342896,
+    "valid_p95": 0.2209751377689648,
+    "share_random_ge_idea": 0.8,
+    "valid_trades_median": 77.0,
+    "train_median": 0.04502337219760029,
+    "idea_beats_p95": false
+  },
+  "verdict": "DRIFT"
+}

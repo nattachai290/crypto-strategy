@@ -216,6 +216,11 @@ brackets. Write each as `ideas/NNN_name.json`.
 > where shorts were involved; the *cost* lessons still hold. Corrected results
 > for all 18 ideas: `journal/BTCUSDT/experiments.md` Exp 015.
 
+**Random-entry baseline (Exp 017):** the Round 1 long entries (Donchian
+breakout, pullback, session-open break, at 30m/1h) are **DRIFT**: random
+entries inside the same trend filters do as well. A long-only result on
+2023–24 must always be checked with `src/baseline.py` before it's believed.
+
 **After the fix (Exp 015, reliable):**
 - **Short-only breakout / trend ideas lose significantly** (ideas 008–012,
   014, 015; 6 of 7 have the whole CI below zero). Don't try more of them.
