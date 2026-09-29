@@ -1,6 +1,6 @@
 # BTCUSDT — status and handoff
 
-> **Next (owner request): TradingView strategy ports** (`docs/research/PLAN.md` §13). Port T1 = `ideas/044_tv_chartart_rsi_bb*.json` (7 files), to be run on this coin. The project's own families stay closed.
+> **Next (owner request): TradingView strategy ports** (`docs/research/PLAN.md` §13). Round 1 = ports T1–T6, `ideas/044_*` to `ideas/049_*` (42 files), to be run on this coin and on the other of BTC/ETH (84 evaluations). The project's own families stay closed.
 
 > **Exp 030: engine funding fix** (notional × rate; before, funding was ~0). Re-checked on every record: 7 of 242 verdicts change, 6 downward, no new PASS (022 PASS→WATCH).
 >

@@ -802,7 +802,8 @@ It is off by default, and every earlier record is unaffected.
    with the reason.
 5. **Report per port:** what TradingView claims (if the owner supplies it)
    next to what is left after costs, controls and, for a PASS, the holdout.
-6. **Budget:** at most 5 ports per round (the owner's scripts), pre-registered together. **Stop
+6. **Budget:** at most 5 ports per round (the owner's scripts), pre-registered together.
+   **Round 1 is 6 ports (T1–T6): the owner's decision, 2026-09-29, before any run.** **Stop
    rule:** a round with no holdout CONFIRMED ends the TradingView question
    unless the owner brings new scripts.
 
@@ -920,8 +921,8 @@ It is off by default, and every earlier record is unaffected.
   **Run on BTCUSDT and ETHUSDT: 14 evaluations.** It differs from T1 in
   direction, so it has its own structure and version budget.
 
-**The round is full: T1–T5 = 70 evaluations. No port is added after it
-starts.**
+**The round is full: T1–T6 = 84 evaluations (T6 below, added by the owner
+before any run). No port is added after it starts.**
 
 **Pre-registration** (BTC journal **Exp 032** and ETH journal Exp 006, before the
 first run):
@@ -934,9 +935,9 @@ first run):
    expected to lose to cost.
 
 ### Port T6 — `049_tv_liquidity_sweep` ("Liquidity Sweep Reversal Strategy", Pine v6, Mozilla Public License 2.0, from the owner's source)
-**Queued, not in the T1–T5 round.** The round above is full. T6 runs only if
-the owner (a) makes it round 2 after T1–T5 are recorded, or (b) swaps it for
-one of T1–T5 before the first run. Until then the other agent does not run it.
+**In round 1 (owner's decision, 2026-09-29, before any run): round 1 is
+T1–T6, 84 evaluations.** T6 is pre-registered with the others in BTC Exp 032
+and ETH Exp 006.
 
 - New trigger `liquidity_sweep` (Level 2, `src/recipes.py`). Pivot highs/lows
   (7/7) become levels, deduplicated within 0.25 ATR and dropped after 150
@@ -959,6 +960,6 @@ one of T1–T5 before the first run. Until then the other agent does not run it.
 - Source 15m (the script names no timeframe; it is an intraday session
   strategy), chart mode, 7 files. **Run on BTCUSDT and ETHUSDT: 14
   evaluations.**
-- Before its first run, pre-register in the journal: the TRAIN signal count
+- In the pre-registration, add for T6: the TRAIN signal count
   per timeframe on each coin, and `cost_r` per timeframe. On 4h only the 12:00
   bar is in the session, so expect few trades there.

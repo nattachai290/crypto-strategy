@@ -3365,3 +3365,19 @@ nothing else changes. Every earlier test is unchanged and passes.
 
 The round is full: T1–T5, 70 evaluations. The research agent's
 pre-registration is **Exp 032** here and Exp 006 on ETH.
+
+---
+
+## Exp 031 addendum — round 1 is T1–T6
+
+**Date:** 2026-09-29
+**Status:** complete
+
+Correction to the last line of Exp 031, before any run. The owner added port
+T6 (`ideas/049_tv_liquidity_sweep*.json`, "Liquidity Sweep Reversal
+Strategy", Pine v6, MPL 2.0) to round 1. Round 1 is **T1–T6: 42 idea files,
+84 evaluations** on BTCUSDT and ETHUSDT. T6 adds the Level 2 trigger
+`liquidity_sweep` (hand-traced test in `test_engine.py` test 7). It uses the
+script's own exits (swing stop n 2 + 1.2 ATR, TP 1.5 R, break-even 0.75 R) and
+the `hours` filter at UTC 12–15. Its deviations are listed in the idea file and
+in PLAN.md §13. Pre-registration is still **Exp 032** here and Exp 006 on ETH.
