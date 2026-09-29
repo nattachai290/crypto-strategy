@@ -195,6 +195,14 @@ def run_backtest(
         # at the close, which quietly turns the experiment into the taker case.
         atr_a = _atr_fallback(df, 14)
     use_dyn = bool(np.any(be_a != 0) or np.any(trail_atr_a != 0))
+    # Optional exit on a signal (PLAN.md section 13; owner-approved Level 3):
+    #   exit_long / exit_short : a flag at the close of bar j closes a long /
+    #   short at the open of bar j+1 (taker + slippage, reason "signal"). It is
+    #   checked before entries, so an entry on the same bar reverses at that
+    #   open. Absent columns => the engine behaves exactly as before.
+    use_sig_exit = ("exit_long" in signals) or ("exit_short" in signals)
+    xl_l = (np.nan_to_num(_opt("exit_long", 0.0)) != 0).tolist()
+    xs_l = (np.nan_to_num(_opt("exit_short", 0.0)) != 0).tolist()
     be_l = be_a.tolist()
     trail_at_l = trail_at_a.tolist()
     trail_atr_l = trail_atr_a.tolist()
@@ -356,6 +364,14 @@ def run_backtest(
     _pess = pessimistic_intrabar
 
     for i in range(n):
+        # ---------------- exit on a signal, at this bar's open --------------
+        # The flag is read from the previous bar's close, and only once the
+        # position existed then (j >= entry bar), so a flag on the bar that
+        # generated the entry cannot close the trade before it opened.
+        if use_sig_exit and pos_side != 0 and i > 0 and i - 1 >= pos_entry_i:
+            if (pos_side > 0 and xl_l[i - 1]) or (pos_side < 0 and xs_l[i - 1]):
+                close_position(i, o[i], "signal")
+
         # ---------------- entry at this bar's open -------------------------
         if pos_side == 0 and i > 0:
             j = i - 1
@@ -553,7 +569,7 @@ def _empty_metrics(n: int) -> dict:
         "worst_r": 0.0, "avg_bars": 0.0, "total_fees": 0.0, "total_funding": 0.0,
         "fees_pct_equity": 0.0, "exposure": 0.0, "final_equity": 0.0,
         "long_trades": 0, "short_trades": 0, "long_pnl": 0.0, "short_pnl": 0.0,
-        "stop_rate": 0.0, "tp_rate": 0.0, "time_rate": 0.0, "max_dd_days": 0.0,
+        "stop_rate": 0.0, "tp_rate": 0.0, "time_rate": 0.0, "signal_rate": 0.0, "max_dd_days": 0.0,
         "avg_cost_r": 0.0, "avg_gross_r": 0.0, "edge_r": 0.0,
         "entry_mode": "", "entry_signals": 0, "entry_fills": 0, "fill_rate": 0.0,
     }
@@ -647,6 +663,7 @@ def compute_metrics(
         m["stop_rate"] = reasons.count("stop") / len(reasons)
         m["tp_rate"] = reasons.count("target") / len(reasons)
         m["time_rate"] = reasons.count("time") / len(reasons)
+        m["signal_rate"] = reasons.count("signal") / len(reasons)
         m["avg_cost_r"] = float(np.mean([t.cost_r for t in trades]))
         m["avg_gross_r"] = float(np.mean([t.gross_r for t in trades]))
         m["edge_r"] = m["avg_gross_r"] - m["avg_cost_r"]

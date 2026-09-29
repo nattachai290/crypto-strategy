@@ -772,6 +772,13 @@ testing?** A TradingView backtest usually has three things wrong with it:
 This harness fixes all three. The research agent runs the ports; the planner
 writes them.
 
+**Engine feature for ports (BTC Exp 031, owner-approved Level 3):**
+`exit_on: "opposite"` in a recipe closes a position at the next open when the
+entry trigger fires the other way, before filters and direction. If the other
+side is allowed, it re-enters that way on the same open, which is
+TradingView's reversal. `strategy.close` on a signal is ported the same way.
+It is off by default, and every earlier record is unaffected.
+
 **Rules for every port** (on top of AGENTS.md):
 0. **Only from source code the owner supplies.** A port is written from the
    Pine Script the owner pastes, and nothing else. No agent (planner or
@@ -813,9 +820,10 @@ writes them.
   - RSI with Wilder smoothing (RMA);
   - SMA with a population stdev;
   - `crossover` meaning now above and the previous bar not above.
-- **Invented** (the original never exits except by reversal): a `pct` stop of
-  4% / 6% and a time stop of 120 h / 480 h at 4h, scaled by chart mode on the
-  other timeframes.
+- **Exit, as the original does:** it reverses on the opposite signal
+  (`exit_on: "opposite"`, BTC Exp 031).
+- **Added** (every trade must risk 1%): a `pct` stop of 4% / 6%, plus a long
+  time cap of 480 h / 1920 h at 4h, scaled by chart mode.
 - Files: `ideas/044_tv_chartart_rsi_bb.json` (4h) plus `_tf1` … `_tf60`,
   already generated. **Run each on BTCUSDT and on ETHUSDT: 14 evaluations.**
 - The author writes that v1.1 was "made more successful in backtesting". It
@@ -864,8 +872,10 @@ writes them.
   follows the Pine lines one by one (0 mismatches), plus causality and
   output shape.
 - **Deviations:**
-  - The script only reverses and has a 50% intraday-loss halt, so the stop
-    and time exit are ours (stop 4%/6%, hold 120/480 h at 4h).
+  - The script only reverses. The port reverses too (`exit_on: "opposite"`).
+    The stop (4%/6%) and a long time cap (480/1920 h at 4h) are ours. The
+    script's 50% intraday-loss halt is not modelled: at 1% risk it cannot
+    bind.
   - Its stop-order entry at the signal bar's low/high fills at the next open
     unless the next bar gaps through that level.
   - The `strategy.cancel` lines only remove unfilled orders.
@@ -886,11 +896,10 @@ writes them.
 - **Deviations:**
   - The script computes a stop (2 ATR beyond the signal bar's low/high) and a
     take-profit (5 ATR) but **never uses them**; on TradingView it only
-    reverses. The port uses **the author's own numbers**:
-    - `swing` stop n 1 + 2 ATR, i.e. the bar's low/high ± 2 ATR;
-    - `atr` take-profit 5, measured from the entry rather than the bar's
-      high/low.
-  - A time stop is the only grid key (12 / 48 h at 15m).
+    reverses. The port reverses (`exit_on: "opposite"`). It keeps the
+    author's 2-ATR stop (`swing` n 1 + 2 ATR) as the mandatory stop and drops
+    the never-executed target.
+  - A long time cap is the only grid key (48 / 192 h at 15m).
 - **Source chart 15m** (the author's timeframe), chart-mode variants on the
   other six. The ATR stop grows with the timeframe: the 1h/4h variants on BTC
   may be `UNSIZABLE` at 2024–25 prices. That is a recorded outcome, not a
@@ -898,10 +907,23 @@ writes them.
 - Files: `ideas/047_tv_super_scalper.json` plus 6 variants. **Run on BTCUSDT
   and ETHUSDT: 14 evaluations.**
 
-**Round so far:** T1–T4 = 56 evaluations. The owner may add 1 more script
-before the round starts; after it starts, no port is added.
+### Port T5 — `048_tv_chartart_rsi_bb_long_v12` (ChartArt "Bollinger + RSI, Double Strategy Long-Only" v1.2, from the owner's source)
+- Same entry as T1, **long only**. The exit is the script's own
+  `strategy.close`: RSI(6) crosses below 50 on the same bar that the close
+  crosses down through the upper band, i.e. T1's short trigger. It is ported
+  with `exit_on: "opposite"` and `direction: long`.
+- The author says long-only "made it more successful in backtesting". On a
+  rising market that is what being long does, and baseline and benchmark are
+  there to catch it.
+- **Added:** a pct stop of 4%/6% (the script has none) and a long time cap.
+- Files: `ideas/048_tv_chartart_rsi_bb_long_v12.json` plus 6 variants.
+  **Run on BTCUSDT and ETHUSDT: 14 evaluations.** It differs from T1 in
+  direction, so it has its own structure and version budget.
 
-**Pre-registration** (BTC journal Exp 031 and ETH journal Exp 006, before the
+**The round is full: T1–T5 = 70 evaluations. No port is added after it
+starts.**
+
+**Pre-registration** (BTC journal **Exp 032** and ETH journal Exp 006, before the
 first run):
 1. TRAIN signal counts of the 4h source on each coin. The same-bar coincidence
    of the two crosses may be rare. Under 150 means expect INCONCLUSIVE; run

@@ -1,6 +1,6 @@
 {
   "name": "047_tv_super_scalper_tf5",
-  "hypothesis": "TradingView port T4 (PLAN.md section 13) from the Pine v5 source the owner supplied: 'Super Scalper - 5 Min 15 Min'. The author's claim: a bar whose body exceeds one WMA-ATR is an impulse, and taking it in the direction of the RSI trend (RSI 25 above RSI 100 for longs, below for shorts) catches the continuation. Counterparty: traders fading a strong bar. Author defaults kept: ATR 14 with WMA smoothing, multiplier 1.0, RSI 25 / 100, source chart 15m (the author's own timeframe). The EMA 21/65 'golden cross' is only plotted in the script and is not part of the entry. DEVIATIONS: (1) the script computes a stop (2 ATR beyond the signal bar's low/high) and a take-profit (5 ATR beyond its high/low) but never passes them to an order - on TradingView it only exits by reversing on the opposite signal. The engine must have a stop, so the author's own numbers are used: stop = the signal bar's low (high) minus (plus) 2 ATR (swing stop, n 1, buffer 2 ATR, unclamped), take-profit = 5 ATR from the entry (the author measured it from the bar's high/low); (2) a time stop is added because the engine has no stop-and-reverse; it is the only grid key; (3) TradingView's default commission is 0, here 0.05% taker + 0.02% slippage + funding. Variants in chart mode (same bar counts, ATR exits unchanged). [Timeframe variant of 047_tv_super_scalper, 15m -> 5m, mode chart: same bar counts and ATR multiples, hold x0.333333, pct stop x0.577.]",
+  "hypothesis": "TradingView port T4 (PLAN.md section 13) from the Pine v5 source the owner supplied: 'Super Scalper - 5 Min 15 Min'. The author's claim: a bar whose body exceeds one WMA-ATR is an impulse, and taking it in the direction of the RSI trend (RSI 25 above RSI 100 for longs, below for shorts) catches the continuation. Counterparty: traders fading a strong bar. Author defaults kept: ATR 14 with WMA smoothing, multiplier 1.0, RSI 25 / 100, source chart 15m (the author's own timeframe). The EMA 21/65 'golden cross' is only plotted in the script and is not part of the entry. DEVIATIONS: (1) the script computes a stop (2 ATR beyond the signal bar's low/high) and a take-profit (5 ATR beyond its high/low) but never passes them to an order - on TradingView it only exits by reversing on the opposite signal. The engine must have a stop, so the author's own numbers are used: stop = the signal bar's low (high) minus (plus) 2 ATR (swing stop, n 1, buffer 2 ATR, unclamped), take-profit = 5 ATR from the entry (the author measured it from the bar's high/low); (2) a time stop is added because the engine has no stop-and-reverse; it is the only grid key; (3) TradingView's default commission is 0, here 0.05% taker + 0.02% slippage + funding. Variants in chart mode (same bar counts, ATR exits unchanged). UPDATE before any run (owner-approved engine feature exit_on): on TradingView the script never uses its stop or target and only reverses on the opposite signal; the port now reverses too (exit_on 'opposite'). The author's 2-ATR stop is kept as the mandatory 1%-risk stop; the unused 5-ATR target is DROPPED, since TradingView never executes it. The time stop is a long safety cap. [Timeframe variant of 047_tv_super_scalper, 15m -> 5m, mode chart: same bar counts and ATR multiples, hold x0.333333, pct stop x0.577.]",
   "strategy": "recipe",
   "tf": 5,
   "params": {
@@ -23,19 +23,19 @@
       "max_atr": 50.0
     },
     "tp": {
-      "type": "atr",
-      "mult": 5.0
+      "type": "none"
     },
     "trail_at": 0,
     "trail_atr": 0,
-    "max_hold_hours": 8.0,
+    "max_hold_hours": 32.0,
     "cooldown_bars": 0,
-    "atr_n": 14
+    "atr_n": 14,
+    "exit_on": "opposite"
   },
   "grid": {
     "max_hold_hours": [
-      4.0,
-      16.0
+      16.0,
+      64.0
     ]
   },
   "execution": {

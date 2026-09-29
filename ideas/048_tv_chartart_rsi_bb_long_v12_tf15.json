@@ -1,0 +1,57 @@
+{
+  "name": "048_tv_chartart_rsi_bb_long_v12_tf15",
+  "hypothesis": "TradingView port T5 (PLAN.md section 13) from the Pine v3 source the owner supplied: 'Bollinger + RSI, Double Strategy Long-Only (by ChartArt) v1.2'. Same entry as T1 (v1.1): long when RSI(6) crosses above 50 on the same bar as the close crosses up through the lower 200-bar, 2-sd Bollinger band. Long only. EXIT as the script writes it: strategy.close when RSI(6) crosses below 50 on the same bar as the close crosses down through the upper band - the port uses the owner-approved engine feature exit_on 'opposite' (the opposite trigger closes the long at the next open). The author notes long-only 'made it more successful in backtesting' - on a rising market that is the expected effect of being long, which baseline.py and benchmark.py test. DEVIATIONS: the script has no stop; every trade must risk 1%, so a pct stop (4%/6%) is added as the mandatory stop, and a long time cap; the stop-order entry at the lower band fills at the next open (price has already crossed it); TradingView's default commission is 0, here 0.05% taker + 0.02% slippage + funding. Source chart 4h; variants in chart mode. [Timeframe variant of 048_tv_chartart_rsi_bb_long_v12, 240m -> 15m, mode chart: same bar counts and ATR multiples, hold x0.0625, pct stop x0.250.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "rsi_revert",
+        "n": 6,
+        "lo": 50,
+        "hi": 50
+      },
+      {
+        "type": "bb_revert",
+        "n": 200,
+        "k": 2.0
+      }
+    ],
+    "trigger_mode": "all",
+    "confirm_bars": 1,
+    "filters": [],
+    "direction": "long",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0125,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 60.0,
+    "cooldown_bars": 0,
+    "atr_n": 14,
+    "exit_on": "opposite"
+  },
+  "grid": {
+    "stop.pct": [
+      0.01,
+      0.015
+    ],
+    "max_hold_hours": [
+      30.0,
+      120.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "048_tv_chartart_rsi_bb_long_v12",
+  "variant_mode": "chart"
+}

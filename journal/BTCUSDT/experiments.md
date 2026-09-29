@@ -3310,3 +3310,58 @@ six of them downward. None of them moves the conclusion.
 made before this commit used near-zero funding. The table above is the
 correction to read them by. From now on every evaluation charges real funding.
 `test_engine.py`: ALL CHECKS PASSED.
+
+---
+
+## Exp 031 — Engine: exit on a signal (Level 3, owner-approved) for TradingView ports
+
+**Date:** 2026-09-29
+**Status:** complete (engine feature + ports prepared; nothing run on market data)
+
+### Why
+Most TradingView strategies leave a trade only on a signal: they reverse on
+the opposite entry, or `strategy.close` on a condition. The engine could exit
+only on a stop, a target or time, so a port had to replace the author's exit
+with ours. The owner approved adding the missing exit (PLAN.md §13, port T5).
+
+### The feature
+- **Engine** (`src/backtest.py`):
+  - New optional signal columns `exit_long` / `exit_short`. A flag at the
+    close of bar j closes a matching position at the **open of bar j+1**,
+    with taker fee and slippage, reason `signal`. This is the same next-bar
+    rule as entries.
+  - A flag is honoured only if the position already existed at bar j, so a
+    flag on the bar that generated the entry is ignored.
+  - The exit is checked **before** entries, so an opposite entry signal on the
+    same bar reverses at that open. This is TradingView's reversal.
+  - New metric `signal_rate`, shown in `evaluate.py` reports when it is not 0.
+- **Recipes** (`recipe(..., exit_on="opposite")`): `exit_long` is set on
+  every raw bearish trigger event and `exit_short` on every raw bullish one.
+  "Raw" means after `trigger_mode`, before filters, direction and cooldown.
+  The default is `"none"`.
+- **Off by default.** With no `exit_on`, the signal frame is byte-identical to
+  before. With all-zero exit columns, the engine's metrics are identical
+  (checked).
+
+### Tests (`test_engine.py` 1c and test 7)
+The hand-computed tests below **fail before the change** (the long ran to its
+time exit) and **pass after**:
+1. `exit_long` at bar 5 closes the long at bar 6's open, at open × (1 −
+   slippage).
+2. Exit plus an opposite entry on the same bar gives two trades: the long
+   closes at bar 6 and a short opens at bar 6's open.
+3. A flag on the entry signal's own bar is ignored.
+
+Test 7 adds: the exit columns equal the raw trigger's opposite events, and
+nothing else changes. Every earlier test is unchanged and passes.
+
+### Ports updated before any run
+- T1 (044), T3 (046) and T4 (047) now reverse on the opposite signal, as their
+  scripts do.
+- T4 drops the 5-ATR target, which the script computes but never executes.
+  The author's 2-ATR stop stays as the mandatory stop.
+- New T5 (048): ChartArt RSI + Bollinger v1.2, long only, closing on the
+  script's `strategy.close` condition.
+
+The round is full: T1–T5, 70 evaluations. The research agent's
+pre-registration is **Exp 032** here and Exp 006 on ETH.

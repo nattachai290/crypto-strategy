@@ -679,7 +679,7 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
            stop: dict | None = None, tp: dict | None = None,
            be_at: float = 0.0, trail_at: float = 0.0, trail_atr: float = 0.0,
            max_hold_hours: float = 4.0, cooldown_bars: int = 0,
-           atr_n: int = 14) -> pd.DataFrame:
+           atr_n: int = 14, exit_on: str = "none") -> pd.DataFrame:
     """Build a signal frame from a JSON-style recipe. See the module docstring."""
     n = len(bars)
     if not triggers:
@@ -706,6 +706,13 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
                         np.where(fired & recent_dn & ~recent_up, -1.0, 0.0))
     else:
         raise ValueError("trigger_mode must be 'any' or 'all'")
+    # The triggers' own verdict, before filters, direction and cooldown: with
+    # exit_on="opposite" a bearish trigger closes a long and a bullish one
+    # closes a short (TradingView's reversal / strategy.close on the opposite
+    # signal; PLAN.md section 13, owner-approved engine feature).
+    raw_side = side.copy()
+    if exit_on not in ("none", "opposite"):
+        raise ValueError("exit_on must be 'none' or 'opposite'")
 
     # 2. filters
     long_ok = np.ones(n, bool)
@@ -789,6 +796,9 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
     out["tp_dist"] = np.where(active, np.nan_to_num(tp_dist), 0.0)
     out["max_hold"] = np.where(active, float(max_hold), 0.0)
     out["atr"] = np.nan_to_num(atr, nan=0.0)  # every bar: the trail reads it in-position
+    if exit_on == "opposite":
+        out["exit_long"] = (raw_side < 0).astype(float)
+        out["exit_short"] = (raw_side > 0).astype(float)
     out["be_at"] = np.where(active, be_at, 0.0)
     out["trail_at"] = np.where(active, trail_at, 0.0)
     out["trail_atr"] = np.where(active, trail_atr, 0.0)

@@ -319,6 +319,11 @@ Engine facts to remember:
   leverage).
 - Break-even and trailing stops move using the **previous** bar's close
   (fixed in Exp 011).
+- **Exit on a signal** (BTC Exp 031, owner-approved): optional signal
+  columns `exit_long` / `exit_short`, made by `recipe(..., exit_on="opposite")`,
+  close a position at the next bar's open (taker + slippage, reason
+  `signal`). They are checked before entries, so an opposite entry on the same
+  bar reverses. Off unless an idea sets `exit_on`.
 - Funding is charged as **position notional × rate** (qty × price at the open
   of the bar holding the settlement). Before BTC Exp 030 it was qty × rate,
   i.e. almost zero; every record made before that has near-zero funding

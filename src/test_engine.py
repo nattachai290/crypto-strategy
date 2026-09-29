@@ -226,6 +226,63 @@ def test_funding_hand_computed() -> None:
               abs(t.funding - expect) < 1e-9, f"{t.funding:.6f} vs {expect:.6f}")
 
 
+def test_signal_exit_hand_computed() -> None:
+    """Exit on a signal (Level 3, owner-approved; PLAN.md section 13 port T5).
+
+    Optional signal columns exit_long / exit_short: a flag set at the close
+    of bar j closes a matching position at the open of bar j+1, taker fee +
+    slippage, reason 'signal' - the same next-bar rule as entries. Checked
+    before entries, so an entry signal on the same bar reverses the position
+    at that open, as TradingView's strategy.entry does. Absent columns change
+    nothing (every other test)."""
+    print("\n1c. hand-computed exit on signal (and reversal)")
+    px = 50000.0
+    idx = pd.date_range("2024-01-01", periods=40, freq="5min", tz="UTC")
+    opens = [px + 10.0 * k for k in range(40)]          # distinct open per bar
+    bars = pd.DataFrame({"open": opens, "high": [p * 1.0005 for p in opens],
+                         "low": [p * 0.9995 for p in opens], "close": opens,
+                         "volume": 100.0, "trades": 1000.0, "taker_buy_base": 50.0,
+                         "taker_buy_quote": 2.5e6}, index=idx)
+
+    def sig_frame():
+        s = pd.DataFrame(0.0, index=idx, columns=["side", "stop_dist", "tp_dist", "max_hold",
+                                                   "exit_long", "exit_short"])
+        s.iloc[0, s.columns.get_loc("side")] = 1.0
+        s.iloc[0, s.columns.get_loc("stop_dist")] = 500.0
+        s.iloc[0, s.columns.get_loc("max_hold")] = 30
+        s.iloc[5, s.columns.get_loc("exit_long")] = 1.0
+        return s
+
+    res = run_backtest(bars, sig_frame(), session_start=0, session_end=24, flat_at_session_end=False)
+    t = res.trades[0] if res.trades else None
+    slip = 0.0002
+    ok = (t is not None and t.exit_reason == "signal" and t.exit_time == idx[6]
+          and abs(t.exit_px - opens[6] * (1 - slip)) < 1e-6 and t.entry_time == idx[1])
+    check("exit_long at bar 5 closes the long at bar 6's open (taker, slipped)", ok,
+          "no trade" if t is None else f"{t.exit_reason} at {t.exit_time}, px {t.exit_px:.2f}")
+
+    s = sig_frame()
+    s.iloc[5, s.columns.get_loc("side")] = -1.0
+    s.iloc[5, s.columns.get_loc("stop_dist")] = 500.0
+    s.iloc[5, s.columns.get_loc("max_hold")] = 3
+    s.iloc[5, s.columns.get_loc("exit_long")] = 1.0
+    res2 = run_backtest(bars, s, session_start=0, session_end=24, flat_at_session_end=False)
+    tr = res2.trades
+    ok2 = (len(tr) == 2 and tr[0].exit_time == idx[6] and tr[0].exit_reason == "signal"
+           and tr[1].side == -1 and tr[1].entry_time == idx[6]
+           and abs(tr[1].entry_px - opens[6] * (1 - slip)) < 1e-6)
+    check("exit + opposite entry on the same bar reverses at the next open", ok2,
+          f"{[(x.side, str(x.entry_time)[11:16], str(x.exit_time)[11:16], x.exit_reason) for x in tr]}")
+
+    s3 = sig_frame()
+    s3.iloc[0, s3.columns.get_loc("exit_long")] = 1.0      # same bar as the entry signal
+    s3.iloc[5, s3.columns.get_loc("exit_long")] = 0.0
+    res3 = run_backtest(bars, s3, session_start=0, session_end=24, flat_at_session_end=False)
+    check("an exit flag before the position existed is ignored",
+          len(res3.trades) == 1 and res3.trades[0].exit_reason != "signal",
+          str([x.exit_reason for x in res3.trades]))
+
+
 # --------------------------------------------------------------------------
 # 2. Differential test against the reference
 # --------------------------------------------------------------------------
@@ -347,6 +404,7 @@ def main() -> None:
     print("=" * 70)
     test_hand_computed()
     test_funding_hand_computed()
+    test_signal_exit_hand_computed()
     test_differential()
     test_cost_monotonicity()
     test_no_lookahead()
@@ -558,6 +616,18 @@ def test_recipe_blocks_causal() -> None:
     check("super_scalper matches a line-by-line loop of the Pine script",
           np.array_equal(got_s, np.array(exp_s, float)) and (got_s != 0).sum() > 5,
           f"{int((got_s != 0).sum())} signals, {int((got_s != np.array(exp_s)).sum())} mismatches")
+    # exit_on="opposite" (engine signal exit): exit columns = the raw trigger's
+    # opposite events; exit_on="none" leaves the signal frame exactly as before
+    kw = dict(triggers=[{"type": "donchian_break", "n": 20}], filters=[{"type": "trend_ema", "fast": 20, "slow": 50}],
+              direction="long", stop={"type": "pct", "pct": 0.02})
+    base = RC.recipe(bars, funding, **kw)
+    opp = RC.recipe(bars, funding, exit_on="opposite", **kw)
+    raw = np.asarray(RC.t_donchian_break(bars, funding, n=20))
+    check("exit_on='opposite' flags exit_long on every raw bearish trigger, and adds nothing else",
+          np.array_equal(opp["exit_long"].to_numpy() != 0, raw < 0)
+          and np.array_equal(opp["exit_short"].to_numpy() != 0, raw > 0)
+          and base.equals(opp.drop(columns=["exit_long", "exit_short"]))
+          and "exit_long" not in base, f"{int((raw < 0).sum())} bearish triggers")
     check("month_turn_fade uses the real month length (Feb 2024: 28th, 29th, 1st)",
           fired == [28, 29, 1], str(fired))
     sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],
