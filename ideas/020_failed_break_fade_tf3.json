@@ -1,0 +1,52 @@
+{
+  "name": "020_failed_break_fade_tf3",
+  "hypothesis": "R1.0 measured why shorting breakouts lost: on idea 010's 339 validation shorts, price rose against the position by at least 0.25R in 75% of trades and by 0.5R in 47%, with a mean adverse excursion of +0.57R reached in a median of 10 bars. The break below the 12-hour low was therefore usually a FAILED breakdown - the sellers who sold it are trapped below the level and have to cover, which is exactly the pressure that pushes price back up. So the trade to take is not the break but its failure: once price has closed back inside the n-bar range within n_bars bars, go long, and the mirror case for failed breakouts. This is a new Level 2 trigger, causal, and deliberately carries no regime filter: a failed breakdown is by definition a trade against the recent move, so requiring the move to still look like a trend would remove most of the population. [Timeframe variant of 020_failed_break_fade, 15m -> 3m, mode chart: same bar counts and ATR multiples, hold x0.2, pct stop x0.447.]",
+  "strategy": "recipe",
+  "tf": 3,
+  "params": {
+    "triggers": [
+      {
+        "type": "failed_break",
+        "n": 48,
+        "n_bars": 8
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0089,
+      "min_atr": 1.5,
+      "max_atr": 8.0
+    },
+    "tp": {
+      "type": "r",
+      "r": 2.0
+    },
+    "max_hold_hours": 1.6,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.n": [
+      24,
+      48
+    ],
+    "triggers.0.n_bars": [
+      4,
+      8,
+      16
+    ],
+    "stop.pct": [
+      0.0067,
+      0.0089
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "020_failed_break_fade",
+  "variant_mode": "chart"
+}

@@ -45,7 +45,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import datafeed  # noqa: E402
 
 BAR_KEYS = {"n", "fast", "slow", "range_n", "atr_n", "z_n", "lookback",
-            "cooldown_bars", "confirm_bars"}
+            "cooldown_bars", "confirm_bars", "n_bars"}
 ATR_KEYS = {"min_atr", "max_atr", "buffer_atr", "trail_atr", "atr_k",
             "entry_offset_atr"}
 # `mult` is an ATR multiple in these places only (in htf_trend it multiplies n)

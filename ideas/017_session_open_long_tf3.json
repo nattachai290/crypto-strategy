@@ -1,0 +1,63 @@
+{
+  "name": "017_session_open_long_tf3",
+  "hypothesis": "The London and New York opens are when the day's concentrated order flow arrives: desks that must trade the session open cross the spread, and the pre-session range is the agreed reference price they cross. R1.0 measured that idea 005's edge was entirely its long leg (+0.1275 R on 212 validation trades, gross +0.3088, positive in both 2023 and 2024) while its short leg was a coin flip, so this idea takes the session break long only. It also fixes what 005 could not afford: 005 paid cost_r 0.1813 because a 2.5x ATR stop on 15m is under 1% of price and was crossed as taker, so the stop here is a fixed fraction of price and the entry is a post-only limit. [Timeframe variant of 017_session_open_long, 15m -> 3m, mode chart: same bar counts and ATR multiples, hold x0.2, pct stop x0.447.]",
+  "strategy": "recipe",
+  "tf": 3,
+  "params": {
+    "triggers": [
+      {
+        "type": "range_break",
+        "range_n": 16,
+        "hours": [
+          7,
+          8,
+          13,
+          14
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "type": "htf_trend",
+        "n": 50,
+        "mult": 4
+      }
+    ],
+    "direction": "long",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0089,
+      "min_atr": 1.5,
+      "max_atr": 8.0
+    },
+    "tp": {
+      "type": "r",
+      "r": 2.5
+    },
+    "max_hold_hours": 1.6,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [
+      0.0067,
+      0.0089,
+      0.0112
+    ],
+    "tp.r": [
+      2.0,
+      3.0
+    ],
+    "max_hold_hours": [
+      1.6,
+      2.4
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "017_session_open_long",
+  "variant_mode": "chart"
+}

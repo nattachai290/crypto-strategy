@@ -1,0 +1,60 @@
+{
+  "name": "006_long_only_trend_tf240",
+  "hypothesis": "On a 15-30m timeframe the short side of BTC carries no drift: it is pure cost. A long-only version of the same trend entry keeps the identical trigger and exit, so any difference in mean R between this idea and a both-sides version of the same idea measures how much the short side costs. If long-only is materially better, the negative results in this project are a statement about short intraday BTC, not about the trigger. [Timeframe variant of 006_long_only_trend, 30m -> 240m, mode chart: same bar counts and ATR multiples, hold x8, pct stop x2.828.]",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [
+      {
+        "type": "ema_cross",
+        "fast": 20,
+        "slow": 50
+      }
+    ],
+    "filters": [
+      {
+        "type": "trend_ema",
+        "fast": 50,
+        "slow": 200
+      },
+      {
+        "type": "adx_min",
+        "n": 14,
+        "min": 20
+      }
+    ],
+    "direction": "long",
+    "stop": {
+      "type": "atr",
+      "mult": 4.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 96.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.mult": [
+      3.0,
+      4.0,
+      5.0
+    ],
+    "triggers.0.slow": [
+      50,
+      100
+    ],
+    "max_hold_hours": [
+      64.0,
+      96.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker"
+  },
+  "variant_of": "006_long_only_trend",
+  "variant_mode": "chart"
+}

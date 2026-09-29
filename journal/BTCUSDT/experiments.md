@@ -1323,3 +1323,144 @@ VALID trades where the structure allows it (§2a). Every idea is then run on all
 seven native timeframes with `src/tf_variants.py` (§2b): 4 new ideas x 7 = 28
 evaluations, plus 6 + 6 for R1.5 and R1.6 = **40 evaluations in this round**.
 Running count for the project goes to 58. The holdout remains sealed.
+
+---
+
+## Exp 016 - Round 1 results (40 evaluations)
+
+**Date:** 2026-09-29
+**Status:** complete. 40 evaluations: **0 PASS, 5 WATCH, 29 REJECT, 6 INCONCLUSIVE.**
+Project total 58 evaluations. HOLDOUT 2025-01..2026-08 still sealed - only a
+PASS may spend it, and nothing passed. Every report shows `size_skips 0`.
+
+### Ideas tested (VALID mean R / n trades, by timeframe)
+
+| idea | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| 017 session open long | −0.431/1199 | −0.131/870 | −0.048/669 | −0.076/252 | −0.032/171 | **+0.021/80** W | +0.418/14 I |
+| 018 breakout long | −0.414/1583 | −0.133/1957 | −0.090/910 | +0.062/308 | **+0.102/234** W | **+0.110/120** W | +0.532/37 I |
+| 019 pullback long | −0.389/1959 | −0.112/2241 | −0.097/1685 | +0.022/478 | **+0.056/300** W | **+0.130/134** W | +0.168/38 I |
+| 020 failed-break fade | −0.397/1867 | −0.188/2353 | −0.110/2840 | −0.078/1136 | −0.053/846 | −0.072/403 | −0.020/118 |
+| 006 long EMA cross | −1.164/666 | −0.322/512 | −0.138/311 | −0.146/112 | +0.002/52 I | −0.088/29 I | +0.025/11 I |
+| 005 session break both | −0.867/1150 | −0.233/1360 | −0.162/964 | +0.067/390 | −0.056/199 | −0.020/71 | +0.240/17 I |
+
+TRAIN mean R tells the same story monotonically: 1m −0.19..−0.61, 3m
+−0.10..−0.21, 5m −0.07..−0.14, 15m −0.03..+0.06, 30m +0.00..+0.06,
+1h +0.02..+0.20, 4h −0.05..+0.19.
+
+### What we learned
+
+1. **There is a monotone timeframe gradient, and it is the biggest effect
+   measured in this project.** For every long-side idea, net R rises
+   continuously with the bar size, and it decomposes into two effects that point
+   the same way. Idea 018 is the clean case:
+
+   | tf | valid trades | gross_r | cost_r | net R | 95% CI | verdict |
+   |---|---|---|---|---|---|---|
+   | 1m | 1583 | +0.092 | **0.505** | −0.414 | [−0.477, −0.351] | REJECT |
+   | 3m | 1957 | +0.043 | 0.176 | −0.134 | [−0.176, −0.087] | REJECT |
+   | 5m | 910 | +0.029 | 0.119 | −0.090 | [−0.151, −0.027] | REJECT |
+   | 15m | 308 | +0.123 | 0.061 | +0.062 | [−0.051, +0.179] | REJECT (train −0.024) |
+   | 30m | 234 | +0.145 | 0.043 | +0.102 | [−0.031, +0.243] | **WATCH** |
+   | 1h | 120 | +0.147 | 0.038 | +0.110 | [−0.090, +0.321] | **WATCH** |
+   | 4h | 37 | +0.551 | 0.019 | +0.532 | [+0.155, +0.946] | INCONCLUSIVE |
+
+   `cost_r` falls 26x from 1m to 4h - chart mode scales the `pct` stop by
+   √(tf/15), so the 1m stop is 0.52% of price and the round trip costs 0.5 R
+   against it. **The 1m/3m/5m REJECTs in this round are a cost artefact, not a
+   verdict on the hypothesis**, and reading them as "the idea is wrong" would be
+   exactly the mistake this project keeps having to unlearn. `gross_r` rises at
+   the same time (0.029 at 5m to 0.551 at 4h) because the same statement on
+   fewer bars is a cleaner statement of the same idea.
+
+2. **The neighbouring-timeframe test passes, which is what makes this a lead
+   rather than a fluke.** PLAN §2b says a single positive timeframe among
+   negative neighbours is most likely luck. The opposite happened: 018 and 019
+   are positive on TRAIN **and** VALID at 30m, 1h and 4h, and negative at
+   1m/3m/5m. The effect is specific to 30 minutes and above, and it is
+   consistent across three neighbouring timeframes and two different entries.
+   018's 4h run has a CI of [+0.155, +0.946] - it excludes zero - but on 37
+   trades, so it is INCONCLUSIVE, not a pass.
+
+3. **R1.4 (fade the failed breakdown) is dead, and cleanly.** The new
+   `failed_break` trigger fires 45,252 times on 15m and produced 1,136
+   validation trades, so it is not a sample-size failure. `gross_r` is negative
+   at every single timeframe: −0.015 (15m), −0.009 (30m), −0.034 (1h), −0.001
+   (4h). R1.0's measurement was right - breakdowns do fail, price rose ≥0.5R
+   against 47% of idea 010's shorts - but **fading the failure is not the mirror
+   of taking the break**: the reclaim has already happened by the time the
+   signal fires, so the fade pays the whole spread for a move that is over.
+   Seven REJECTs, one per timeframe, and the trigger stays in `recipes.py` as a
+   documented negative.
+
+4. **R1.1 killed itself by dropping idea 005's volume filter.** 017's valid
+   `gross_r` is **−0.005**, against +0.309 for 005's long leg. The cost change
+   (pct stop, post-only) can only move `cost_r`, not `gross_r`, so the collapse
+   is in the entry: 017 used `range_n` 16 (a 4-hour range) and no
+   `volume_spike` filter, where 005 used a 8-hour range with a participation
+   filter. A 4-hour range break without participation is noise. **This is the
+   one lead in the round with a diagnosable cause and a structural fix**, and it
+   is why 005's long leg deserves one properly designed idea rather than the
+   one the plan sketched.
+
+5. **R1.2's failure at 15m was a train-selection problem, not a signal
+   problem.** 018 at 15m has valid +0.062 on 308 trades but TRAIN −0.024, and
+   the pre-registered kill condition (train mean R ≤ 0) fired. The same
+   structure on the same clock 2x coarser has train +0.061. The idea did not
+   die; the 15m version of it did.
+
+### Best configuration of the round: idea 018 at 30m (eval 1ea2cb66a2's sibling)
+
+30m, `donchian_break(24)` + `htf_trend(50,4)` + `adx_min(20)`, **long only**,
+`pct` stop 2.83% (ATR clamp 1.5–8.0), no TP, ATR trail armed at 1.5R trailing
+2.5 ATR, 24h time stop, post-only entry at 0.1 ATR.
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 347 | | | +0.0612 | | | |
+| valid 2023-2024 | 234 | +0.1451 | 0.0427 | +0.1024 | [−0.031, +0.243] | +11.5% | 9.8% |
+| valid ×1.5 cost | | | | +0.0849 | | | |
+
+**It fails exactly one gate, `valid_ci_lo > 0`, and it misses by 0.0001.** PASS
+at n=234 needs mean R > 1.568/√234 = **0.1025**; it has **0.1024**. Win 48.3%,
+PF 1.28, maxDD 9.8%, cost 0.043 R. It is a WATCH, it is not a strategy, and no
+number here has been seen by the holdout.
+
+Exit mix on valid: **stop 30% / TP 0% / time 69%**, average hold 20.8h. The TP
+never triggers and two thirds of trades are closed by the clock, so the trail is
+barely doing anything - `trail_at` 1.5R with a 2.83% stop needs a 4.2% move.
+That is the diagnosis Round 2 will work on.
+
+### What this round tells the next round
+
+- **Round 2 runs the exit study on 018 at 30m.** It is the only configuration
+  that satisfies the round's own exit rule with the highest TRAIN mean R among
+  the qualifiers (qualifiers were 019@15m train +0.025, 018@30m +0.061,
+  019@30m +0.030; the rule picks by TRAIN, never by VALID). Two evaluations,
+  exits only, grids as the plan specifies. The inert trail is the obvious
+  target: a 24h hold with a 4.2% arming threshold is measuring drift, not
+  managing a trade.
+- **Write swing-horizon ideas at 1h, not 15m.** Rounds 1-3 evidence says the
+  cost of a narrow stop is what kills every idea below 30m, and PLAN Round 3
+  already writes at 1h - that was the right instinct and the 1m/3m variants of
+  this round are the evidence for it. Expect 4h to be INCONCLUSIVE and treat
+  that as a result, not a failure.
+- **Re-test 005's long leg as its own idea with the participation filter kept**
+  and an 8-hour range. R1.0 measured gross +0.309 R there, the largest gross edge
+  in the project, and R1.1 lost it by loosening the entry. This is a different
+  structure (different filters), not a version of 017.
+- **Do not build a weekday or session-hour filter** (R1.0: noise at 60-70
+  trades), and do not retry `taker_flow`, `funding_not_crowded`, mean
+  reversion, squeeze→expansion, or any short-only breakout.
+
+### Verdict
+
+`WATCH`, and the strongest position this project has reached: a long-side
+trend breakout that is positive on TRAIN and VALID at 30m, 1h and 4h, costs
+0.043 R, and draws down 9.8%. It is still one gate short of PASS, it rests on
+234+120+37 trades, and the 4h result that excludes zero has too few trades to
+count. The honest summary of Round 1 is that **the edge is not intraday**: every
+long structure tested is negative below 15m and positive from 30m up, and the
+reason is measurable rather than mysterious - `cost_r` is 0.505 R on 1m and
+0.019 R on 4h. Round 2 tests whether the exits, which are currently inert, can
+turn +0.102 into something whose confidence interval excludes zero.

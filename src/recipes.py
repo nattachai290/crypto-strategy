@@ -152,6 +152,33 @@ def t_funding_extreme(b, f, thresh=0.0003):
     return _side(_cross_dn(rate, -thresh), _cross_up(rate, thresh))
 
 
+def t_failed_break(b, f, n=48, n_bars=8):
+    """A break of the n-bar extreme that failed: price closed outside the
+    previous n-bar range within the last n_bars bars and has closed back inside
+    it again, so the breakout traders are trapped and must cover. Long when the
+    failed break was to the downside, short when it was to the upside.
+
+    The level that must be reclaimed is the DEEPEST one breached inside the
+    window (`rolling(n_bars).min()` of the prior lows), so the signal only
+    fires when price has recovered past the whole break sequence rather than
+    brushing one bar's low. Only bars <= i are used.
+    """
+    h, l, c = b["high"], b["low"], b["close"]
+    hi_p = h.rolling(n, min_periods=n // 2).max().shift(1)
+    lo_p = l.rolling(n, min_periods=n // 2).min().shift(1)
+    k = max(int(n_bars), 1)
+    broke_dn = (c < lo_p).astype(float)
+    broke_up = (c > hi_p).astype(float)
+    # deepest level breached inside the window, and whether any breach happened
+    lvl_dn = lo_p.rolling(k, min_periods=1).min()
+    lvl_up = hi_p.rolling(k, min_periods=1).max()
+    recent_dn = broke_dn.rolling(k, min_periods=1).max() > 0
+    recent_up = broke_up.rolling(k, min_periods=1).max() > 0
+    back_in_up = (c > lvl_dn) & recent_dn
+    back_in_dn = (c < lvl_up) & recent_up
+    return _side(back_in_up, back_in_dn)
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -164,6 +191,7 @@ TRIGGERS = {
     "pullback": t_pullback,
     "range_break": t_range_break,
     "funding_extreme": t_funding_extreme,
+    "failed_break": t_failed_break,
 }
 
 

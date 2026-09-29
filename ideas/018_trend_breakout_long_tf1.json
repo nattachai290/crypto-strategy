@@ -1,0 +1,63 @@
+{
+  "name": "018_trend_breakout_long_tf1",
+  "hypothesis": "R1.0 showed that the long breakout's expectancy is flat across every regime - by BTC's 30-day trend at entry it was -0.026 in a bear market and +0.025 in a strong bull, with corr(R, trend) = +0.011 - so this is not a disguised long-a-bull-market bet, which is the usual way a long-only idea dies. The mechanism being claimed is narrower: a break of the n-bar high taken in the direction of the higher-timeframe trend, in a market ADX calls trending, is continuation because the counterparty is the seller who is late to a rising market. Direction is fixed long on purpose, because when the grid was allowed to choose, TRAIN chose long and the short leg lost significantly (Exp 015). [Timeframe variant of 018_trend_breakout_long, 15m -> 1m, mode chart: same bar counts and ATR multiples, hold x0.0666667, pct stop x0.258.]",
+  "strategy": "recipe",
+  "tf": 1,
+  "params": {
+    "triggers": [
+      {
+        "type": "donchian_break",
+        "n": 48
+      }
+    ],
+    "filters": [
+      {
+        "type": "htf_trend",
+        "n": 50,
+        "mult": 4
+      },
+      {
+        "type": "adx_min",
+        "n": 14,
+        "min": 20
+      }
+    ],
+    "direction": "long",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0052,
+      "min_atr": 1.5,
+      "max_atr": 8.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 1.5,
+    "trail_atr": 2.5,
+    "max_hold_hours": 0.53,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.n": [
+      24,
+      48,
+      96
+    ],
+    "stop.pct": [
+      0.0039,
+      0.0052
+    ],
+    "max_hold_hours": [
+      0.53,
+      0.8
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "018_trend_breakout_long",
+  "variant_mode": "chart"
+}

@@ -49,6 +49,7 @@ Exp 004. Prefer ATR stops of ~2.5–5x on 15m, or 15m/30m bars over 1m/3m.
 | `zscore_revert` | n=96, z=2.0 | stretched from the mean, snapping back |
 | `vwap_revert` | z=2.0, z_n=200 | stretched from the daily VWAP, snapping back |
 | `funding_extreme` | thresh=0.0003 | fade a crowded side when funding is extreme |
+| `failed_break` | n=48, n_bars=8 | a break of the n-bar extreme that failed (close back inside within n_bars bars): the breakout traders are trapped and must cover. **Tested in Exp 016, REJECTed at all 7 timeframes** (`gross_r` negative everywhere: −0.015 at 15m, −0.034 at 1h). Kept as a documented negative: the reclaim has already happened when the signal fires, so the fade pays the whole spread for a move that is over. |
 
 ### 🧩 Worth adding (Level 2 blocks)
 
@@ -224,6 +225,33 @@ brackets. Write each as `ideas/NNN_name.json`.
 - Leads, not passing: session-open range break both sides (005: train
   +0.079, valid +0.067 on 390 trades); long-only 30m EMA cross (006: +0.136 on
   52 trades); 007's direction grid picks long.
+
+**After Round 1 (Exp 016, 40 evaluations, 0 PASS / 5 WATCH):**
+
+- **The edge is not intraday. It is 30 minutes and above.** Every long
+  structure tested is negative at 1m/3m/5m and positive at 30m/1h/4h, on TRAIN
+  as well as on VALID, and for two different entries. The mechanism is
+  measured, not guessed: chart-mode `tf_variants` scales the `pct` stop by
+  sqrt(tf/15), so `cost_r` is **0.505 R on 1m and 0.019 R on 4h** for the same
+  0.09% post-only round trip. A 1m/3m/5m REJECT in this project is almost
+  always that arithmetic, not a verdict on the hypothesis.
+- **Best configuration: 018 at 30m** - `donchian_break(24)` + `htf_trend(50,4)`
+  + `adx_min(20)`, long only, `pct` stop 2.83%, no TP, ATR trail 1.5R/2.5,
+  24h hold, post-only. valid 234 trades, gross +0.145, cost 0.043, mean R
+  **+0.1024**, CI [-0.031, +0.243], CAGR +11.5%, maxDD 9.8%. Misses the PASS
+  gate by 0.0001 (needs > 0.1025). WATCH.
+- **Fading a failed breakdown does not pay** (`failed_break`, idea 020, all 7
+  timeframes REJECT, `gross_r` negative everywhere). Idea 010's breakdowns do
+  fail, but by the time a close back inside confirms it, the move is over.
+- **Loosening 005's entry destroys its edge.** 005's long leg grossed +0.309 R
+  with a 8-hour range and a `volume_spike` filter; 017 dropped the filter and
+  used a 4-hour range and its valid `gross_r` fell to -0.005. Keep the
+  participation filter on session breaks.
+- **Do not build a weekday or session-hour filter.** In 005's 390 trades, Mon
+  was +0.425 (n=67) and Sun -0.426 (n=60); entry-hour means ranged +0.365 to
+  +0.436 on 16-28 trades. Noise at those counts, and a filter halves the
+  sample.
+- `taker_flow` and `funding_not_crowded` remain inert as confirmation (012, 014).
 
 **Before the fix (Exp 003–014, history; results unreliable where shorts were involved):**
 

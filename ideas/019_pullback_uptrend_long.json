@@ -1,0 +1,24 @@
+{
+  "name": "019_pullback_uptrend_long",
+  "hypothesis": "Every long idea in this project so far has paid up at a breakout, and R1.0 showed the only measured long edge in it - 005's long leg, gross +0.31 R - came from a session range break. This idea tests the other way to get long exposure: in an established uptrend, price dips to the fast EMA and closes back above it, where the counterparty is the seller who is late to a rising market and is selling into a dip that trend-following money wants. The dip is where size is available, rather than where the breakout crowd pays up, so the entry should be cheaper in R terms even if it fills less often. Direction is long because the long side is the only one that has ever shown a gross edge on this market (Exp 015).",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [{"type": "pullback", "fast": 20, "slow": 50}],
+    "filters": [
+      {"type": "trend_ema", "fast": 50, "slow": 200}
+    ],
+    "direction": "long",
+    "stop": {"type": "pct", "pct": 0.02, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "r", "r": 2.5},
+    "max_hold_hours": 8,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [0.015, 0.02, 0.025],
+    "tp.type": ["none", "r"],
+    "max_hold_hours": [8, 12]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}
