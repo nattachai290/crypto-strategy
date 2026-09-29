@@ -773,6 +773,12 @@ This harness fixes all three. The research agent runs the ports; the planner
 writes them.
 
 **Rules for every port** (on top of AGENTS.md):
+0. **Only from source code the owner supplies.** A port is written from the
+   Pine Script the owner pastes, and nothing else. No agent (planner or
+   researcher) writes a port from memory, from a description or from another
+   website's copy (owner's decision; ports T2–T5 written from memory were
+   withdrawn before any run). The pasted source is saved with the idea: quote
+   the script name and version in the hypothesis.
 1. **Faithful.** The author's parameters are kept exactly. The only grid keys
    are what the engine forces us to invent: usually a `pct` stop and a time
    stop, because the engine has no stop-and-reverse and every trade must risk
@@ -789,7 +795,7 @@ writes them.
    with the reason.
 5. **Report per port:** what TradingView claims (if the owner supplies it)
    next to what is left after costs, controls and, for a PASS, the holdout.
-6. **Budget:** at most 5 ports per round, pre-registered together. **Stop
+6. **Budget:** at most 5 ports per round (the owner's scripts), pre-registered together. **Stop
    rule:** a round with no holdout CONFIRMED ends the TradingView question
    unless the owner brings new scripts.
 

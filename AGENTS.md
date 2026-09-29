@@ -6,7 +6,8 @@
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
 **Active work: TradingView strategy ports on BTCUSDT and ETHUSDT**
-(`docs/research/PLAN.md` §13). Run every command with the coin in `SYMBOL` (on Windows PowerShell:
+(`docs/research/PLAN.md` §13): port **only Pine Script source the owner pastes**, never
+write one from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
 `$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's
 `journal/<SYMBOL>/STATUS.md`.
 
