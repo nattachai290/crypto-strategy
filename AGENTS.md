@@ -239,7 +239,8 @@ results/<SYMBOL>/
     holdout_log.csv         every holdout use (the lock)
     eval_trades/            trade list per evaluation, <eval_id>_valid.csv.gz (committed;
                             re-create a missing one with evaluate.py <idea> --trades-only)
-    legacy/                 Exp 003–010 outputs + logs/, read-only history (see its README)
+    legacy/                 Exp 003–010 outputs + logs/, and pre_signfix/ (Exp 011–014
+                            records made before the short-sign fix). Read-only history
 data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 ```
 
@@ -266,6 +267,10 @@ Engine facts to remember:
   leverage).
 - Break-even and trailing stops move using the **previous** bar's close
   (fixed in Exp 011).
+- Short P&L is signed by side (fixed in Exp 015; before that every short was
+  inverted). `evaluate.py` runs on a 1,000 USDT research account
+  (`C.EVAL_EQUITY`) so every trade can be sized. Each report shows
+  `size_skips`: it must be 0.
 
 ---
 

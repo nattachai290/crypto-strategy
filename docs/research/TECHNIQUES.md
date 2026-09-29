@@ -207,7 +207,25 @@ brackets. Write each as `ideas/NNN_name.json`.
 
 ---
 
-## 7. Already tried: don't repeat (BTCUSDT, Exp 003–011)
+## 7. Already tried: don't repeat (BTCUSDT)
+
+> **Exp 015 changed this section.** Until Exp 015 the engine booked every short
+> trade's P&L with the wrong sign, and the 100 USDT account skipped many trades.
+> Anything below that describes a *result* from before Exp 015 is unreliable
+> where shorts were involved; the *cost* lessons still hold. Corrected results
+> for all 18 ideas: `journal/BTCUSDT/experiments.md` Exp 015.
+
+**After the fix (Exp 015, reliable):**
+- **Short-only breakout / trend ideas lose significantly** (ideas 008–012,
+  014, 015; 6 of 7 have the whole CI below zero). Don't try more of them.
+  Shorts belong in both-direction ideas or in fades of failed moves.
+- Mean reversion long (016), range reversion both sides (example) and
+  squeeze → expansion (004, 013): negative on VALID.
+- Leads, not passing: session-open range break both sides (005: train
+  +0.079, valid +0.067 on 390 trades); long-only 30m EMA cross (006: +0.136 on
+  52 trades); 007's direction grid picks long.
+
+**Before the fix (Exp 003–014, history; results unreliable where shorts were involved):**
 
 - Single-indicator strategies (EMA, Donchian, BB, VWAP, Supertrend, ADX,
   flow, funding) with **1.5–2x ATR stops** on 3m–30m: all negative after
@@ -223,13 +241,12 @@ brackets. Write each as `ideas/NNN_name.json`.
   (few signals in quiet years). Worth retesting with the new gate (idea 4).
 - Break-even/trailing results **before Exp 011** were distorted by an
   engine bug. Retest exit techniques with the fixed engine.
-- Squeeze → expansion and session-open breakouts (Exp 012, ideas 004/005/013):
-  REJECT / negative. The squeeze entry shows a huge `gross_r` (+0.269) that is
+- Squeeze → expansion (Exp 012, ideas 004/013): the squeeze entry shows a huge `gross_r` (+0.269) that is
   **not** a large edge — it is a narrow ATR stop in a low-volatility window
   inflating R while 71% of trades are stopped out. Widen the stop and `gross_r`
   collapses to +0.129. Compare net R across ideas, never gross R.
-- `taker_flow` as a filter: inert at any threshold that still leaves ~100
-  trades (idea 012) — the taker buy ratio does not deviate far enough from 0.5.
+- `taker_flow` as a filter looked inert on idea 012 (measured before the fix;
+  worth one fresh test in a long or both-sided idea).
 - `funding_extreme` as a trigger: 23 train trades (idea 003). It is a crossing
   on 8h data, so it almost never fires on 15m bars. Use `funding_not_crowded`
   as a filter on a price trigger instead.

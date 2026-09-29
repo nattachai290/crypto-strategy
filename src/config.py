@@ -73,7 +73,14 @@ FUNDING_COLS = [
 # --------------------------------------------------------------------------
 # Account / risk
 # --------------------------------------------------------------------------
-INITIAL_EQUITY = 100.0        # USDT
+INITIAL_EQUITY = 100.0        # USDT - the owner's live account (legacy scripts use it)
+# Research account used by evaluate.py. With 100 USDT, BTC's 0.001 qty step
+# makes 1% risk impossible at 2024 prices, so most trades were silently
+# skipped, and skipped MORE as a strategy lost (Exp 014). R, CI, drawdown %
+# and CAGR do not depend on this number as long as trades can be sized.
+# Whether the owner's real account can size a candidate is checked separately
+# (strategy card, PLAN.md section 6).
+EVAL_EQUITY = 1000.0          # USDT, owner-approved 2026-09-29
 RISK_PER_TRADE = 0.01         # 1% of current equity risked per trade
 MAX_LEVERAGE = 10.0           # hard cap on notional / equity
 # The engine is deliberately single-position: one open trade at a time, no

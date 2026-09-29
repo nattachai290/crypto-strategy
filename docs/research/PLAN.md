@@ -4,8 +4,9 @@
 > แผนวิจัยหาเทคนิคเทรด BTCUSDT อย่างเดียว แบ่งเป็น 4 รอบ รอบละ 5–6 ไอเดียที่ต่างกันจริง
 > **ทุกไอเดียทดสอบครบทุก timeframe** (1m 3m 5m 15m 30m 1h 4h) ด้วย `src/tf_variants.py` ไม่ล็อก TF
 > และออกแบบไอเดียให้เทรดบ่อยพอ เพราะเกณฑ์ผ่านต้องได้ค่าเฉลี่ยต่อไม้สูงขึ้นมากเมื่อจำนวนไม้น้อย
-> - **รอบ 1**: หาจุดเข้าฝั่ง short แบบใหม่ (ฝั่งเดียวที่เคยเห็นกำไร) + ทำความเข้าใจว่าไอเดีย 010 ได้กำไรเพราะอะไร
->   โดยเฉพาะ: ทำไม short ถึงกำไรในปี 2023–24 ที่ BTC เป็นขาขึ้นแรง
+> - **รอบ 1** (แก้ใหม่หลังแก้บั๊ก engine ใน Exp 015): ฝั่ง long และแบบเข้าได้ทั้งสองทาง
+>   ต่อยอดจากตัวที่มีแววจริง (005 เบรกช่วงเปิดตลาด, 006 long-only) + ไอเดีย "เบรกหลอก"
+>   (เพราะ short ตอนหลุด low แพ้อย่างมีนัยสำคัญ)
 > - **รอบ 2**: เทคนิคปิดไม้ (TP, SL, BE, trailing, time stop) บนจุดเข้าที่ดีที่สุดจากรอบ 1 รวมเป็น 2 การทดสอบ
 > - **รอบ 3**: ถือนานขึ้นแบบ swing (หลายชั่วโมงถึงหลายวัน) และทดสอบฝั่ง long อีกครั้งที่ระยะนี้
 > - **รอบ 4**: เทคนิคแนวใหม่ที่ต้องเพิ่มบล็อก เช่น แท่งวันก่อนหน้า, opening range, ช่วงจ่าย funding, การล้างพอร์ต
@@ -37,19 +38,21 @@ the deliverable is a final report of what was tried and why it failed (§7).
 
 ## 2. Starting point (don't repeat these)
 
-From `journal/BTCUSDT/STATUS.md` and Exp 011–013:
+From `journal/BTCUSDT/STATUS.md` and **Exp 015** (the engine fix). Everything
+before Exp 015 that involved short trades was measured with an inverted P&L
+and a 100 USDT account that could not size most trades. Only the cost
+findings survive from that period.
 
 | Settled finding | Consequence for this plan |
 |---|---|
 | Stop must be a **% of price** (`"stop": {"type": "pct"}`), not an ATR multiple | Use `pct` stops in every idea, unless the idea is *about* ATR stops |
 | Costs ≈ 0.14% per round trip (0.09% with post-only entry); `cost_r = cost / stop%` | Stops ≥ 1.5% of price; prefer post-only entry (`"entry_mode": "post_only"`, offset 0–0.2 ATR) |
-| **Long side**: nothing found in 16 evaluations, almost all at 15m (continuation, reversion, trend) | No new long-only ideas in Rounds 1–2. Long returns in Round 3 (swing), and its timeframe variants cover the rest |
-| **Short side**: the only positive results (ideas 007/010) | Round 1 explores *other* short structures |
-| Edges need **6–18 h holds**; ≤ 4 h holds were negative (Exp 009) | Design source ideas with holds ≥ 6 h; Round 3 is about multi-day holds |
-| The 16 evaluations were **15m ×14, 30m ×1, 5m ×1**. 1m, 3m, 1h and 4h were never tested in the current workflow | Every idea now runs on all seven timeframes (§2b) |
-| Idea 010's structure (15m `donchian_break` + `htf_trend` + `adx_min`, short) used ~8 versions | **No more variants of that structure.** It stays WATCH |
-| Filters `taker_flow`, `funding_not_crowded` were inert on 010 | Don't use them as "confirmation" on breakouts again |
-| Mean reversion (ideas 003, 016, example) and funding crowding (003, 014) | Answered. Don't repeat |
+| **Short breakouts lose significantly** (Exp 015: all 7 short-only ideas negative on VALID, 6 of 7 with the whole CI below zero) | **No short-only breakout / trend ideas.** Shorts only inside both-direction ideas, or as fades of failed moves (R1.4) |
+| **The leads are long / both-sided** (Exp 015): 005 session-open range break, both sides, train +0.079 / valid +0.067 on 390 trades (fails CI and ×1.5 cost); 006 long-only 30m EMA cross, valid +0.136 on 52 trades; 007's TRAIN grid picks **long** | Round 1 builds on these |
+| Mean reversion (016 long, example range reversion) and squeeze→expansion (004, 013): negative on VALID after the fix | Answered. Don't repeat those structures |
+| Hold time: Exp 009's "edges need 6–18 h" was measured with the sign bug | Unknown. Keep `max_hold_hours` in the grid when hold time matters to the hypothesis |
+| The 18 evaluations were almost all 15m. 1m, 3m, 1h and 4h were never tested in the current workflow | Every idea now runs on all seven timeframes (§2b) |
+| Research account = 1,000 USDT (`C.EVAL_EQUITY`), 1% risk; every report shows `size_skips` | If `size_skips` > 0, stop and report it: results with skipped trades are biased |
 
 ---
 
@@ -68,7 +71,8 @@ is the number of VALID trades (2023–2024):
 | 500 | 0.070 |
 | 1000 | 0.050 |
 
-Idea 010 made +0.085 on 219 trades: a good number, too few trades. So:
+The best lead (005) made +0.067 on 390 trades; at that count it needs
+≈ +0.08. So:
 - **Aim for ≥ 300 valid trades** (≈ 3 per week) when you design an idea.
   Every extra filter cuts trades; add one only if it clearly raises mean R.
 - An idea that raises mean R by cutting trades usually moves *away* from
@@ -143,41 +147,39 @@ Every idea: `pct` stop, post-only entry, designed for ≥ 300 valid trades
 (§2a), and run on **all seven timeframes** (§2b). The "tf" in the sketches
 below is only the source timeframe the idea is written in.
 
-### Round 1 — New short-side structures + understanding idea 010 (≈ 3 h)
+### Round 1 — Long and both-sided structures, built on the leads (≈ 6 h)
 
-**Why:** the short side is the only place with any positive signal. Test
-whether *other* short structures work, which would show that the short edge
-is real and not one lucky pattern.
+**Why:** after the engine fix (Exp 015), every positive signal is on the long
+side or in a both-direction idea, and shorting breakouts loses
+significantly. Test whether the leads (005, 006, 007-long) are real, and
+whether the losing short breakouts can be turned into a *fade* of failed
+breakdowns.
 
-**R1.0 — Analysis of idea 010, no new evaluation.** Load its trades with
-`pd.read_csv("results/BTCUSDT/eval_trades/70fb497bcf_valid.csv.gz")` (in git;
-if it is ever missing, `python src/evaluate.py ideas/010_short_breakout_post_only.json --trades-only`
-re-creates it without recording anything). Write a short analysis in the
-Round 1 pre-registration entry:
-- R by hour of day (UTC), by weekday, by month
-- R vs the 8h return of BTC *before* entry (is it just "short after a drop"?)
-- R vs the funding rate at entry
-- R of trades held to the time stop vs trades stopped/trailed
-- **The key question: why does a short strategy make money in 2023–24,
-  when BTC rose from ~16k to ~95k?** It can't be "BTC drifts down". Measure:
-  R by the 30-day trend of BTC at entry (up / flat / down); R by how far
-  price had fallen in the 12 h before entry; how many bars after entry the
-  low of the trade came. If the wins come from short dips inside a bull
-  market (sell-offs that continue for a few hours), write it down as the
-  mechanism. That is an explanation, and it gives new ideas (e.g. "short
-  the first break of a 12 h low after a strong rally")
-- **Use:** any pattern you find becomes a *hypothesis for a new structure*
-  in Round 1 or 4. **Never** add it as a filter to 010 itself (010's
-  structure is closed).
+**R1.0 — Analysis, no new evaluation.** Load the trade lists with
+`pd.read_csv("results/BTCUSDT/eval_trades/<eval_id>_valid.csv.gz")`:
+005 `cdde91ae48`, 007 `93ef5c196c`, 010 `70fb497bcf` (if one is missing,
+`python src/evaluate.py ideas/<idea>.json --trades-only` re-creates it
+without recording anything). Write the findings in the Round 1
+pre-registration entry:
+- **005:** R by side (long vs short), by session hour (7, 8, 13, 14 UTC), by
+  weekday, by year. Does its edge come from one side, or one session?
+- **007 (long):** R by the 30-day trend of BTC at entry (up / flat / down).
+  Is it just "long in a bull market"? 2023–24 was a strong bull market, so
+  a long idea must also hold up on TRAIN, which includes the 2022 bear.
+- **010 (short, losing):** how many bars after entry does price turn back
+  up? If most losing shorts reverse within a few hours, the break below the
+  12 h low was a *failed breakdown*, and R1.4 tests fading it.
+- **Use:** each finding becomes a hypothesis for a new structure in this
+  round or in Round 4. Never bolt it onto an existing idea as a filter.
 
 | # | Idea | Recipe sketch | Kill if |
 |---|---|---|---|
-| R1.1 | Short pullback in a downtrend: price bounces to the fast EMA, fails, continues down | trigger `pullback` (fast 20 / slow 50), filters `trend_ema` (50/200) + `adx_min`; direction short; stop pct 1.5–2.5%; trail; hold 8–12 h | train mean R ≤ 0 |
-| R1.2 | Short momentum impulse: a sharp drop (> k·ATR in n bars) keeps going | trigger `momentum` (n 8–16, atr_k 1.5–2.5), filter `htf_trend`; short; pct stop | train mean R ≤ 0 |
-| R1.3 | Short after a failed bounce: in a downtrend, a fast EMA crosses down again while price is below the daily VWAP | trigger `ema_cross` (fast 8 / slow 21), filters `vwap_side` + `htf_trend`; short | fewer than 100 train trades |
-| R1.4 | Short on a Supertrend flip **with** ADX + HTF (idea 015 had no ADX) | trigger `supertrend_flip`, filters `htf_trend` + `adx_min` + `di_side` | train mean R ≤ 0 (it's a different filter set from 015, so a separate structure) |
-| R1.5 | **Idea 010 on every other timeframe** (no new idea file to write: `python src/tf_variants.py ideas/010_short_breakout_post_only.json`, both modes). Tests whether 010's effect exists beyond 15m | generated by the tool | positive TRAIN on the neighbours 5m/30m = support for 010's mechanism; negative neighbours = 010 is a 15m-only fluke |
-| R1.6 | Short-side range break at the London/NY opens only | trigger `range_break` with `hours` [7,8,13,14], filter `htf_trend`; short | fewer than 100 valid trades → INCONCLUSIVE |
+| R1.1 | **Session-open break, long only.** Does 005's edge come from the long side of the London/NY open? | trigger `range_break` (range_n 16–32, `hours` [7,8,13,14]), filter `htf_trend`; **long**; pct stop 1.5–2.5%; hold 4–12 h | train mean R ≤ 0 |
+| R1.2 | **Breakout with the trend, long only** (007's TRAIN choice as its own hypothesis) | `donchian_break` (24–96) + `htf_trend` + `adx_min`; long; pct stop 2%; no TP, trail | train mean R ≤ 0 |
+| R1.3 | **Pullback in an uptrend, long** | `pullback` (20/50) + `trend_ema` (50/200); long; pct stop 1.5–2.5%; TP 2R or trail | train mean R ≤ 0 |
+| R1.4 | **Fade a failed breakdown** (from the losing short breakouts): price breaks below the n-bar low, then closes back above it within k bars → long. Mirror for failed breakouts → short | needs a Level 2 trigger `failed_break` (n, k) in `src/recipes.py`, causal (test 7 checks it); both directions; pct stop | fewer than 300 train trades, or train mean R ≤ 0 |
+| R1.5 | **Idea 006 on every timeframe** (long-only EMA cross: +0.136 on only 52 trades at 30m). Lower timeframes give more trades | `python src/tf_variants.py ideas/006_long_only_trend.json` | positive TRAIN on neighbouring timeframes = real; one positive timeframe alone = luck |
+| R1.6 | **Idea 005 on every timeframe** (session-open break, both sides) | `python src/tf_variants.py ideas/005_session_open_break.json` | same as R1.5 |
 
 **What to take into Round 2:** the one entry + timeframe with mean R > 0 on
 **both** train and valid, ≥ 150 valid trades, and a positive TRAIN result on
@@ -230,7 +232,7 @@ is fine and expected (§2b).
 |---|---|---|
 | R3.1 | Donchian breakout both sides, HTF trend | `donchian_break` 24–48, `htf_trend` (n 50, mult 4), pct stop 3–5%, no TP, trail, hold 2–4 days |
 | R3.2 | Trend pullback, **long** (the long side has never been tested at swing horizons) | `pullback` + `trend_ema` (50/200); long; pct stop 3%; TP 2–3R or trail |
-| R3.3 | Round 1's best short structure, redesigned for multi-day holds | copy the structure, hold 1–3 days, wider pct stop |
+| R3.3 | Round 1's best structure, redesigned for multi-day holds | copy the structure, hold 1–3 days, wider pct stop |
 | R3.4 | Squeeze → expansion, both sides | `donchian_break` + `squeeze` + `vol_regime lo>1`; pct stop 4%; trail |
 | R3.5 | Weekday-only trend (skip weekend chop) | `ema_cross` + `weekdays` [0..4] + `adx_min` |
 | R3.6 | Supertrend trend following, both sides | `supertrend_flip` + `adx_min`; pct stop 4–6%; hold up to 10 days |
@@ -272,10 +274,10 @@ line in `TECHNIQUES.md` §2/§3 → pre-registered idea file → `evaluate.py`.
    strategy card and paper trading (§6). Continue the research rounds in
    parallel only if the owner wants.
 
-Idea 010 (WATCH): it stays WATCH. Only the owner can decide to spend the
-holdout on a WATCH result. Don't propose it unless Round 1's R1.5 (30m) or
-another independent short structure also comes out PASS/WATCH positive; in
-that case, report both to the owner with the evidence and let them decide.
+There is no WATCH result at the moment (Exp 015). If one appears, it stays
+WATCH: only the owner can decide to spend the holdout on a WATCH result.
+Propose it only when an independent structure (e.g. the same idea on
+neighbouring timeframes) is also positive, and let the owner decide.
 
 ---
 
@@ -292,6 +294,13 @@ One page; every number traceable to `results/BTCUSDT/`:
   streak in the backtest, maxDD.
 - Sizing at 1% risk on the owner's account (e.g. 100 USDT with a 2% stop →
   50 USDT notional); the leverage it implies; min notional check.
+- **Can the owner's real account take every trade?** Research runs use a
+  1,000 USDT account (Exp 015). Re-run the frozen config once with
+  `initial_equity` = the owner's capital and report its `size_skips`. BTC's
+  minimum size is 0.001 BTC: at 100k with a 2% stop that one step already
+  risks 2 USD, i.e. 2% of 100 USDT. If trades get skipped, state the minimum
+  capital needed for 1% risk (≈ 0.001 × price × stop% ÷ 1%) instead of
+  pretending the account can trade it.
 - Weaknesses: how many ideas were tried in total before this one, regime
   dependence (per-year R), the unexplained parts.
 - Kill criteria (6.3).
@@ -361,7 +370,7 @@ Never say "profitable" unless the holdout is CONFIRMED.
 
 | Round | Work | Notes |
 |---|---|---|
-| 1 | ≈ 6 h | 6 ideas × 7 timeframes + analysis of 010 (1m/3m runs are the slow part) |
+| 1 | ≈ 6 h | 6 ideas × 7 timeframes + analysis of 005/007/010, + one Level 2 block (1m/3m runs are the slow part) |
 | 2 | ≈ 2 h | 2 exit studies (combined grids) at the best timeframe |
 | 3 | ≈ 6 h | 6 swing ideas × 7 timeframes |
 | 4 | ≈ 6 h | 4–5 new blocks + ideas × 7 timeframes |

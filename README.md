@@ -11,7 +11,7 @@ slippage is not a strategy.
 |---|---|
 | Instrument | BTCUSDT perpetual (USDT-M) |
 | Style | Intraday only, flat by session end, long **and** short |
-| Capital | 100 USDT |
+| Capital | 100 USDT live account; research runs use 1,000 USDT so every trade can be sized (Exp 015) |
 | Risk / trade | 1% of current equity (compounding) |
 | Max leverage | 10x notional cap |
 | Max concurrent positions | 1 (no pyramiding) |
@@ -121,25 +121,31 @@ Every timeframe is Binance's own native file — **nothing is resampled**
 
 ## Headline result
 
-**No statistically demonstrated edge** in intraday BTCUSDT futures at retail
-(VIP0) costs, across 106+ configurations, 4 timeframes, 6.5 years, and two
-strategy families. After fixing a one-bar data offset (Exp 010) the best
-walk-forward configuration is **+0.051 R/trade on 72 trades**, 95% CI
-`[-0.065, +0.168]`, **+0.9%/year** — indistinguishable from zero.
-(Earlier numbers such as "+2.2%/year" came from shifted data and are void;
-see `journal/BTCUSDT/STATUS.md` for which result files are stale.)
+**No idea has passed yet.** In Exp 015 the engine was found to book every
+short trade with the wrong P&L sign, and the 100 USDT account couldn't size
+most trades at 2024 BTC prices. Both are fixed (research now runs on a
+1,000 USDT account, still 1% risk per trade), and all 18 ideas in
+`ideas/` were re-evaluated: **0 PASS, 16 REJECT, 2 INCONCLUSIVE.** Shorting
+breakouts loses significantly; the only leads are long / both-sided (a
+session-open range break and a long-only EMA cross). Current state:
+`journal/BTCUSDT/STATUS.md`.
 
-The single most important finding is *why*:
+Every result produced before Exp 015 that involved short trades (Exp 003–014,
+`results/BTCUSDT/legacy/`) is wrong and kept only as history. The cost
+findings below don't depend on the sign of the P&L, so they still hold.
+
+The most important cost finding:
 
 ```
 cost_r = round_trip_cost / stop_distance
        =    0.14%      /   0.5%      =  0.28 R per trade
 ```
 
-Every "1.8x ATR stop" rule is a cost-efficiency mistake. Widening the stop
-from 1x to 5x, **without changing a single signal**, moved the account from
-roughly -17..-25%/year to roughly break-even. See `journal/BTCUSDT/experiments.md`
-Exp 004, 007 and 010.
+Every "1.8x ATR stop" rule is a cost-efficiency mistake: widening the stop
+cuts `cost_r` almost linearly without changing a single signal (Exp 004), and
+the stop should be a fixed % of price rather than an ATR multiple, so that
+`cost_r` doesn't drift with the volatility regime (Exp 012). The return
+figures quoted in those entries predate the Exp 015 engine fix.
 
 ## The log
 

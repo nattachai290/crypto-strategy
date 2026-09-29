@@ -197,7 +197,7 @@ def backtest(sig: pd.DataFrame, start, end, execution: dict, cost_mult: float = 
     return run_backtest(
         _G["bars"], sig, funding=_G["funding"], start_time=start, end_time=end,
         fee_taker=C.FEE_TAKER * cost_mult, fee_maker=C.FEE_MAKER * cost_mult,
-        slippage=C.SLIPPAGE * cost_mult, **execution)
+        slippage=C.SLIPPAGE * cost_mult, initial_equity=C.EVAL_EQUITY, **execution)
 
 
 def _train_one(args) -> dict:
@@ -239,7 +239,8 @@ def summarise(res, tf: int) -> dict:
         "long_trades": m.get("long_trades", 0), "short_trades": m.get("short_trades", 0),
         "stop_rate": m.get("stop_rate", float("nan")), "tp_rate": m.get("tp_rate", float("nan")),
         "time_rate": m.get("time_rate", float("nan")),
-        "fill_rate": m.get("fill_rate", 1.0), "per_year": years,
+        "fill_rate": m.get("fill_rate", 1.0), "size_skips": int(m.get("size_skips", 0)),
+        "per_year": years,
     }
 
 
@@ -304,7 +305,10 @@ def report_block(row: dict, v: dict, gates: dict, hold: dict | None) -> str:
           f"- valid: win {_fmt(v['win_rate'], '{:.0%}')}, PF {_fmt(v['profit_factor'], '{:.2f}')}, "
           f"avg hold {_fmt(v['avg_hold_h'], '{:.1f}')} h, long/short {v['long_trades']}/{v['short_trades']}, "
           f"exits stop/tp/time {_fmt(v['stop_rate'], '{:.0%}')}/{_fmt(v['tp_rate'], '{:.0%}')}/"
-          f"{_fmt(v['time_rate'], '{:.0%}')}, fill {_fmt(v['fill_rate'], '{:.0%}')}",
+          f"{_fmt(v['time_rate'], '{:.0%}')}, fill {_fmt(v['fill_rate'], '{:.0%}')}, "
+          f"size skips {v.get('size_skips', 0)}"
+          + (" ⚠️ trades skipped because the account could not size them"
+             if v.get("size_skips", 0) else ""),
           f"- valid per year (mean R, trades): {v['per_year']}",
           "- gates: " + ", ".join(f"{k} {'✅' if ok else '❌'}" for k, ok in gates.items())]
     if hold:
