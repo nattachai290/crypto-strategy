@@ -71,10 +71,12 @@ filters and exits in the `recipe` format.
 combinations (enforced). Sweep the things the hypothesis is actually about.
 Fix everything else at a sensible value.
 
-**Step 4b — Make the timeframe variants.** Every idea is tested on all
-seven native timeframes (1m 3m 5m 15m 30m 1h 4h), never just one:
-`python src/tf_variants.py ideas/NNN_short_name.json` writes the six other
-files (add `--mode time` when `docs/research/PLAN.md` says so, as in Round 5). Evaluate each. Read the docstring of `src/tf_variants.py` for what it
+**Step 4b — Make the timeframe variants.** Every idea is tested on four
+timeframes, **15m 30m 1h 4h**, never just one:
+`python src/tf_variants.py ideas/NNN_short_name.json` writes the three other
+files. 1m, 3m and 5m are no longer tested (owner's decision 2026-09-29,
+`docs/research/LESSONS.md` §1: cost made them negative on TRAIN and VALID);
+use them only if the owner asks (`--tfs 1,3,5`) (add `--mode time` when `docs/research/PLAN.md` says so, as in Round 5). Evaluate each. Read the docstring of `src/tf_variants.py` for what it
 rescales, and never rescale by hand.
 
 **Step 5 — Run it:**

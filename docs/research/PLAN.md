@@ -825,8 +825,8 @@ It is off by default, and every earlier record is unaffected.
   (`exit_on: "opposite"`, BTC Exp 031).
 - **Added** (every trade must risk 1%): a `pct` stop of 4% / 6%, plus a long
   time cap of 480 h / 1920 h at 4h, scaled by chart mode.
-- Files: `ideas/044_tv_chartart_rsi_bb.json` (4h) plus `_tf1` … `_tf60`,
-  already generated. **Run each on BTCUSDT and on ETHUSDT: 14 evaluations.**
+- Files: `ideas/044_tv_chartart_rsi_bb.json` (4h) plus `_tf15`, `_tf30`, `_tf60`,
+  already generated. **Run each on BTCUSDT and on ETHUSDT: 8 evaluations.**
 - The author writes that v1.1 was "made more successful in backtesting". It
   was tuned on the chart it is shown on, which is one more reason to expect
   VALID to disappoint.
@@ -858,9 +858,8 @@ It is off by default, and every earlier record is unaffected.
   That makes 16 combos.
 - Test 7: causal, correct output shape, and an 11-bar hand trace of the Pine
   logic (bearish BOS → bullish CHoCH → bearish CHoCH → bullish CHoCH).
-- Files: `ideas/045_tv_luxalgo_smc.json` plus 6 chart-mode variants.
-  **Run on BTCUSDT and ETHUSDT: 14 evaluations.** The 1m file is the slow one
-  (the structure loop is about 25 s per combo on 3.5M bars, 16 combos).
+- Files: `ideas/045_tv_luxalgo_smc.json` plus 3 chart-mode variants.
+  **Run on BTCUSDT and ETHUSDT: 8 evaluations.**
 
 ### Port T3 — `046_tv_chartart_macd_sma` (ChartArt "MACD + SMA 200 Strategy" v1.0, from the owner's source)
 - Pine logic, author defaults 12 / 26 / 9 / 200, **all simple moving
@@ -880,8 +879,8 @@ It is off by default, and every earlier record is unaffected.
   - Its stop-order entry at the signal bar's low/high fills at the next open
     unless the next bar gaps through that level.
   - The `strategy.cancel` lines only remove unfilled orders.
-- Files: `ideas/046_tv_chartart_macd_sma.json` plus 6 chart-mode variants.
-  **Run on BTCUSDT and ETHUSDT: 14 evaluations.**
+- Files: `ideas/046_tv_chartart_macd_sma.json` plus 3 chart-mode variants.
+  **Run on BTCUSDT and ETHUSDT: 8 evaluations.**
 
 ### Port T4 — `047_tv_super_scalper` ("Super Scalper - 5 Min 15 Min", Pine v5, from the owner's source)
 - Pine logic, defaults kept:
@@ -905,8 +904,9 @@ It is off by default, and every earlier record is unaffected.
   other six. The ATR stop grows with the timeframe: the 1h/4h variants on BTC
   may be `UNSIZABLE` at 2024–25 prices. That is a recorded outcome, not a
   reason to change the file.
-- Files: `ideas/047_tv_super_scalper.json` plus 6 variants. **Run on BTCUSDT
-  and ETHUSDT: 14 evaluations.**
+- Files: `ideas/047_tv_super_scalper.json` plus 3 variants. **Run on BTCUSDT
+  and ETHUSDT: 8 evaluations.** (The author's other chart, 5m, is dropped with
+  1m–5m.)
 
 ### Port T5 — `048_tv_chartart_rsi_bb_long_v12` (ChartArt "Bollinger + RSI, Double Strategy Long-Only" v1.2, from the owner's source)
 - Same entry as T1, **long only**. The exit is the script's own
@@ -917,11 +917,11 @@ It is off by default, and every earlier record is unaffected.
   rising market that is what being long does, and baseline and benchmark are
   there to catch it.
 - **Added:** a pct stop of 4%/6% (the script has none) and a long time cap.
-- Files: `ideas/048_tv_chartart_rsi_bb_long_v12.json` plus 6 variants.
-  **Run on BTCUSDT and ETHUSDT: 14 evaluations.** It differs from T1 in
+- Files: `ideas/048_tv_chartart_rsi_bb_long_v12.json` plus 3 variants.
+  **Run on BTCUSDT and ETHUSDT: 8 evaluations.** It differs from T1 in
   direction, so it has its own structure and version budget.
 
-**The round is full: T1–T6 = 84 evaluations (T6 below, added by the owner
+**The round is full: T1–T6 = 48 evaluations (4 timeframes, owner's decision 2026-09-29) (T6 below, added by the owner
 before any run). No port is added after it starts.**
 
 **Pre-registration** (BTC journal **Exp 032** and ETH journal Exp 006, before the
@@ -930,13 +930,12 @@ first run):
    of the two crosses may be rare. Under 150 means expect INCONCLUSIVE; run
    it anyway and do not change the file.
 2. List the deviations above.
-3. The expected `cost_r` per timeframe. In chart mode the 1m stop is 0.26–0.39%
-   of price, so cost alone is ≈ 0.3–0.5 R: say in advance that 1m–5m are
-   expected to lose to cost.
+3. The expected `cost_r` per timeframe (15m 30m 1h 4h; 1m–5m were dropped by
+   the owner on 2026-09-29, before any run, and their files deleted).
 
 ### Port T6 — `049_tv_liquidity_sweep` ("Liquidity Sweep Reversal Strategy", Pine v6, Mozilla Public License 2.0, from the owner's source)
 **In round 1 (owner's decision, 2026-09-29, before any run): round 1 is
-T1–T6, 84 evaluations.** T6 is pre-registered with the others in BTC Exp 032
+T1–T6, 48 evaluations.** T6 is pre-registered with the others in BTC Exp 032
 and ETH Exp 006.
 
 - New trigger `liquidity_sweep` (Level 2, `src/recipes.py`). Pivot highs/lows
@@ -958,7 +957,7 @@ and ETH Exp 006.
   - a time cap is added (the only grid key, 48/192 h at 15m);
   - costs: 0.05% + 0.02% instead of TradingView's 0.04% + 1 tick.
 - Source 15m (the script names no timeframe; it is an intraday session
-  strategy), chart mode, 7 files. **Run on BTCUSDT and ETHUSDT: 14
+  strategy), chart mode, 4 files. **Run on BTCUSDT and ETHUSDT: 8
   evaluations.**
 - In the pre-registration, add for T6: the TRAIN signal count
   per timeframe on each coin, and `cost_r` per timeframe. On 4h only the 12:00

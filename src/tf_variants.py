@@ -4,8 +4,11 @@
     python src/tf_variants.py ideas/020_short_pullback.json --mode time --tfs 5,30
     python src/tf_variants.py ideas/020_short_pullback.json --tfs 60,240
 
-writes ideas/020_short_pullback_tf1.json, _tf3, ... (every native timeframe
-except the source's own, unless --tfs is given). Then evaluate each file.
+writes ideas/020_short_pullback_tf30.json, _tf60, ... (every timeframe in
+DEFAULT_TFS except the source's own, unless --tfs is given). Then evaluate each
+file. DEFAULT_TFS is 15m 30m 1h 4h: the owner dropped 1m-5m on 2026-09-29
+(docs/research/LESSONS.md section 1: cost made them negative on TRAIN and
+VALID). --tfs can still name any native timeframe.
 
 Two ways to move an idea to another timeframe:
 
@@ -52,6 +55,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config as C  # noqa: E402
 import datafeed  # noqa: E402
+
+DEFAULT_TFS = [15, 30, 60, 240]  # owner decision 2026-09-29; 1m-5m only on request
 
 BAR_KEYS = {"n", "fast", "slow", "range_n", "atr_n", "z_n", "lookback",
             "cooldown_bars", "confirm_bars", "n_bars"}
@@ -205,12 +210,12 @@ def sizing_warning(idea: dict, peak: float | None) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("idea")
-    ap.add_argument("--tfs", help="comma list, default: every native timeframe")
+    ap.add_argument("--tfs", help="comma list of native timeframes, default: 15,30,60,240")
     ap.add_argument("--mode", default="chart", choices=["chart", "time"])
     a = ap.parse_args()
     src = Path(a.idea)
     idea = json.loads(src.read_text(encoding="utf-8"))
-    tfs = ([int(x) for x in a.tfs.split(",")] if a.tfs else datafeed.NATIVE_TFS)
+    tfs = ([int(x) for x in a.tfs.split(",")] if a.tfs else DEFAULT_TFS)
     peak = _peak_price()
     if peak is None:
         print("(no 4h data: sizing check skipped - run python src/datafeed.py)")

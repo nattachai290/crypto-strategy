@@ -29,11 +29,10 @@ Only the holdout decides.
 - **Rule:** before writing an idea, estimate `cost_r` ≈ 0.0012–0.0014 / stop
   fraction (a 1% stop costs ≈ 0.13 R; AGENTS.md: a 0.5% stop ≈ 0.28 R). If it is above 0.1 R, do not run
   it. Nothing in that zone has ever reached PASS.
-- Timeframes: 30m, 1h and 4h are positive on TRAIN and VALID. 1m–15m are
-  negative on both, averaging over ideas. **Proposal for the owner, not a
-  rule change:** for multi-day ideas, the 1m–5m variants mostly spend
-  evaluations. AGENTS.md still requires all 7 timeframes until the owner
-  decides.
+- Timeframes: 30m, 1h and 4h are positive on TRAIN and VALID; 1m–15m are
+  negative on both, averaging over ideas. **Owner's decision 2026-09-29: 1m,
+  3m and 5m are dropped.** Ideas run on 15m 30m 1h 4h (AGENTS.md step 4b,
+  `tf_variants.DEFAULT_TFS`).
 
 ## 2. The positive results are a long position in a bull market
 

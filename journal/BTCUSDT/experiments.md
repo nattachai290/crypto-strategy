@@ -3381,3 +3381,21 @@ Strategy", Pine v6, MPL 2.0) to round 1. Round 1 is **T1–T6: 42 idea files,
 script's own exits (swing stop n 2 + 1.2 ATR, TP 1.5 R, break-even 0.75 R) and
 the `hours` filter at UTC 12–15. Its deviations are listed in the idea file and
 in PLAN.md §13. Pre-registration is still **Exp 032** here and Exp 006 on ETH.
+
+---
+
+## Exp 031 addendum 2 — timeframes 15m 30m 1h 4h only
+
+**Date:** 2026-09-29
+**Status:** complete
+
+Owner's decision, before any run of round 1: **1m, 3m and 5m are no longer
+tested.** The evidence is the cross-coin analysis of all 354 evaluations
+(`journal/_multi/meta_lessons.md`, `docs/research/LESSONS.md` §1). Averaged
+over ideas, 1m–15m were negative on TRAIN and VALID, and holds under 4 h were
+never positive (0 of 52). `tf_variants.py` now writes 15m 30m 1h 4h by default
+(`DEFAULT_TFS`). `--tfs 1,3,5` still works when the owner asks. AGENTS.md step
+4b is updated. The 18 unevaluated round-1 files for 1m/3m/5m
+(`ideas/044_*`–`049_*`) are deleted. Round 1 is now **T1–T6: 24 idea files,
+48 evaluations** on BTCUSDT and ETHUSDT. T4's author also named 5m; that chart
+is dropped with the rest. Earlier records on 1m–5m stay as they are.
