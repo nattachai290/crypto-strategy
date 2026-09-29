@@ -2,10 +2,12 @@
 
 **Read this whole file before doing anything.** Then read
 `docs/research/TECHNIQUES.md` (what to try) and `journal/<SYMBOL>/STATUS.md`
-(where the coin stands). Two coins exist: `BTCUSDT` is **closed** (Exp 029:
-208 evaluations, holdout 4/4 FAILED); **`ETHUSDT` is the active coin**. Run
-every command with `SYMBOL=ETHUSDT` (on Windows PowerShell:
-`$env:SYMBOL="ETHUSDT"`), and read `journal/ETHUSDT/STATUS.md`.
+(where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
+holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
+**`SOLUSDT` and `BNBUSDT` are the active coins** (`docs/research/PLAN.md`
+§12). Run every command with `SYMBOL=SOLUSDT` or `SYMBOL=BNBUSDT` (on
+Windows PowerShell: `$env:SYMBOL="SOLUSDT"`), and read that coin's
+`journal/<SYMBOL>/STATUS.md`.
 
 Talk to the owner **in Thai**. Write code, idea files and the journal in English.
 
@@ -33,9 +35,10 @@ configurations found **no proven edge** (see STATUS.md). So:
 ```bash
 pip install -r requirements.txt
 python src/test_engine.py        # must end with: ALL CHECKS PASSED
-SYMBOL=ETHUSDT python src/datafeed.py   # first time ~3 min; must end with: VALIDATION: OK
+SYMBOL=SOLUSDT python src/datafeed.py   # first time ~3 min; must end with: VALIDATION: OK
+SYMBOL=BNBUSDT python src/datafeed.py   # same
 python src/evaluate.py --list    # the building blocks you can combine
-tail -n 60 journal/ETHUSDT/evaluations.md   # what was already tried on ETH
+cat journal/SOLUSDT/STATUS.md journal/BNBUSDT/STATUS.md   # where each active coin stands
 ```
 
 If any of these fails, **stop and fix that first** (see §9). Do not research
@@ -314,6 +317,10 @@ Engine facts to remember:
   leverage).
 - Break-even and trailing stops move using the **previous** bar's close
   (fixed in Exp 011).
+- Funding is charged as **position notional × rate** (qty × price at the open
+  of the bar holding the settlement). Before BTC Exp 030 it was qty × rate,
+  i.e. almost zero; every record made before that has near-zero funding
+  (found in ETH Exp 002, fixed in BTC Exp 030).
 - Short P&L is signed by side (fixed in Exp 015; before that every short was
   inverted). `evaluate.py` runs on a 1,000 USDT research account
   (`C.EVAL_EQUITY`) so every trade can be sized. Each report shows
@@ -322,6 +329,9 @@ Engine facts to remember:
   risk; with a 0.001 BTC step a stop of `s` can be sized only while
   BTC < 10 / (0.001 × s): a 10% stop stops sizing at 100,000, a 20% stop at
   50,000. `tf_variants.py` warns when a variant's stop is past that line.
+- The research account is `C.EVAL_EQUITY` = 1,000 USDT, except where a
+  symbol's spec sets `eval_equity`: **SOLUSDT uses 20,000**, because its step is
+  a whole SOL. Never change it to make something pass.
 
 ---
 

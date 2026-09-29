@@ -438,7 +438,12 @@ def run_backtest(
             fe = f_end_l[i]
             if fi < fe:
                 sgn = 1.0 if pos_side > 0 else -1.0
-                amt = pos_qty * sum(fr_l[fi:fe]) * sgn
+                # Funding is position NOTIONAL x rate. The settlement falls
+                # inside bar i; its open is the latest price known there (and,
+                # on 1h/4h bars, the settlement time itself). Before Exp 030
+                # this was qty x rate with no price: funding was understated
+                # ~40,000x on BTC and ~3,900x on ETH (found in ETH Exp 002).
+                amt = pos_qty * o[i] * sum(fr_l[fi:fe]) * sgn
                 cash -= amt
                 pos_funding -= amt
                 total_funding += amt

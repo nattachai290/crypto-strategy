@@ -77,7 +77,9 @@ def reference_backtest(bars, signals, *, init=100.0, risk=0.01, lev=10.0,
                 if i == pos["i0"] else \
                 funding[(funding["calc_time"] >= t0) & (funding["calc_time"] < t1)]
             for rate in sel["last_funding_rate"].to_numpy():
-                amt = pos["qty"] * float(rate) * (1.0 if pos["side"] > 0 else -1.0)
+                # notional x rate, at the open of the bar holding the
+                # settlement (the spec; this line had the engine's Exp 030 bug)
+                amt = pos["qty"] * o * float(rate) * (1.0 if pos["side"] > 0 else -1.0)
                 cash -= amt
                 pos["funding"] -= amt
         stop_hit = (l <= pos["stop"]) if pos["side"] > 0 else (h >= pos["stop"])
@@ -193,6 +195,35 @@ def test_hand_computed() -> None:
     check("R matches the analytic value", abs(t.r_multiple - r_expect) < 1e-6,
           f"{t.r_multiple:.6f} vs {r_expect:.6f}")
     check("no funding charged", abs(t.funding) < 1e-12)
+
+
+def test_funding_hand_computed() -> None:
+    """Funding is position NOTIONAL x rate: qty x price x rate (ETH Exp 002).
+
+    Until Exp 030 the engine charged qty x rate, missing the price, so funding
+    was understated by the price (~40,000x on BTC). The price here is flat at
+    50,000, so the funding price convention does not matter: one settlement
+    at 0.01% on a 0.005 BTC position is exactly 0.005 * 50,000 * 0.0001 =
+    0.025 USDT, paid by the long and received by the short."""
+    print("\n1b. hand-computed funding (notional x rate)")
+    px, rate = 50000.0, 0.0001
+    idx = pd.date_range("2024-01-01", periods=40, freq="5min", tz="UTC")
+    bars = pd.DataFrame({"open": px, "high": px * 1.0005, "low": px * 0.9995,
+                         "close": px, "volume": 100.0, "trades": 1000.0,
+                         "taker_buy_base": 50.0, "taker_buy_quote": 2.5e6}, index=idx)
+    funding = pd.DataFrame({"calc_time": [idx[10]], "last_funding_rate": [rate]})
+    for side, sign in ((1.0, -1.0), (-1.0, 1.0)):
+        sig = pd.DataFrame(0.0, index=idx, columns=["side", "stop_dist", "tp_dist", "max_hold"])
+        sig.iloc[0] = [side, 200.0, 0.0, 20]
+        res = run_backtest(bars, sig, funding=funding, session_start=0, session_end=24,
+                           flat_at_session_end=False)
+        if len(res.trades) != 1:
+            check(f"funding: one {'long' if side > 0 else 'short'} trade", False, str(len(res.trades)))
+            continue
+        t = res.trades[0]
+        expect = sign * t.qty * px * rate
+        check(f"funding = qty x price x rate, {'long pays' if side > 0 else 'short receives'}",
+              abs(t.funding - expect) < 1e-9, f"{t.funding:.6f} vs {expect:.6f}")
 
 
 # --------------------------------------------------------------------------
@@ -315,6 +346,7 @@ def main() -> None:
     print("BACKTEST ENGINE CORRECTNESS")
     print("=" * 70)
     test_hand_computed()
+    test_funding_hand_computed()
     test_differential()
     test_cost_monotonicity()
     test_no_lookahead()

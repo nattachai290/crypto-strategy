@@ -40,6 +40,32 @@ SYMBOL_SPECS: dict[str, dict] = {
         valid_start="2023-01",
         holdout_start="2025-01",
     ),
+    # Added in BTC Exp 031 (owner-approved). Binance USDT-M published specs.
+    # SOLUSDT trades in WHOLE coins (step 1 SOL) and was listed 2020-09-14,
+    # so its data starts with the first full month and TRAIN is 27 months.
+    "SOLUSDT": dict(
+        # A whole-coin step makes 1,000 USDT unsizable: 1% risk at a 6% stop
+        # is ~166 USDT of notional, less than 1 SOL whenever SOL > 166 (it
+        # peaked near 295). 20,000 USDT keeps >= ~10 SOL per trade, so the
+        # step rounds risk by at most ~10%. R, CI, drawdown % and CAGR do not
+        # depend on the account size; only sizability does.
+        eval_equity=20000.0,
+        qty_step=1.0,
+        min_notional=5.0,
+        data_start="2020-10",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+    ),
+    # BNBUSDT: step 0.01 BNB, listed 2020-02-10, first full month 2020-03.
+    "BNBUSDT": dict(
+        qty_step=0.01,
+        min_notional=5.0,
+        data_start="2020-03",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+    ),
 }
 SYMBOL = os.environ.get("SYMBOL", "BTCUSDT").upper()
 if SYMBOL not in SYMBOL_SPECS:
@@ -91,7 +117,8 @@ INITIAL_EQUITY = 100.0        # USDT - the owner's live account (legacy scripts 
 # and CAGR do not depend on this number as long as trades can be sized.
 # Whether the owner's real account can size a candidate is checked separately
 # (strategy card, PLAN.md section 6).
-EVAL_EQUITY = 1000.0          # USDT, owner-approved 2026-09-29
+EVAL_EQUITY = float(SPEC.get("eval_equity", 1000.0))  # USDT; 1,000 owner-approved 2026-09-29,
+# per-symbol override only where the contract step makes 1,000 unsizable (SOLUSDT)
 RISK_PER_TRADE = 0.01         # 1% of current equity risked per trade
 MAX_LEVERAGE = 10.0           # hard cap on notional / equity
 # The engine is deliberately single-position: one open trade at a time, no

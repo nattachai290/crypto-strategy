@@ -1,5 +1,8 @@
 # ETHUSDT - status and handoff
 
+> **CLOSED** (Exp 003 stop rule). The funding defect is fixed (Exp 004). Research continues on
+> **SOLUSDT and BNBUSDT** (`docs/research/PLAN.md` §12).
+
 _Last updated: 2026-09-29, Exp 003 (Round E1 complete). Rules: `AGENTS.md`.
 Plan: `docs/research/PLAN.md` §11. BTCUSDT is closed (BTC Exp 029)._
 
@@ -75,7 +78,7 @@ Plan: `docs/research/PLAN.md` §11. BTCUSDT is closed (BTC Exp 029)._
 > positive, ETH 3/7, and the ETH positives are the round's smallest at +0.004 to
 > +0.058). Fourth coin-clock to close that family.
 >
-> **8. A defect in the engine, found and NOT fixed (Exp 002).**
+> **8. [FIXED in ETH Exp 004 / BTC Exp 030, owner-approved: 7 of 242 verdicts change, 6 of them down, no new PASS.]** A defect in the engine, found and NOT fixed (Exp 002).
 > `src/backtest.py:441` charges funding as `qty x rate` against a USDT cash
 > balance, missing the mark price, so funding is understated by the price
 > (**3,890x on ETH, ~40,000x on BTC**). Every other money line in that function

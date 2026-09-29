@@ -19,6 +19,8 @@
 >   ใช้กติกาต้นทุนของรอบ 5 **ถ้ารอบ 6 ไม่มีตัวไหนผ่าน holdout ให้หยุดวิจัย BTC**
 > - **BTC ปิดแล้ว** (Exp 029: 208 การทดสอบ, holdout ตก 4/4) → **ย้ายไป ETHUSDT (§11)**: รอบ E1 เอา 7 ไอเดียแนวต้นทุนต่ำ
 >   (ถือหลายวัน, ทั้งสองทาง) ไฟล์เดิมไม่แก้ มารันกับข้อมูล ETH 49 การทดสอบ ถ้าไม่มีตัวไหนผ่าน holdout ของ ETH ให้หยุด ETH ด้วย
+> - **ETH ปิดแล้ว** (ETH Exp 003: 49 การทดสอบ, PASS 0) → **รอบ S1/B1 (§12)**: 7 ไอเดียเดิมรันกับ SOLUSDT และ BNBUSDT เหรียญละ 49
+>   ถ้าเหรียญไหนไม่มีตัวผ่าน holdout ให้หยุดเหรียญนั้น (SOL ใช้บัญชีวิจัย 20,000 USDT เพราะซื้อขายเป็นเหรียญเต็ม)
 >
 > ไอเดียไหน PASS → ทดสอบกับข้อมูลที่ล็อกไว้ (2025–26) ครั้งเดียว → ถ้ายืนยันผ่าน ทำใบสรุปกลยุทธ์
 > และทดลองเทรดกระดาษ (สัญญาณอย่างเดียว ไม่ส่งออเดอร์) อย่างน้อย 3 เดือน ก่อนที่คุณจะตัดสินใจเรื่องเงินจริง
@@ -29,8 +31,8 @@
 rule there applies. `AGENTS.md` says **how** to test an idea; this plan says
 **which ideas, in what order, and what to do with the results**.
 
-Scope: **BTCUSDT (closed after Round 6, Exp 029) and ETHUSDT (§11, active).**
-Do not add other coins without the owner.
+Scope: BTCUSDT (closed, BTC Exp 029), ETHUSDT (closed, ETH Exp 003), and
+**SOLUSDT + BNBUSDT (§12, active)**. Do not add other coins without the owner.
 **Trading only** (owner, 2026-09-29): strategies that earn the funding fee
 (funding carry, basis / cash-and-carry) are out of scope. Funding may be used
 as a signal or paid as a cost, never as the thing the strategy earns.
@@ -587,6 +589,7 @@ Never say "profitable" unless the holdout is CONFIRMED.
 | 5 | ≈ 6 h | 4–5 cost-first ideas × 7 timeframes (`--mode time`); the 1m variants are the slow part |
 | 6 | ≈ 6 h | 5 combination ideas × 7 timeframes (`--mode time`), then stop unless something is CONFIRMED |
 | E1 | ≈ 7 h | ETHUSDT: 7 cost-first families × 7 timeframes (§11), then stop unless something is CONFIRMED |
+| S1 + B1 | ≈ 14 h | SOLUSDT and BNBUSDT: the same 7 families × 7 timeframes each (§12), then stop per coin unless something is CONFIRMED |
 | §6 | 3–4 h to build + ≥ 3 months of paper trading | only after a CONFIRMED |
 
 ---
@@ -673,3 +676,83 @@ reason to hurry.
 ETH, ETH research stops too, and the project's answer stands for both coins.
 A CONFIRMED goes to §6 (strategy card and paper trading, never real money
 first) and must be reported to the owner at once.
+
+---
+
+## 12. SOLUSDT and BNBUSDT (owner-approved after ETH Exp 004)
+
+ETHUSDT is closed. Round E1 found 0 PASS, and 32 of 32 controls were DRIFT.
+The owner asked for two more coins, **to be run by the research agent, not
+by the planner**. Every rule in AGENTS.md and every protocol in §2b–§5 and
+§11 applies unchanged. Run everything with `SYMBOL=SOLUSDT` or
+`SYMBOL=BNBUSDT`.
+
+### Before anything else (session start, both coins)
+1. **Check that the funding fix is on main.** `python src/test_engine.py`
+   must show test **1b** ("hand-computed funding (notional x rate)") and end
+   with ALL CHECKS PASSED.
+   - Without the fix, funding is charged at about 0 (BTC Exp 030).
+   - Stop and tell the owner if 1b is missing.
+2. `SYMBOL=SOLUSDT python src/datafeed.py` and `SYMBOL=BNBUSDT python src/datafeed.py`,
+   each until `VALIDATION: OK`. Nothing has been downloaded for these coins
+   yet. Record the row counts in each coin's Exp 001.
+
+### What is different on these two coins
+| | SOLUSDT | BNBUSDT |
+|---|---|---|
+| contract step / min notional | **1 SOL** / 5 USDT | 0.01 BNB / 5 USDT |
+| data | 2020-10..2026-08 (listed 2020-09-14) | 2020-03..2026-08 (listed 2020-02-10) |
+| TRAIN | **27 months** (2020-10..2022-12) | 34 months |
+| VALID / HOLDOUT | 2023–24 / 2025-01..2026-08 | same |
+| research account (`C.EVAL_EQUITY`) | **20,000 USDT** (per-symbol `eval_equity`) | 1,000 USDT |
+
+- **Why SOL uses 20,000 USDT.** Its step is a whole coin. At 1,000 USDT, 1%
+  risk and a 6% stop, a trade is about 166 USDT, less than one SOL whenever
+  SOL is above 166. That would make almost every result UNSIZABLE. 20,000
+  keeps about 10 SOL or more per trade. R, CI, drawdown % and CAGR do not
+  depend on the account size. Risk per trade is still 1%.
+- **Liquidity.** Costs are the same global 0.05% taker and 0.02% slippage.
+  SOL and BNB perpetuals are liquid, but thinner than BTC/ETH, so real
+  slippage is likely higher. The ×1.5 cost-stress gate is the protection. In
+  the pre-registration, say that any PASS must survive it with room to spare.
+- **Correlation.** Both coins move with BTC. Their VALID periods are not
+  independent of the BTC/ETH work that shaped these ideas. **Each coin's
+  holdout is untouched** and is the only fresh test.
+
+### Rounds S1 and B1: the same seven families, unchanged
+Same as §11 Round E1: the files `034_multiday_reversal*`,
+`035_multiday_momentum*`, `036_keltner_multiday*`,
+`038_opening_range_both_sides*`, `039_breakout_flow_confirm*`,
+`041_impulse_not_crowded*` and `043_squeeze_multiday_break*` (a 4h source
+and six `_tfN_time` variants each), run **unchanged**:
+- 49 evaluations on SOL;
+- 49 evaluations on BNB.
+
+Do not edit the files and do not write new ones in this round.
+
+**Pre-registration**, one per coin (`journal/<SYMBOL>/experiments.md`
+Exp 001), written before its first evaluation:
+1. Signal counts of each 4h source, on that coin's TRAIN only. A family under
+   150 is still run, but say in advance that it may be INCONCLUSIVE.
+2. The sizing check: `tf_variants.py` must print no `!!` line for the 6%
+   stops.
+3. Expected `cost_r` per family, now with real funding: `(0.14% + hold_h/8 ×
+   the coin's TRAIN mean |funding|) / stop`.
+4. **The coin's own ETH/BTC result for each family.** It is context, not a
+   reason: a family that failed its BTC holdout (038, 039) and reads PASS on
+   SOL/BNB is one more reason for suspicion.
+
+**Run:** `SYMBOL=<coin> python src/evaluate.py ideas/<file>` for all 49
+files, then `baseline.py` and `benchmark.py` (same `SYMBOL`) on every WATCH
+and PASS. The benchmark compares with holding that coin.
+
+**Before any `--final`:** write the three checks from Round 6 / §11:
+- the seven clocks, and whether the PASS is the best one of them;
+- the per-year split;
+- the long/short counts;
+- plus the family's result on BTC and ETH.
+
+**Stop rule, agreed in advance, per coin:** if a coin's round ends with no
+holdout CONFIRMED, research on that coin stops. If both stop, the project's
+answer stands for all four coins. **Do not add a fifth coin**; that decision
+belongs to the owner. A CONFIRMED goes to §6 and to the owner at once.

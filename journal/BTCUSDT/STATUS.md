@@ -1,5 +1,7 @@
 # BTCUSDT — status and handoff
 
+> **Exp 030: engine funding fix** (notional × rate; before, funding was ~0). Re-checked on every record: 7 of 242 verdicts change, 6 downward, no new PASS (022 PASS→WATCH).
+>
 > **CLOSED (Exp 029).** The Round 6 stop rule fired: 208 evaluations, holdout
 > 4/4 FAILED, 0 CONFIRMED. Do not add rounds on BTCUSDT. Research continues on
 > **ETHUSDT** (`journal/ETHUSDT/STATUS.md`, `docs/research/PLAN.md` §11).

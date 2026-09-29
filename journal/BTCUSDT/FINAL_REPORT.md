@@ -394,3 +394,5 @@ _Corrections (Exp 029, 2026-09-29): Round 6's "the edge was real" and "the moves
 are real" are withdrawn. 039's holdout (+0.013 R, CI [−0.158, +0.204]) is no
 evidence of an edge, and random entries in the same filters did better. **BTCUSDT
 research is closed by the Round 6 stop rule.**_
+
+_Engine note (Exp 030, 2026-09-29): funding was charged at ~0 (qty × rate, no price) in every evaluation above. Fixed; a re-check of all 242 BTC+ETH configs moves VALID mean R by a median of −0.002 R and changes 7 verdicts, 6 downward (022 PASS→WATCH), with no new PASS. No conclusion changes._
