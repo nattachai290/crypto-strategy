@@ -1231,3 +1231,95 @@ was not applied.
 `KEEP` the engine fixes and the 1,000 USDT research account. The research
 direction flips: long side and both-side structures, session effects, and no
 more short-only breakout variants. `PLAN.md` Round 1 is revised accordingly.
+
+---
+
+## Exp 016 — Round 1 pre-registration (long side and both-sided structures)
+
+**Date:** 2026-09-29
+**Status:** pre-registration, written BEFORE anything was run. Round 1 of
+`docs/research/PLAN.md` §4 as revised after Exp 015. Zero evaluations so far
+in this entry; `results/BTCUSDT/evaluations.csv` is untouched by it.
+
+Engine state: `test_engine.py` -> ALL CHECKS PASSED, including the new §9
+(long/short symmetry on mirrored data, hand-computed short, `size_skips`).
+Independently re-checked outside the test suite: one series falling 100 -> 99
+with zero costs gives long R −0.0339 and short R +0.0339, exact negatives.
+`datafeed.py` -> VALIDATION: OK, all 7 native timeframes, 80/80 months.
+
+### R1.0 — analysis of the three leads (no new evaluation)
+
+`pd.read_csv("results/BTCUSDT/eval_trades/<id>_valid.csv.gz")`, VALID 2023-24.
+
+**005 session-open range break (cdde91ae48, n=390, mean R +0.0674)**
+
+| leg | n | gross_r | cost_r | mean R | 2023 | 2024 |
+|---|---|---|---|---|---|---|
+| **long** | 212 | **+0.3088** | 0.1813 | **+0.1275** | +0.154 (88) | +0.109 (124) |
+| short | 178 | +0.1535 | 0.1577 | −0.0042 | −0.268 (79) | +0.206 (99) |
+
+1. **005's edge is entirely the long leg, and it is stable**: positive in both
+   validation years with a gross edge of +0.31 R. The short leg is a coin flip
+   that swings from −0.27 to +0.21 between years. This is the single most useful
+   finding of the round and it is what R1.1 is aimed at.
+2. **The long leg still cannot PASS as it stands.** sd of R is 1.519 (a 2.5R
+   target makes the distribution wide), so at n=212 PASS needs mean R > 0.2045.
+   It has 0.1275. The obvious waste is `cost_r` 0.1813: a 2.5x ATR stop on 15m
+   is under 1% of price and was traded taker. A `pct` stop with a post-only
+   entry targets exactly this, and the plan already requires both.
+3. **Session hour: unstable at these counts.** Long mean R by hour is +0.365 (7h,
+   n=28), +0.177 (8h, n=25), +0.092 (13h, n=58), +0.044 (14h, n=75), +0.436
+   (15h, n=16). Shorts are the mirror image (−0.386 at 7h, −0.359 at 15h). No
+   single hour is reliably better, and 15h is not even in the idea's hour list,
+   so hours spill over into the next bar. **Conclusion: do not tune the hours.**
+   Keep 7,8,13,14 as the plan specifies and let the grid spend its budget on
+   the stop instead.
+4. **Weekday: do not build a filter on this.** Mon +0.425 (n=67) against Sun
+   −0.426 (n=60) looks dramatic and is almost certainly sampling noise on 60-70
+   trades, on a filter that would halve the sample. Explicitly out of scope.
+
+**007 long breakout (93ef5c196c, n=418, mean R +0.0510)**
+
+5. **The long breakout is NOT just "long in a bull market."** R by BTC's 30-day
+   trend at entry: <−15% −0.026 (n=5), −15..−5% +0.101 (61), −5..+5% +0.056
+   (115), +5..+15% +0.053 (103), >+15% +0.025 (134); `corr(R, 30d trend) =
+   +0.011`. Flat across every regime, which is the robustness property a real
+   edge should have, and it is the strongest argument for testing this
+   structure properly (R1.2). Its caveat: TRAIN mean R was −0.031, so it may
+   still die on the train gate, which is the plan's kill condition.
+
+**010 short breakout, the losing leg (70fb497bcf, n=339, mean R −0.1200)**
+
+6. **The breakdowns fail, and the size of the failure is measured.** Price rose
+   against the short by ≥0.25R in 75% of trades, ≥0.5R in 47%, ≥1.0R in 18%.
+   Mean adverse excursion +0.57 R, median 10 bars (2.5 h) to reach +0.5R. The
+   losing shorts grossed **−0.4626 R** against `cost_r` 0.0645 — they were
+   losing before costs, so this is not a cost problem.
+7. Caveat on an earlier version of this analysis: "100% reclaimed within 1 bar"
+   is nearly tautological, because for a short filled at a bar's open that
+   bar's high usually exceeds the open. The honest measure is the excursion
+   distribution above, which is why it is quoted instead.
+
+### The ideas, and what would kill each
+
+| # | file | hypothesis (one line) | kill if |
+|---|---|---|---|
+| R1.1 | `017_session_open_long.json` | The London/NY open concentrates the day's flow, so a break of the pre-session range taken **long only** is filled by real demand; the long leg of 005 grossed +0.31 R and a `pct` stop with post-only entry cuts its 0.18 R of cost | train mean R ≤ 0 |
+| R1.2 | `018_trend_breakout_long.json` | A breakout with the higher-timeframe trend, **long only**, keeps its edge in flat and bear markets too (R1.0 finding 5: R is uncorrelated with BTC's 30-day trend) | train mean R ≤ 0 |
+| R1.3 | `019_pullback_uptrend_long.json` | In an uptrend the counterparty of a long entry at the fast EMA is the seller who is late to a pullback; the dip is where size is available rather than where the breakout crowd pays up | train mean R ≤ 0 |
+| R1.4 | `020_failed_break_fade.json` | A break of the n-bar low that fails (price closes back inside within k bars) is a **failed breakdown**: the breakout sellers are trapped and must cover, so the fade of the failure is the mirror trade of idea 010's losing leg — which gave back 0.57 R on average in 2.5 h (R1.0 finding 6). Needs a new Level 2 trigger `failed_break(n, k)` | fewer than 300 train trades, or train mean R ≤ 0 |
+| R1.5 | variants of `006_long_only_trend.json` | 006's long-only EMA cross made +0.136 on only 52 VALID trades at 30m; a finer clock gives the sample size it needs, and neighbouring timeframes agreeing is the real test | 006's structure is negative on TRAIN at every timeframe |
+| R1.6 | variants of `005_session_open_break.json` | 005's long leg is the lead; the same session break on other charts shows whether the effect belongs to *time* (the session) or to *bars* (the 12h range) | 005's long leg is negative on TRAIN at every timeframe |
+
+Deliberately **not** in this round, and why:
+- Any short-only breakout or trend idea: Exp 015 showed all 7 lose significantly.
+- Mean reversion, squeeze→expansion, funding crowding: answered (016, 013, 004, 014).
+- A weekday or session-hour filter on 005: R1.0 findings 3 and 4 say the
+  apparent pattern is sampling noise and a filter would halve the sample.
+- `taker_flow` / `funding_not_crowded` as confirmation: proven inert (012, 014).
+
+Every idea uses a `pct` stop and a post-only entry, and is written for ≥ 300
+VALID trades where the structure allows it (§2a). Every idea is then run on all
+seven native timeframes with `src/tf_variants.py` (§2b): 4 new ideas x 7 = 28
+evaluations, plus 6 + 6 for R1.5 and R1.6 = **40 evaluations in this round**.
+Running count for the project goes to 58. The holdout remains sealed.
