@@ -307,6 +307,109 @@ def t_month_turn_fade(b, f, before=2, after=2, lookback=6):
     return _side(np.where(win, dn, 0.0), np.where(win, up, 0.0))
 
 
+# --------------------------------------------------------------------------
+# TradingView port T2 (PLAN.md section 13), from the Pine source the owner
+# supplied: "Smart Money Concepts [LuxAlgo]" (Pine v5), (c) LuxAlgo, licensed
+# CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/).
+# This translation of its structure logic is a derivative under the same
+# licence: attribution LuxAlgo, non-commercial use only. Only the market
+# structure part is ported (leg / getCurrentStructure / displayStructure);
+# order blocks, fair value gaps (which use lookahead_on), equal highs/lows and
+# MTF levels are drawing features and are not used as signals.
+# --------------------------------------------------------------------------
+def _smc_leg(h: np.ndarray, l: np.ndarray, size: int) -> np.ndarray:
+    """Pine leg(size): 0 after high[size] > highest(size) (bearish leg),
+    1 after low[size] < lowest(size) (bullish leg), else unchanged."""
+    s = int(size)
+    hi = pd.Series(h).rolling(s, min_periods=s).max().to_numpy()
+    lo = pd.Series(l).rolling(s, min_periods=s).min().to_numpy()
+    hs = np.r_[np.full(s, np.nan), h[:-s]]
+    ls = np.r_[np.full(s, np.nan), l[:-s]]
+    new_high = hs > hi
+    new_low = (ls < lo) & ~new_high
+    leg = np.zeros(len(h))
+    cur = 0.0
+    for i in range(len(h)):
+        if new_high[i]:
+            cur = 0.0
+        elif new_low[i]:
+            cur = 1.0
+        leg[i] = cur
+    return leg
+
+
+def _pine_ne(a: float, b: float) -> bool:
+    """Pine `a != b`: false when either side is na (Python's nan != x is True)."""
+    return bool(np.isfinite(a) and np.isfinite(b) and a != b)
+
+
+def smc_structure(b: pd.DataFrame, swing_len: int = 50, internal_len: int = 5) -> dict:
+    """LuxAlgo SMC market structure, bar by bar in the script's order:
+    getCurrentStructure(swing), getCurrentStructure(internal),
+    displayStructure(internal), displayStructure(swing).
+    Returns boolean arrays '<swing|internal>_<bull|bear>_<bos|choch>'.
+    Defaults are the script's: swing length 50, internal size 5, confluence
+    filter off. A pivot is only known `size` bars after it, as in Pine."""
+    h = b["high"].to_numpy(float)
+    l = b["low"].to_numpy(float)
+    c = b["close"].to_numpy(float)
+    n = len(c)
+    legs = {"swing": _smc_leg(h, l, swing_len), "internal": _smc_leg(h, l, internal_len)}
+    sizes = {"swing": int(swing_len), "internal": int(internal_len)}
+    lvl = {(k, s): np.nan for k in ("swing", "internal") for s in ("high", "low")}
+    crossed = {key: False for key in lvl}
+    prev_lvl = dict(lvl)
+    bias = {"swing": 0, "internal": 0}
+    out = {f"{k}_{d}_{e}": np.zeros(n, bool) for k in ("swing", "internal")
+           for d in ("bull", "bear") for e in ("bos", "choch")}
+    for i in range(n):
+        # getCurrentStructure: a leg change confirms a pivot `size` bars back
+        for k in ("swing", "internal"):
+            if i >= 1:
+                ch = legs[k][i] - legs[k][i - 1]
+                s = sizes[k]
+                if ch == 1 and i - s >= 0:      # start of bullish leg -> pivot low
+                    lvl[(k, "low")] = l[i - s]
+                    crossed[(k, "low")] = False
+                elif ch == -1 and i - s >= 0:   # start of bearish leg -> pivot high
+                    lvl[(k, "high")] = h[i - s]
+                    crossed[(k, "high")] = False
+        # displayStructure: internal first, then swing
+        for k in ("internal", "swing"):
+            hk, lk = (k, "high"), (k, "low")
+            up_x = (i >= 1 and c[i] > lvl[hk] and c[i - 1] <= prev_lvl[hk])
+            extra_up = True if k == "swing" else _pine_ne(lvl[hk], lvl[("swing", "high")])
+            if up_x and not crossed[hk] and extra_up:
+                ev = "choch" if bias[k] == -1 else "bos"
+                out[f"{k}_bull_{ev}"][i] = True
+                crossed[hk] = True
+                bias[k] = 1
+            dn_x = (i >= 1 and c[i] < lvl[lk] and c[i - 1] >= prev_lvl[lk])
+            extra_dn = True if k == "swing" else _pine_ne(lvl[lk], lvl[("swing", "low")])
+            if dn_x and not crossed[lk] and extra_dn:
+                ev = "choch" if bias[k] == 1 else "bos"
+                out[f"{k}_bear_{ev}"][i] = True
+                crossed[lk] = True
+                bias[k] = -1
+        prev_lvl = dict(lvl)
+    return out
+
+
+def t_smc_structure(b, f, structure="swing", event="choch", swing_len=50, internal_len=5):
+    """LuxAlgo Smart Money Concepts (TradingView, CC BY-NC-SA 4.0): a
+    structure break from the script's own alert conditions. Long on a bullish
+    `event` (bos / choch / any) of the `structure` (swing / internal), short on
+    a bearish one. The script is an indicator; its alerts are the entries."""
+    s = smc_structure(b, swing_len, internal_len)
+    ev = ("bos", "choch") if event == "any" else (str(event),)
+    up = np.zeros(len(b), bool)
+    dn = np.zeros(len(b), bool)
+    for e in ev:
+        up |= s[f"{structure}_bull_{e}"]
+        dn |= s[f"{structure}_bear_{e}"]
+    return _side(up, dn)
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -327,6 +430,7 @@ TRIGGERS = {
     "keltner_break": t_keltner_break,
     "flush": t_flush,
     "month_turn_fade": t_month_turn_fade,
+    "smc_structure": t_smc_structure,
 }
 
 

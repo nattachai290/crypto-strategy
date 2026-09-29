@@ -490,6 +490,23 @@ def test_recipe_blocks_causal() -> None:
     cal = pd.DataFrame({"close": np.arange(len(idx), 0, -1, dtype=float)}, index=idx)
     mt = np.asarray(RC.t_month_turn_fade(cal, None, before=2, after=0, lookback=1))
     fired = [d.day for d, s in zip(idx, mt) if s != 0]
+    # LuxAlgo SMC port (PLAN.md section 13), hand-traced through the Pine logic
+    # with pivot size 2 (leg flips confirm a pivot `size` bars back):
+    #   bar 2: leg 0->1, pivot low = low[2 bars ago] = 9 (bar 0)
+    #   bar 3: leg 1->0, pivot high = 12 (bar 1); close 8.5 crosses under 9,
+    #          no trend yet -> bearish BOS, trend bearish
+    #   bar 6: leg 0->1, pivot low = 7 (bar 4)
+    #   bar 7: close 12.5 crosses over 12 in a bearish trend -> bullish CHoCH
+    #   bar 9: leg 1->0, pivot high = 13 (bar 7); close 6.5 crosses under 7 in a
+    #          bullish trend -> bearish CHoCH
+    #   bar 11: close 13.5 crosses over 13 in a bearish trend -> bullish CHoCH
+    hlc = [(10, 9, 9.5), (12, 10, 11), (11, 10, 10.5), (10, 8, 8.5), (9, 7, 8), (10, 8, 9),
+           (11, 9, 10.5), (13, 11, 12.5), (12, 10, 10.5), (11, 6, 6.5), (9, 5, 8), (14, 8, 13.5)]
+    smc_bars = pd.DataFrame(hlc, columns=["high", "low", "close"], dtype=float)
+    ev = RC.smc_structure(smc_bars, swing_len=2, internal_len=2)
+    got = {k: np.flatnonzero(v).tolist() for k, v in ev.items() if k.startswith("swing") and v.any()}
+    check("smc_structure: BOS / CHoCH sequence matches a hand trace of the Pine logic",
+          got == {"swing_bear_bos": [3], "swing_bull_choch": [7, 11], "swing_bear_choch": [9]}, str(got))
     check("month_turn_fade uses the real month length (Feb 2024: 28th, 29th, 1st)",
           fired == [28, 29, 1], str(fired))
     sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],

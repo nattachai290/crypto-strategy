@@ -825,6 +825,37 @@ writes them.
   016, Exp 024). It is run anyway because the owner asked for this script.
   Record it as a port, not as a retry.
 
+### Port T2 — `045_tv_luxalgo_smc` (Smart Money Concepts [LuxAlgo], Pine v5, from the owner's source)
+- **Licence: CC BY-NC-SA 4.0**, © LuxAlgo. The port (`smc_structure` in
+  `src/recipes.py`) is a derivative under the same licence: attribution is in
+  the code, and use is non-commercial only.
+- **Ported:** the market-structure engine, line by line:
+  - `leg(size)`;
+  - `getCurrentStructure` (a pivot is confirmed `size` bars late);
+  - `displayStructure`: a close crosses the last pivot not yet crossed; CHoCH
+    if against the structure trend, BOS if with it. Internal breaks are
+    ignored when the internal level equals the swing level; the confluence
+    filter is off, as in the defaults.
+- Defaults are kept: swing length 50, internal size 5. The script's
+  evaluation order is kept: swing, then internal pivots; internal, then swing
+  breaks. Pine's `na != x` (false) is reproduced.
+- **Not ported (not signals):** order blocks, fair value gaps (they use
+  `request.security(..., lookahead_on)`), equal highs/lows, MTF levels,
+  premium/discount zones.
+- **It is an indicator.** The entries are **its own alert conditions**: long
+  on a bullish BOS/CHoCH, short on a bearish one. Which alert
+  (`structure` swing/internal × `event` CHoCH/BOS) is a grid key chosen on
+  TRAIN, together with the invented exits (stop 4%/6%, hold 120/480 h at 4h).
+  That makes 16 combos.
+- Test 7: causal, correct output shape, and an 11-bar hand trace of the Pine
+  logic (bearish BOS → bullish CHoCH → bearish CHoCH → bullish CHoCH).
+- Files: `ideas/045_tv_luxalgo_smc.json` plus 6 chart-mode variants.
+  **Run on BTCUSDT and ETHUSDT: 14 evaluations.** The 1m file is the slow one
+  (the structure loop is about 25 s per combo on 3.5M bars, 16 combos).
+
+**Round so far:** T1 + T2 = 28 evaluations. The owner may add up to 3 more
+scripts before the round starts; after it starts, no port is added.
+
 **Pre-registration** (BTC journal Exp 031 and ETH journal Exp 006, before the
 first run):
 1. TRAIN signal counts of the 4h source on each coin. The same-bar coincidence

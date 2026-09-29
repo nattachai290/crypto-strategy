@@ -1,0 +1,58 @@
+{
+  "name": "045_tv_luxalgo_smc_tf1",
+  "hypothesis": "TradingView port T2 (PLAN.md section 13) from the Pine v5 source the owner supplied: 'Smart Money Concepts [LuxAlgo]' (c) LuxAlgo, CC BY-NC-SA 4.0, used non-commercially with attribution. The script's claim (market-structure / smart-money reading): a close through the last confirmed swing high or low is a break of structure; a break against the current structure trend is a change of character (CHoCH), i.e. the trend has turned, and a break with it (BOS) is continuation. Counterparty: traders defending the old structure and the stops resting beyond the swing point. Ported exactly: leg(size), getCurrentStructure (pivot confirmed `size` bars late), displayStructure with the script's defaults (swing length 50, internal size 5, confluence filter off, internal breaks ignored when the internal level equals the swing level). The script is an INDICATOR, so the entries are its own alert conditions: long on a bullish BOS/CHoCH, short on a bearish one. Grid: which alert (structure swing/internal x event CHoCH/BOS) - a choice among the script's own signals made on TRAIN - and the exits. DEVIATIONS: the script has no exit, so a pct stop (4%/6%) and a time stop (120/480 h at 4h) are added; order blocks, fair value gaps (which use request.security with lookahead_on), equal highs/lows and MTF levels are drawing features and are not ported. Costs are real (0.05% taker + 0.02% slippage + funding). Source chart 4h; variants in chart mode. [Timeframe variant of 045_tv_luxalgo_smc, 240m -> 1m, mode chart: same bar counts and ATR multiples, hold x0.00416667, pct stop x0.065.]",
+  "strategy": "recipe",
+  "tf": 1,
+  "params": {
+    "triggers": [
+      {
+        "type": "smc_structure",
+        "structure": "swing",
+        "event": "choch",
+        "swing_len": 50,
+        "internal_len": 5
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0032,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 1.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.structure": [
+      "swing",
+      "internal"
+    ],
+    "triggers.0.event": [
+      "choch",
+      "bos"
+    ],
+    "stop.pct": [
+      0.0026,
+      0.0039
+    ],
+    "max_hold_hours": [
+      0.5,
+      2.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "045_tv_luxalgo_smc",
+  "variant_mode": "chart"
+}
