@@ -2824,3 +2824,132 @@ on squeeze → expansion (≤ 12 h holds) are lifted for this round only, becaus
 neither was ever tested both-sided at a multi-day hold.
 
 Next journal entry: **Exp 028** (Round 6 pre-registration).
+
+---
+
+## Exp 028 - Round 6 pre-registration: five untested combinations, cost first
+
+**Date:** 2026-09-29
+**Status:** pre-registration, written BEFORE any Round 6 evaluation. Zero
+evaluations in this entry. Project count on entry: **173**. HOLDOUT sealed.
+
+### Why Round 6 exists
+
+Rounds 1-5 tested one idea family at a time. Several blocks were barely used or
+never used together at all: `taker_flow`, `funding_not_crowded`, `di_side`,
+`squeeze` (only with a trend filter at 15m), `supertrend_flip`, `momentum`, and
+`trigger_mode: "all"` (used once). Round 6 combines 2-3 blocks per idea, each for
+one stated reason, and keeps Round 5's cost design because it is the only one
+where cost does not decide the answer.
+
+### Hard limits, written into this pre-registration
+
+- **Exactly the five ideas below**, x 7 timeframes = **35 evaluations**, plus
+  `_v2` / `_v3` only for a WATCH and only with a diagnosis (AGENTS.md step 8).
+  No sixth idea, and **no ensemble or vote of the earlier WATCHes (035, 036,
+  038)**: they were picked by their VALID results, which is the selection that
+  made 038 fail its holdout.
+- **Every motivation below comes from the mechanism or from a TRAIN count, never
+  from a VALID number.** Exp 025 item 4 recorded that R5.6 was chosen using
+  029@4h's VALID `gross_r`; that selection bias is what the holdout punished.
+- **Stop rule, agreed in advance: if Round 6 ends with no holdout `CONFIRMED`,
+  research on BTCUSDT stops** and the next step is the owner's.
+- Bans lifted for this round only: `taker_flow`, `funding_not_crowded` (banned
+  after short-only 15m breakouts, 012/014) and squeeze -> expansion (banned at
+  15m with <= 12 h holds). None of those was ever tested both-sided at a
+  multi-day hold. Every other ban stands, including the whole funding-carry
+  family, which Exp 026 put out of scope as a *strategy*; funding here is used
+  as a **signal** and is always paid or received as a cost by the engine.
+
+### Design constraints (Round 5's, unchanged) and the cost check
+
+4h source files, variants with `--mode time`, `pct` stop 4-7%, hold 48-120 h,
+`direction: "both"`, no `htf_trend` / `trend_ema` / `price_vs_ema`, and
+expected cost `(0.14% + hold_h/8 x 0.01%) / stop` <= 0.05 R written out:
+
+| stop | 48h | 72h | 96h | 120h |
+|---|---|---|---|---|
+| 5% | 0.0400 | 0.0460 | 0.0520 **!** | 0.0580 **!** |
+| 6% | 0.0333 | 0.0383 | 0.0433 | 0.0483 |
+| 7% | 0.0286 | 0.0329 | 0.0371 | 0.0414 |
+
+**One deviation from the plan, recorded before running:** the plan's R6.4 grid
+is `stop [0.05, 0.06] x hold [48, 96]`, and its cell (0.05, 96) is 0.0520 R,
+above the plan's own 0.05 R limit. The cost limit wins, so R6.4's grid is
+`stop [0.06, 0.07] x hold [48, 96]`.
+
+### TRAIN signal counts, re-counted here, and one design change
+
+Counted with `recipe()` on 4h bars, TRAIN 2020-01-01..2022-12-31 only (6,576
+bars), `direction: both`. **The plan's counts reproduce exactly with
+`cooldown_bars: 0`; with a cooldown of 6 bars four grid values fall under 150.**
+Round 5's `cooldown_bars: 6` was my own addition and not the plan's, and with a
+48-120 h hold the engine's one-position-at-a-time rule already prevents
+re-entering a trade that is still open, so a bar cooldown adds nothing here.
+**Round 6 therefore uses `cooldown_bars: 0`** and the plan's counts stand:
+
+| idea | grid value | long / short | total | action |
+|---|---|---|---|---|
+| R6.1 | donchian n20, vol k1.2 | 121 / 132 | 253 | keep |
+| R6.1 | donchian n20, vol k1.5 | 89 / 100 | 189 | keep |
+| R6.1 | donchian n30, vol k1.2 | 103 / 103 | 206 | keep |
+| R6.1 | donchian n30, vol k1.5 | 78 / 80 | 158 | keep |
+| R6.2 | flush fade k1.5 | 214 / 270 | 484 | keep |
+| R6.2 | flush fade k2.0 | 122 / 178 | 300 | keep |
+| R6.3 | momentum atr_k1.5, funding 0.0002 | 85 / 109 | 194 | keep |
+| R6.3 | momentum atr_k1.5, funding 0.0003 | 88 / 110 | 198 | keep |
+| R6.3 | momentum atr_k2.0, funding 0.0002 | 66 / 94 | 160 | keep |
+| R6.3 | momentum atr_k2.0, funding 0.0003 | 70 / 94 | 164 | keep |
+| R6.4 | ema+supertrend+di, confirm 18 | 72 / 80 | 152 | keep (exits-only grid) |
+| R6.5 | donchian n20, squeeze q0.3 | 104 / 84 | 188 | keep |
+| R6.5 | donchian n20, squeeze q0.2 | 93 / 68 | 161 | keep |
+
+No value is dropped: all thirteen clear 150, and all are reasonably balanced
+long/short, which matters more than usual this round because Round 5's beta
+test (below) is only meaningful if both sides really trade.
+
+**R6.5 drops `volume_spike`**, as the plan already decided: with it, n20 gives
+only 103-122 signals. **R6.4's grid is exits only**, as the plan decided:
+confirm 6 and 12 give 132 and 145, under 150.
+
+### The five ideas, the mechanism, and what kills each
+
+Every grid is at most 4 combos. Exits are fixed at a 6% `pct` stop, no TP, ATR
+trail armed at 2R trailing 3 ATR, and post-only entry at 0.1 ATR unless the
+grid varies them.
+
+| # | file | what is combined, and who is on the other side | grid | kill if |
+|---|---|---|---|---|
+| R6.1 | `039_breakout_flow_confirm.json` | A breakout that aggressive buyers keep hitting, on above-average volume, is new positioning and it continues; a breakout without that flow is a stop run that fills the breakout traders and reverses. The other side is resting liquidity and short-term faders. `donchian_break` + `taker_flow` + `volume_spike`. The two filters are one idea, not two: flow without participation is one trader, participation without flow is a market-wide move nobody is fighting | n [20, 30] x vol k [1.2, 1.5] | TRAIN gross_r <= 0 |
+| R6.2 | `040_stop_hunt_trap.json` | Price pierces an n-bar extreme and closes back inside, and a liquidation-sized bar follows within a few bars. Forced sellers at the extreme have been cleared, and whoever took the other side of the cascade holds the better price. `failed_break` + `flush` in fade mode, `trigger_mode: "all"`. Both blocks exist and were only ever tested apart - and `flush` was tested only as a standalone trigger, where it had no gross edge in either direction | flush k [1.5, 2.0] x hold [48, 96] | TRAIN gross_r <= 0 |
+| R6.3 | `041_impulse_not_crowded.json` | Follow a strong multi-bar move, but only while funding shows the crowd is **not** already on that side. Momentum fails when it is crowded, because the late side is who gets squeezed. `momentum` + `funding_not_crowded` + `volume_spike`. Funding is a **signal** here, never a return (Exp 026) | atr_k [1.5, 2.0] x funding thresh [0.0002, 0.0003] | TRAIN gross_r <= 0, or all of it is one side |
+| R6.4 | `042_trend_start_three_ways.json` | An EMA cross and a Supertrend flip in the same direction within 3 days, with +DI/-DI agreeing. Each indicator's false starts are mostly its own noise and do not coincide, so agreement is worth something. Both directions, which Rounds 1-2 never tried for these blocks. `ema_cross(10,30)` + `supertrend_flip(10, 2.0)`, `trigger_mode: "all"`, `confirm_bars` 18, filter `di_side(14)` | stop [0.06, 0.07] x hold [48, 96] | TRAIN gross_r <= 0 |
+| R6.5 | `043_squeeze_multiday_break.json` | A Donchian break straight out of a Bollinger squeeze. Volatility clusters, so the break of a quiet range starts a larger move. The earlier test had a trend filter and 12 h holds; this has neither. `donchian_break(20)` + `squeeze(20, q, 180)` | q [0.2, 0.3] x hold [48, 96] | TRAIN gross_r <= 0 |
+
+### Judge, and the check before any `--final`
+
+PASS + `baseline.py` SKILL (TRAIN and VALID), or ALPHA, then `--final`. With
+both-sided filter-light ideas SKILL is meaningful here: mode B, random entries
+inside the same filters, is the real test of whether the **combination** adds
+anything over its own filters. R5.1's 9 WATCHes were all DRIFT, so DRIFT is the
+expected outcome and must be reported as such.
+
+`benchmark.py` on every WATCH/PASS, with **beta near 0** as the round's own test
+that an idea is not a disguised long. Round 5 produced the project's first two
+ALPHA results, both with beta ~0, and the PASS among them still failed its
+holdout, so alpha alone is not enough - state the per-year split every time.
+
+Before any `--final` (PLAN Round 6, and Exp 025 item 3):
+1. write the seven timeframe results in the journal;
+2. say plainly that in `--mode time` every timeframe is the same trade on a
+   finer clock, so a PASS on one clock while the others are negative is most
+   likely luck - 038 was exactly that (4h +0.175, 1h -0.022, 15m -0.042);
+3. one-line check from the trade file that the block did what the idea says:
+   the long/short counts, and that the filters actually changed the trade list
+   (a DUPLICATE means they did not).
+
+### Use of the results
+
+A CONFIRMED goes to `PLAN.md` §6 (strategy card and paper trading, never real
+money first). Otherwise add a "Round 6" section to `FINAL_REPORT.md` and stop,
+per the stop rule agreed above.
