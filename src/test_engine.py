@@ -616,6 +616,36 @@ def test_recipe_blocks_causal() -> None:
     check("super_scalper matches a line-by-line loop of the Pine script",
           np.array_equal(got_s, np.array(exp_s, float)) and (got_s != 0).sum() > 5,
           f"{int((got_s != 0).sum())} signals, {int((got_s != np.array(exp_s)).sum())} mismatches")
+    # liquidity_sweep (T6), hand trace, pivot_len 2. Flat bars (O=C=100, H 101,
+    # L 99, vol 100) give ties, so no pivots, except: bar 22 low 97 -> pivot
+    # low confirmed on bar 24 (bars 20,21,23,24 all 99), level 97 born bar 22.
+    # Bar 26 sweeps it: low 96 < 97, close 99.8 > 97, body 0.2, lower wick
+    # 3.8 >= 1.5 x 0.2, volume 300 > 1.3 x SMA20 (=110). Its mid is
+    # (96 + 99.8) / 2 = 97.9 and bar 27 closes 100 > 97.9 -> long on bar 27.
+    def _sweep_bars(vol26=300.0):
+        k = 30
+        op = np.full(k, 100.0); cl = op.copy(); hi = np.full(k, 101.0); lo = np.full(k, 99.0)
+        vo = np.full(k, 100.0)
+        lo[22] = 97.0
+        cl[26], hi[26], lo[26], vo[26] = 99.8, 100.1, 96.0, vol26
+        return pd.DataFrame({"open": op, "high": hi, "low": lo, "close": cl, "volume": vo},
+                            index=pd.date_range("2024-01-01", periods=k, freq="15min"))
+    sb = _sweep_bars()
+    got = np.asarray(RC.t_liquidity_sweep(sb, None, pivot_len=2))
+    mir = sb.copy()
+    mir["open"], mir["close"] = 200 - sb["open"], 200 - sb["close"]
+    mir["high"], mir["low"] = 200 - sb["low"], 200 - sb["high"]
+    got_m = np.asarray(RC.t_liquidity_sweep(mir, None, pivot_len=2))
+    quiet = np.asarray(RC.t_liquidity_sweep(_sweep_bars(vol26=120.0), None, pivot_len=2))
+    aged = np.asarray(RC.t_liquidity_sweep(sb, None, pivot_len=2, max_age=2))
+    swept_age4 = np.asarray(RC.t_liquidity_sweep(sb, None, pivot_len=2, max_age=3))
+    check("liquidity_sweep hand trace: long on bar 27 only; mirrored -> short; "
+          "no signal without the volume spike or after the level ages out",
+          list(np.flatnonzero(got)) == [27] and got[27] == 1.0
+          and list(np.flatnonzero(got_m)) == [27] and got_m[27] == -1.0
+          and not quiet.any() and not aged.any() and swept_age4[27] == 1.0,
+          f"long {list(np.flatnonzero(got))} short {list(np.flatnonzero(got_m))} "
+          f"quiet {int(quiet.any())} aged {int(aged.any())}")
     # exit_on="opposite" (engine signal exit): exit columns = the raw trigger's
     # opposite events; exit_on="none" leaves the signal frame exactly as before
     kw = dict(triggers=[{"type": "donchian_break", "n": 20}], filters=[{"type": "trend_ema", "fast": 20, "slow": 50}],

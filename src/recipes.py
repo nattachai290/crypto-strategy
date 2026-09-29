@@ -458,6 +458,86 @@ def t_super_scalper(b, f, atr_len=14, mult=1.0, rsi_fast=25, rsi_slow=100):
     return _side(up, dn)
 
 
+def _pine_pivot(x: pd.Series, n: int, high: bool) -> np.ndarray:
+    """ta.pivothigh/pivotlow(x, n, n): on bar i, x[i-n] if it is strictly above
+    (below) every one of the n bars on each side, else NaN. Known only n bars
+    after the pivot, so it is causal. Ties give no pivot (TradingView does not
+    document its tie rule; with float prices ties are rare above 1m)."""
+    ctr = x.shift(n)
+    if high:
+        ok = (ctr > x.shift(n + 1).rolling(n).max()) & (ctr > x.rolling(n).max())
+    else:
+        ok = (ctr < x.shift(n + 1).rolling(n).min()) & (ctr < x.rolling(n).min())
+    return np.where(ok.to_numpy(), ctr.to_numpy(float), np.nan)
+
+
+def t_liquidity_sweep(b, f, pivot_len=7, max_age=150, min_gap_atr=0.25,
+                      vol_mult=1.3, min_wick_ratio=1.5):
+    """TradingView port T6 (PLAN.md section 13), from the Pine v6 source the
+    owner supplied: "Liquidity Sweep Reversal Strategy" (Mozilla Public
+    License 2.0). Pivot highs/lows (pivot_len each side) become levels, unless
+    within min_gap_atr x ATR(14) of a live one; a level dies after max_age
+    bars. A bar that wicks through a level and closes back inside, on volume
+    > vol_mult x SMA20(volume) and with the wick beyond the body >=
+    min_wick_ratio x the body, is a sweep. Next-bar confirmation (script
+    default): long on the next bar if its close is above the sweep bar's
+    (wick + close) / 2, short mirrored. As in the script, when both sides are
+    pending the last-written midpoint is used for both checks and a long wins.
+    The script's session window, SL, TP and break-even are exits/filters
+    applied in the idea file, not here. Unlike the script, the pending sweep
+    is not frozen while a position is open (a signal cannot see the
+    position): the engine simply ignores signals while in a trade."""
+    h, l, c, o = b["high"], b["low"], b["close"], b["open"]
+    L = int(pivot_len)
+    atr = ta.atr_(h, l, c, 14).to_numpy(float)
+    vol = b["volume"]
+    vol_ok = (vol > vol.rolling(20).mean() * float(vol_mult)).to_numpy()
+    body = (c - o).abs().to_numpy(float)
+    up_wick = (h - np.maximum(c, o)).to_numpy(float)
+    dn_wick = (np.minimum(c, o) - l).to_numpy(float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        hw_ok = ((body > 0) & (up_wick / body >= min_wick_ratio)) | ((body == 0) & (up_wick > 0))
+        lw_ok = ((body > 0) & (dn_wick / body >= min_wick_ratio)) | ((body == 0) & (dn_wick > 0))
+    piv_h, piv_l = _pine_pivot(h, L, True), _pine_pivot(l, L, False)
+    hh, ll, cc = h.to_numpy(float), l.to_numpy(float), c.to_numpy(float)
+    n = len(b)
+    out = np.zeros(n)
+    highs: list[list] = []  # [price, pivot bar]
+    lows: list[list] = []
+    p_long = p_short = False
+    p_mid = np.nan
+    for i in range(n):
+        gap = atr[i] * min_gap_atr  # NaN ATR -> never "too close", as in Pine
+        if np.isfinite(piv_h[i]) and not any(abs(p - piv_h[i]) < gap for p, _ in highs):
+            highs.append([piv_h[i], i - L])
+        if np.isfinite(piv_l[i]) and not any(abs(p - piv_l[i]) < gap for p, _ in lows):
+            lows.append([piv_l[i], i - L])
+        sw_h = sw_l = False
+        keep = []
+        for lv in highs:
+            if hh[i] > lv[0] and cc[i] < lv[0] and vol_ok[i] and hw_ok[i]:
+                sw_h = True
+            elif i - lv[1] <= max_age:
+                keep.append(lv)
+        highs = keep
+        keep = []
+        for lv in lows:
+            if ll[i] < lv[0] and cc[i] > lv[0] and vol_ok[i] and lw_ok[i]:
+                sw_l = True
+            elif i - lv[1] <= max_age:
+                keep.append(lv)
+        lows = keep
+        do_long = p_long and cc[i] > p_mid
+        do_short = p_short and cc[i] < p_mid
+        out[i] = 1.0 if do_long else -1.0 if do_short else 0.0
+        p_long = p_short = False
+        if sw_l:
+            p_long, p_mid = True, (ll[i] + cc[i]) / 2.0
+        if sw_h:
+            p_short, p_mid = True, (hh[i] + cc[i]) / 2.0
+    return out
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -481,6 +561,7 @@ TRIGGERS = {
     "smc_structure": t_smc_structure,
     "chartart_macd_sma": t_chartart_macd_sma,
     "super_scalper": t_super_scalper,
+    "liquidity_sweep": t_liquidity_sweep,
 }
 
 

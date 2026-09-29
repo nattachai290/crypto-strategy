@@ -932,3 +932,33 @@ first run):
 3. The expected `cost_r` per timeframe. In chart mode the 1m stop is 0.26–0.39%
    of price, so cost alone is ≈ 0.3–0.5 R: say in advance that 1m–5m are
    expected to lose to cost.
+
+### Port T6 — `049_tv_liquidity_sweep` ("Liquidity Sweep Reversal Strategy", Pine v6, Mozilla Public License 2.0, from the owner's source)
+**Queued, not in the T1–T5 round.** The round above is full. T6 runs only if
+the owner (a) makes it round 2 after T1–T5 are recorded, or (b) swaps it for
+one of T1–T5 before the first run. Until then the other agent does not run it.
+
+- New trigger `liquidity_sweep` (Level 2, `src/recipes.py`). Pivot highs/lows
+  (7/7) become levels, deduplicated within 0.25 ATR and dropped after 150
+  bars. A sweep is a bar that wicks through a level and closes back inside,
+  with volume > 1.3 × SMA20 and wick ≥ 1.5 × body. It is confirmed on the next
+  bar past the sweep bar's midpoint. The session is the `hours` filter with
+  UTC 12–15 (the script's 1200-1600 in exchange time, which is UTC on
+  Binance).
+- **The script has its own exits, and they are ported as they are:** stop
+  1.2 ATR beyond the sweep wick (swing stop n 2 + 1.2 ATR buffer), TP 1.5 R,
+  break-even at 50% of the way to TP (`be_at` 0.75). This is the first port
+  with a real stop and target, so it needs no `exit_on`.
+- Deviations (full list in the idea file):
+  - the stop is measured from the fill, not from the confirmation close. It
+    is wider only when the confirmation bar trades below the sweep wick;
+  - break-even reacts to a close, not an intrabar touch;
+  - a sweep that happens during an open trade is dropped, not kept pending;
+  - a time cap is added (the only grid key, 48/192 h at 15m);
+  - costs: 0.05% + 0.02% instead of TradingView's 0.04% + 1 tick.
+- Source 15m (the script names no timeframe; it is an intraday session
+  strategy), chart mode, 7 files. **Run on BTCUSDT and ETHUSDT: 14
+  evaluations.**
+- Before its first run, pre-register in the journal: the TRAIN signal count
+  per timeframe on each coin, and `cost_r` per timeframe. On 4h only the 12:00
+  bar is in the session, so expect few trades there.
