@@ -1,0 +1,26 @@
+{
+  "name": "041_impulse_not_crowded",
+  "hypothesis": "Momentum works until it is crowded, and funding is the only place you can see the crowding before you join it. A strong multi-bar impulse on real volume is a real move, but if funding is already stretched in the impulse's own direction then the leveraged money that pushed it is already there, and the trade's counterparty is not faders who will cover - it is the same leveraged cohort that will be liquidated the moment the move pauses, which is what makes the late joiner the exit liquidity. So this takes the impulse only when funding says the crowd is not on that side, plus volume to confirm participation. Funding is used as a signal here and never as a return: the engine still pays and receives it as a cost on every trade (Exp 026 put carry strategies out of scope). The kill condition has two halves on purpose: a result carried entirely by one side is the drift this project has spent five rounds separating from an edge.",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [{"type": "momentum", "n": 6, "atr_k": 1.5}],
+    "filters": [
+      {"type": "funding_not_crowded", "thresh": 0.0002},
+      {"type": "volume_spike", "n": 30, "k": 1.5}
+    ],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.06, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 2.0,
+    "trail_atr": 3.0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.atr_k": [1.5, 2.0],
+    "filters.0.thresh": [0.0002, 0.0003]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

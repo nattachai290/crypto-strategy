@@ -2953,3 +2953,118 @@ Before any `--final` (PLAN Round 6, and Exp 025 item 3):
 A CONFIRMED goes to `PLAN.md` §6 (strategy card and paper trading, never real
 money first). Otherwise add a "Round 6" section to `FINAL_REPORT.md` and stop,
 per the stop rule agreed above.
+
+---
+
+## Exp 028b - Round 6 results: 35 evaluations, one PASS, and the pre-`--final` record
+
+**Date:** 2026-09-29
+**Status:** complete (results + controls; the holdout run is a separate step)
+
+**35 evaluations: 1 PASS, 12 WATCH, 18 REJECT, 4 INCONCLUSIVE.** Project total
+**208**. The round's hard cap was five ideas and no ensemble of earlier WATCHes,
+and that was kept: no idea in this round reuses an earlier idea's structure as
+its own result.
+
+### The one clean kill
+
+**R6.2 `failed_break` + `flush` fade (040) is negative at all seven timeframes**
+and remarkably stable doing it:
+
+| tf | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| VALID mean R | −0.079 | −0.127 | −0.134 | −0.132 | −0.140 | −0.145 | −0.157 |
+
+A spread of 0.078 R across seven clocks and five years is not noise, it is a
+mechanism with the wrong sign. Two blocks that were each individually inert
+*negatively* on gross (Exp 016, Exp 022) are not merely inert together, they
+lose more than either alone. The stop-hunt family is closed: the pierce is not
+a trap that pays, it is a liquidity event whose follow-through is unfavourable
+over days. This is the first Round 6 result that is a genuine, well-measured
+negative rather than a cost artefact.
+
+### The PASS, and everything the plan asks to be written before `--final`
+
+**039 `donchian_break` + `taker_flow` + `volume_spike`, 5m clock. Verdict PASS,
+`baseline.py` DRIFT, `benchmark.py` ALPHA.**
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 177 | | | +0.0351 | | +1.6% | 9.7% |
+| valid 2023-2024 | 106 | **+0.2416** | 0.0193 | **+0.2223** | **[+0.0728, +0.3786]** | +10.9% | 3.4% |
+| valid ×1.5 cost | | | | +0.2145 | | | |
+
+Frozen: `donchian_break(960)` + `taker_flow(n 288, thresh 0.5)` +
+`volume_spike(n 1440, k 1.5)`, 6% `pct` stop, no TP, trail armed 2R trailing
+20.8 ATR, 96 h hold, both directions. On VALID that is **53 long / 53 short**,
+`gross_r` **+1.4496% of price per trade against a cost of 0.1155% - a 12.5:1
+ratio, the highest measured in this project.** Exit mix: 85 time, 20 stop, 1
+eod, so the 6% stop is rarely reached and the trade is mostly "hold up to 96 h
+after a flow-confirmed breakout".
+
+**1. The seven clocks, as `PLAN.md` Round 6 requires before any `--final`:**
+
+| tf | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| VALID mean R | +0.079 | +0.146 | **+0.222** | +0.145 | +0.122 | +0.202 | +0.122 |
+| train mean R | +0.017 | −0.009 | +0.035 | +0.022 | +0.026 | +0.002 | −0.012 |
+| verdict | WATCH | REJECT | **PASS** | WATCH | WATCH | WATCH | REJECT |
+
+**2. The `--mode time` warning, stated honestly.** In `--mode time` the bar
+counts are rescaled so the stop, the hold and every lookback are the same
+duration on all seven clocks - `donchian` 960 bars at 5m is 80 h, the same
+80 h as 20 bars at 4h; `taker_flow` 288 bars is 24 h as 6 bars is; the ATR
+window and the trail scale the same way. **So these seven rows are one trade on
+seven clocks, and the only thing that differs is when the entry is taken.** That
+cuts both ways and both readings must be reported:
+- *Better than 038:* 039 is positive on **all seven**, where 038 was one
+  positive clock among three negatives. Whatever produced 039's result is not
+  tied to a single entry clock.
+- *Worse than it looks:* 5m is the **maximum of seven**, and the config that
+  was frozen is the one whose number is being read. The honest reading is that
+  the expected result across clocks is nearer +0.13 R (the median), not +0.22.
+  Picking the best of seven clocks is a selection, and 038 is the precedent for
+  what a selection buys.
+
+**3. Two further warnings, written before the run rather than after it.**
+- **Per-year VALID is 2023 +0.3192 (50 trades) against 2024 +0.1358 (56).**
+  2023 carries 70% of the result and 2023 is the bull year. That is the same
+  shape that sank 022 and 038, and it is why `baseline.py` says DRIFT: on TRAIN
+  the idea's +0.0351 sits below the 95th percentile of random entries with the
+  same stop, hold and filters (+0.1422 any-time, +0.2054 same-filters). The
+  entry has no measured timing skill.
+- **DRIFT + ALPHA is now the second time this project has produced exactly
+  that combination.** 038@4h was DRIFT + ALPHA and failed its holdout with
+  `gross_r` −0.090. 039@5m is DRIFT + ALPHA with beta +0.01 and alpha
+  +10.0%/yr, CI [+2.7, +16.8]. Two independent structures landing on the same
+  state is a pattern, not a coincidence: **with a cheap cost structure, a
+  both-sided multi-day BTC rule earns money in 2023-24 that the random-entry
+  control also earns, and the benchmark cannot see the difference because the
+  BTC exposure is near zero.** The holdout is the only thing that separates
+  them, and that is what it is for.
+
+### Controls, every WATCH and the PASS
+
+| config | baseline | benchmark |
+|---|---|---|
+| **039 @5m (PASS)** | **DRIFT** | **ALPHA** |
+| 039 @1h | DRIFT | **ALPHA** |
+| 039 @30m, @15m, @1m | DRIFT | NO_EDGE |
+| **041 @15m** | **SKILL** | NO_EDGE |
+| 041 @5m, @3m, @1m, @30m, @1h, 043 @4h, 043 @1h | DRIFT | NO_EDGE |
+
+**One SKILL in the project since 022 and 023: 041 `momentum` +
+`funding_not_crowded` + `volume_spike` at 15m** - valid +0.1738, CI [+0.0041,
++0.3510], 88 trades. It is a **WATCH**, not a PASS, so `--final` is refused for
+it (AGENTS.md rule 4) and the plan reserves a holdout on a WATCH for the owner.
+It is the one config in 208 evaluations whose *entry* beat random timing on
+both periods, and its benchmark says holding BTC does as well, which is the
+`PLAN.md` §5 step 1 stop: not a strategy.
+
+### Verdict so far
+
+The round produced one PASS, one SKILL, and one well-measured family-wide
+negative. `--final` on 039@5m is permitted (PASS + ALPHA) and the three
+pre-checks the plan demands are recorded above. The prior is poor - 038 had the
+same profile and failed - but 039 differs in the one way that matters for
+selection, seven positive clocks instead of one.

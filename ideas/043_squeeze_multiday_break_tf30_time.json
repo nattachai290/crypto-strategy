@@ -1,0 +1,54 @@
+{
+  "name": "043_squeeze_multiday_break_tf30_time",
+  "hypothesis": "Volatility clusters, and the mechanism for that is positions: in a quiet range, leverage is cheap and positions accumulate against a range that is not moving, so when something pushes price out of the range those positions all have to be closed at once and the move that follows is larger than the move that started it. A Bollinger squeeze is the observable version of that quiet range and a Donchian break is the observable version of the push, so the combination is a claim about mechanism rather than a stricter version of either block. The earlier test of this pair in this project (004, 013) had a trend filter and 12 h holds, which means it never tested the break at all - it tested the filter. This one has neither, and holds for days, which is the horizon over which a volatility expansion actually pays. `volume_spike` is left out on purpose: with it, n 20 gives only 103-122 TRAIN signals. [Timeframe variant of 043_squeeze_multiday_break, 240m -> 30m, mode time: bar counts x8, ATR multiples x2.828, same hours and % stops.]",
+  "strategy": "recipe",
+  "tf": 30,
+  "params": {
+    "triggers": [
+      {
+        "type": "donchian_break",
+        "n": 160
+      }
+    ],
+    "filters": [
+      {
+        "type": "squeeze",
+        "n": 160,
+        "q": 0.3,
+        "lookback": 1440
+      }
+    ],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 4.243,
+      "max_atr": 22.627
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 2.0,
+    "trail_atr": 8.485,
+    "max_hold_hours": 96,
+    "cooldown_bars": 1,
+    "atr_n": 112
+  },
+  "grid": {
+    "filters.0.q": [
+      0.2,
+      0.3
+    ],
+    "max_hold_hours": [
+      48,
+      96
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.283,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "043_squeeze_multiday_break",
+  "variant_mode": "time"
+}

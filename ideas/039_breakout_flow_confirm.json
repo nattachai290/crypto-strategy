@@ -1,0 +1,26 @@
+{
+  "name": "039_breakout_flow_confirm",
+  "hypothesis": "A breakout is only new positioning if aggressive traders keep paying for it. A close through the n-bar high on above-average volume says many participants moved; the taker buy ratio says which side paid to move it. When both agree, the move is buyers arriving and the sellers who were defending the level are the ones who have to cover, and covering is a forced, price-insensitive order over the next days. The other side is resting liquidity and short-term faders, who are the liquidity this trade takes. A breakout without that flow is a different animal: it is a stop run through a thin book, it fills the breakout traders rather than the breakout traders' targets, and it reverses. That is why these are one idea and not two filters - flow without participation is a single trader getting filled, and participation without directional flow is a market-wide move nobody is fighting. Both directions, no trend filter, held for days.",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 20}],
+    "filters": [
+      {"type": "taker_flow", "n": 6, "thresh": 0.5},
+      {"type": "volume_spike", "n": 30, "k": 1.2}
+    ],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.06, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 2.0,
+    "trail_atr": 3.0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.n": [20, 30],
+    "filters.1.k": [1.2, 1.5]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

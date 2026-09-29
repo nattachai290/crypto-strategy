@@ -1,0 +1,28 @@
+{
+  "name": "042_trend_start_three_ways",
+  "hypothesis": "Each trend indicator fails on its own noise: an EMA cross whipsaws inside a range, a Supertrend flip whipsaws in chop, and +DI/-DI disagrees with both during the turn. The three do not fail on the same bars, because they are computed from different things - a moving average of closes, an ATR-based band, and the directional movement index - so requiring all three to point the same way inside three days is a much stricter statement than any of them alone, and the bars it rejects are mostly bars where one indicator was late rather than wrong. Rounds 1-2 tested these blocks separately and mostly long; this is the first test that lets both sides trade them, at a multi-day hold where a trend that has actually started has time to pay. The counterparty is the fader who read the same three indicators at different times and is now on the wrong side of a move that three of them agree on. Grid covers exits only: `confirm_bars` 6 and 12 give 132 and 145 TRAIN signals, under the 150 floor, so 18 is fixed and the grid sweeps the stop and the hold.",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [
+      {"type": "ema_cross", "fast": 10, "slow": 30},
+      {"type": "supertrend_flip", "n": 10, "mult": 2.0}
+    ],
+    "trigger_mode": "all",
+    "confirm_bars": 18,
+    "filters": [{"type": "di_side", "n": 14}],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.06, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 2.0,
+    "trail_atr": 3.0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [0.06, 0.07],
+    "max_hold_hours": [48, 96]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

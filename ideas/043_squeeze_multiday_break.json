@@ -1,0 +1,23 @@
+{
+  "name": "043_squeeze_multiday_break",
+  "hypothesis": "Volatility clusters, and the mechanism for that is positions: in a quiet range, leverage is cheap and positions accumulate against a range that is not moving, so when something pushes price out of the range those positions all have to be closed at once and the move that follows is larger than the move that started it. A Bollinger squeeze is the observable version of that quiet range and a Donchian break is the observable version of the push, so the combination is a claim about mechanism rather than a stricter version of either block. The earlier test of this pair in this project (004, 013) had a trend filter and 12 h holds, which means it never tested the break at all - it tested the filter. This one has neither, and holds for days, which is the horizon over which a volatility expansion actually pays. `volume_spike` is left out on purpose: with it, n 20 gives only 103-122 TRAIN signals.",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [{"type": "donchian_break", "n": 20}],
+    "filters": [{"type": "squeeze", "n": 20, "q": 0.3, "lookback": 180}],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.06, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 2.0,
+    "trail_atr": 3.0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "filters.0.q": [0.2, 0.3],
+    "max_hold_hours": [48, 96]
+  },
+  "execution": {"entry_mode": "post_only", "entry_offset_atr": 0.1, "entry_fill_ratio": 1.0}
+}

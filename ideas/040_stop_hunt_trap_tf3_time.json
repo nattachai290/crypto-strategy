@@ -1,0 +1,57 @@
+{
+  "name": "040_stop_hunt_trap_tf3_time",
+  "hypothesis": "Two blocks in this project have never been tested together. `failed_break` says price pierced a multi-day extreme and closed back inside, which leaves the breakout traders wrong and needing to cover; on its own at a 12h hold it had a negative gross, because the reclaim has already happened by the time the signal fires. `flush` says a liquidation-sized bar followed, which on its own also had no gross edge in either direction. Together they are a different event, not a stricter version of either: the pierce is the trap being sprung and the large bar is the cascade that cleared the people it was sprung on, and whoever was on the other side of that cascade now holds a materially better price than the ones who chased. The sequence has to be an order, not a coincidence, so this requires both triggers inside three bars of each other and the same direction. Both sides, no trend filter, held for days. [Timeframe variant of 040_stop_hunt_trap, 240m -> 3m, mode time: bar counts x80, ATR multiples x8.944, same hours and % stops.]",
+  "strategy": "recipe",
+  "tf": 3,
+  "params": {
+    "triggers": [
+      {
+        "type": "failed_break",
+        "n": 2400,
+        "n_bars": 480
+      },
+      {
+        "type": "flush",
+        "k": 1.5,
+        "m": 1.5,
+        "lookback": 2400,
+        "mode": "fade"
+      }
+    ],
+    "trigger_mode": "all",
+    "confirm_bars": 240,
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 13.416,
+      "max_atr": 71.554
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 2.0,
+    "trail_atr": 26.833,
+    "max_hold_hours": 96,
+    "cooldown_bars": 1,
+    "atr_n": 1120
+  },
+  "grid": {
+    "triggers.1.k": [
+      1.5,
+      2.0
+    ],
+    "max_hold_hours": [
+      48,
+      96
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.894,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "040_stop_hunt_trap",
+  "variant_mode": "time"
+}
