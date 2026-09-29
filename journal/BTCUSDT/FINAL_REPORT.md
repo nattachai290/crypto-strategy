@@ -311,19 +311,17 @@ filters)**.
 | HOLDOUT `gross_r` | **−0.090** | **+0.032** |
 | holdout per year | 2025 −0.166, 2026 −0.028 | **2025 +0.0077, 2026 +0.0187** |
 | holdout ×1.5 cost | −0.121 | **+0.0052** |
-| verdict | FAILED - the edge was fake | FAILED - the edge was real, 1/8 the size, and not better than random |
+| verdict | FAILED - the edge was fake | FAILED - no demonstrable edge: +0.013 R, CI [−0.158, +0.204], below the random median in the same filters |
 
 038's gross went negative: its structure produced nothing and the VALID number
-was a two-year artefact. **039's gross stayed positive, in both holdout years,
-and survived the ×1.5 cost stress.** So a flow-confirmed breakout really does
-produce a positive move over multi-day holds - that part is now a measured
-result, not a hope. What did not survive is the size: VALID's +0.242 was **8×
-the holdout's +0.032**, and even the residue is smaller than what random entries
-with the same stop, hold and filters produced on the same data.
+was a two-year artefact. 039's gross stayed slightly positive (+0.032) in both holdout years
+and under ×1.5 cost, but that is **not a measured edge** (corrected in Exp 029):
+mean R +0.013 with CI [−0.158, +0.204] and P(>0) 0.55 is indistinguishable
+from zero, and random entries with the same stop, hold and filters did better
+(median +0.038). VALID's +0.242 was 8× the holdout's gross.
 
-**So the answer is neither "there is no move" nor "there is no edge". It is:
-the moves are real, they are measurable, they are not free to harvest, and after
-realistic costs the entry is not where the value is.** With a 6% stop and a 96h
+**So the answer (corrected in Exp 029): no tested entry adds anything over a
+random entry with the same exits, once costs are paid.** With a 6% stop and a 96h
 hold, being in BTC both ways is cheap enough that any entry - including a random
 one - captures the small positive drift of holding it. The value, if there is
 any, sits in the cost structure, which is an execution and position-sizing
@@ -391,3 +389,8 @@ selection cited 029's VALID gross. No verdict changed._
 
 _Owner decision (2026-09-29): trading only. Funding carry and basis strategies
 (§6 item 2, and the "carry" line of §7) are out of scope for this project._
+
+_Corrections (Exp 029, 2026-09-29): Round 6's "the edge was real" and "the moves
+are real" are withdrawn. 039's holdout (+0.013 R, CI [−0.158, +0.204]) is no
+evidence of an edge, and random entries in the same filters did better. **BTCUSDT
+research is closed by the Round 6 stop rule.**_

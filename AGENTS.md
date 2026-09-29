@@ -2,7 +2,10 @@
 
 **Read this whole file before doing anything.** Then read
 `docs/research/TECHNIQUES.md` (what to try) and `journal/<SYMBOL>/STATUS.md`
-(where the coin stands). Today only `BTCUSDT` exists.
+(where the coin stands). Two coins exist: `BTCUSDT` is **closed** (Exp 029:
+208 evaluations, holdout 4/4 FAILED); **`ETHUSDT` is the active coin**. Run
+every command with `SYMBOL=ETHUSDT` (on Windows PowerShell:
+`$env:SYMBOL="ETHUSDT"`), and read `journal/ETHUSDT/STATUS.md`.
 
 Talk to the owner **in Thai**. Write code, idea files and the journal in English.
 
@@ -30,9 +33,9 @@ configurations found **no proven edge** (see STATUS.md). So:
 ```bash
 pip install -r requirements.txt
 python src/test_engine.py        # must end with: ALL CHECKS PASSED
-python src/datafeed.py           # first time ~3 min; must end with: VALIDATION: OK
+SYMBOL=ETHUSDT python src/datafeed.py   # first time ~3 min; must end with: VALIDATION: OK
 python src/evaluate.py --list    # the building blocks you can combine
-tail -n 60 journal/BTCUSDT/evaluations.md   # what was already tried
+tail -n 60 journal/ETHUSDT/evaluations.md   # what was already tried on ETH
 ```
 
 If any of these fails, **stop and fix that first** (see §9). Do not research

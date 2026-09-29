@@ -17,6 +17,8 @@
 > - **รอบ 6** (เพิ่มหลัง Exp 026): **ผสมเทคนิคที่ยังไม่เคยลองร่วมกัน** 5 ไอเดีย เช่น เบรก + แรงซื้อขายจริง + volume,
 >   กับดักล่า stop (เบรกหลอก + liquidation), โมเมนตัมตอนฝูงชนยังไม่แน่น, ต้นเทรนด์ที่ยืนยัน 3 ทาง, บีบตัวแล้วเบรก
 >   ใช้กติกาต้นทุนของรอบ 5 **ถ้ารอบ 6 ไม่มีตัวไหนผ่าน holdout ให้หยุดวิจัย BTC**
+> - **BTC ปิดแล้ว** (Exp 029: 208 การทดสอบ, holdout ตก 4/4) → **ย้ายไป ETHUSDT (§11)**: รอบ E1 เอา 7 ไอเดียแนวต้นทุนต่ำ
+>   (ถือหลายวัน, ทั้งสองทาง) ไฟล์เดิมไม่แก้ มารันกับข้อมูล ETH 49 การทดสอบ ถ้าไม่มีตัวไหนผ่าน holdout ของ ETH ให้หยุด ETH ด้วย
 >
 > ไอเดียไหน PASS → ทดสอบกับข้อมูลที่ล็อกไว้ (2025–26) ครั้งเดียว → ถ้ายืนยันผ่าน ทำใบสรุปกลยุทธ์
 > และทดลองเทรดกระดาษ (สัญญาณอย่างเดียว ไม่ส่งออเดอร์) อย่างน้อย 3 เดือน ก่อนที่คุณจะตัดสินใจเรื่องเงินจริง
@@ -27,7 +29,8 @@
 rule there applies. `AGENTS.md` says **how** to test an idea; this plan says
 **which ideas, in what order, and what to do with the results**.
 
-Scope: **BTCUSDT only.** Do not add other coins.
+Scope: **BTCUSDT (closed after Round 6, Exp 029) and ETHUSDT (§11, active).**
+Do not add other coins without the owner.
 **Trading only** (owner, 2026-09-29): strategies that earn the funding fee
 (funding carry, basis / cash-and-carry) are out of scope. Funding may be used
 as a signal or paid as a cost, never as the thing the strategy earns.
@@ -583,4 +586,90 @@ Never say "profitable" unless the holdout is CONFIRMED.
 | 4 | ≈ 6 h | 4–5 new blocks + ideas × 7 timeframes |
 | 5 | ≈ 6 h | 4–5 cost-first ideas × 7 timeframes (`--mode time`); the 1m variants are the slow part |
 | 6 | ≈ 6 h | 5 combination ideas × 7 timeframes (`--mode time`), then stop unless something is CONFIRMED |
+| E1 | ≈ 7 h | ETHUSDT: 7 cost-first families × 7 timeframes (§11), then stop unless something is CONFIRMED |
 | §6 | 3–4 h to build + ≥ 3 months of paper trading | only after a CONFIRMED |
+
+---
+
+## 11. ETHUSDT (owner-approved after Exp 029)
+
+BTCUSDT is closed. Every rule in AGENTS.md and every protocol above (§2b–§5) applies
+unchanged; this section says what is different on ETH. Everything ETH-specific
+goes to `results/ETHUSDT/` and `journal/ETHUSDT/` automatically when you run with
+`SYMBOL=ETHUSDT`. The ETH journal starts at Exp 000 (setup, written).
+
+**What carries over from BTC, and what does not.**
+- **Carries over, as method:**
+  - cost is ≈ 0.11% of price per trade at every timeframe, so only multi-day
+    holds leave room for an edge;
+  - use `pct` stops;
+  - use `--mode time` from a 4h source;
+  - include both directions, and no trend filter, so the bull-market drift
+    cannot pass as an edge;
+  - run the random-entry baseline and the buy & hold benchmark on every
+    WATCH/PASS.
+- **Does not carry over, as evidence:** BTC's verdicts. ETH must earn its own
+  verdict on its own data (AGENTS.md §6). ETH moves with BTC (daily
+  correlation ≈ 0.8), so ETH's VALID 2023–24 is **not independent** of the
+  BTC VALID that shaped these ideas. The ETH **holdout** (2025-01..2026-08) is
+  untouched, and it is the test that counts.
+- ETH is more volatile than BTC. At the same hold, a bigger gross move meets
+  the same ≈ 0.11% cost, so the cost line sits a little lower. It does not
+  move far enough to reopen short-horizon trading: do not add intraday ideas
+  in Round E1.
+
+### Round E1 — the cost-first families, re-measured on ETH (≈ 7 h)
+
+**The ideas are the existing files, run unchanged** with `SYMBOL=ETHUSDT`. An
+idea file is shared by all coins, and the eval_id includes the symbol, so ETH
+gets its own records and its own version budget. Do not edit the files and do
+not write new ones in this round. For each family, the 4h source and its six
+`_tfN_time` variants are already in `ideas/`:
+
+| family | files (source + 6 variants) | hypothesis (from its BTC pre-registration) |
+|---|---|---|
+| 034 multi-day reversal | `034_multiday_reversal*.json` | a > 2σ multi-day move partly comes back |
+| 035 multi-day momentum | `035_multiday_momentum*.json` | 5–20 day extremes continue, both ways |
+| 036 Keltner multi-day | `036_keltner_multiday*.json` | a volatility-channel break continues for days |
+| 038 opening range | `038_opening_range_both_sides*.json` | the 00:00 UTC range break sets the day's direction (at 4h: the first 4h bar) |
+| 039 breakout + flow | `039_breakout_flow_confirm*.json` | a breakout with aggressive flow and volume continues |
+| 041 impulse, not crowded | `041_impulse_not_crowded*.json` | follow an impulse only while funding shows the crowd is not on that side |
+| 043 squeeze break | `043_squeeze_multiday_break*.json` | a break out of compression runs for days |
+
+Left out, with the reason:
+- 033 funding carry: out of scope (Exp 026).
+- 037 turn-of-month: unmeasurable at a multi-day hold.
+- 040 stop-hunt trap: negative on TRAIN and VALID at all seven BTC clocks.
+- 042 three-way trend start: too rare to measure.
+
+These are hypotheses that are refuted or unmeasurable, not ones that looked
+bad on VALID.
+
+**Before running (pre-registration, `journal/ETHUSDT/experiments.md` Exp 001):**
+1. Re-count each 4h source's signals on **ETH TRAIN only**. A family whose
+   source is under 150 is still run, but it will likely be INCONCLUSIVE; say so
+   in advance and never change its file.
+2. Check the sizing: `tf_variants.py` prints no `!!` warning for 6% stops on
+   ETH. The 1,000 USDT account sizes ETH down to its 0.001 step, and 20 USDT
+   is the minimum notional.
+3. Write the expected `cost_r` per family. It is the same formula as Round 5,
+   using ETH's funding.
+
+**Run:** 7 families × 7 files = **49 evaluations**, each with
+`SYMBOL=ETHUSDT python src/evaluate.py ideas/<file>`. Then run `baseline.py`
+and `benchmark.py` (also with `SYMBOL=ETHUSDT`) on every WATCH and PASS. The
+benchmark compares with holding **ETH**.
+
+**Before any `--final`:** the same three written checks as Round 6:
+- the seven clocks, and whether the PASS is the best one of them;
+- the per-year split;
+- the long/short counts.
+
+In addition, **the same config's BTC result**. A family that PASSes on ETH but
+failed its BTC holdout (038, 039) is one more reason for suspicion, not a
+reason to hurry.
+
+**Stop rule, agreed in advance:** if Round E1 ends with no holdout CONFIRMED on
+ETH, ETH research stops too, and the project's answer stands for both coins.
+A CONFIRMED goes to §6 (strategy card and paper trading, never real money
+first) and must be reported to the owner at once.

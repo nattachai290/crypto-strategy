@@ -1,5 +1,9 @@
 # BTCUSDT — status and handoff
 
+> **CLOSED (Exp 029).** The Round 6 stop rule fired: 208 evaluations, holdout
+> 4/4 FAILED, 0 CONFIRMED. Do not add rounds on BTCUSDT. Research continues on
+> **ETHUSDT** (`journal/ETHUSDT/STATUS.md`, `docs/research/PLAN.md` §11).
+
 _Last updated: 2026-09-29, after Exp 028 (Round 6 complete — the stop rule has
 fired). Rules for agents: `AGENTS.md`. Research plan: `docs/research/PLAN.md`
 (six rounds done)._
@@ -24,11 +28,10 @@ fired). Rules for agents: `AGENTS.md`. Research plan: `docs/research/PLAN.md`
 > | HOLDOUT `gross_r` | **−0.090** | **+0.032** |
 > | holdout per year | 2025 −0.166, 2026 −0.028 | **2025 +0.0077, 2026 +0.0187** |
 > | holdout ×1.5 cost | −0.121 | **+0.0052** |
-> | why it failed | the edge was fake | the edge was real, 8x smaller, and **not better than random entries** (idea +0.0129 vs random median +0.0380 in the same filters) |
+> | why it failed | the edge was fake | no demonstrable edge (+0.0129 R, CI [−0.158, +0.204]) and **not better than random entries** (random median +0.0380 in the same filters; corrected in Exp 029) |
 >
-> So: **the moves are real, they reproduce on unseen data in every year, they
-> are not free to harvest, and after realistic costs the entry is not where the
-> value is.** With a 6% stop and a 96 h hold, being in BTC both ways is cheap
+> So (corrected in Exp 029): **no tested entry beats a random entry with the
+> same exits once costs are paid.** With a 6% stop and a 96 h hold, being in BTC both ways is cheap
 > enough that *any* entry, including a random one, captures the small positive
 > drift of holding it. 039 was a PASS, DRIFT, ALPHA, positive at all seven
 > clocks, at a **12.5:1 gross-to-cost ratio** - the best ratio in the project -
