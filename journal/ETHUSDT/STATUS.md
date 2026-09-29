@@ -1,5 +1,7 @@
 # ETHUSDT - status and handoff
 
+> **Next (owner request): TradingView strategy ports** (`docs/research/PLAN.md` §13). Port T1 = `ideas/044_tv_chartart_rsi_bb*.json` (7 files), to be run on this coin. The project's own families stay closed.
+
 > **CLOSED** (Exp 003 stop rule). The funding defect is fixed (Exp 004). Research continues on
 > **SOLUSDT and BNBUSDT** (`docs/research/PLAN.md` §12).
 

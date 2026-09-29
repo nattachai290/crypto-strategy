@@ -4,9 +4,10 @@
 `docs/research/TECHNIQUES.md` (what to try) and `journal/<SYMBOL>/STATUS.md`
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
-**`SOLUSDT` and `BNBUSDT` are the active coins** (`docs/research/PLAN.md`
-§12). Run every command with `SYMBOL=SOLUSDT` or `SYMBOL=BNBUSDT` (on
-Windows PowerShell: `$env:SYMBOL="SOLUSDT"`), and read that coin's
+`SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
+**Active work: TradingView strategy ports on BTCUSDT and ETHUSDT**
+(`docs/research/PLAN.md` §13). Run every command with the coin in `SYMBOL` (on Windows PowerShell:
+`$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's
 `journal/<SYMBOL>/STATUS.md`.
 
 Talk to the owner **in Thai**. Write code, idea files and the journal in English.
@@ -35,10 +36,10 @@ configurations found **no proven edge** (see STATUS.md). So:
 ```bash
 pip install -r requirements.txt
 python src/test_engine.py        # must end with: ALL CHECKS PASSED
-SYMBOL=SOLUSDT python src/datafeed.py   # first time ~3 min; must end with: VALIDATION: OK
-SYMBOL=BNBUSDT python src/datafeed.py   # same
+python src/datafeed.py                  # BTCUSDT; first time ~3 min; must end with: VALIDATION: OK
+SYMBOL=ETHUSDT python src/datafeed.py   # same, for ETH
 python src/evaluate.py --list    # the building blocks you can combine
-cat journal/SOLUSDT/STATUS.md journal/BNBUSDT/STATUS.md   # where each active coin stands
+cat journal/BTCUSDT/STATUS.md journal/ETHUSDT/STATUS.md   # where things stand (PLAN.md section 13)
 ```
 
 If any of these fails, **stop and fix that first** (see §9). Do not research

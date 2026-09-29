@@ -32,7 +32,8 @@ rule there applies. `AGENTS.md` says **how** to test an idea; this plan says
 **which ideas, in what order, and what to do with the results**.
 
 Scope: BTCUSDT (closed, BTC Exp 029), ETHUSDT (closed, ETH Exp 003), and
-**SOLUSDT + BNBUSDT (§12, active)**. Do not add other coins without the owner.
+SOLUSDT + BNBUSDT (§12, closed), and **TradingView strategy ports (§13, active)**.
+Do not add other coins without the owner.
 **Trading only** (owner, 2026-09-29): strategies that earn the funding fee
 (funding carry, basis / cash-and-carry) are out of scope. Funding may be used
 as a signal or paid as a cost, never as the thing the strategy earns.
@@ -756,3 +757,74 @@ and PASS. The benchmark compares with holding that coin.
 holdout CONFIRMED, research on that coin stops. If both stop, the project's
 answer stands for all four coins. **Do not add a fifth coin**; that decision
 belongs to the owner. A CONFIRMED goes to §6 and to the owner at once.
+
+---
+
+## 13. TradingView strategy ports (owner request, after SOL Exp 005 / BNB Exp 003)
+
+All four coins are closed for the project's own idea families. The owner asked
+for a different question: **do published TradingView strategies survive honest
+testing?** A TradingView backtest usually has three things wrong with it:
+- the default commission is 0;
+- `request.security()` or intrabar fills can see the future;
+- nothing is held out.
+
+This harness fixes all three. The research agent runs the ports; the planner
+writes them.
+
+**Rules for every port** (on top of AGENTS.md):
+1. **Faithful.** The author's parameters are kept exactly. The only grid keys
+   are what the engine forces us to invent: usually a `pct` stop and a time
+   stop, because the engine has no stop-and-reverse and every trade must risk
+   1%. Every deviation from the Pine script is listed in the idea's
+   hypothesis.
+2. **Chart mode.** Variants use `tf_variants.py` default chart mode: the same
+   bar counts on every chart, as a TradingView user applies a script. The 4h
+   file is the source, and all seven timeframes are run.
+3. **Coins:** BTCUSDT and ETHUSDT (`SYMBOL=...`). Their records and version
+   budgets are separate. A port is a new structure, so a PASS may use that
+   coin's holdout for that config, under the usual `--final` rule.
+4. **Refused:** grid, martingale, and averaging down without a limit
+   (AGENTS.md rule 7). A port that needs one is recorded as "not portable",
+   with the reason.
+5. **Report per port:** what TradingView claims (if the owner supplies it)
+   next to what is left after costs, controls and, for a PASS, the holdout.
+6. **Budget:** at most 5 ports per round, pre-registered together. **Stop
+   rule:** a round with no holdout CONFIRMED ends the TradingView question
+   unless the owner brings new scripts.
+
+### Port T1 — `044_tv_chartart_rsi_bb` (ChartArt, "Bollinger + RSI, Double Strategy" v1.1)
+- Pine logic:
+  - **long** when `crossover(RSI(6), 50)` and `crossover(close, BB200 lower)` on
+    the same bar;
+  - **short** when `crossunder(RSI(6), 50)` and `crossunder(close, BB200 upper)`.
+
+  The entry is a stop order at the band, which price has already crossed, so
+  it fills at the next open.
+- The port uses the existing blocks `rsi_revert(n 6, lo 50, hi 50)` and
+  `bb_revert(n 200, k 2.0)`, with `trigger_mode: all` and `confirm_bars: 1`
+  (both on the same bar). They match Pine exactly:
+  - RSI with Wilder smoothing (RMA);
+  - SMA with a population stdev;
+  - `crossover` meaning now above and the previous bar not above.
+- **Invented** (the original never exits except by reversal): a `pct` stop of
+  4% / 6% and a time stop of 120 h / 480 h at 4h, scaled by chart mode on the
+  other timeframes.
+- Files: `ideas/044_tv_chartart_rsi_bb.json` (4h) plus `_tf1` … `_tf60`,
+  already generated. **Run each on BTCUSDT and on ETHUSDT: 14 evaluations.**
+- The author writes that v1.1 was "made more successful in backtesting". It
+  was tuned on the chart it is shown on, which is one more reason to expect
+  VALID to disappoint.
+- This is mean reversion, which the project closed for its own ideas (BTC Exp
+  016, Exp 024). It is run anyway because the owner asked for this script.
+  Record it as a port, not as a retry.
+
+**Pre-registration** (BTC journal Exp 031 and ETH journal Exp 006, before the
+first run):
+1. TRAIN signal counts of the 4h source on each coin. The same-bar coincidence
+   of the two crosses may be rare. Under 150 means expect INCONCLUSIVE; run
+   it anyway and do not change the file.
+2. List the deviations above.
+3. The expected `cost_r` per timeframe. In chart mode the 1m stop is 0.26–0.39%
+   of price, so cost alone is ≈ 0.3–0.5 R: say in advance that 1m–5m are
+   expected to lose to cost.
