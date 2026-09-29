@@ -295,3 +295,6 @@ _Corrections (Exp 025, 2026-09-29): the funding threshold is 0.015% per 8 h
 multi-day holds only. 038 is a single positive timeframe (1h −0.022, 30m
 +0.016, 15m −0.042) whose 4h opening range is the whole 00:00–04:00 bar, and its
 selection cited 029's VALID gross. No verdict changed._
+
+_Owner decision (2026-09-29): trading only. Funding carry and basis strategies
+(§6 item 2, and the "carry" line of §7) are out of scope for this project._

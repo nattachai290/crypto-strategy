@@ -25,6 +25,9 @@ rule there applies. `AGENTS.md` says **how** to test an idea; this plan says
 **which ideas, in what order, and what to do with the results**.
 
 Scope: **BTCUSDT only.** Do not add other coins.
+**Trading only** (owner, 2026-09-29): strategies that earn the funding fee
+(funding carry, basis / cash-and-carry) are out of scope. Funding may be used
+as a signal or paid as a cost, never as the thing the strategy earns.
 
 ---
 
@@ -385,7 +388,8 @@ and trade count; the per-year split (2020, 2021, 2022 vs 2023, 2024).
 **Use of the results.** A PASS goes through §5. If nothing survives, add a
 short "Round 5" section to `FINAL_REPORT.md`: cost-first multi-day both-sided
 trading on BTCUSDT also has no edge. With that the plan is complete, and the
-next step (other markets, basis/funding data, VIP fees) is the owner's
+next step (other markets, VIP fees; funding/basis strategies are out of
+scope by the owner's decision) is the owner's
 decision, not the agent's.
 
 ---

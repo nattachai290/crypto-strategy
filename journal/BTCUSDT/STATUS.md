@@ -3,6 +3,8 @@
 _Last updated: 2026-09-29, after Exp 025 (Round 5 review). Rules for agents:
 `AGENTS.md`. Research plan: `docs/research/PLAN.md` (all five rounds done)._
 
+> **Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost.
+>
 > **Exp 025 (review of Round 5):** `recipe()` now refuses a trigger that
 > returns anything but one -1/0/+1 array (and a filter that is not
 > `(long_ok, short_ok)`), and `test_engine.py` checks every block, so the
@@ -236,6 +238,8 @@ PASS, 0 CONFIRMED, holdout spent three times and failed three times. The
 deliverable is `journal/BTCUSDT/FINAL_REPORT.md` and its §8 lists what would
 count as new information. Per `PLAN.md` §7 the remaining choices are the
 owner's, and none of them is another round on BTCUSDT.
+
+**Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost. Item 1 below is therefore closed.
 
 Three things to raise with the owner 🛑:
 1. **Funding carry (033) is the one hypothesis untested rather than refuted.**

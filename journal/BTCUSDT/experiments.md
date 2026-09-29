@@ -2775,3 +2775,18 @@ important. The Exp 023 review read that block and missed it.
 KEEP the Exp 024 conclusion: 173 evaluations, 0 CONFIRMED, holdout 3/3 FAILED.
 The plan is complete. The next direction (stop, or a basis / funding-carry
 study, which needs spot data and a two-leg engine: Level 3) is the owner's.
+
+---
+
+## Exp 026 — Scope decision: trading only
+
+**Date:** 2026-09-29
+**Status:** complete (decision record; no evaluation)
+
+The owner decided that this project studies **trading**: positions that earn
+from price moves. Strategies whose return is the funding fee itself (funding
+carry, basis / cash-and-carry, delta-neutral spot + perp) are **out of scope**
+and are not to be proposed, built or tested. Funding stays usable as a
+**signal** (e.g. `funding_extreme`, `funding_window`) and is always paid or
+received as a **cost** by the engine. This closes the "carry" item that Exp
+024 and FINAL_REPORT.md left open; 033 stays INCONCLUSIVE as recorded.
