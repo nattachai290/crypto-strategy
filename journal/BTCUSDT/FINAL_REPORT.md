@@ -202,7 +202,70 @@ Not "more indicators". Each of these follows from a specific measurement.
    (`evaluate.py`, `baseline.py`, `benchmark.py`, the locked holdout) transfers
    unchanged. Adding a symbol is a Level 3 change and needs the owner's approval.
 
-## 7. What would change the answer
+
+## 7. Round 5 (added after Exp 023): cost first, multi-day, both-sided
+
+Rounds 1-4 designed the signal first and measured cost afterwards. Exp 023
+converted gross and cost to % of price per trade and found the whole story in two
+rows: cost is **flat at ~0.11% of price per trade at every timeframe**, and only a
+longer hold makes the gross move bigger than that. Round 5 therefore fixed the
+cost side first - 4h source, `--mode time` variants, 4-7% stops, 48-120h holds,
+both directions, no directional filter, >=150 TRAIN signals counted before
+running - and removed the drift by construction.
+
+**42 evaluations: 1 PASS, 9 WATCH, 17 REJECT, 15 INCONCLUSIVE.** The design
+delivered what it promised:
+
+| | Exp 016, chart mode | **Round 5, `--mode time`** |
+|---|---|---|
+| `cost_r` across the 7 timeframes | 0.505 R (1m) to 0.019 R (4h), a **26:1 spread** | 0.016-0.023 R on **all seven**, a 1.4:1 spread |
+
+That is the round's methodological win: **the cost problem that dominated
+Rounds 1-4 was an artefact of how the timeframe variants were built, and it is
+removable.** A signal can finally be compared across timeframes without cost
+deciding the answer.
+
+With cost solved the answer did not change. **038 (00:00 opening-range break, 4h)
+became the project's first and only PASS + ALPHA** - valid 155 trades, gross
+**+0.99% of price per trade** against a cost of 0.11% (a 9:1 ratio no earlier
+idea reached), 77 long and 78 short trades, **beta +0.01**, alpha **+10.2%/yr with
+CI [+1.4, +18.3]**. Its return was demonstrably not BTC's direction, which is the
+first time that has been true here.
+
+**It failed the holdout.** 135 trades, `gross_r` **-0.090**, mean R **-0.1118**,
+CI [-0.244, +0.021], CAGR -6.4%. The gross edge was 2023-24.
+
+| config | verdict | baseline | benchmark | holdout |
+|---|---|---|---|---|
+| 038 opening range, 4h | **PASS** | DRIFT | **ALPHA** | **FAILED** (-0.1118 R) |
+| 035 multi-day momentum, 4h | WATCH | DRIFT | ALPHA | not eligible (not a PASS) |
+| the other 9 WATCHes | WATCH | DRIFT | NO_EDGE | - |
+
+**The most useful single result in the project is that 038 was DRIFT and ALPHA at
+the same time.** `baseline.py` said its entry has no timing skill: on TRAIN its
+-0.005 sat below the 95th percentile of random entries with the same stop and hold
+(+0.107). `benchmark.py` said its return is not BTC's direction. Both are true,
+and the only mechanism left for a strategy that made money on VALID is *being in
+the market with a cheap cost structure* - an exposure decision, not an edge. It is
+the cleanest separation of the three things a backtest can produce: **skill,
+drift, and cost.**
+
+Round 5 also settled three more things:
+
+- **Mean reversion is refuted at a real horizon, not just intraday.** 034 (z-score
+  over 5-10 days) had the best reversion gross ever measured here, +0.32% of
+  price against a 0.108% cost, and went to VALID at **-0.098**, REJECT at all
+  seven timeframes. BTC's multi-day overshoots do not come back within five days.
+- **Funding carry is the one hypothesis untested rather than refuted.** It is
+  INCONCLUSIVE (100 TRAIN trades, 28 VALID) because a 96h hold and a 0.15%
+  extreme-funding threshold cannot produce 100 VALID trades. It is the only idea
+  in 173 evaluations that earns from funding instead of from price, and measuring
+  it needs a different instrument, not another idea file.
+- **Turn-of-month fade is unmeasurable in this design**, not rejected: a 5-day
+  calendar window and a 96h hold leave fewer than 30 VALID trades.
+
+## 8. What would change the answer
+
 
 Stated in advance, so the next agent knows what counts as new information:
 

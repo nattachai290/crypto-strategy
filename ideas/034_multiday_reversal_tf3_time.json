@@ -1,0 +1,48 @@
+{
+  "name": "034_multiday_reversal_tf3_time",
+  "hypothesis": "Over five to ten days a 2-sigma move is not information, it is a position: the move is long enough that trend followers have added to it and leveraged accounts have been funded into it, and both need out at the same time. The counterparty is therefore not a view but a margin call, and margin calls unwind on the timeframe of days, not hours - which is why this was never visible at the 12h horizons where mean reversion was tested and rejected. The edge, if there is one, is that a stretched move overshoots because forced selling does not stop at a fair price, and part of the overshoot is handed back as the forced sellers become the buyers. This is the one reversion idea the project has not closed, and the difference from Exp 016's is the horizon, not the signal. [Timeframe variant of 034_multiday_reversal, 240m -> 3m, mode time: bar counts x80, ATR multiples x8.944, same hours and % stops.]",
+  "strategy": "recipe",
+  "tf": 3,
+  "params": {
+    "triggers": [
+      {
+        "type": "zscore_revert",
+        "n": 2400,
+        "z": 2.0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 13.416,
+      "max_atr": 71.554
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 2.0,
+    "trail_atr": 26.833,
+    "max_hold_hours": 96,
+    "cooldown_bars": 480,
+    "atr_n": 1120
+  },
+  "grid": {
+    "triggers.0.n": [
+      2400,
+      4800
+    ],
+    "max_hold_hours": [
+      48,
+      96
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.894,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "034_multiday_reversal",
+  "variant_mode": "time"
+}

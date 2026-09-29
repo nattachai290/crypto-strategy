@@ -36,6 +36,16 @@ Exp 004. Prefer ATR stops of ~2.5–5x on 15m, or 15m/30m bars over 1m/3m.
 
 ### ✅ Ready (`"triggers": [{"type": "<name>", ...params}]`)
 
+> **The contract, and the bug that came from breaking it (Exp 024).** A trigger
+> returns **one 1-D array of 0 / +1 / −1** (use `_side(long_ev, short_ev)`); a
+> filter returns **two boolean arrays** `(long_ok, short_ok)`. `recipe()` does
+> `np.asarray()` on whatever a trigger returns, so a trigger that returns a
+> `(long, short)` tuple becomes a `(2, n)` array and is read as
+> `(S > 0).any(axis=0)` — "either side fired" — which makes it **long-only**.
+> `opening_range` did that for all of Exp 022 (798 long trades, 0 short). After
+> adding a block, check: every trigger returns a 1-D array of 0/±1, every filter
+> returns two arrays.
+
 | type | params (defaults) | idea behind it |
 |---|---|---|
 | `ema_cross` | fast=20, slow=50 | trend starts |
@@ -54,6 +64,7 @@ Exp 004. Prefer ATR stops of ~2.5–5x on 15m, or 15m/30m bars over 1m/3m.
 | `opening_range` | mins=60, hour=0 | close crosses outside the high/low of the first N minutes after a UTC hour. The window must be complete before it can be used, so it only fires after the window closes. |
 | `keltner_break` | n=20, mult=2.0 | close crosses outside EMA(n) ± mult·ATR: a volatility channel that widens with volatility instead of lagging like a Donchian. |
 | `flush` | k=2.0, m=1.5, lookback=96, mode follow/fade | bar range > k·ATR **and** volume > m·its own shifted average: a liquidation cascade. `mode` picks which side is the trade, because "cascades overshoot" and "cascades start trends" are opposite hypotheses and the data has to choose between them. |
+| `month_turn_fade` | before=2, after=2, lookback=6 | on bars within N days of a UTC month boundary, take the side opposite to the `lookback`-bar move that got price there. A calendar window, not a price one: risk budgets, index rebalancing and benchmark rolls push price into the boundary and stop at it. Naturally both-sided, so it cannot be a disguised long. **Exp 024: INCONCLUSIVE** — a 5-day window with a 96h hold leaves under 30 VALID trades. |
 
 ### 🧩 Worth adding (Level 2 blocks)
 

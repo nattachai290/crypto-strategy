@@ -2567,3 +2567,146 @@ bars and `--mode time` scales bar counts up to 7,200.
 **Read in the round summary:** `cost_r` per timeframe (should be flat, 0.03-0.05);
 gross % per trade against the 0.11% line; long vs short mean R and trade counts;
 the per-year split (2020, 2021, 2022 against 2023, 2024).
+
+---
+
+## Exp 024 - Round 5 results: cost first worked, two ALPHA results, and the holdout failed a third time
+
+**Date:** 2026-09-29
+**Status:** complete. 42 evaluations: **1 PASS, 9 WATCH, 17 REJECT, 15
+INCONCLUSIVE.** Project total **173 evaluations**. HOLDOUT spent a third time,
+on the one config that qualified, and **FAILED**.
+
+### The design worked: `cost_r` is flat for the first time
+
+`--mode time` variants from a 4h source did exactly what constraint 1 intended.
+VALID `cost_r` by timeframe, all six ideas:
+
+| idea | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| 033 funding carry | 0.023 | 0.023 | 0.023 | 0.023 | 0.020 | 0.023 | 0.020 |
+| 034 multi-day reversal | 0.021 | 0.020 | 0.019 | 0.019 | 0.019 | 0.019 | 0.019 |
+| 035 multi-day momentum | 0.021 | 0.019 | 0.019 | 0.019 | 0.019 | 0.019 | 0.019 |
+| 036 keltner multi-day | 0.020 | 0.019 | 0.019 | 0.019 | 0.019 | 0.019 | 0.019 |
+| 037 turn-of-month fade | 0.017 | 0.018 | 0.016 | 0.019 | 0.017 | 0.019 | 0.019 |
+| 038 opening range | 0.023 | 0.020 | 0.019 | 0.022 | 0.022 | 0.022 | 0.022 |
+
+Compare Exp 016's chart-mode ladder for the same idea: **0.505 R on 1m down to
+0.019 R on 4h**. Here every timeframe sits at 0.016-0.023 R. For the first time
+in this project a signal could be evaluated on 1m without cost deciding the
+answer, and the two ideas that were best at 1m (035 at +0.114, 036) did not
+collapse there. **That is the single most useful methodological result of the
+round: the cost problem is an artefact of how variants were built, and it is
+removable.**
+
+### The two ALPHA results - a first in the project
+
+| config | verdict | baseline | benchmark |
+|---|---|---|---|
+| **038 opening range, 4h** | **PASS** | DRIFT | **ALPHA** |
+| 035 multi-day momentum, 4h | WATCH | DRIFT | **ALPHA** |
+| the other 8 WATCHes | WATCH | DRIFT | NO_EDGE |
+
+`benchmark.py` had returned NO_EDGE on 23 of 23 runs before this round. Two
+configurations now say ALPHA, and crucially their **beta is ~0**, which was the
+round's own test for "not secretly long":
+
+| config | period | long/short trades | beta | alpha/yr [95% CI] | Sharpe idea / B&H |
+|---|---|---|---|---|---|
+| 038 | VALID | **77 / 78** | **+0.01** | **+10.2% [+1.4, +18.3]** | 1.61 / 2.01 |
+| 038 | TRAIN | | −0.02 | +5.6% [−4.7, +16.6] | 0.42 / 0.76 |
+| 035 | VALID | 61 / 38 | | ALPHA | |
+
+**038 was PASS + ALPHA, so `--final` was permitted and was run** (AGENTS.md
+step 7, PLAN §5). The holdout refused nothing and returned:
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 258 | +0.075 | 0.021 | +0.0534 | | | 11.8% |
+| valid 2023-2024 | 155 | **+0.197** | 0.022 | **+0.1753** | [+0.032, +0.327] | +11.8% | 5.9% |
+| **holdout 2025-01..2026-08** | 135 | **−0.090** | 0.022 | **−0.1118** | [−0.244, +0.021] | **−6.4%** | 12.6% |
+
+**FAILED.** The holdout has now been used three times - the Exp 011 lock test,
+022, and 038 - and **all three failed**. Only one technique has ever spent a
+holdout before 038; both techniques that did are gone.
+
+### What we learned
+
+1. **A positive alpha with beta ~0 is not the same as an edge, and this project
+   has now measured the difference.** 038 had alpha +10.2%/yr with a VALID CI of
+   [+1.4, +18.3] and a beta of 0.01, so its return was demonstrably not BTC's
+   direction - and its gross move per trade was **+0.99% of price against a cost
+   of 0.11%**, a 9:1 ratio that no idea in Rounds 1-4 achieved. On the holdout
+   the same config's `gross_r` went from **+0.197 to −0.090**. A 9:1 gross-to-cost
+   ratio is not protection when the gross itself is a two-year phenomenon: 038's
+   VALID split was 2023 +0.0916 (77 trades) against 2024 +0.2579 (78 trades),
+   and both years of 2023-24 were a period in which this particular structure
+   happened to work. **The cost lesson is real; the edge was not.**
+
+2. **DRIFT and ALPHA together are a new state, and it is a warning rather than a
+   result.** 038's `baseline.py` said DRIFT: on TRAIN its −0.005 sat below the
+   95th percentile of random entries with the same stop and hold (+0.107). So
+   the entry has no timing skill, the return is not BTC's direction, and the
+   strategy still made money on VALID. The only mechanism left for that is *being
+   in the market with a cheap cost structure* - which is not an edge, it is an
+   exposure decision, and it does not survive a period where the market gives
+   nothing back. This is the cleanest separation of the three things a backtest
+   can produce - skill, drift, and cost - that the project has produced.
+
+3. **Mean reversion is answered for a real horizon too, not just intraday.**
+   034 (z-score over 5-10 days, 48-96h hold, 5% stop) had a positive TRAIN gross
+   of **+0.32% of price against a cost of 0.108%** - a 3:1 ratio, the best
+   reversion gross ever measured here - and still went to VALID at **−0.098**,
+   REJECT at all seven timeframes. Exp 016's "never retry mean reversion" is now
+   confirmed at the horizon where the cost objection does not apply. The
+   mechanism is not that reversion is too expensive; it is that BTC's
+   multi-day overshoots do not come back within five days.
+
+4. **Funding carry is INCONCLUSIVE, not negative: 100 TRAIN trades and 28 VALID.**
+   `funding_extreme` at 0.00015 fires 154 times in three years on 4h and the
+   96h hold means a position is open most of the time, so the sample cannot
+   reach 100 VALID trades. **The one hypothesis in this project that is untested
+   rather than refuted is the one that earns from funding rather than from
+   price.** It needs a different instrument - a rolling funding-rate position
+   held for weeks, with the stop and the time stop removed because carry is not a
+   price trade - and that is a Level 3 idea, not an idea file.
+
+5. **Turn-of-month fade (R5.5, my own idea) is INCONCLUSIVE at 6 of 7
+   timeframes** for the same reason: the calendar window is 5 days a month, so
+   there are not enough entries for a multi-day hold. It produced 966 TRAIN
+   signals but VALID trade counts stay under 30 because each 96h position
+   occupies most of a 5-day window. The hypothesis is not refuted, it is
+   **unmeasurable in this design**, and saying so is more useful than a
+   REJECT.
+
+6. **`--mode time` is the correct default for anything with a long hold, and it
+   is not cosmetic.** It moves `cost_r` from a 26:1 spread across timeframes to
+   1.4:1. Anything in this project that wants to compare timeframes on a
+   multi-day hold should use it.
+
+### Verdict
+
+`REJECT`, with one methodological win. 41 of 42 evaluations are not candidates:
+17 REJECT, 15 INCONCLUSIVE, 9 WATCH all DRIFT and 8 of 9 NO_EDGE, and the single
+PASS - the first, and only, PASS + ALPHA of the project - **FAILED its holdout
+with a negative gross**.
+
+**The plan is now complete.** 173 evaluations, 6 rows ever read PASS, **0
+CONFIRMED**, 3 holdout runs, 3 failures. What the evidence supports is narrower
+and sharper than "no edge exists", and it is worth stating precisely:
+
+- At BTCUSDT VIP0 costs, **cost is the first-order term** and it is a design
+  choice, not a fate: `--mode time` plus a 5-7% stop takes `cost_r` to ~0.02 R
+  on every timeframe.
+- With cost solved, several both-sided multi-day structures produce a **positive
+  gross of 1% of price per trade** - and **none of them has timing skill**, so
+  the gross is a property of the period, not of the entry.
+- The one hypothesis never refuted is **carry**: earning funding without a price
+  view. It is unmeasurable inside this engine because a 96h hold and a 0.15%
+  extreme-funding threshold cannot produce 100 VALID trades. That is the single
+  most promising thing left, and it needs a different instrument rather than
+  another idea file.
+
+Per `PLAN.md` §7 the next step is the owner's: other markets, cross-exchange
+basis and funding data, or VIP fee tiers. **Nothing in this project is a
+profitable strategy, and the holdout has never confirmed anything.**

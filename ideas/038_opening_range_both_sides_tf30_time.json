@@ -1,0 +1,48 @@
+{
+  "name": "038_opening_range_both_sides_tf30_time",
+  "hypothesis": "A bug correction, not a new hypothesis. R4.2's 00:00 UTC opening-range break returned a (long, short) tuple where every trigger returns one signed array, so `recipe()` read 'either side fired' as LONG and the whole of Exp 022 ran long-only: 798 long trades and 0 short. Its control verdicts (DRIFT, NO_EDGE) stand and the round's conclusion is unchanged, but the structure itself was never actually tested on both sides, and it was the only Round 4 structure whose gross move exceeded the 0.11% cost line (+0.141% of price at 4h). The 00:00 print resets positioning once a day - brackets are rebuilt around it - so its first hour is a level with order flow behind it, and a close outside it is the first moment those brackets are all on the wrong side. This re-test adds what Round 4 did not have: a 6% stop and a 96h hold, so the gross move is measured against a cost of 0.043 R rather than 0.15 R. [Timeframe variant of 038_opening_range_both_sides, 240m -> 30m, mode time: bar counts x8, ATR multiples x2.828, same hours and % stops.]",
+  "strategy": "recipe",
+  "tf": 30,
+  "params": {
+    "triggers": [
+      {
+        "type": "opening_range",
+        "mins": 60,
+        "hour": 0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 4.243,
+      "max_atr": 22.627
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 2.0,
+    "trail_atr": 8.485,
+    "max_hold_hours": 96,
+    "cooldown_bars": 48,
+    "atr_n": 112
+  },
+  "grid": {
+    "stop.pct": [
+      0.05,
+      0.06
+    ],
+    "max_hold_hours": [
+      48,
+      96
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.283,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "038_opening_range_both_sides",
+  "variant_mode": "time"
+}

@@ -1,0 +1,51 @@
+{
+  "name": "036_keltner_multiday_tf15_time",
+  "hypothesis": "Idea 032 put a Keltner break on a 12h hold with an htf_trend filter, and produced Round 4's largest TRAIN gross - and was DRIFT, which is the pattern of the whole round: a real move at a horizon where cost eats it, or a filter that makes a both-sided idea long. This idea removes both problems at once. The channel is a volatility band, so it widens when price has been moving and narrows when it has not, and its break therefore means price has left a band whose width is itself a measure of movement. Held for days with a 6% stop, the gross move it captures is several times the 0.11% cost line, and with no directional filter at all it cannot be a disguised long. The pairs gridded are the two that survive constraint 5: `mult` is fixed at 2.0 because (n 20, mult 3.0) produced only 62 TRAIN signals and was dropped before running. [Timeframe variant of 036_keltner_multiday, 240m -> 15m, mode time: bar counts x16, ATR multiples x4.000, same hours and % stops.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "keltner_break",
+        "n": 320,
+        "mult": 2.0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 6.0,
+      "max_atr": 32.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 2.0,
+    "trail_atr": 12.0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 96,
+    "atr_n": 224
+  },
+  "grid": {
+    "triggers.0.n": [
+      320,
+      800
+    ],
+    "triggers.0.mult": [
+      2.0
+    ],
+    "max_hold_hours": [
+      48,
+      96
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.4,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "036_keltner_multiday",
+  "variant_mode": "time"
+}

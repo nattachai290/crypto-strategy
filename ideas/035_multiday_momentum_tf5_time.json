@@ -1,0 +1,47 @@
+{
+  "name": "035_multiday_momentum_tf5_time",
+  "hypothesis": "A five to twenty day high or low is where trend-following funds add risk, because their mandate is to hold the extreme rather than to forecast it. That is a structural reason for the move to continue rather than reverse: the buyers of a new high are institutions with a rule that says buy, not people with a view. The reason to test it both-sided with no directional filter is that this effect should not care about the sign of the market - it continued down through 2022 and up through 2023-24, and a rule that only works in the bull market is the drift this project has spent four rounds trying to separate from an edge. The kill condition is deliberately two-sided: it dies if TRAIN gross_r <= 0, and it also dies if the whole result is one side in the period where that side matches the drift. [Timeframe variant of 035_multiday_momentum, 240m -> 5m, mode time: bar counts x48, ATR multiples x6.928, same hours and % stops.]",
+  "strategy": "recipe",
+  "tf": 5,
+  "params": {
+    "triggers": [
+      {
+        "type": "donchian_break",
+        "n": 1440
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 10.392,
+      "max_atr": 55.426
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 2.0,
+    "trail_atr": 20.785,
+    "max_hold_hours": 96,
+    "cooldown_bars": 288,
+    "atr_n": 672
+  },
+  "grid": {
+    "triggers.0.n": [
+      1440,
+      2880
+    ],
+    "max_hold_hours": [
+      72,
+      120
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.693,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "035_multiday_momentum",
+  "variant_mode": "time"
+}

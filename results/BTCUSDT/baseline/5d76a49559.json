@@ -1,0 +1,41 @@
+{
+  "eval_id": "5d76a49559",
+  "name": "036_keltner_multiday",
+  "tf": 240,
+  "n_per_mode": 200,
+  "timestamp": "2026-09-29 02:23 UTC",
+  "idea_valid_mean_r": 0.09650472333193168,
+  "idea_valid_trades": 122,
+  "idea_train_mean_r": 0.032663136245224114,
+  "idea_train_trades": 190,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.05037459703566676,
+    "valid_median": -0.01919545755745428,
+    "valid_p95": 0.06032273661338363,
+    "share_random_ge_idea": 0.005,
+    "valid_trades_median": 122.0,
+    "train_median": -0.0069907024125418805,
+    "train_p95": 0.06884259701164727,
+    "train_share_random_ge_idea": 0.225,
+    "idea_beats_p95_valid": true,
+    "idea_beats_p95_train": false,
+    "idea_beats_p95": false
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.05037459703566676,
+    "valid_median": -0.01919545755745428,
+    "valid_p95": 0.06032273661338363,
+    "share_random_ge_idea": 0.005,
+    "valid_trades_median": 122.0,
+    "train_median": -0.0069907024125418805,
+    "train_p95": 0.06884259701164727,
+    "train_share_random_ge_idea": 0.225,
+    "idea_beats_p95_valid": true,
+    "idea_beats_p95_train": false,
+    "idea_beats_p95": false
+  },
+  "verdict": "DRIFT",
+  "rule": "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "033_funding_carry",
+  "hypothesis": "Funding is not a fee, it is a transfer: every eight hours the longs pay the shorts, at a rate set by the imbalance between the two sides' leverage. When the rate is extreme, the paying side is the crowded side, and the reason it pays is that its positions are too big to unwind at once. That is the mechanism this idea trades: not a price reversal but a position-size imbalance, whose unwinding takes days rather than hours. Take the paying side's side - short when longs are paying - and the position earns the funding while it waits. Idea 003 tried this at 15m with a 12h hold and produced 13 trades, so the hypothesis has never really been tested at a horizon where the unwind can happen. Short-only in practice on this sample (154 TRAIN signals, 108 of them short), and the long/short split is reported separately because a carry idea that is secretly one-directional is a drift idea.",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [{"type": "funding_extreme", "thresh": 0.00015}],
+    "filters": [],
+    "direction": "both",
+    "stop": {"type": "pct", "pct": 0.06, "min_atr": 1.5, "max_atr": 8.0},
+    "tp": {"type": "none"},
+    "trail_at": 2.0,
+    "trail_atr": 3.0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 6,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [0.06, 0.07],
+    "max_hold_hours": [72, 120]
+  },
+  "execution": {"entry_mode": "taker", "entry_offset_atr": 0.0, "entry_fill_ratio": 1.0}
+}

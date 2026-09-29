@@ -1,0 +1,49 @@
+{
+  "name": "037_turn_of_month_fade_tf60_time",
+  "hypothesis": "Month-end and month-start are calendar events, not price events. Institutional risk budgets reset, index products and mandates rebalance, and benchmark-tracking funds must sell what fell and buy what rose in order to return to their weights - all of it in the last days of a month and the first days of the next, without any view on BTC. That creates a directional push that ends on a date, which is a testable asymmetry rather than a mood: the flow that pushed price into the month boundary is the flow that stops at it. So this idea fades the move that runs into a month boundary and is a natural both-sided trade - it is long after a drop into the window and short after a rise into it, which is why it is the only idea left that is structurally incapable of being a disguised long, and why the round's beta requirement is the real test of it. The counterparty is the rebalancing flow itself, and it is calendar-driven, so the effect should be present in every year rather than tracking the market's direction. [Timeframe variant of 037_turn_of_month_fade, 240m -> 60m, mode time: bar counts x4, ATR multiples x2.000, same hours and % stops.]",
+  "strategy": "recipe",
+  "tf": 60,
+  "params": {
+    "triggers": [
+      {
+        "type": "month_turn_fade",
+        "before": 2,
+        "after": 2,
+        "lookback": 24
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 3.0,
+      "max_atr": 16.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 2.0,
+    "trail_atr": 6.0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 24,
+    "atr_n": 56
+  },
+  "grid": {
+    "stop.pct": [
+      0.06,
+      0.07
+    ],
+    "max_hold_hours": [
+      72,
+      120
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.2,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "037_turn_of_month_fade",
+  "variant_mode": "time"
+}

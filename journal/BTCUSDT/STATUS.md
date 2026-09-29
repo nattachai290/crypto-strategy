@@ -1,7 +1,48 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-29, after Exp 021 (Round 3 review). Rules for agents: `AGENTS.md`.
-Research plan: `docs/research/PLAN.md`._
+_Last updated: 2026-09-29, after Exp 024 (Round 5 complete). Rules for agents:
+`AGENTS.md`. Research plan: `docs/research/PLAN.md` (all five rounds done)._
+
+> **Exp 024 — Round 5 is done, the plan is finished, and the answer did not
+> change.** 42 evaluations: 1 PASS, 9 WATCH, 17 REJECT, 15 INCONCLUSIVE. Project
+> total **173**.
+>
+> 1. **A Round 4 bug: `opening_range` traded long-only for all of Exp 022.** It
+>    returned a `(long, short)` tuple where every trigger returns one signed
+>    array, so `recipe()` read "either side fired" as LONG — 798 valid long
+>    trades, **0 short**. Fixed to a single `_side()` call; the corrected idea
+>    (038) can now trade both sides. The control verdicts on 029 (DRIFT,
+>    NO_EDGE) still stand and the round's conclusion is unchanged, but 029 was
+>    never a both-sided result. **Check after adding any block: every trigger
+>    returns a 1-D array of 0/+1/-1, every filter returns two boolean arrays.**
+> 2. **`--mode time` is the fix for the cost problem, and it is not cosmetic.**
+>    With 4h source files and `--mode time`, `cost_r` is **0.016–0.023 R on all
+>    seven timeframes** instead of chart mode's 0.505 R (1m) to 0.019 R (4h) — a
+>    26:1 spread becomes 1.4:1. Use it for anything with a multi-day hold.
+> 3. **038 (00:00 opening-range break, 4h) was the project's first and only
+>    PASS + ALPHA** — valid 155 trades, `gross_r` +0.197 (**+0.99% of price per
+>    trade** against a 0.11% cost), 77 long / 78 short, **beta +0.01**, alpha
+>    +10.2%/yr CI [+1.4, +18.3]. **It FAILED the holdout**: 135 trades,
+>    `gross_r` **−0.090**, mean R −0.1118, CAGR −6.4%. The gross edge was
+>    2023-24. **The holdout is now used three times and has failed three times.**
+> 4. **DRIFT and ALPHA at the same time is the project's sharpest result.** 038's
+>    entry has no timing skill (TRAIN −0.005, below random entries' 95th pct
+>    +0.107) and its return is not BTC's direction (beta 0.01) — yet it made
+>    money on VALID. The only remaining mechanism is *being in the market with a
+>    cheap cost structure*, which is an exposure decision, not an edge.
+> 5. **Mean reversion is refuted at a real horizon too.** 034 (z-score over 5-10
+>    days) had the best reversion gross measured here (+0.32% of price vs 0.108%
+>    cost) and went to VALID at **−0.098**, REJECT at all seven timeframes.
+> 6. **Funding carry (033) is INCONCLUSIVE, not refuted** — the one hypothesis
+>    left untested. A 96h hold plus a 0.15% funding threshold cannot reach 100
+>    VALID trades. It earns from funding rather than from price, and measuring it
+>    needs a different instrument, not another idea file.
+> 7. **Turn-of-month fade (037, my own idea) is unmeasurable in this design**,
+>    not rejected: a 5-day calendar window and a 96h hold leave under 30 VALID
+>    trades.
+>
+> **Nothing in this project is a profitable strategy and the holdout has never
+> confirmed anything.** Read `journal/BTCUSDT/FINAL_REPORT.md` §7.
 
 > **Exp 017 — read before anything below.** All 5 Round 1 WATCHes (018@30m,
 > 018@1h, 019@30m, 019@1h, 017@1h) are **DRIFT**: random long entries inside
@@ -75,9 +116,16 @@ Research plan: `docs/research/PLAN.md`._
   at 4h, valid +0.1131, CI [+0.006, +0.223]) is **DRIFT** and NO_EDGE, so
   `--final` refused it. `flush` failed on **gross** in both follow and fade
   modes, which closes the liquidation-cascade family. Details: Exp 022.
+- **Round 5 is done: 42 evaluations, 1 PASS, 9 WATCH, 17 REJECT, 15
+  INCONCLUSIVE.** 4h source files with `--mode time` variants, 4-7% stops,
+  48-120h holds, both directions, no directional filter. The design worked
+  (`cost_r` flat at 0.016-0.023 R on all seven timeframes) and the answer did
+  not: the round's PASS was the project's first PASS + ALPHA (beta +0.01, alpha
+  +10.2%/yr) and it **FAILED the holdout with a negative gross**. Details:
+  `experiments.md` Exp 024.
 - 🏁 **The plan is complete. Read `journal/BTCUSDT/FINAL_REPORT.md`.** Project
-  total **131 evaluations**, 130 idea files, all 7 native timeframes. 5 rows ever
-  read PASS, **0 CONFIRMED**, holdout used twice and FAILED both times. The
+  total **173 evaluations**, 136 idea files, all 7 native timeframes. 6 rows ever
+  read PASS, **0 CONFIRMED**, holdout used three times and FAILED all three. The
   answer: **no tested technique on BTCUSDT at VIP0 costs has an edge that
   survives a random-entry control and a buy-and-hold benchmark.**
 - **The cost finding holds and is the most reusable thing here.** Every long
@@ -118,6 +166,15 @@ Research plan: `docs/research/PLAN.md`._
 - **A stop must be a price distance, not an ATR multiple.** `cost_r =
   round_trip_cost / stop_pct`; an ATR stop makes cost_r follow the
   volatility regime (Exp 012). Use `"stop": {"type": "pct", ...}`.
+- **Use `tf_variants.py --mode time` for anything with a multi-day hold**
+  (Exp 024). It keeps the stop's % of price and the hold's hours constant across
+  timeframes, so `cost_r` is comparable and a fine entry clock can be tested at
+  all. Chart mode rescales the stop and makes 1m variants lose on arithmetic
+  (0.505 R) rather than on the hypothesis.
+- **A big gross-to-cost ratio is not protection** (Exp 024). 038 had gross
+  +0.99% of price against 0.11% cost, a 9:1 ratio, and its `gross_r` went
+  +0.197 on VALID to **−0.090** on the holdout. Compare per-year splits before
+  believing a gross edge.
 - **Never compare `gross_r` across stop widths.** Compare net mean R.
 - **Post-only entry** cuts the round trip from 0.14% to 0.09% of price at
   80–95% fill. The per-idea benefit in R must be re-measured on the fixed engine.
@@ -166,38 +223,38 @@ Neighbouring timeframes agree (1h: train +0.099 / valid +0.110; 4h: +0.058 /
 
 ## Next step
 
-Round 3's answer is negative and it closes the whole "when to be long BTC"
-family: 96 evaluations, 20/20 NO_EDGE on the benchmark, one PASS whose holdout
-failed, and two PASSes that the benchmark says are dominated by owning the asset.
-
-Round 4 is the last round and the plan says it should look for edges that do
-**not** come from BTC's direction: previous-day high/low, the opening range,
-funding windows, liquidation flushes. `benchmark.py` stays the judge — a rule
-that cannot beat holding BTC is not worth a strategy card however good its own
-mean R looks.
+**All five rounds of `PLAN.md` are done.** 173 evaluations, 6 rows ever read
+PASS, 0 CONFIRMED, holdout spent three times and failed three times. The
+deliverable is `journal/BTCUSDT/FINAL_REPORT.md` and its §8 lists what would
+count as new information. Per `PLAN.md` §7 the remaining choices are the
+owner's, and none of them is another round on BTCUSDT.
 
 Three things to raise with the owner 🛑:
-1. **Whether to spend the holdout on 023** (PASS + SKILL but NO_EDGE). The plan
-   sends only ALPHA + PASS to the holdout; the benchmark says NO_EDGE. My
-   recommendation is not to spend it, and I have not.
-2. Whether partial take-profit or scale-in is worth an engine proposal — Round 2
-   measured that exit management redistributes outcomes but adds none, so the
-   answer looks like no, and I would not bring it again without evidence.
-3. Whether to run Round 4 at all, or stop and write `FINAL_REPORT.md` now: 96
-   evaluations is already a complete answer to the question the project was
-   asked.
+1. **Funding carry (033) is the one hypothesis untested rather than refuted.**
+   It earns from funding instead of from price, and it cannot be measured in
+   this engine because a 96h hold plus a 0.15% threshold cannot reach 100 VALID
+   trades. Measuring it means a different instrument — a rolling funding
+   position held for weeks, with the stop and the time stop removed because
+   carry is not a price trade. That is a Level 3 proposal and needs approval.
+2. **A different coin, or a different market.** Every finding here is specific
+   to BTCUSDT at VIP0 costs, and BTC is the most arbitraged market in
+   existence. The harness transfers unchanged. Adding a symbol to
+   `SYMBOL_SPECS` is also a Level 3 change and needs the owner's approval.
+3. **Whether to continue at all on this market.** 173 evaluations is a complete
+   answer, and the evidence is consistent rather than inconclusive: cost is the
+   first-order term and it is a design choice; with cost solved, several
+   both-sided structures produce a positive gross of ~1% of price per trade and
+   **none of them has timing skill**, so the gross belongs to the period and not
+   to the entry.
 
 Never build a weekday or session-hour filter, never retry mean reversion,
 squeeze→expansion, funding crowding, `taker_flow`/`funding_not_crowded`, any
 short-only breakout, or any long Donchian/pullback entry on 15m-30m.
 
-**Exp 023 — Round 4 is done and FINAL_REPORT.md is written (corrected in
-Exp 023). Next: Round 5 (`PLAN.md` §4, owner-approved), "cost first".** The cost
-per trade is ≈ 0.11% of price at every timeframe, and only a multi-day hold
-moves price more than that. Round 5 therefore uses 4h source files, `--mode time`
-variants, 4–7% stops, 48–120 h holds and **both directions with no trend
-filter**, so that the hold does not just earn the bull-market drift. The ban
-above on mean reversion and funding crowding applies to the short horizons
-where it was measured (≤ 16 h holds). Round 5's R5.1 (funding carry) and R5.2
-(multi-day reversal) are the explicit exceptions. Every other item of the ban
-stands.
+**Exp 024 update to that ban.** Exp 016's mean-reversion and funding-crowding
+bans were measured at ≤ 16h holds, where the gross move was under the cost.
+Round 5 retested both at the horizon where that objection does not apply and
+both are now closed for real: multi-day mean reversion (034) is REJECT at all
+seven timeframes despite a 3:1 gross-to-cost ratio, and funding carry (033) is
+INCONCLUSIVE because the sample cannot be built. Turn-of-month fade (037) is
+unmeasurable in this design. **Do not add a sixth round on BTCUSDT.**
