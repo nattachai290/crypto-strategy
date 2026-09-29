@@ -1,0 +1,55 @@
+{
+  "name": "032_keltner_break_tf5",
+  "hypothesis": "A Donchian channel is a price channel: its width is the range of the last n bars and it changes only when price makes a new extreme, so in a quiet regime the channel sits far from price and a 'break' is often just a move back inside the range it left. A Keltner channel is a volatility channel: EMA(n) plus a multiple of ATR, so it widens when volatility rises and narrows when it falls, and a break of it means price has left a band whose width is itself a measure of how far price has been moving. If false breakouts are what killed the Donchian versions in Rounds 1-2, then the same entry with a volatility-scaled band should have a higher gross_r, and that is the whole claim - the entry is otherwise identical, so the comparison isolates the band. [Timeframe variant of 032_keltner_break, 60m -> 5m, mode chart: same bar counts and ATR multiples, hold x0.0833333, pct stop x0.289.]",
+  "strategy": "recipe",
+  "tf": 5,
+  "params": {
+    "triggers": [
+      {
+        "type": "keltner_break",
+        "n": 20,
+        "mult": 2.0
+      }
+    ],
+    "filters": [
+      {
+        "type": "htf_trend",
+        "n": 50,
+        "mult": 4
+      }
+    ],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0087,
+      "min_atr": 1.5,
+      "max_atr": 6.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 1.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.mult": [
+      1.5,
+      2.0,
+      2.5
+    ],
+    "stop.pct": [
+      0.0058,
+      0.0087
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "032_keltner_break",
+  "variant_mode": "chart"
+}

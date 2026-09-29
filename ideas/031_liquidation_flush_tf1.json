@@ -1,0 +1,54 @@
+{
+  "name": "031_liquidation_flush_tf1",
+  "hypothesis": "A bar whose range is twice the ATR while its volume is one and a half times its own average is a liquidation cascade, and the two possible readings of that event are exact opposites, so the grid is what chooses between them. FADE: the cascade is forced selling into thin books, the overshoot is liquidity that has to be replenished, and price snaps back to where it was. FOLLOW: the cascade is the point at which leverage is removed, and the market trends once the liquid accounts are out. Which one is true is not knowable in advance, so the mode is a grid key rather than an opinion: if neither side has a positive gross_r then the event has no exploitable side at all and the whole family of 'liquidation' strategies is dead. Both modes are tested with direction both, so the sign of the cascade is not assumed either. [Timeframe variant of 031_liquidation_flush, 60m -> 1m, mode chart: same bar counts and ATR multiples, hold x0.0166667, pct stop x0.129.]",
+  "strategy": "recipe",
+  "tf": 1,
+  "params": {
+    "triggers": [
+      {
+        "type": "flush",
+        "k": 2.0,
+        "m": 1.5,
+        "lookback": 96,
+        "mode": "follow"
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0039,
+      "min_atr": 1.5,
+      "max_atr": 6.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 0.13,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.mode": [
+      "follow",
+      "fade"
+    ],
+    "triggers.0.k": [
+      1.5,
+      2.0
+    ],
+    "triggers.0.m": [
+      1.5,
+      2.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "031_liquidation_flush",
+  "variant_mode": "chart"
+}

@@ -324,6 +324,31 @@ entries inside the same trend filters do as well. A long-only result on
   is 0.009 R at a 10% stop, which is why the interval is cheap enough to ignore
   and why `cost_r` 0.022 is achievable at all.
 
+**After Round 4 (Exp 022, 35 evaluations, 1 PASS, 33 REJECT, 20/20 NO_EDGE):**
+
+- **A positive `gross_r` is not an edge.** The 00:00 UTC opening-range break has a
+  positive `gross_r` at **all seven timeframes** (+0.019 to +0.141) and is
+  negative on net at six of them, because `cost_r` is above 0.5 R on 1m. The
+  same idea is **-0.486 R at 1m and +0.113 R at 4h** with no change in the
+  signal. Read `gross_r` as "a small predictable move exists", never as "the
+  entry is timed well" - the random-entry control is what separates the two.
+- **Yesterday's extremes, funding windows and Keltner breaks add nothing that a
+  random entry does not also have.** 028 grossed +0.02..+0.07, 030 +0.02..+0.06,
+  032 +0.091 at 1h and was DRIFT. A Keltner band (volatility-scaled) does not
+  beat a Donchian band (price-lagged) by enough to matter.
+- **Liquidation cascades have no exploitable side on gross.** `flush` at 2× ATR
+  range and 1.5× volume was negative in **both** `follow` and `fade` modes at
+  30m and 4h. That closes the family on gross, not on net, and it means the
+  `mode` parameter is not a knob to re-tune.
+- **A positive alpha CI on one period is a period, not an edge.** 032's TRAIN
+  alpha was +13.3% with CI [+0.9, +26.4] - the only alpha CI in 131 evaluations
+  that excludes zero - and its VALID alpha was -0.7%. Same shape as 022's
+  2023/2024 split. **Check per-year before believing any alpha.**
+- **The 00:00 UTC opening range is the only structure that reached PASS on more
+  than one timeframe's worth of trades, and it still failed the control on
+  TRAIN** (its +0.0313 sat below the 95th percentile of random entries at any
+  time, +0.0719). Its benchmark: alpha -1.7% TRAIN, -0.9% VALID.
+
 **Before the fix (Exp 003–014, history; results unreliable where shorts were involved):**
 
 - Single-indicator strategies (EMA, Donchian, BB, VWAP, Supertrend, ADX,

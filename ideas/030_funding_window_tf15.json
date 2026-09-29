@@ -1,0 +1,53 @@
+{
+  "name": "030_funding_window_tf15",
+  "hypothesis": "Funding settles every eight hours, and around each settlement there is a mechanical flow that exists at no other time: positions that want to collect the funding have to be open and sized before the timestamp, so they are opened into the window and closed out of it, and the ones that would rather not pay the cost are closed and reopened. That is a flow with a known clock, so it is a TIMING claim, not a directional one, which is exactly what the project needs after three rounds of entries that turned out to be drift. The claim is that a market-structure entry taken inside the window behaves differently from the same entry taken outside it, and the test is whether adding the window to R4.1's entry changes its result. [Timeframe variant of 030_funding_window, 60m -> 15m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "prev_day_break",
+        "days": 1
+      }
+    ],
+    "filters": [
+      {
+        "type": "funding_window",
+        "hours": 2
+      }
+    ],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.015,
+      "min_atr": 1.5,
+      "max_atr": 6.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 3.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "filters.0.hours": [
+      1,
+      2,
+      4
+    ],
+    "stop.pct": [
+      0.01,
+      0.015
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "030_funding_window",
+  "variant_mode": "chart"
+}

@@ -1,0 +1,51 @@
+{
+  "name": "028_prev_day_break_tf240",
+  "hypothesis": "Yesterday's high and low are the two levels on this market that other people actually use. Retail and desk stops sit just beyond them, breakout orders are queued at them, and the daily risk reports measure distance to them, so a break of either one is where resting supply and forced risk-reduction meet. The counterparty here is concrete and identifiable - it is the stop order, not a mood - and a stop that is triggered on the way through a level tends to be followed, because the orders behind it are filled at the worst moment for the person who placed them. This is the one entry in the project whose claimed mechanism does not require BTC to go anywhere in particular, which is why it survives the Round 3 finding that every directional entry was drift. [Timeframe variant of 028_prev_day_break, 60m -> 240m, mode chart: same bar counts and ATR multiples, hold x4, pct stop x2.000.]",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [
+      {
+        "type": "prev_day_break",
+        "days": 1
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 1.5,
+      "max_atr": 6.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 48.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [
+      0.04,
+      0.06
+    ],
+    "max_hold_hours": [
+      32.0,
+      48.0
+    ],
+    "trail_atr": [
+      3.0,
+      4.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "028_prev_day_break",
+  "variant_mode": "chart"
+}

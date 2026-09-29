@@ -2268,3 +2268,102 @@ project are NO_EDGE, and a rule that cannot beat holding BTC is not a strategy
 card. A negative answer here is the expected and acceptable outcome: it would
 mean the project has tested direction, timing, regime, exit management and now
 market structure, and the answer is that BTCUSDT at VIP0 costs leaves no edge.
+
+---
+
+## Exp 022 - Round 4 results: one PASS, refused by the control, and the cost story again
+
+**Date:** 2026-09-29
+**Status:** complete. 35 evaluations: **1 PASS, 1 WATCH, 33 REJECT.** Project
+total **131 evaluations** over 130 idea files and all 7 native timeframes.
+HOLDOUT **not** spent: the round's one PASS is DRIFT, so `--final` refused it.
+
+### Ideas tested (VALID mean R / n trades, and VALID gross_r)
+
+| idea | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| 028 prev-day break | -0.373 | -0.145 | -0.113 | -0.060 | -0.040 | +0.005 | +0.029 |
+| 029 opening range | -0.486 | -0.276 | -0.184 | -0.061 | -0.038 | +0.000 | **+0.113 PASS** |
+| 030 funding window | -0.369 | -0.148 | -0.100 | -0.026 | -0.033 | +0.004 | +0.011 |
+| 031 liquidation flush | -0.594 | -0.245 | -0.192 | -0.078 | -0.068 | +0.001 | -0.062 |
+| 032 keltner break | -0.686 | -0.340 | -0.211 | -0.061 | -0.020 | +0.036 WATCH | +0.005 |
+| *gross_r, 029* | +0.049 | +0.030 | +0.019 | +0.029 | +0.023 | +0.041 | **+0.141** |
+
+### The one PASS: 029_opening_range at 4h (eval 72f03ca562)
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | stress | skips |
+|---|---|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 453 | | | +0.0313 | | | | | 0 |
+| valid 2023-2024 | 286 | +0.1408 | 0.0277 | **+0.1131** | [+0.006, +0.223] | +16.3% | 7.6% | +0.1018 | 0 |
+| valid x1.5 cost | | | | +0.1018 | | | | | |
+
+**DRIFT**, and `--final` refused it. Random entries with the same exits beat it:
+on TRAIN its +0.0313 is below the 95th percentile of "random at any time"
+(+0.0719). On VALID it clears that bar (+0.1131 vs +0.0805) but not the same
+test on TRAIN, which is what the Exp 019 tightening requires. Benchmark:
+**NO_EDGE** (beta 0.12 / 0.17, alpha **-1.7%** on TRAIN and **-0.9%** on VALID,
+Sharpe 0.42 and 1.56 against buy & hold's 0.76 and 2.01).
+
+The WATCH, 032_keltner_break at 1h, is also DRIFT and NO_EDGE - 6% and 11% of
+random runs beat it on VALID. Worth one note: its TRAIN alpha is **+13.3% with a
+CI of [+0.9, +26.4]**, the only positive alpha CI anywhere in this project, and it
+is -0.7% on VALID. One period, gone.
+
+### What we learned
+
+1. **The cost story, for the fourth round running and now in its purest form.**
+   The 00:00 UTC opening-range break has a positive `gross_r` at **every one of
+   the seven timeframes** (+0.019 to +0.141) and is negative on net at six of
+   them. The identical idea is **-0.486 R at 1m and +0.113 R at 4h**: nothing
+   about the signal changed, only the size of R. `cost_r` is 0.019 at 4h and
+   above 0.5 at 1m. This is now measured on four independent idea families
+   (long breakouts, regime rules, pullbacks, market structure) and it is the
+   only mechanism in this project that reproducibly produces results.
+
+2. **A positive `gross_r` is not an edge, and a 4h PASS on it is not a strategy.**
+   Gross +0.14 R sounds like an edge and the raw data has it, but the random-entry
+   control says the same gross is available from entries that have no structure at
+   all. What 029 found is that the opening range's break has a *small* predictable
+   move, not that the break is *timed* well.
+
+3. **A positive alpha CI on one period is a period, not an edge.** 032's TRAIN
+   alpha is +13.3% [+0.9, +26.4] - the only alpha CI in 131 evaluations that
+   excludes zero - and its VALID alpha is -0.7%. Two periods, opposite signs.
+   This is the same shape as 022's 2023/2024 split, and it is the single most
+   reliable way this project has produced a false positive.
+
+4. **None of the four new market-structure ideas survived, and they failed in the
+   same way: no gross edge, or a gross edge that timing cannot reach.** 028
+   (yesterday's extreme) grossed +0.02 to +0.07; 030 (funding window) +0.02 to
+   +0.06; 031 (liquidation flush) +0.084 at 1m falling to -0.043 at 4h, and
+   **negative gross in both follow and fade modes at 30m and 4h** - so the
+   "cascades overshoot" and "cascades start trends" hypotheses are both dead on
+   gross, which is the kill condition that was pre-registered for exactly this.
+   032 (Keltner) is the only one with a real gross (+0.091 at 1h) and it is
+   DRIFT.
+
+5. **`flush` follow and fade both failed on gross, which is a stronger result
+   than either failing on net.** A cascade event that has no predictable
+   direction in either reading is not a tradeable event on this market at these
+   costs, and that closes the entire "liquidation cascade" family rather than
+   leaving the mode as a parameter to re-tune.
+
+### Verdict
+
+`REJECT`, and the round is complete. 33 of 35 REJECT, and the two survivors are
+DRIFT and NO_EDGE, so the project's holdout remains unspent on anything that
+passed the controls.
+
+Cumulatively, across 131 evaluations, the project has now tested **direction**
+(long entries, short entries, both sides), **timing** (sessions, funding
+windows, the daily open, yesterday's extremes), **regime** (trend state, ADX,
+volatility, squeeze), **exit management** (TP, break-even, trailing, time stop,
+stop width and kind), **timeframe** (all seven) and **market structure** (four
+new blocks built for this round). The answer is the same at every level: **no
+tested technique on BTCUSDT USDT-M at VIP0 costs has an edge that survives a
+random-entry control and a buy-and-hold benchmark.** Five rows have ever read
+PASS. One reached the holdout and returned -0.0102 R.
+
+The holdout has been spent exactly twice, on `example_trend_breakout` (the Exp 011
+lock test) and on 022, and **both FAILED**. `PLAN.md` §7 now applies: the
+deliverable is `journal/BTCUSDT/FINAL_REPORT.md`.

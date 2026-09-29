@@ -1,0 +1,49 @@
+{
+  "name": "029_opening_range_tf15",
+  "hypothesis": "The 00:00 UTC print resets positioning once a day. Every leveraged account, every market maker and every volatility seller rebuilds its brackets around that one print, and the first hour after it is the window in which they agree on a reference price. Once that hour is over, the first close outside it is the first moment where those brackets are all on the wrong side of price in the same direction, and the day's direction is decided by whoever is first forced to cover. This is a market-structure claim rather than a directional one: it says the 00:00 range is a level with order flow behind it, which is testable without assuming where BTC is going. [Timeframe variant of 029_opening_range, 60m -> 15m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "opening_range",
+        "mins": 60,
+        "hour": 0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.015,
+      "min_atr": 1.5,
+      "max_atr": 6.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 1.5,
+    "trail_atr": 3.0,
+    "max_hold_hours": 3.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.mins": [
+      30,
+      60,
+      120
+    ],
+    "stop.pct": [
+      0.01,
+      0.015
+    ]
+  },
+  "execution": {
+    "entry_mode": "post_only",
+    "entry_offset_atr": 0.1,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "029_opening_range",
+  "variant_mode": "chart"
+}

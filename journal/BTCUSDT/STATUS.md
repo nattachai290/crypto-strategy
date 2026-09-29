@@ -69,6 +69,17 @@ Research plan: `docs/research/PLAN.md`._
   Project total 96. **Answer: no timing rule beats holding BTC.** Every
   `benchmark.py` run in the project is NO_EDGE (20/20; Exp 020 said 21).
   The 4h variants are UNSIZABLE (Exp 021). Details: Exp 020, Exp 021.
+- **Round 4 is done: 35 evaluations, 1 PASS, 1 WATCH, 33 REJECT.** Four new
+  Level 2 blocks built for it (`prev_day_break`, `opening_range`, `keltner_break`,
+  `flush`) plus the `funding_window` filter. The round's PASS (029 opening range
+  at 4h, valid +0.1131, CI [+0.006, +0.223]) is **DRIFT** and NO_EDGE, so
+  `--final` refused it. `flush` failed on **gross** in both follow and fade
+  modes, which closes the liquidation-cascade family. Details: Exp 022.
+- 🏁 **The plan is complete. Read `journal/BTCUSDT/FINAL_REPORT.md`.** Project
+  total **131 evaluations**, 130 idea files, all 7 native timeframes. 5 rows ever
+  read PASS, **0 CONFIRMED**, holdout used twice and FAILED both times. The
+  answer: **no tested technique on BTCUSDT at VIP0 costs has an edge that
+  survives a random-entry control and a buy-and-hold benchmark.**
 - **The cost finding holds and is the most reusable thing here.** Every long
   structure tested is negative at 1m/3m/5m and positive at 30m/1h/4h, on TRAIN
   as well as on VALID, for two different entries. The cause is measured, not
