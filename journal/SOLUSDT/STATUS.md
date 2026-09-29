@@ -2,9 +2,56 @@
 
 > **CLOSED (stop rule, Exp 003; review Exp 004).** Holdout used once, FAILED. Controls are still missing on 19 WATCH rows (Exp 004), which is for the research agent to complete.
 
-_Last updated: 2026-09-29, Exp 003 (Round S1 complete, holdout spent and
-FAILED). Rules: `AGENTS.md`. Plan: `docs/research/PLAN.md` section 12. BTCUSDT
-and ETHUSDT are closed. BNBUSDT is active._
+_Last updated: 2026-09-29, Exp 005 (the 19 missing controls are run; every
+WATCH/PASS on this coin now has both). Rules: `AGENTS.md`. Plan:
+`docs/research/PLAN.md` section 12. BTCUSDT, ETHUSDT and BNBUSDT are all closed
+and every per-coin stop rule has fired._
+
+> **Exp 005 - the 19 missing controls are now run. SOLUSDT has a control on every
+> one of its 20 WATCH/PASS configurations: 19 DRIFT + 1 SKILL, 19 NO_EDGE + 1
+> ALPHA, and the two non-default verdicts are the same single row (the PASS).**
+> No new SKILL and no new ALPHA appeared. Exp 004's process gap is closed and the
+> stop rule is unchanged: research on SOLUSDT stops. Full detail below; the
+> Exp 003 block that follows is the holdout record and is left as it was written.
+
+> **Exp 005 detail - what the 19 new controls added.**
+>
+> **1. The PASS is not representative of its own family on this coin.** 041@5m
+> read SKILL and ALPHA. The other controlled 041 clocks all read the opposite:
+>
+> | 041 clock | VALID trades | VALID mean R | CI low | baseline | benchmark |
+> |---|---|---|---|---|---|
+> | 3m | 110 | +0.0675 | −0.1509 | DRIFT | NO_EDGE |
+> | **5m** | 112 | **+0.2656** | **+0.0195** | **SKILL** | **ALPHA** |
+> | 15m | 100 | +0.0265 | −0.2059 | DRIFT | NO_EDGE |
+> | 30m | 132 | +0.1579 | −0.0688 | DRIFT | NO_EDGE |
+> | 1h | 103 | **+0.2504** | −0.0220 | **DRIFT** | **NO_EDGE** |
+>
+> **041@1h is the sharpest check on Exp 004's correction: +0.2504 on 103 VALID
+> trades - a near-identical number to the PASS on a neighbouring clock - and it
+> is DRIFT and NO_EDGE.** So the SKILL reading is a property of one
+> configuration, not of the family on SOLUSDT. That is consistent with Exp
+> 004's item 2, that 041@5m's TRAIN margin over the 95th percentile was 0.0008 R
+> on a period containing the two data gaps.
+>
+> **2. 035 @4h is the round's largest VALID number at +0.2816 on 99 trades and it
+> is DRIFT and NO_EDGE.** Across the two new coins the only SKILL reading on
+> either belongs to a configuration that is not a PASS.
+>
+> **3. Counting note.** `evaluations.csv` has 21 WATCH/PASS **rows** but 20
+> distinct configurations - the PASS is recorded twice, before and after its
+> `--final` run, as BTC's are. Exp 004's count of 20 was right. All 20 have both
+> controls, verified by joining `eval_id` against the output directories rather
+> than by counting rows.
+>
+> **4. Exp 004's four corrections are acknowledged and applied**; the standing
+> Exp 002/003 text is not rewritten, this journal being append-only. In
+> particular **"a genuinely skillful entry, one that beats random timing on data
+> it has never seen" is withdrawn** - the holdout's +0.054 R with CI [−0.174,
+> +0.298] and P(>0) 0.67 is indistinguishable from zero, and being above the
+> *median* random entry is the CONFIRMED side-condition, not evidence of skill.
+> **The 19 new controls point the same way: 19 of 20 configurations on this coin
+> are DRIFT.**
 
 > **Exp 003 - ROUND S1 IS DONE. 49 evaluations, 1 PASS, and the holdout FAILED.
 > Research on SOLUSDT stops.**
@@ -105,18 +152,23 @@ and ETHUSDT are closed. BNBUSDT is active._
 ## Where things stand
 
 - **SOLUSDT: 49 evaluations, 1 PASS, 0 CONFIRMED.** Holdout spent once, FAILED.
-  Research on SOL stops.
-- **BNBUSDT: active.** Round B1 in progress; see `journal/BNBUSDT/`.
+  Research on SOL stops. **Controls complete: all 20 WATCH/PASS configurations
+  have `baseline.py` and `benchmark.py` (Exp 005).**
+- **BNBUSDT closed** (49 evaluations, 0 PASS; controls 9 DRIFT / 1 SKILL and
+  9 NO_EDGE / 1 ALPHA; holdout never touched). See `journal/BNBUSDT/`.
 - **BTCUSDT closed** (210 evaluations, holdout 4/4 FAILED). **ETHUSDT closed**
   (49 evaluations, 0 PASS, 32/32 controls DRIFT).
-- ETH sizing is a non-issue; SOL's whole-coin step rounds a 6% stop by up to
-  5.6% of intended risk, and its 27-month TRAIN leaves three of seven families
-  under the 150-signal floor.
+- **Four coins, 357 evaluations, 5 holdout runs, 5 FAILED, 0 CONFIRMED.**
+- Sizing was never a constraint on any of the four coins: `size_skips` is 0 on
+  every row of every coin. SOL's whole-coin step rounds a 6% stop by up to 5.6%
+  of intended risk, and its 27-month TRAIN leaves three of seven families under
+  the 150-signal floor, which produced 10 INCONCLUSIVE rows.
 
 ## Next step
 
-**None on SOLUSDT.** The stop rule agreed in the Exp 001 pre-registration and
-confirmed by the owner in Exp 001b has fired.
+**None, on any of the four coins.** Every per-coin stop rule has fired: SOL's
+holdout FAILED and the config is spent (AGENTS.md step 7), and BTC, ETH and BNB
+have no PASS at all. The remaining work is reporting, not research.
 
 Two things for the owner, neither of which is mine to decide:
 
@@ -146,7 +198,11 @@ Two things for the owner, neither of which is mine to decide:
   both sides on VALID and a negative long leg on the holdout. Read the two legs
   separately, on every split, every time.
 - **Robustness across clocks and coins is not proof.** 039 was positive on all
-  fourteen BTC+ETH clocks and failed its holdout; on BNB the same family was
-  2/7.
+  fourteen BTC+ETH clocks, and again on all seven SOL clocks - twenty-one of
+  twenty-one - and failed its BTC holdout; on BNB the same frozen idea file was
+  **2 of 7**.
+- **A SKILL reading on one configuration is not a property of its family.**
+  SOL 041@1h has essentially the same VALID mean R as the PASS at 5m
+  (+0.2504 against +0.2656) and reads DRIFT.
 - **A thin CI is a thin pass.** 041@5m cleared the gate at +0.0195 against a
   requirement of > 0, and the holdout came in at +0.0544 with 93 trades.

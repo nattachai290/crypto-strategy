@@ -1,0 +1,41 @@
+{
+  "eval_id": "b0f49d0132",
+  "name": "039_breakout_flow_confirm_tf30_time",
+  "tf": 30,
+  "n_per_mode": 200,
+  "timestamp": "2026-09-29 12:06 UTC",
+  "idea_valid_mean_r": 0.05191079501989564,
+  "idea_valid_trades": 111,
+  "idea_train_mean_r": 0.05722822117695207,
+  "idea_train_trades": 115,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.009811987849077013,
+    "valid_median": -0.012025575735496237,
+    "valid_p95": 0.20241103277988118,
+    "share_random_ge_idea": 0.28,
+    "valid_trades_median": 116.0,
+    "train_median": -0.02830925390983599,
+    "train_p95": 0.14885125517941344,
+    "train_share_random_ge_idea": 0.22,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": false,
+    "idea_beats_p95": false
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.0800882521047543,
+    "valid_median": 0.04041122673227371,
+    "valid_p95": 0.18223089979671048,
+    "share_random_ge_idea": 0.48,
+    "valid_trades_median": 128.0,
+    "train_median": -0.06324113276753424,
+    "train_p95": 0.06485068076806631,
+    "train_share_random_ge_idea": 0.06,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": false,
+    "idea_beats_p95": false
+  },
+  "verdict": "DRIFT",
+  "rule": "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
+}

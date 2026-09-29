@@ -584,3 +584,124 @@ each coin: SOL's holdout FAILED and BNB has no PASS.
 357 evaluations, 5 holdout runs, 5 FAILED, **0 CONFIRMED**. The per-coin stop
 rules have fired for SOL and BNB, as they did for BTC and ETH. Nothing in this
 project is a tested strategy, and no real money should follow from it.
+
+---
+
+## Exp 005 - SOLUSDT: the missing controls, run and recorded
+
+**Date:** 2026-09-29
+**Status:** complete (controls only; no new evaluation, no `--final`, the SOL
+holdout record stands as it was run in Exp 003)
+
+Exp 004 (planner review) listed **19** SOLUSDT WATCH rows whose controls had not
+been run, and asked the research agent to run them. Done: `baseline.py` and
+`benchmark.py` on all 19, with `SYMBOL=SOLUSDT`.
+
+**Counting note, so the record is exact.** `results/SOLUSDT/evaluations.csv` has
+**21 rows** whose verdict is WATCH or PASS but only **20 distinct
+configurations** - the PASS `041_impulse_not_crowded_tf5_time` is recorded twice
+(`eval_id 3678ea08ce`), once before and once after its `--final` run, exactly as
+BTC's 022/038/039 rows are. Exp 004's count of 20 configurations was correct.
+**All 20 now have both controls and none is missing** (checked by reading
+`results/SOLUSDT/baseline/` and `benchmark/` and joining on `eval_id`, not by
+counting rows).
+
+### Every control on the round: 19 new, all DRIFT and all NO_EDGE
+
+| config | tf | VALID trades | VALID mean R | CI low | baseline | benchmark |
+|---|---|---|---|---|---|---|
+| 035 @4h | 4h | 99 | +0.2816 | −0.0522 | DRIFT | NO_EDGE |
+| 035 @1h | 1h | 81 | +0.1171 | −0.1674 | DRIFT | NO_EDGE |
+| 035 @30m | 30m | 119 | +0.1464 | −0.0876 | DRIFT | NO_EDGE |
+| 035 @15m | 15m | 124 | +0.0529 | −0.1635 | DRIFT | NO_EDGE |
+| 036 @4h | 4h | 109 | +0.0632 | −0.1984 | DRIFT | NO_EDGE |
+| 036 @1h | 1h | 223 | +0.0657 | −0.0692 | DRIFT | NO_EDGE |
+| 036 @30m | 30m | 145 | +0.1433 | −0.0806 | DRIFT | NO_EDGE |
+| 036 @15m | 15m | 130 | +0.0141 | −0.1952 | DRIFT | NO_EDGE |
+| 038 @30m | 30m | 186 | +0.0317 | −0.1590 | DRIFT | NO_EDGE |
+| 039 @1h | 1h | 118 | +0.0128 | −0.2255 | DRIFT | NO_EDGE |
+| 039 @30m | 30m | 111 | +0.0519 | −0.2172 | DRIFT | NO_EDGE |
+| 039 @15m | 15m | 123 | +0.0580 | −0.1856 | DRIFT | NO_EDGE |
+| 039 @3m | 3m | 113 | +0.0297 | −0.1965 | DRIFT | NO_EDGE |
+| 041 @1h | 1h | 103 | +0.2504 | −0.0220 | DRIFT | NO_EDGE |
+| 041 @30m | 30m | 132 | +0.1579 | −0.0688 | DRIFT | NO_EDGE |
+| 041 @15m | 15m | 100 | +0.0265 | −0.2059 | DRIFT | NO_EDGE |
+| 041 @3m | 3m | 110 | +0.0675 | −0.1509 | DRIFT | NO_EDGE |
+| 043 @30m | 30m | 94 | +0.0844 | −0.1284 | DRIFT | NO_EDGE |
+| 043 @15m | 15m | 100 | +0.0167 | −0.1907 | DRIFT | NO_EDGE |
+
+With the PASS from Exp 002, the round's controls are **19 DRIFT + 1 SKILL, and 19
+NO_EDGE + 1 ALPHA** - and the two non-default verdicts are the same single
+configuration.
+
+### What the 19 add to what Exp 002 and 003 recorded
+
+**1. The PASS is not representative of its own family on SOLUSDT.** 041@5m read
+SKILL and ALPHA. The other four 041 clocks on SOLUSDT read:
+
+| 041 clock | VALID trades | VALID mean R | CI low | baseline | benchmark |
+|---|---|---|---|---|---|
+| 1m | 73 | +0.1670 | −0.1458 | (INCONCLUSIVE, no control needed) | |
+| 3m | 110 | +0.0675 | −0.1509 | **DRIFT** | **NO_EDGE** |
+| **5m** | 112 | **+0.2656** | **+0.0195** | **SKILL** | **ALPHA** |
+| 15m | 100 | +0.0265 | −0.2059 | **DRIFT** | **NO_EDGE** |
+| 30m | 132 | +0.1579 | −0.0688 | **DRIFT** | **NO_EDGE** |
+| 1h | 103 | +0.2504 | −0.0220 | **DRIFT** | **NO_EDGE** |
+| 4h | 95 | +0.2110 | −0.0701 | (INCONCLUSIVE, no control needed) | |
+
+**041@1h is the sharpest one: +0.2504 on 103 VALID trades, and it is DRIFT and
+NO_EDGE.** A near-identical VALID number to the PASS, on a neighbouring clock,
+with the opposite control verdict. So the SKILL reading is not a property of the
+family on SOLUSDT - it is a property of one configuration, and Exp 004's
+correction stands: 041@5m's TRAIN mean R of +0.19987 was against a mode-A 95th
+percentile of +0.19905, a margin of 0.0008 R, with 5% of random runs matching or
+beating it, on a TRAIN period that contains the two data gaps.
+
+**2. No new SKILL and no new ALPHA appeared.** All 19 are DRIFT and NO_EDGE, so
+the round totals are unchanged from Exp 002: 1 SKILL, 1 ALPHA, both the same row.
+**No holdout is warranted or attempted** - the SOL holdout was spent in Exp 003
+and the config is spent (AGENTS.md step 7), and BNB/SOL have no other PASS.
+
+**3. The 035 @4h row is the round's largest VALID number and it is DRIFT:**
++0.2816 on 99 trades, CI low −0.0522. The same 035 family that read SKILL on
+BNBUSDT at 1h (BNB Exp 003) reads DRIFT on SOLUSDT at 4h, at a larger VALID mean
+R. **Across the two new coins, the only SKILL reading on either belongs to a
+configuration that is not a PASS.**
+
+**4. 036 Keltner and 038 opening range, the two families with the weakest prior
+from BTC, are now measured on their own data on SOLUSDT** and are DRIFT and
+NO_EDGE at all four clocks controlled.
+
+### The four corrections from Exp 004, acknowledged
+
+Recorded here so the record shows they were read and applied, and with the
+standing text left as it is (this journal is append-only and Exp 002/003 are not
+rewritten):
+
+1. **"A genuinely skillful entry, one that beats random timing on data it has
+   never seen" is withdrawn.** The holdout gave +0.054 R with CI
+   [−0.174, +0.298] and P(>0) 0.67, which is indistinguishable from zero. Being
+   above the *median* random entry is the CONFIRMED side-condition, not evidence
+   of skill; `baseline.py`'s SKILL means above the 95th percentile, and the
+   holdout control does not measure that. The honest reading is "no evidence of
+   an edge", and the data cannot choose between that and "an edge too small to
+   prove". **The 19 new controls point the same way: 19 of 20 configurations on
+   this coin are DRIFT.**
+2. **The TRAIN SKILL was at the boundary** - +0.19987 against +0.19905, a margin
+   of 0.0008 R, on a period containing the two data gaps (Exp 001b). The verdict
+   is correct by the rule and is not strong evidence. Agreed; the 041@1h row
+   above is the direct check on it.
+3. **"022 SKILL (vacuous, a regime rule)" was wrong.** 022 was a long Donchian
+   breakout with a 1% stop; it was SKILL under the pre-Exp 019 rule and DRIFT
+   under the current one. The vacuous-SKILL regime rule was 023.
+   **This does not affect Exp 003's table**, which is about the holdout outcomes:
+   022's holdout was −0.0102 R either way.
+4. **The "~983 trades needed" figure** assumed a per-trade standard deviation of
+   1 R. It shows an order of magnitude, not a measured requirement.
+
+### Verdict
+
+No change. **SOLUSDT: 49 evaluations, 1 PASS, 0 CONFIRMED, the holdout spent
+once and FAILED.** Research on SOLUSDT stops, per the stop rule in the Exp 001
+pre-registration. The gap in process that Exp 004 identified is closed: every
+WATCH and PASS configuration on this coin now has both controls.
