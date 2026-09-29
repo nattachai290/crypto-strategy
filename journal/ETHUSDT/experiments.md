@@ -197,3 +197,139 @@ suspicion, not less.
 
 **Stop rule, agreed in advance:** if Round E1 ends with no holdout `CONFIRMED`
 on ETH, ETH research stops too and the project's answer stands for both coins.
+
+---
+
+## Exp 002 - A defect in the engine's funding charge, found while reading the ETH cost line
+
+**Date:** 2026-09-29
+**Status:** finding recorded, **not fixed**. `src/backtest.py` is not mine to
+change (AGENTS.md §5, Level 3: ask the owner first). No evaluation in this entry.
+The ETH holdout is untouched.
+
+### How it was found
+
+Not by a test. Exp 001's step 3 asked for the expected `cost_r` per family on
+ETH, computed from ETH's own funding rate, and the answer was **0.0615 R**. The
+`cost_r` the engine actually produced was **0.0185 R**, a factor of 3.3 lower,
+which cannot be explained by a hold that is on average shorter than the maximum.
+So either the formula or the engine was wrong. Decomposing the trade file
+settled which.
+
+### The defect
+
+`src/backtest.py:441`, inside the "manage open position" block:
+
+```python
+amt = pos_qty * sum(fr_l[fi:fe]) * sgn
+cash -= amt
+pos_funding -= amt
+```
+
+`pos_qty` is a quantity **in ETH**. `fr` is a funding rate, a fraction. Their
+product is therefore an amount **in ETH**. It is then subtracted from `cash`,
+which is the account equity **in USDT**. A perpetual's funding payment is
+`notional x rate`, and notional is `qty x price`, so the charge is **short by
+the mark price** - the units do not match.
+
+Confirmed with a hand-computed test on real ETH 4h bars (a flat fortnight, fees
+and slippage zeroed, one LONG held 328h across 40 known settlements at
++0.01000% each, so funding is the only cost in the trade):
+
+| | USDT | note |
+|---|---|---|
+| the trade | 0.013223 ETH at 3,781.01 = **50.00 USDT** notional | 20% stop, so notional = 10 USDT risk / 20% |
+| **engine books** | **-0.000064** | |
+| `qty x rate` (what line 441 computes) | +0.000066 | matches the engine, sign aside |
+| `qty x price x rate` (what funding is) | **+0.249** | |
+| shortfall | **3,890x** | = the mark price |
+
+The same test on BTCUSDT prices would show a shortfall of roughly 40,000x.
+
+**The strongest evidence that this is an isolated slip and not a convention:
+every other money line in the same function multiplies by the price, and only
+this one does not.**
+
+| line | code | has the price? |
+|---|---|---|
+| 304 | `fee = pos_qty * px_adj * fee_taker` | yes |
+| 308 | `move = pos_qty * pos_side * (px_adj - pos_entry)` | yes |
+| 317 | `slip_drag = pos_qty * slippage * (pos_entry + px_adj)` | yes |
+| 319 | `cost_total = (pos_fees + fee) + slip_drag - pos_funding` | (sum of the above) |
+| **441** | **`amt = pos_qty * sum(fr_l[fi:fe]) * sgn`** | **no** |
+
+`cash` is `initial_equity` (line 273) and is in USDT throughout, so the funding
+line is the single place where an ETH-denominated quantity is subtracted from a
+USDT balance.
+
+### How much it matters: much less than the arithmetic suggests
+
+Recomputed for every published multi-day result from its own trade list - the
+trade's quantity, entry price, hold and the real funding rates of the period,
+with funding charged at `notional x rate`:
+
+| | BTCUSDT | ETHUSDT |
+|---|---|---|
+| multi-day results examined (mean hold >= 48h) | 54 | 35 |
+| the missing funding, average | **0.0067 R** | **0.0047 R** |
+| the missing funding, median | **0.0037 R** | **0.0045 R** |
+| the missing funding, worst | **0.0383 R** (027 multi-day pullback, 1h, 3% stop) | **0.0099 R** (035 momentum, 1h) |
+| results positive as published and at or below zero once corrected | **0** | 2, both of them tiny positives (+0.0036 → -0.0039, +0.0084 → -0.0015) that were already REJECT/WATCH on other gates |
+
+**So the defect is real and it changes no verdict on either coin.** The reason
+the impact is small despite a 3,900x factor is that funding is close to zero in
+expectation and its sign alternates: a long pays when the rate is positive and
+receives when it is negative, and over a multi-day hold the two largely cancel.
+The engine was charging ~1/3,900 of a number that is itself ~1/30 of the naive
+`abs(rate) x settlements` estimate. Two errors nearly cancelling is not a
+reason to leave the bug in place, but it is a reason not to re-open 210 BTC
+evaluations or 49 ETH ones.
+
+**And the direction of the error is the safe one:** understating a cost can only
+make a result look better than it is. Every negative conclusion in this project
+is therefore safe *a fortiori* - a correctly-charged funding would make the
+WATCHes worse and would not make any REJECT into anything else. Nothing that
+failed, failed because of this. In particular the two ETH near-misses are
+untouched by the correction: 041@1m +0.2760 becomes +0.271 and 039@1m +0.2219
+becomes +0.217, and both still fail the same gate they already failed.
+
+### What this does to my own Exp 001, which I have to correct
+
+Exp 001 measured two things correctly and then drew a wrong conclusion from
+them:
+
+- **Correct:** BTC's TRAIN funding abs mean is 0.01886% per 8h and ETH's is
+  0.02325%, so ETH's funding is 1.23x BTC's. Those are measurements of the rate
+  series and they stand.
+- **Correct:** ETH's 96h move is 38% larger than BTC's. That stands.
+- **Wrong, and now retracted:** "on ETH the cost line is 17% higher than on BTC"
+  and "Rounds 5 and 6 computed the cost with a 1.9x-too-small funding
+  assumption, so a 96h/6% trade really cost 0.0527 R not 0.0433 R". Both assume
+  funding was being charged. **It was not being charged at all in any amount
+  that matters**, so neither correction is a correction. The measured ETH
+  `cost_r` is **0.0185 R median**, essentially identical to BTC's 0.0186 R, and
+  the fee round trip (0.09% post-only entry + 0.05% taker exit over a 6% stop =
+  0.0233 R, less at wider stops and for partial fills) accounts for essentially
+  all of it.
+
+The methodological conclusion of Rounds 5-6 survives and is in fact cleaner than
+it looked: **cost really is ≈ 0.02 R for a multi-day trade, and it is fees
+almost entirely, not funding.** The "multi-day holds leave room for an edge"
+argument therefore rests on the fee structure and the stop width, which is a
+weaker but still valid basis, and it no longer needs funding at all.
+
+### Owner decision needed 🛑
+
+1. **Fix it or leave it?** A one-line change (`qty * price * rate`, using the
+   bar's mark, exactly as the fee and slippage lines already do) plus a
+   hand-computed test in `test_engine.py` that fails before and passes after.
+   Level 3, so I will not do it unasked, and I will not add a failing test
+   either. My recommendation: **fix it**, because it is a real defect in a
+   research tool whose entire value is that its costs are honest, and because a
+   future agent will otherwise re-derive it from a `cost_r` that is 3.3x lower
+   than the arithmetic says.
+2. **If it is fixed, re-run anything?** **No, on the evidence above**: 0 BTC
+   verdicts change, 0 ETH verdicts change, and the two ETH near-misses are moved
+   by 0.005 R when they fail a gate by 0.0033 to 0.01. Re-running 259
+   evaluations to move nothing is not worth it. I would fix the engine, leave the
+   records, and note the defect against every multi-day result in the report.
