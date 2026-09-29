@@ -1,0 +1,48 @@
+{
+  "name": "047_tv_super_scalper_tf60",
+  "hypothesis": "TradingView port T4 (PLAN.md section 13) from the Pine v5 source the owner supplied: 'Super Scalper - 5 Min 15 Min'. The author's claim: a bar whose body exceeds one WMA-ATR is an impulse, and taking it in the direction of the RSI trend (RSI 25 above RSI 100 for longs, below for shorts) catches the continuation. Counterparty: traders fading a strong bar. Author defaults kept: ATR 14 with WMA smoothing, multiplier 1.0, RSI 25 / 100, source chart 15m (the author's own timeframe). The EMA 21/65 'golden cross' is only plotted in the script and is not part of the entry. DEVIATIONS: (1) the script computes a stop (2 ATR beyond the signal bar's low/high) and a take-profit (5 ATR beyond its high/low) but never passes them to an order - on TradingView it only exits by reversing on the opposite signal. The engine must have a stop, so the author's own numbers are used: stop = the signal bar's low (high) minus (plus) 2 ATR (swing stop, n 1, buffer 2 ATR, unclamped), take-profit = 5 ATR from the entry (the author measured it from the bar's high/low); (2) a time stop is added because the engine has no stop-and-reverse; it is the only grid key; (3) TradingView's default commission is 0, here 0.05% taker + 0.02% slippage + funding. Variants in chart mode (same bar counts, ATR exits unchanged). [Timeframe variant of 047_tv_super_scalper, 15m -> 60m, mode chart: same bar counts and ATR multiples, hold x4, pct stop x2.000.]",
+  "strategy": "recipe",
+  "tf": 60,
+  "params": {
+    "triggers": [
+      {
+        "type": "super_scalper",
+        "atr_len": 14,
+        "mult": 1.0,
+        "rsi_fast": 25,
+        "rsi_slow": 100
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "swing",
+      "n": 1,
+      "buffer_atr": 2.0,
+      "min_atr": 0.0,
+      "max_atr": 50.0
+    },
+    "tp": {
+      "type": "atr",
+      "mult": 5.0
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 96.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "max_hold_hours": [
+      48.0,
+      192.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "047_tv_super_scalper",
+  "variant_mode": "chart"
+}

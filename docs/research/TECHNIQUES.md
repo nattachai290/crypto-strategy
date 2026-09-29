@@ -394,3 +394,4 @@ entries inside the same trend filters do as well. A long-only result on
   Smart Money Concepts market structure. BOS/CHoCH follow the script's alert
   conditions. CC BY-NC-SA 4.0: attribution LuxAlgo, non-commercial use only.
 - `chartart_macd_sma(fast, slow, signal, veryslow)` (T3): ChartArt's MACD + SMA 200 strategy (SMA-based MACD).
+- `super_scalper(atr_len, mult, rsi_fast, rsi_slow)` (T4): a big bar (body > WMA-ATR band) in the direction of RSI 25 vs RSI 100.

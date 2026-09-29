@@ -872,8 +872,34 @@ writes them.
 - Files: `ideas/046_tv_chartart_macd_sma.json` plus 6 chart-mode variants.
   **Run on BTCUSDT and ETHUSDT: 14 evaluations.**
 
-**Round so far:** T1 + T2 + T3 = 42 evaluations. The owner may add up to 2
-more scripts before the round starts; after it starts, no port is added.
+### Port T4 — `047_tv_super_scalper` ("Super Scalper - 5 Min 15 Min", Pine v5, from the owner's source)
+- Pine logic, defaults kept:
+  - ATR 14 smoothed with **WMA**, multiplier 1.0, bands = close ± band;
+  - **long** when `open < close − band` (a bar that rose more than the band)
+    and `RSI(25) > RSI(100)`;
+  - **short** on the mirror image.
+- The EMA 21/65 "golden cross" in the script is **only plotted**, so it is
+  not part of the signal.
+- New block `super_scalper`. Test 7 checks the WMA against Pine's definition,
+  checks the block against a plain loop of the Pine lines (0 mismatches),
+  and checks causality and output shape.
+- **Deviations:**
+  - The script computes a stop (2 ATR beyond the signal bar's low/high) and a
+    take-profit (5 ATR) but **never uses them**; on TradingView it only
+    reverses. The port uses **the author's own numbers**:
+    - `swing` stop n 1 + 2 ATR, i.e. the bar's low/high ± 2 ATR;
+    - `atr` take-profit 5, measured from the entry rather than the bar's
+      high/low.
+  - A time stop is the only grid key (12 / 48 h at 15m).
+- **Source chart 15m** (the author's timeframe), chart-mode variants on the
+  other six. The ATR stop grows with the timeframe: the 1h/4h variants on BTC
+  may be `UNSIZABLE` at 2024–25 prices. That is a recorded outcome, not a
+  reason to change the file.
+- Files: `ideas/047_tv_super_scalper.json` plus 6 variants. **Run on BTCUSDT
+  and ETHUSDT: 14 evaluations.**
+
+**Round so far:** T1–T4 = 56 evaluations. The owner may add 1 more script
+before the round starts; after it starts, no port is added.
 
 **Pre-registration** (BTC journal Exp 031 and ETH journal Exp 006, before the
 first run):

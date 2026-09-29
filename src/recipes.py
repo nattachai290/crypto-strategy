@@ -432,6 +432,32 @@ def t_chartart_macd_sma(b, f, fast=12, slow=26, signal=9, veryslow=200):
     return _side(up, dn)
 
 
+def _wma(x: pd.Series, n: int) -> pd.Series:
+    """Pine ta.wma: linear weights n (newest) .. 1 (oldest), divided by their sum."""
+    n = int(n)
+    w = np.arange(n, 0, -1, dtype=float)          # weight of x[t-k] is n-k
+    v = x.to_numpy(float)
+    num = np.convolve(v, w, mode="full")[: len(v)]
+    num[: n - 1] = np.nan
+    return pd.Series(num / w.sum(), index=x.index)
+
+
+def t_super_scalper(b, f, atr_len=14, mult=1.0, rsi_fast=25, rsi_slow=100):
+    """TradingView port T4 (PLAN.md section 13), from the Pine v5 source the
+    owner supplied: "Super Scalper - 5 Min 15 Min". Default ATR smoothing
+    'WMA': band = WMA(true range, atr_len) * mult around the close. Long when
+    open < close - band (a bar that rose more than the band) and RSI(rsi_fast)
+    > RSI(rsi_slow); short when open > close + band and RSI(rsi_fast) <
+    RSI(rsi_slow). The script's EMA 21/65 'golden cross' is only plotted, not
+    traded, so it is not part of the signal."""
+    o, c = b["open"], b["close"]
+    band = _wma(ta.true_range(b["high"], b["low"], c), atr_len) * float(mult)
+    fast, slow = ta.rsi(c, int(rsi_fast)), ta.rsi(c, int(rsi_slow))
+    up = ((o < c - band) & (fast > slow)).to_numpy()
+    dn = ((o > c + band) & (fast < slow)).to_numpy()
+    return _side(up, dn)
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -454,6 +480,7 @@ TRIGGERS = {
     "month_turn_fade": t_month_turn_fade,
     "smc_structure": t_smc_structure,
     "chartart_macd_sma": t_chartart_macd_sma,
+    "super_scalper": t_super_scalper,
 }
 
 

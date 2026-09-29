@@ -531,6 +531,33 @@ def test_recipe_blocks_causal() -> None:
     check("chartart_macd_sma matches a line-by-line loop of the Pine script",
           np.array_equal(got_m, np.array(exp, float)) and (got_m != 0).sum() > 5,
           f"{int((got_m != 0).sum())} signals, {int((got_m != np.array(exp)).sum())} mismatches")
+    # Super Scalper port: WMA as Pine defines it, and the entry rule against a
+    # plain loop over the Pine lines (bands from a hand-rolled WMA of TR)
+    wx = pd.Series([1.0, 2.0, 4.0, 7.0, 11.0])
+    check("wma (super_scalper) = sum(w_k x_k)/sum(w), newest weight n",
+          abs(RC._wma(wx, 3).iloc[-1] - (3 * 11 + 2 * 7 + 1 * 4) / 6) < 1e-12 and RC._wma(wx, 3).iloc[:2].isna().all())
+    rng = np.random.default_rng(21)
+    cl = 100 + rng.normal(0, 1, 600).cumsum()
+    op = cl + rng.normal(0, 1.2, 600)
+    ss = pd.DataFrame({"open": op, "close": cl, "high": np.maximum(op, cl) + rng.uniform(0, .5, 600),
+                       "low": np.minimum(op, cl) - rng.uniform(0, .5, 600)})
+    trl = [ss.high[0] - ss.low[0]] + [max(ss.high[i] - ss.low[i], abs(ss.high[i] - ss.close[i - 1]),
+                                           abs(ss.low[i] - ss.close[i - 1])) for i in range(1, 600)]
+    r1 = RC.ta.rsi(ss.close, 5).to_numpy()
+    r2 = RC.ta.rsi(ss.close, 20).to_numpy()
+    exp_s = []
+    for i in range(600):
+        if i < 13:
+            exp_s.append(0)
+            continue
+        bw = sum((14 - k) * trl[i - k] for k in range(14)) / 105.0
+        lg = ss.open[i] < ss.close[i] - bw and r1[i] > r2[i]
+        st = ss.open[i] > ss.close[i] + bw and r1[i] < r2[i]
+        exp_s.append(1 if lg else -1 if st else 0)
+    got_s = np.asarray(RC.t_super_scalper(ss, None, atr_len=14, mult=1.0, rsi_fast=5, rsi_slow=20))
+    check("super_scalper matches a line-by-line loop of the Pine script",
+          np.array_equal(got_s, np.array(exp_s, float)) and (got_s != 0).sum() > 5,
+          f"{int((got_s != 0).sum())} signals, {int((got_s != np.array(exp_s)).sum())} mismatches")
     check("month_turn_fade uses the real month length (Feb 2024: 28th, 29th, 1st)",
           fired == [28, 29, 1], str(fired))
     sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],
