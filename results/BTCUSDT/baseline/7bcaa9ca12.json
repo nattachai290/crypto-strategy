@@ -3,7 +3,7 @@
   "name": "018_trend_breakout_long_tf60",
   "tf": 60,
   "n_per_mode": 200,
-  "timestamp": "2026-09-29 00:41 UTC",
+  "timestamp": "2026-09-29 00:52 UTC",
   "idea_valid_mean_r": 0.10974223145074799,
   "idea_valid_trades": 120,
   "idea_train_mean_r": 0.09909421219836728,

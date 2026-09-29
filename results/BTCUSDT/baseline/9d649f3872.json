@@ -3,7 +3,7 @@
   "name": "017_session_open_long_tf60",
   "tf": 60,
   "n_per_mode": 200,
-  "timestamp": "2026-09-29 00:42 UTC",
+  "timestamp": "2026-09-29 00:52 UTC",
   "idea_valid_mean_r": 0.021104066928608327,
   "idea_valid_trades": 80,
   "idea_train_mean_r": 0.19476936702688002,

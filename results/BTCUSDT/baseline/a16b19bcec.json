@@ -3,7 +3,7 @@
   "name": "019_pullback_uptrend_long_tf60",
   "tf": 60,
   "n_per_mode": 200,
-  "timestamp": "2026-09-29 00:42 UTC",
+  "timestamp": "2026-09-29 00:52 UTC",
   "idea_valid_mean_r": 0.1304340561458899,
   "idea_valid_trades": 134,
   "idea_train_mean_r": 0.09411805938563442,

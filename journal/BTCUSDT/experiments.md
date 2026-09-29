@@ -1579,3 +1579,110 @@ for that structure.
 
 ### Verdict
 `KEEP` the tools. PLAN.md Round 3 is rewritten around them.
+
+---
+
+## Exp 017 - Round 2 pre-registration (exit study), and the DRIFT verdict on Round 1
+
+**Date:** 2026-09-29
+**Status:** pre-registration, written BEFORE Round 2 runs. Zero evaluations in
+this entry. `results/BTCUSDT/evaluations.csv` is untouched by it.
+
+### First: the new controls, run on all five Round 1 WATCHes
+
+`AGENTS.md` steps 6b/6c arrived after Round 1 and apply retroactively to every
+WATCH, so all five were run before anything else. This is the most important
+result of the round so far, and it is negative.
+
+| eval_id | config | baseline.py | benchmark.py |
+|---|---|---|---|
+| 1e1149a0c2 | 018 trend breakout long, 30m | **DRIFT** | **NO_EDGE** |
+| 7bcaa9ca12 | 018 trend breakout long, 1h | **DRIFT** | **NO_EDGE** |
+| ca0838da05 | 019 pullback uptrend long, 30m | **DRIFT** | **NO_EDGE** |
+| a16b19bcec | 019 pullback uptrend long, 1h | **DRIFT** | **NO_EDGE** |
+| 9d649f3872 | 017 session open long, 1h | **DRIFT** | **NO_EDGE** |
+
+**Not one entry in Round 1 beat random timing.** 018 at 30m, the round's best
+configuration, is the clearest case:
+
+| baseline | median VALID trades | median VALID mean R | 95th pct | share of random runs >= idea |
+|---|---|---|---|---|
+| A: random entries, any time | 275 | +0.0267 | +0.1026 | **6%** |
+| B: random entries, same filters | 225 | +0.0670 | +0.1404 | **25%** |
+
+The idea's VALID mean R is +0.1024 and the 95th percentile of *random entries at
+any time* is +0.1026 - it misses by 0.0002, the same 0.0002 by which it missed
+the PASS gate. **A quarter of random entries with the identical filters and
+identical exits beat the Donchian breakout.** Keeping the direction, the stop,
+the trail, the time stop and both filters, and throwing away only the trigger,
+loses nothing. 017 at 1h is the extreme: 80% of random runs beat it.
+
+Against buy and hold, 018 at 30m is not close:
+
+| period | trades | time in market | beta | alpha/yr [95% CI] | CAGR idea / B&H | maxDD idea / B&H | Sharpe idea / B&H |
+|---|---|---|---|---|---|---|---|
+| TRAIN 2020-22 | 347 | 25% | 0.07 | +2.7% [−8.2, +13.7] | +6.4% / +32.0% | 19.7% / 76.7% | 0.61 / 0.76 |
+| VALID 2023-24 | 234 | 28% | 0.12 | −0.6% [−12.2, +10.3] | +11.5% / +137.3% | 9.4% / 26.3% | 1.09 / 2.01 |
+
+Beta 0.12, no alpha on either period, and buy & hold is 12x the CAGR with twice
+the Sharpe. Not even a RISK_EDGE: the idea's drawdown is smaller but its Sharpe
+is lower on VALID.
+
+**So what Round 1 actually established is narrower than it looked.** The
+timeframe gradient of Exp 016 is real and measured - `cost_r` 0.505 R on 1m
+against 0.019 R on 4h - but that is a statement about the cost of trading fast,
+not about the entries. Every long entry in the round is explained by three
+things it shared: it was long, it had `htf_trend` + `adx_min` on, and 2023-24
+was a bull market. The trigger contributed nothing measurable.
+
+### What Round 2 is, given that
+
+The plan defines Round 2 as two exit-only evaluations on the entry that
+qualified, with the entry frozen, grids as specified. That entry is 018 at 30m
+(highest TRAIN mean R among the qualifiers: 019@15m +0.025, **018@30m +0.061**,
+019@30m +0.030; the rule picks by TRAIN, never by VALID). The plan's own
+premise - "with the same entry, the exit decides how much of the gross edge is
+kept" - is now known to be resting on an entry with no gross edge of its own.
+
+**That does not make the round pointless; it makes it a sharper question.**
+Exp 016 measured the diagnosis: 018 at 30m has TP 0%, time exits 69% and an
+average hold of 20.8h, because `trail_at` 1.5R against a 2.83% stop needs a
+4.2% move to arm. So the exits are inert, and the +0.102 R is 24-hour drift
+with a stop, not trade management. The question Round 2 answers is therefore:
+
+> **Can exit management turn a result that is entirely drift into skill?**
+
+If yes, the exits were the missing piece and Round 1's entries deserve another
+look. If no, then no amount of exit work rescues an entry that random timing
+matches, and Round 3 must stop looking for entries in this family and go where
+the money is actually earned - holding periods long enough that `cost_r` is
+negligible, or a carry-type idea.
+
+| # | file | grid (exits only, entry frozen) | kill if |
+|---|---|---|---|
+| R2.1 | `021_exit_profit_side.json` | `tp.type` ["none","r"], `tp.r` [1.5, 3.0], `be_at` [0, 0.5, 1.0], `trail_at` [0, 1.0, 2.0] with `trail_atr` 2.5 - 36 combos | no combo improves VALID mean R on the frozen entry, or TRAIN picks a worse exit set than the incumbent |
+| R2.2 | `022_exit_risk_side.json` | `stop.pct` [0.01, 0.015, 0.02, 0.03], `stop.type` ["pct","swing"] (swing carries n 16, buffer_atr 0.3, min_atr 1.5, max_atr 6), `max_hold_hours` [4, 8, 16, 24] - 32 combos | same |
+
+Frozen entry for both, from 018 at 30m's recorded choice: 30m
+`donchian_break(24)` + `htf_trend(50,4)` + `adx_min(20)`, long only, post-only
+entry at 0.1 ATR, cooldown 4, atr_n 14, trail_atr 2.5.
+
+These two plus the entry's own evaluation are exactly 3 evaluations of the
+structure `recipe|30m|donchian_break|adx_min+htf_trend|long`, which is
+`EVAL_MAX_VERSIONS`, so **this structure is closed after R2.2** - as the plan
+says, do not split the exit work into more files.
+
+**Whatever they return, `baseline.py` and `benchmark.py` are run on any WATCH
+or PASS before it is reported**, and `--final` is out of reach unless one of
+them says SKILL or ALPHA. A DRIFT result cannot become a candidate by being
+re-measured.
+
+### Verdict on Round 1, restated
+
+`REJECT` as a source of tradable edges; `KEEP` as evidence. 40 evaluations, 5
+WATCHes, and all five are drift on a random-entry control and no better than
+holding BTC. The honest statement of the round is: **long BTC with a trend
+filter made money in 2023-24 because BTC went up, and the entry added nothing.**
+The cost-mechanism findings (a `pct` stop; `cost_r` collapsing from 0.505 R on
+1m to 0.019 R on 4h; the gross_r-within-1m-3m-5m-artefact warning) survive and
+are now the most reusable thing this project knows.
