@@ -1857,3 +1857,92 @@ relative edge in timing is not a profitable strategy after costs.
 `KEEP` both changes. Every future SKILL is judged on two periods with
 different market regimes, and every future CONFIRMED is judged against random
 entries in the holdout itself.
+
+---
+
+## Exp 020 - Round 3 pre-registration (when to be long BTC: regime rules vs buy & hold)
+
+**Date:** 2026-09-29
+**Status:** pre-registration, written BEFORE anything in this round is run.
+Zero evaluations in this entry; `results/BTCUSDT/evaluations.csv` is untouched
+by it. Project count on entry: 61 evaluations, 1 distinct PASS (022, whose
+holdout FAILED). HOLDOUT sealed.
+
+Checklist: `test_engine.py` -> ALL CHECKS PASSED (including the Exp 019
+tightened baseline: SKILL now needs TRAIN *and* VALID, and the holdout run
+carries its own random-entry control). `datafeed.py` -> VALIDATION: OK from
+earlier today, 7 native timeframes, 80/80 months.
+
+### Why this round is a different question, not a bigger version of Round 1
+
+Exp 017 measured that Round 1's profits were not entry skill: random long
+entries inside the same trend filters, with the same exits, earned about the
+same. Round 1's five WATCHes are all DRIFT and all NO_EDGE. The 022 PASS was a
+stop-width artefact that the holdout killed. So the honest question left is
+not "which entry is best" but:
+
+> **Is there any rule for WHEN TO BE IN BTC that beats simply holding BTC?**
+
+The opponent is no longer random entries, it is buy & hold, so this round is
+judged by `src/benchmark.py` (beta, alpha per year with a 95% CI, CAGR, max
+drawdown, Sharpe). A regime rule is long or flat by construction, so
+`baseline.py` will usually say DRIFT for it - that is expected and is reported,
+not treated as a failure. The test that matters here is the benchmark.
+
+Two things the plan insists on and this pre-registration adopts:
+
+- **Compare Sharpe and alpha, never CAGR.** With 1% risk and a 10% crash stop
+  the rule holds only ~10% of the account, so beta is small and CAGR is small
+  by construction. A low CAGR next to buy & hold's is a sizing artefact.
+- **A RISK_EDGE is a real result and belongs to the owner.** Better Sharpe than
+  buy & hold with under half its drawdown, on both periods, is a calmer way to
+  hold BTC. It is not a trading edge and only the owner decides whether it is
+  worth a strategy card.
+
+### The engine constraint that shapes every idea here
+
+The engine exits only on stop / take-profit / time. There is no "exit when the
+regime ends". So for a `trend_state` idea `max_hold_hours` is a **re-check
+interval**, not a holding period: at the time exit the regime is re-read and
+the next bar re-enters if it is still on, paying a real round trip each time.
+`trend_state` fires on every bar, so re-entry is immediate and the round-trip
+cost is paid once per interval. Two consequences the grids must respect:
+
+- The interval is the cost knob. A 24h interval on 1h bars pays 1 round trip a
+  day; a 72h interval pays one every three days. `cost_r` per re-entry is
+  0.09%/stop%, and with a 10% stop that is only 0.009 R, so the interval is
+  cheap - but it is not free, and a rule that re-enters 90 times a year is not
+  the same instrument as one that re-enters 12 times.
+- The stop is **crash protection, not a trading stop**. At 8-15% of price it
+  should almost never be the reason a trade ends; if the stop rate is high, the
+  stop is too tight for its job and the grid is wrong.
+
+### The ideas, and what would kill each
+
+| # | file | hypothesis (one line) | kill if |
+|---|---|---|---|
+| R3.1 | `023_trend_regime_long.json` | Being long only while BTC is above its multi-day trend should avoid the large bear drawdowns (2022 was -64% for buy & hold) at a small cost in upside, so it should show a **higher Sharpe and a much smaller drawdown** than holding, even with little or no alpha | benchmark says NO_EDGE (no better Sharpe than buy & hold, or drawdown not under half) on both periods |
+| R3.2 | `024_trend_regime_both.json` | The same rule with `direction: both` asks whether shorting the down-regime adds return in 2022 or just costs whipsaw - the question decides whether this family is worth anything beyond a smoother ride | benchmark NO_EDGE, **or** the short leg's gross_r is negative (a losing short plus a winning long-leg is not a regime rule) |
+| R3.3 | `025_trend_regime_adx.json` | A trend filter that also requires ADX should stay out of the regime while it is chop, which is where the 50/50 EMA whipsaws and gives back the drawdown it was meant to avoid | benchmark NO_EDGE |
+| R3.4 | `026_trend_regime_vol_filter.json` | Crashes arrive with volatility spikes, so being flat when the ATR ratio is extreme should cut the worst of the drawdown without costing much upside | benchmark NO_EDGE |
+| R3.5 | `027_multiday_pullback_long.json` | A multi-day pullback to the fast EMA inside the up-regime is the one entry-based long idea the evidence has not killed, because it is timed rather than continuous: it is judged by **both** controls | DRIFT **and** NO_EDGE |
+| R3.6 | no new idea | Reference table: `benchmark.py` on the best configurations of Rounds 1-2, so every Round 3 number has a like-for-like comparison on the same engine | — |
+
+**Deliberately not in this round:** any short-only breakout or trend entry
+(closed after Exp 015); any long Donchian/pullback variant on 15m-30m (closed
+after Exp 017 - six configurations, five DRIFT and one holdout FAILED); mean
+reversion, squeeze→expansion, funding crowding, `taker_flow` and
+`funding_not_crowded` confirmation (all answered). If R3.5 needs a new structure
+rather than a new version, that is because the multi-day hold is the hypothesis
+and the timeframe is part of it.
+
+**Budget:** 5 new ideas x 7 native timeframes = **35 evaluations**, plus 5-6
+`benchmark.py` runs and a `baseline.py` run on every WATCH or PASS. Project
+total goes to 96. Grids stay at or below 16 combos so the 1m/3m variants remain
+tractable. Every report must show `size_skips 0`.
+
+**What would make this round a success, honestly stated:** either an ALPHA that
+survives the holdout, or a clean NO_EDGE on all five plus a RISK_EDGE reported
+to the owner. Both are useful. What is *not* acceptable is a CAGR comparison
+dressed up as an edge, which the plan forbids and which the 1% sizing makes
+guaranteed to fail.
