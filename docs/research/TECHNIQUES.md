@@ -393,3 +393,4 @@ entries inside the same trend filters do as well. A long-only result on
 - `smc_structure(structure, event, swing_len, internal_len)` (T2): LuxAlgo
   Smart Money Concepts market structure. BOS/CHoCH follow the script's alert
   conditions. CC BY-NC-SA 4.0: attribution LuxAlgo, non-commercial use only.
+- `chartart_macd_sma(fast, slow, signal, veryslow)` (T3): ChartArt's MACD + SMA 200 strategy (SMA-based MACD).

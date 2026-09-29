@@ -1,0 +1,50 @@
+{
+  "name": "046_tv_chartart_macd_sma_tf60",
+  "hypothesis": "TradingView port T3 (PLAN.md section 13) from the Pine source the owner supplied: 'MACD + SMA 200 Strategy (by ChartArt)' v1.0. The author's claim: go with momentum only when the long-term trend agrees - long when the MACD histogram crosses above zero while MACD > 0, the fast MA is above the slow MA and the close of 26 bars ago is above the 200 SMA; short on the mirror image. Counterparty: traders fading an established trend. Author defaults kept: fast 12, slow 26, signal 9, very slow 200, all SIMPLE moving averages as in the script (not the usual EMA MACD). DEVIATIONS: (1) the script has no exit - it only reverses on the opposite entry - and caps intraday equity loss at 50%; the engine has no stop-and-reverse and every trade must risk 1%, so a pct stop (4%/6%) and a time stop (120/480 h at 4h) are added and are the only grid keys; (2) the entry is a stop order at the signal bar's low (long) / high (short), which is on the other side of the market, so it fills at the next open - the engine's taker entry; if the next bar gaps beyond it, TradingView would fill at that level or not at all; (3) the 'cancel' lines only remove unfilled orders and never change a filled trade here; (4) TradingView's default commission is 0, here 0.05% taker + 0.02% slippage + funding. Source chart 4h; variants in chart mode. [Timeframe variant of 046_tv_chartart_macd_sma, 240m -> 60m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 60,
+  "params": {
+    "triggers": [
+      {
+        "type": "chartart_macd_sma",
+        "fast": 12,
+        "slow": 26,
+        "signal": 9,
+        "veryslow": 200
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.025,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 60.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [
+      0.02,
+      0.03
+    ],
+    "max_hold_hours": [
+      30.0,
+      120.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "046_tv_chartart_macd_sma",
+  "variant_mode": "chart"
+}

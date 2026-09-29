@@ -507,6 +507,30 @@ def test_recipe_blocks_causal() -> None:
     got = {k: np.flatnonzero(v).tolist() for k, v in ev.items() if k.startswith("swing") and v.any()}
     check("smc_structure: BOS / CHoCH sequence matches a hand trace of the Pine logic",
           got == {"swing_bear_bos": [3], "swing_bull_choch": [7, 11], "swing_bear_choch": [9]}, str(got))
+    # ChartArt MACD + SMA 200 port: the pandas block against a plain loop that
+    # follows the Pine lines one by one (SMA-based MACD, close[slow] vs SMA)
+    px = list(np.round(100 + np.random.default_rng(11).normal(0, 1, 400).cumsum(), 4))
+    cm = pd.DataFrame({"close": px, "high": px, "low": px, "open": px})
+    fa, sl, sg, vs = 3, 6, 4, 20
+
+    def _sma(v, i, n):
+        return sum(v[i - n + 1:i + 1]) / n if i >= n - 1 and all(x is not None for x in v[i - n + 1:i + 1]) else None
+    fm = [_sma(px, i, fa) for i in range(len(px))]
+    sm = [_sma(px, i, sl) for i in range(len(px))]
+    vm = [_sma(px, i, vs) for i in range(len(px))]
+    md = [a - b if a is not None and b is not None else None for a, b in zip(fm, sm)]
+    sgl = [_sma(md, i, sg) if md[i] is not None else None for i in range(len(px))]
+    hs = [m - s if m is not None and s is not None else None for m, s in zip(md, sgl)]
+    exp = []
+    for i in range(len(px)):
+        ok = i >= sl and hs[i] is not None and hs[i - 1] is not None and vm[i] is not None
+        lg = ok and hs[i] > 0 and not hs[i - 1] > 0 and md[i] > 0 and fm[i] > sm[i] and px[i - sl] > vm[i]
+        st = ok and hs[i] < 0 and not hs[i - 1] < 0 and md[i] < 0 and fm[i] < sm[i] and px[i - sl] < vm[i]
+        exp.append(1 if lg else -1 if st else 0)
+    got_m = np.asarray(RC.t_chartart_macd_sma(cm, None, fast=fa, slow=sl, signal=sg, veryslow=vs))
+    check("chartart_macd_sma matches a line-by-line loop of the Pine script",
+          np.array_equal(got_m, np.array(exp, float)) and (got_m != 0).sum() > 5,
+          f"{int((got_m != 0).sum())} signals, {int((got_m != np.array(exp)).sum())} mismatches")
     check("month_turn_fade uses the real month length (Feb 2024: 28th, 29th, 1st)",
           fired == [28, 29, 1], str(fired))
     sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],

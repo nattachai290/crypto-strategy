@@ -853,8 +853,27 @@ writes them.
   **Run on BTCUSDT and ETHUSDT: 14 evaluations.** The 1m file is the slow one
   (the structure loop is about 25 s per combo on 3.5M bars, 16 combos).
 
-**Round so far:** T1 + T2 = 28 evaluations. The owner may add up to 3 more
-scripts before the round starts; after it starts, no port is added.
+### Port T3 — `046_tv_chartart_macd_sma` (ChartArt "MACD + SMA 200 Strategy" v1.0, from the owner's source)
+- Pine logic, author defaults 12 / 26 / 9 / 200, **all simple moving
+  averages** (it is not the usual EMA MACD):
+  - `macd = SMA12 − SMA26`, `hist = macd − SMA9(macd)`;
+  - **long** when `crossover(hist, 0)` and `macd > 0` and `SMA12 > SMA26`
+    and `close[26] > SMA200`;
+  - **short** on the mirror image.
+- New block `chartart_macd_sma`. Test 7 checks it against a plain loop that
+  follows the Pine lines one by one (0 mismatches), plus causality and
+  output shape.
+- **Deviations:**
+  - The script only reverses and has a 50% intraday-loss halt, so the stop
+    and time exit are ours (stop 4%/6%, hold 120/480 h at 4h).
+  - Its stop-order entry at the signal bar's low/high fills at the next open
+    unless the next bar gaps through that level.
+  - The `strategy.cancel` lines only remove unfilled orders.
+- Files: `ideas/046_tv_chartart_macd_sma.json` plus 6 chart-mode variants.
+  **Run on BTCUSDT and ETHUSDT: 14 evaluations.**
+
+**Round so far:** T1 + T2 + T3 = 42 evaluations. The owner may add up to 2
+more scripts before the round starts; after it starts, no port is added.
 
 **Pre-registration** (BTC journal Exp 031 and ETH journal Exp 006, before the
 first run):

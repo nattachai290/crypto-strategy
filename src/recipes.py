@@ -410,6 +410,28 @@ def t_smc_structure(b, f, structure="swing", event="choch", swing_len=50, intern
     return _side(up, dn)
 
 
+def t_chartart_macd_sma(b, f, fast=12, slow=26, signal=9, veryslow=200):
+    """TradingView port T3 (PLAN.md section 13), from the Pine source the owner
+    supplied: "MACD + SMA 200 Strategy (by ChartArt)" v1.0. The MACD here is
+    built from SIMPLE moving averages, as in the script: fastMA = SMA(close,
+    fast), slowMA = SMA(close, slow), macd = fastMA - slowMA, signal =
+    SMA(macd, signal), hist = macd - signal. Long when hist crosses above 0,
+    macd > 0, fastMA > slowMA and close[slow] > SMA(close, veryslow); short on
+    the mirror image."""
+    c = b["close"]
+    fma = c.rolling(int(fast), min_periods=int(fast)).mean()
+    sma_ = c.rolling(int(slow), min_periods=int(slow)).mean()
+    vsma = c.rolling(int(veryslow), min_periods=int(veryslow)).mean()
+    macd = fma - sma_
+    hist = macd - macd.rolling(int(signal), min_periods=int(signal)).mean()
+    lag = c.shift(int(slow))                # close[slowLength]
+    up = _cross_up(hist, 0.0) & (macd > 0).to_numpy() & (fma > sma_).to_numpy() \
+        & (lag > vsma).to_numpy()
+    dn = _cross_dn(hist, 0.0) & (macd < 0).to_numpy() & (fma < sma_).to_numpy() \
+        & (lag < vsma).to_numpy()
+    return _side(up, dn)
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -431,6 +453,7 @@ TRIGGERS = {
     "flush": t_flush,
     "month_turn_fade": t_month_turn_fade,
     "smc_structure": t_smc_structure,
+    "chartart_macd_sma": t_chartart_macd_sma,
 }
 
 
