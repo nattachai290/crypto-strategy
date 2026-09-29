@@ -190,3 +190,14 @@ Three things to raise with the owner 🛑:
 Never build a weekday or session-hour filter, never retry mean reversion,
 squeeze→expansion, funding crowding, `taker_flow`/`funding_not_crowded`, any
 short-only breakout, or any long Donchian/pullback entry on 15m-30m.
+
+**Exp 023 — Round 4 is done and FINAL_REPORT.md is written (corrected in
+Exp 023). Next: Round 5 (`PLAN.md` §4, owner-approved), "cost first".** The cost
+per trade is ≈ 0.11% of price at every timeframe, and only a multi-day hold
+moves price more than that. Round 5 therefore uses 4h source files, `--mode time`
+variants, 4–7% stops, 48–120 h holds and **both directions with no trend
+filter**, so that the hold does not just earn the bull-market drift. The ban
+above on mean reversion and funding crowding applies to the short horizons
+where it was measured (≤ 16 h holds). Round 5's R5.1 (funding carry) and R5.2
+(multi-day reversal) are the explicit exceptions. Every other item of the ban
+stands.

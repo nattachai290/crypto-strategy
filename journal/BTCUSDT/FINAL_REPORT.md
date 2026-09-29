@@ -19,14 +19,16 @@
 >
 > **มี 5 ครั้งที่ผ่านทุกเกตบน VALID แต่ไม่มีครั้งไหนรอด:**
 > - 022 ผ่านเกต (mean R +0.2276) และ `baseline.py` บอก SKILL → **ใช้ holdout → ได้ −0.0102 R = FAILED**
-> - 023, 027 ผ่านเกต แต่ `baseline.py` บอก DRIFT → `--final` ปฏิเสธ
+> - 023 ผ่านเกตและ `baseline.py` บอก SKILL แต่เป็นกฎแบบ regime ซึ่งต้องได้ ALPHA (benchmark บอก NO_EDGE) → `--final` ปฏิเสธ
+> - 027 ผ่านเกต แต่ `baseline.py` บอก DRIFT → `--final` ปฏิเสธ
 > - 029 ที่ 4h ผ่านเกต (mean R +0.1131) แต่ DRIFT บน TRAIN → `--final` ปฏิเสธ
 >
-> **holdout ถูกใช้ไป 2 ครั้งในทั้งโปรเจคต์ และทั้งสองครั้งล้มเหลว**
+> **holdout ถูกใช้ 2 ครั้ง ล้มเหลวทั้งคู่ แต่ครั้งแรก (example_trend_breakout) เป็นการทดสอบระบบล็อกตอนตั้ง repo
+> ไม่ใช่งานวิจัย เทคนิคที่ใช้ holdout จริงมีตัวเดียวคือ 022** (ระบบล็อก holdout แยกทีละ config)
 >
 > **สิ่งที่เรียนรู้แล้วใช้ต่อได้จริง 3 ข้อ** (นี่คือผลที่มีค่าที่สุดของงานนี้):
 > 1. **stop ต้องเป็น "ระยะราคา" ไม่ใช่ "เท่า ATR"** — `cost_r = ต้นทุน ÷ stop%`
->    stop แบบเท่า ATR แอบบางลงตามรีเจม (2.83% → 0.78% ของราคา ระหว่าง 2020-22 กับ 2023-24)
+>    stop แบบเท่า ATR แอบบางลงตามรีเจม (3.0× ATR = 1.28% → 0.78% ของราคา ระหว่าง 2020-22 กับ 2023-24)
 >    ทำให้ `cost_r` พุ่ง 0.109 → 0.179 และกิน edge ทั้งหมด
 > 2. **ความกว้าง stop เปลี่ยน "หน่วยวัด" ไม่ใช่แค่ความเสี่ยง** — สูตรเดียวกันให้ `gross_r` ต่างกัน 2.3 เท่า
 >    ระหว่าง stop 1% กับ 2.83% ดังนั้น **ห้ามเทียบ `gross_r` ข้ามความกว้าง stop**
@@ -42,7 +44,7 @@
 **Scope:** BTCUSDT USDT-M perpetual only, Binance public data, 1m/3m/5m/15m/30m/1h/4h
 native bars, 2020-01 .. 2026-08. Costs at VIP0 retail. Risk 1% per trade.
 Splits: TRAIN 2020-2022, VALID 2023-2024, HOLDOUT 2025-01..2026-08 (locked,
-used twice, both times failed).
+used twice, both times failed; the first use was the lock test during repo setup).
 
 **Records:** `results/BTCUSDT/evaluations.csv` (131 rows),
 `journal/BTCUSDT/experiments.md` (Exp 000-022), `journal/BTCUSDT/evaluations.md`,
@@ -61,7 +63,7 @@ The project tested, and closed:
 |---|---|---|
 | **Direction** | long-only, short-only, both sides | short breakouts lose significantly (7/7 negative on VALID, 6 of 7 with the whole CI below zero) |
 | **Entry family** | Donchian, EMA cross, pullback, Supertrend, Keltner, momentum, RSI, Bollinger, z-score, VWAP, failed-break, previous-day break, opening range, liquidation flush, random | 6 long entries DRIFT, 1 holdout FAILED, 4 new market-structure blocks REJECT |
-| **Regime** | trend state (long/flat, long/short), +ADX, +volatility ceiling, squeeze→expansion | PASS on gates but NO_EDGE against buy & hold (20/20 benchmarks) |
+| **Regime** | trend state (long/flat, long/short), +ADX, +volatility ceiling, squeeze→expansion | PASS on gates but NO_EDGE against buy & hold (22/22 benchmarks in the project) |
 | **Timing** | session opens (London/NY), funding windows, daily open (00:00 UTC), weekdays, entry hour | no filter survived; weekday and hour effects were noise at 60-70 trades |
 | **Exit management** | fixed TP, TP in R, break-even, ATR trailing (early and late), time stop 2h-24h, stop width 1-4%, stop kind pct/swing | moved mean R from +0.102 to +0.228 on VALID and to **-0.010 on the holdout** |
 | **Timeframe** | all seven native timeframes on every idea | monotone gradient; a real signal is unaffordable below 30m |
@@ -110,10 +112,15 @@ the same idea was measured at every timeframe:
 | **valid mean R**, 029 opening range | -0.486 | -0.276 | -0.184 | -0.061 | -0.038 | +0.000 | **+0.113** |
 | **valid gross_r**, 029 opening range | +0.049 | +0.030 | +0.019 | +0.029 | +0.023 | +0.041 | **+0.141** |
 
-The signal did not change. `gross_r` is positive at **all seven** timeframes and
-the net is negative at six, purely because R is a smaller unit of price on a
-finer chart. Any verdict below 30m in this project is that arithmetic, not a
-statement about the hypothesis.
+Read the 029 rows with care (corrected in Exp 023): the opening-range window
+cannot be shorter than one bar, so at 4h the "first 30/60/120 minutes" is the
+whole 00:00-04:00 bar, and at 1h every `mins` value is the 00:00 bar. The 4h
+row therefore tests "break of the first 4h bar", not the pre-registered first
+hour, and its grid was inert. The signal is **not** identical across the
+columns, so this table is not a clean cost-only comparison. The cost gradient
+itself is real and is measured cleanly on the same-signal families of Exp 016
+(first row). `gross_r` is positive at all seven timeframes for 029 and the net
+is negative at six; below 30m the verdict is dominated by that arithmetic.
 
 Two corollaries that cost real money to learn:
 
@@ -125,7 +132,7 @@ Two corollaries that cost real money to learn:
 
 ## 4. Two engine defects found and fixed
 
-Both were found by the agent rather than by a test, and both invalidated work
+Both were found during review rather than by a test (the sign bug by the research agent, the sizing bias while verifying its fix), and both invalidated work
 that had already been recorded.
 
 **Exp 014 - short P&L had the wrong sign.** `close_position()` computed realised
@@ -162,7 +169,7 @@ a list of plausible backtests into an answer.
   passed the gates was DRIFT on this test, except the regime rules, whose SKILL is
   vacuous because the trigger *is* the filter.
 - **`benchmark.py`** compares the rule with 1× buy & hold on daily returns: beta,
-  alpha per year with a 95% CI, CAGR, max drawdown, Sharpe. **All 20 runs in the
+  alpha per year with a 95% CI, CAGR, max drawdown, Sharpe. **All 22 runs in the
   project are NO_EDGE.** No configuration has alpha; none is RISK_EDGE.
 
 The lesson they encode: **a long-only rule in a bull market makes money without
@@ -182,7 +189,7 @@ Not "more indicators". Each of these follows from a specific measurement.
    fundamentally better position than this one did. Carryover: the `pct` stop, the
    cost arithmetic, and the warning that a verdict below 30m is a cost artefact.
 2. **Look for edges that do not depend on BTC's direction.** Everything that came
-   from direction is closed: 6 long entries, 7 short entries, 4 regime rules, 20
+   from direction is closed: 6 long entries, 7 short entries, 4 regime rules, 22
    benchmarks, 1 holdout failure. The untested space in crypto perps is
    structural and mechanical - cross-exchange basis, funding carry as a position
    rather than a filter, liquidation cascades measured properly (this project's
@@ -211,3 +218,9 @@ Stated in advance, so the next agent knows what counts as new information:
 
 **Nothing in this report is a profitable strategy, and the holdout has never
 confirmed anything.**
+
+---
+
+_Corrections (Exp 023, 2026-09-29): the Thai summary's reasons for 023's refusal,
+the ATR stop figures and the holdout count; 20 → 22 benchmarks; the 029
+opening-range column in §3 is not a same-signal comparison. No verdict changed._

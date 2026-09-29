@@ -65,7 +65,7 @@ Fix everything else at a sensible value.
 **Step 4b — Make the timeframe variants.** Every idea is tested on all
 seven native timeframes (1m 3m 5m 15m 30m 1h 4h), never just one:
 `python src/tf_variants.py ideas/NNN_short_name.json` writes the six other
-files. Evaluate each. Read the docstring of `src/tf_variants.py` for what it
+files (add `--mode time` when `docs/research/PLAN.md` says so, as in Round 5). Evaluate each. Read the docstring of `src/tf_variants.py` for what it
 rescales, and never rescale by hand.
 
 **Step 5 — Run it:**
