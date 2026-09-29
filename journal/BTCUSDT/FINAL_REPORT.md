@@ -5,38 +5,40 @@
 > **คำตอบสั้น ๆ: ยังไม่มีเทคนิคใดที่พิสูจน์ได้ว่าทำกำไรหลังหักต้นทุนจริง**
 > และ **ไม่มีกฎจังหวะเวลาใดที่ชนะการแค่ถือ BTC** ครับ
 >
-> ผลรวม **131 การทดสอบ** 130 ไฟล์ idea บนข้อมูล Binance จริงทุก timeframe
+> ผลรวม **210 การทดสอบ** 207 ไฟล์ idea บนข้อมูล Binance จริงทุก timeframe
 > (1m, 3m, 5m, 15m, 30m, 1h, 4h) ช่วงปี 2020-01 ถึง 2026-08 ~80 เดือน คิดต้นทุนจริง
 > (taker 0.05% / maker 0.02%, slippage 0.02%, funding จ่ายตามเวลาจริง, 1% ความเสี่ยงต่อไม้)
 >
 > | ผลลัพธ์ | จำนวน |
 > |---|---|
-> | PASS | 5 แถว (เป็น config เดียวกันบางตัวซ้ำ) |
-> | WATCH | 18 |
-> | REJECT | 97 |
-> | INCONCLUSIVE | 11 |
+> | PASS | 9 แถว (เป็น config เดียวกันบางตัวซ้ำ) |
+> | WATCH | 39 |
+> | REJECT | 132 |
+> | INCONCLUSIVE | 30 |
 > | **ยืนยันบน holdout (CONFIRMED)** | **0** |
 >
-> **มี 5 ครั้งที่ผ่านทุกเกตบน VALID แต่ไม่มีครั้งไหนรอด:**
+> **มี 7 config ที่ผ่านทุกเกตบน VALID แต่ไม่มีตัวไหนรอด:**
 > - 022 ผ่านเกต (mean R +0.2276) และ `baseline.py` บอก SKILL → **ใช้ holdout → ได้ −0.0102 R = FAILED**
 > - 023 ผ่านเกตและ `baseline.py` บอก SKILL แต่เป็นกฎแบบ regime ซึ่งต้องได้ ALPHA (benchmark บอก NO_EDGE) → `--final` ปฏิเสธ
 > - 027 ผ่านเกต แต่ `baseline.py` บอก DRIFT → `--final` ปฏิเสธ
 > - 029 ที่ 4h ผ่านเกต (mean R +0.1131) แต่ DRIFT บน TRAIN → `--final` ปฏิเสธ
+> - 038 ที่ 4h ผ่านเกต **และเป็น ALPHA ครั้งแรกของโปรเจคต์** (alpha +10.2%/ปี, beta 0.01) → **ใช้ holdout → gross เป็นลบ −0.090 = FAILED**
+> - 039 ที่ 5m ผ่านเกต และเป็น ALPHA (alpha +10.0%/ปี, beta 0.01) บวกทั้ง 7 timeframe → **ใช้ holdout → +0.0129 R = FAILED**
 >
-> **holdout ถูกใช้ 2 ครั้ง ล้มเหลวทั้งคู่ แต่ครั้งแรก (example_trend_breakout) เป็นการทดสอบระบบล็อกตอนตั้ง repo
-> ไม่ใช่งานวิจัย เทคนิคที่ใช้ holdout จริงมีตัวเดียวคือ 022** (ระบบล็อก holdout แยกทีละ config)
+> **holdout ถูกใช้ 4 ครั้ง ล้มเหลวทั้ง 4 ครั้ง** (ครั้งแรก example_trend_breakout เป็นการทดสอบระบบล็อกตอนตั้ง repo ไม่ใช่งานวิจัย)
 >
-> **สิ่งที่เรียนรู้แล้วใช้ต่อได้จริง 3 ข้อ** (นี่คือผลที่มีค่าที่สุดของงานนี้):
+> **สิ่งที่เรียนรู้แล้วใช้ต่อได้จริง 4 ข้อ** (นี่คือผลที่มีค่าที่สุดของงานนี้):
 > 1. **stop ต้องเป็น "ระยะราคา" ไม่ใช่ "เท่า ATR"** — `cost_r = ต้นทุน ÷ stop%`
->    stop แบบเท่า ATR แอบบางลงตามรีเจม (3.0× ATR = 1.28% → 0.78% ของราคา ระหว่าง 2020-22 กับ 2023-24)
->    ทำให้ `cost_r` พุ่ง 0.109 → 0.179 และกิน edge ทั้งหมด
+>    stop แบบเท่า ATR แอบบางลงตามรีเจม ทำให้ `cost_r` พุ่ง 0.109 → 0.179 และกิน edge ทั้งหมด
 > 2. **ความกว้าง stop เปลี่ยน "หน่วยวัด" ไม่ใช่แค่ความเสี่ยง** — สูตรเดียวกันให้ `gross_r` ต่างกัน 2.3 เท่า
->    ระหว่าง stop 1% กับ 2.83% ดังนั้น **ห้ามเทียบ `gross_r` ข้ามความกว้าง stop**
-> 3. **ทุกไอเดียลที่ผ่านเกตในโปรเจคต์นี้ เป็น drift** — การสุ่มเวลาเข้าในฟิลเตอร์เดียวกัน
->    ทำได้ดีพอๆ กัน ตัวควบคุม `baseline.py` และ `benchmark.py` คือสิ่งที่ทำให้เห็นเรื่องนี้
+>    ดังนั้น **ห้ามเทียบ `gross_r` ข้ามความกว้าง stop**
+> 3. **ต้นทุนไม่ใช่ฟ้า — เป็นเรื่องของการออกแบบ** — ต้นทุนคงที่ ≈ 0.11% ของราคาต่อไม้ทุก timeframe
+>    เมื่อใช้ stop 6% + ถือหลายวัน (`--mode time`) `cost_r` แบนที่ 0.02 R ทั้ง 7 timeframe
+>    เดิมต่างกัน 26 เท่า (0.505 R ที่ 1m) — เป็นผลของวิธีสร้าง variant ไม่ใช่ความจริงของตลาด
+> 4. **"ราคาขยับจริง" ≠ "จุดเข้ามีค่า"** — 039 มี gross บวก 12.5 เท่าของต้นทุน และยังบวก
+>    ทั้งสองปีของ holdout แต่จุดเข้าไม่ชนะการสุ่มเวลา (ดูข้อ 8 ด้านล่าง)
 >
-> **คำแนะนำ: อย่าใช้เงินจริงกับสิ่งใดในโปรเจคต์นี้** และถ้าจะเดินหน้าต่อ ควรเริ่มจาก
-> ตัวเลขเรื่องต้นทุนข้อ 1-2 ข้างบน ไม่ใช่จากการหา indicator ที่ดีกว่าเดิม
+> **คำแนะนำ: อย่าใช้เงินจริงกับสิ่งใดในโปรเจคต์นี้** — holdout ไม่เคยยืนยันอะไรได้แม้แต่ครั้งเดียว
 > (รายละเอียดทั้งหมดด้านล่าง)
 
 ---
@@ -44,10 +46,11 @@
 **Scope:** BTCUSDT USDT-M perpetual only, Binance public data, 1m/3m/5m/15m/30m/1h/4h
 native bars, 2020-01 .. 2026-08. Costs at VIP0 retail. Risk 1% per trade.
 Splits: TRAIN 2020-2022, VALID 2023-2024, HOLDOUT 2025-01..2026-08 (locked,
-used twice, both times failed; the first use was the lock test during repo setup).
+used four times, failed four times; the first use was the lock test during repo
+setup).
 
-**Records:** `results/BTCUSDT/evaluations.csv` (131 rows),
-`journal/BTCUSDT/experiments.md` (Exp 000-022), `journal/BTCUSDT/evaluations.md`,
+**Records:** `results/BTCUSDT/evaluations.csv` (210 rows),
+`journal/BTCUSDT/experiments.md` (Exp 000-028), `journal/BTCUSDT/evaluations.md`,
 `baselines.md`, `benchmarks.md`.
 
 ## 1. The question and the answer
@@ -65,13 +68,16 @@ The project tested, and closed:
 | **Entry family** | Donchian, EMA cross, pullback, Supertrend, Keltner, momentum, RSI, Bollinger, z-score, VWAP, failed-break, previous-day break, opening range, liquidation flush, random | 6 long entries DRIFT, 1 holdout FAILED, 4 new market-structure blocks REJECT |
 | **Regime** | trend state (long/flat, long/short), +ADX, +volatility ceiling, squeeze→expansion | PASS on gates but NO_EDGE against buy & hold (22/22 benchmarks in the project) |
 | **Timing** | session opens (London/NY), funding windows, daily open (00:00 UTC), weekdays, entry hour | no filter survived; weekday and hour effects were noise at 60-70 trades |
-| **Exit management** | fixed TP, TP in R, break-even, ATR trailing (early and late), time stop 2h-24h, stop width 1-4%, stop kind pct/swing | moved mean R from +0.102 to +0.228 on VALID and to **-0.010 on the holdout** |
-| **Timeframe** | all seven native timeframes on every idea | monotone gradient; a real signal is unaffordable below 30m |
+| **Exit management** | fixed TP, TP in R, break-even, ATR trailing (early and late), time stop 2h-24h, stop width 1-7%, stop kind pct/swing | moved mean R from +0.102 to +0.228 on VALID and to **-0.010 on the holdout** |
+| **Timeframe** | all seven native timeframes on every idea, in two variant modes | the monotone gradient of Rounds 1-4 was an artefact of `tf_variants` chart mode; `--mode time` holds `cost_r` at 0.02 R on all seven |
+| **Hold length** | 4h to 120h, both directions, no trend filter (Round 5) | the only way to make the gross move exceed the flat 0.11% cost line; it produced the project's first ALPHA results, and the holdout killed them |
+| **Block combinations** | `taker_flow`+`volume_spike`, `failed_break`+`flush`, `momentum`+`funding_not_crowded`, `ema_cross`+`supertrend_flip`+`di_side`, `donchian_break`+`squeeze` (Round 6) | one clean family kill, one untestable-by-construction, one PASS that failed the holdout with a *positive* gross |
 | **Execution** | taker vs post-only at offsets 0-0.3 ATR | post-only worth ~+0.015 R at a 92% fill rate |
 
 ## 2. Every PASS, and what happened to it
 
-Five rows have ever read PASS. None survived.
+Nine rows have ever read PASS, across seven distinct configurations. None
+survived.
 
 | config | verdict on VALID | baseline | benchmark | holdout |
 |---|---|---|---|---|
@@ -79,8 +85,10 @@ Five rows have ever read PASS. None survived.
 | **023** long/flat regime, 1h | mean R +0.1148, CI [+0.014, +0.220], 198 trades, maxDD 4.8% | SKILL (vacuous: modes A and B are the same experiment) | **NO_EDGE** | refused (regime rule needs ALPHA) |
 | **027** multi-day pullback, 30m | mean R +0.1967, CI [+0.025, +0.373], 175 trades | **DRIFT** (TRAIN below random entries) | NO_EDGE | refused |
 | **029** opening range, 4h | mean R +0.1131, CI [+0.006, +0.223], 286 trades | **DRIFT** (TRAIN below random entries) | NO_EDGE | refused |
+| **038** opening range both sides, 4h | mean R +0.1753, CI [+0.032, +0.327], 155 trades, gross +0.99% of price vs 0.11% cost | **DRIFT** | **ALPHA** +10.2%/yr, beta +0.01 | **FAILED: -0.1118 R**, gross **-0.090** |
+| **039** breakout + taker flow + volume, 5m | mean R +0.2223, CI [+0.073, +0.379], 106 trades, gross +1.45% of price vs 0.12% cost, positive on all 7 clocks | **DRIFT** | **ALPHA** +10.0%/yr, beta +0.01 | **FAILED: +0.0129 R**, gross **+0.032** |
 
-Plus the two long-form rows for 022 (the pre- and post-`--final` runs).
+Plus the pre- and post-`--final` duplicate rows for 022, 038 and 039.
 
 **The single most instructive failure is 022**, because it passed everything
 available at the time and the mechanism is fully understood:
@@ -266,7 +274,92 @@ Round 5 also settled three more things:
 - **Turn-of-month fade is unmeasurable in this design**, not rejected: a 5-day
   calendar window and a 96h hold leave fewer than 30 VALID trades.
 
-## 8. What would change the answer
+## 8. Round 6 (added after Exp 027): five untested combinations, cost first
+
+Rounds 1-5 tested one idea family at a time. Round 6 combined blocks that were
+barely used or never used together - `taker_flow`, `funding_not_crowded`,
+`di_side`, `squeeze`, `supertrend_flip`, `momentum` and `trigger_mode: "all"` -
+each for one stated reason, with 2-3 blocks per idea and Round 5's cost design
+(4h sources, `--mode time`, 6% stops, 48-120 h holds, both directions, no trend
+filter, >=150 TRAIN signals counted before running).
+
+**35 evaluations: 1 PASS, 12 WATCH, 18 REJECT, 4 INCONCLUSIVE.**
+
+### The holdout, a fourth time
+
+**039 `donchian_break` + `taker_flow` + `volume_spike` at 5m: PASS, DRIFT,
+ALPHA.** Valid 106 trades, `gross_r` **+0.242** against a cost of 0.019, mean R
+**+0.2223**, CI [+0.0728, +0.3786], CAGR +10.9%, maxDD 3.4%, 53 long / 53 short,
+and a **12.5:1 gross-to-cost ratio, the highest measured in this project**. It
+was positive on **all seven clocks**, not one. `--final` was permitted and run.
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 177 | +0.053 | 0.018 | +0.0351 | | +1.6% | 10.4% |
+| valid 2023-2024 | 106 | +0.242 | 0.019 | +0.2223 | [+0.0728, +0.3786] | +10.9% | 3.4% |
+| **holdout** | 95 | **+0.032** | 0.019 | **+0.0129** | [−0.158, +0.204] | +0.6% | 8.4% |
+
+**FAILED** - the holdout's own random-entry control is the reason: the idea's
++0.0129 against a random median of −0.0187 (any time) and **+0.0380 (same
+filters)**.
+
+### The distinction this forces open, which the earlier rounds could not draw
+
+| | 038 opening range @4h | **039 breakout + flow @5m** |
+|---|---|---|
+| VALID `gross_r` | +0.197 | +0.242 |
+| HOLDOUT `gross_r` | **−0.090** | **+0.032** |
+| holdout per year | 2025 −0.166, 2026 −0.028 | **2025 +0.0077, 2026 +0.0187** |
+| holdout ×1.5 cost | −0.121 | **+0.0052** |
+| verdict | FAILED - the edge was fake | FAILED - the edge was real, 1/8 the size, and not better than random |
+
+038's gross went negative: its structure produced nothing and the VALID number
+was a two-year artefact. **039's gross stayed positive, in both holdout years,
+and survived the ×1.5 cost stress.** So a flow-confirmed breakout really does
+produce a positive move over multi-day holds - that part is now a measured
+result, not a hope. What did not survive is the size: VALID's +0.242 was **8×
+the holdout's +0.032**, and even the residue is smaller than what random entries
+with the same stop, hold and filters produced on the same data.
+
+**So the answer is neither "there is no move" nor "there is no edge". It is:
+the moves are real, they are measurable, they are not free to harvest, and after
+realistic costs the entry is not where the value is.** With a 6% stop and a 96h
+hold, being in BTC both ways is cheap enough that any entry - including a random
+one - captures the small positive drift of holding it. The value, if there is
+any, sits in the cost structure, which is an execution and position-sizing
+decision rather than a trading technique, and the plan has no instrument for it.
+
+### The rest of the round
+
+- **040 `failed_break` + `flush` fade is closed, cleanly.** Negative at all seven
+  clocks, −0.079 to −0.157, a spread of 0.078 R over five years. Both blocks were
+  individually inert on gross and **together they are worse than either alone** -
+  a caution worth keeping: a combination of two inert blocks is not
+  automatically inert, because the second selects the subset of the first where
+  the first is most wrong.
+- **042 `ema_cross` + `supertrend_flip` + `di_side` cannot be measured.** 152
+  TRAIN signals, the bare minimum, and four of seven clocks are INCONCLUSIVE on
+  49-71 VALID trades. The strictness that is the point of the hypothesis is what
+  makes it untestable at this frequency.
+- **043 `donchian_break` + `squeeze`** is positive on all seven clocks
+  (+0.043 to +0.144) and every one of them is DRIFT and NO_EDGE.
+- **041@15m is the only SKILL since 022 and 023** - valid +0.1738, CI [+0.0041,
+  +0.3510], 88 trades, entry beating random timing on both TRAIN and VALID. It is
+  a **WATCH**, so `--final` is refused and the plan reserves the holdout for the
+  owner. Its benchmark is NO_EDGE and 2023 carries it.
+
+### The stop rule has fired
+
+`PLAN.md` Round 6, agreed in the pre-registration: *"if Round 6 ends with no
+holdout `CONFIRMED`, research on BTCUSDT stops."* It did not, so by the rule I
+wrote down in advance, **BTCUSDT research stops here.**
+
+**Final counts: 208 evaluations, 7 rows ever read PASS, 0 CONFIRMED, holdout used
+four times and failed four times. Nothing in this project is a profitable
+strategy, and the holdout has never confirmed anything.**
+
+## 9. What would change the answer
+
 
 
 Stated in advance, so the next agent knows what counts as new information:

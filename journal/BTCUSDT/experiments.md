@@ -3068,3 +3068,123 @@ negative. `--final` on 039@5m is permitted (PASS + ALPHA) and the three
 pre-checks the plan demands are recorded above. The prior is poor - 038 had the
 same profile and failed - but 039 differs in the one way that matters for
 selection, seven positive clocks instead of one.
+
+---
+
+## Exp 028 - Round 6 complete: the holdout failed a fourth time, and failed differently
+
+**Date:** 2026-09-29
+**Status:** complete. 35 evaluations: **1 PASS, 12 WATCH, 18 REJECT, 4
+INCONCLUSIVE.** Project total **208**. HOLDOUT spent a fourth time, on the one
+config that qualified. **FAILED.**
+
+### 039 `donchian_break` + `taker_flow` + `volume_spike` @5m — the holdout
+
+`--final` was permitted (PASS + ALPHA) and was run once.
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 177 | +0.053 | 0.018 | +0.0351 | | +1.6% | 10.4% |
+| valid 2023-2024 | 106 | **+0.242** | 0.019 | **+0.2223** | [+0.0728, +0.3786] | +10.9% | 3.4% |
+| valid ×1.5 cost | | | | +0.2145 | | | |
+| **holdout 2025-01..2026-08** | 95 | **+0.032** | 0.019 | **+0.0129** | [−0.158, +0.204] | **+0.6%** | 8.4% |
+
+**FAILED** - and the holdout's own random-entry control says exactly why: the
+idea's +0.0129 against a random median of **−0.0187 (any time) / +0.0380 (same
+filters)**. The idea did not beat the median of mode B.
+
+### This failure is not 038's failure, and the difference is the finding
+
+| | 038 opening range @4h | **039 breakout+flow @5m** |
+|---|---|---|
+| VALID `gross_r` | +0.197 | +0.242 |
+| HOLDOUT `gross_r` | **−0.090** (negative) | **+0.032** (positive) |
+| holdout per year | 2025 −0.166, 2026 −0.028 | **2025 +0.0077, 2026 +0.0187** (both positive) |
+| holdout ×1.5 cost | −0.121 | **+0.0052** (still positive) |
+| verdict | FAILED, the edge was fake | FAILED, the edge was real but 1/8 the size and not better than random |
+
+038's gross went negative on the holdout: its structure produced nothing and the
+VALID number was a two-year artefact. **039's gross stayed positive, in both
+holdout years, and even survived the ×1.5 cost stress.** So the
+flow-confirmed-breakout structure really does produce a positive move over
+multi-day holds - a mechanism the project can now state. What did not survive is
+the *size*: VALID's +0.242 was **8× the holdout's +0.032**, and even the
+surviving +0.032 is smaller than what random entries with the same stop, hold
+and filters produced on the same holdout data (+0.0380 median, mode B).
+
+**That is the sharpest statement the project can make about its own results, and
+it is a new distinction the earlier rounds never had to draw:**
+
+- Rounds 1-4 could only distinguish *a move big enough to survive cost* from *a
+  move that was not*. Because cost ate almost everything, gross was near zero
+  everywhere and the only question was whether it cleared 0.
+- Round 5 removed the cost problem with 6% stops and `--mode time`.
+- Round 6 shows what that exposed: **structures that do produce a real positive
+  gross move, positive on unseen data, in every year - and whose entries still
+  add nothing, because random entries with the same exits and filters produce
+  the same or a larger gross.** A both-sided 6%-stop 96h hold in BTC is a cheap
+  enough way to be in the market that *any* entry, including a random one,
+  captures the small positive drift of holding it both ways.
+
+So the answer the project has been searching for is not "no move" and not "no
+edge". It is: **the moves are real, they are measurable, they are not free to
+harvest, and after realistic costs the entry is not where the value is.** The
+value, if there is any, is in the cost structure - which is an execution and
+position-sizing decision, not a trading technique, and the plan has no way to
+test that (`PLAN.md` §6 is for a CONFIRMED technique, and there is none).
+
+### The other four results
+
+| idea | VALID mean R across the seven clocks | read |
+|---|---|---|
+| **040 `failed_break` + `flush` fade** | −0.079, −0.127, −0.134, −0.132, −0.140, −0.145, **−0.157** | **closed, cleanly** |
+| 041 `momentum` + `funding_not_crowded` + `volume_spike` | +0.145, +0.063, +0.095, **+0.174**, +0.119, +0.120, −0.024 | positive on 6 of 7 |
+| 042 `ema_cross` + `supertrend_flip` + `di_side` | +0.072, −0.029, +0.029, +0.003, −0.007, −0.036, −0.023 | dead, and too rare to judge |
+| 043 `donchian_break` + `squeeze` | +0.043, +0.137, +0.084, +0.099, +0.144, +0.124, +0.067 | positive on 7 of 7, all DRIFT + NO_EDGE |
+
+**040 is the round's clean negative and the most useful kill.** Negative at all
+seven clocks with a spread of only 0.078 R over five years is a mechanism with
+the wrong sign, not noise. The plan's hypothesis was that a failed break
+followed by a liquidation bar means the forced sellers were cleared at the
+extreme; the measurement says the opposite, and says it consistently enough to
+close the family. `flush` alone had no gross edge in either mode (Exp 022) and
+`failed_break` alone was negative (Exp 016); **together they are worse than
+either alone**, which is worth recording as a general caution - a combination of
+two inert blocks is not automatically inert, it can be actively wrong, because
+the second block selects the subset of the first where the first is most wrong.
+
+**042 needs one note rather than a verdict.** It is INCONCLUSIVE at four clocks
+(49-71 VALID trades) and REJECT at the rest, on a total of 152 TRAIN signals
+that is barely over the 150 floor. Requiring an EMA cross and a Supertrend flip
+within 3 days plus DI agreement is simply too rare: the combination's strictness,
+which is the whole point of the hypothesis, is also what makes it untestable at
+this trade frequency. Recorded as a design limit, not as a refutation - though
+at +0.03 R on 66 trades there is very little to refute.
+
+**041@15m is the only SKILL in the project since 022 and 023**: valid +0.1738,
+CI [+0.0041, +0.3510], 88 trades, 50 long / 38 short, and the entry beat random
+timing on **both** TRAIN and VALID. It is a **WATCH**, so `--final` is refused
+(AGENTS.md rule 4) and `PLAN.md` §5 reserves spending a holdout on a WATCH for
+the owner. Its benchmark is NO_EDGE and its VALID is carried by 2023 (+0.2815
+on 41 trades) over 2024 (+0.08 on 47), so the prior is the familiar one. Not my
+call to spend; the owner's.
+
+### The stop rule has now fired
+
+`PLAN.md` Round 6, agreed in this pre-registration: **"if Round 6 ends with no
+holdout `CONFIRMED`, research on BTCUSDT stops."** Round 6 ended with no
+CONFIRMED, so **by the rule I wrote down in advance, BTCUSDT research stops
+here.** 208 evaluations, 7 rows ever read PASS, **0 CONFIRMED**, holdout used
+four times and failed four times.
+
+Nothing in this project is a profitable strategy, and the holdout has never
+confirmed anything on this market.
+
+### Verdict
+
+`REJECT`, and the round closes the project. The one mechanical result worth
+keeping is the distinction 039's holdout forces into the open: a positive gross
+move that reproduces on unseen data, in every year, at a 12.5:1 gross-to-cost
+ratio - and an entry that adds nothing to it. Everything else in the round is
+either a clean family kill (040) or a configuration that cannot be measured
+(042).

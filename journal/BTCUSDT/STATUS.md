@@ -1,9 +1,70 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-29, after Exp 025 (Round 5 review). Rules for agents:
-`AGENTS.md`. Research plan: `docs/research/PLAN.md` (all five rounds done)._
+_Last updated: 2026-09-29, after Exp 028 (Round 6 complete — the stop rule has
+fired). Rules for agents: `AGENTS.md`. Research plan: `docs/research/PLAN.md`
+(six rounds done)._
 
-> **Next: Round 6** (`PLAN.md` §4): five combination ideas, then stop unless one is CONFIRMED (Exp 027).
+> **Exp 028 — ROUND 6 IS DONE AND THE STOP RULE HAS FIRED. BTCUSDT research
+> stops here.** 35 evaluations: 1 PASS, 12 WATCH, 18 REJECT, 4 INCONCLUSIVE.
+> Project total **210 evaluations**, 207 idea files. **The holdout has been used
+> four times and failed four times. 0 CONFIRMED. Nothing in this project is a
+> profitable strategy.**
+>
+> The rule was written into the Round 6 pre-registration in advance
+> (`PLAN.md` §4): *"if Round 6 ends with no holdout `CONFIRMED`, research on
+> BTCUSDT stops."* It ended without one, so this is the stopping point the plan
+> called for. Do not start a seventh round.
+>
+> **The one result worth carrying forward is a distinction the earlier rounds
+> could not draw, and it comes from 039's holdout:**
+>
+> | | 038 opening range @4h | **039 breakout + flow @5m** |
+> |---|---|---|
+> | VALID `gross_r` | +0.197 | +0.242 |
+> | HOLDOUT `gross_r` | **−0.090** | **+0.032** |
+> | holdout per year | 2025 −0.166, 2026 −0.028 | **2025 +0.0077, 2026 +0.0187** |
+> | holdout ×1.5 cost | −0.121 | **+0.0052** |
+> | why it failed | the edge was fake | the edge was real, 8x smaller, and **not better than random entries** (idea +0.0129 vs random median +0.0380 in the same filters) |
+>
+> So: **the moves are real, they reproduce on unseen data in every year, they
+> are not free to harvest, and after realistic costs the entry is not where the
+> value is.** With a 6% stop and a 96 h hold, being in BTC both ways is cheap
+> enough that *any* entry, including a random one, captures the small positive
+> drift of holding it. 039 was a PASS, DRIFT, ALPHA, positive at all seven
+> clocks, at a **12.5:1 gross-to-cost ratio** - the best ratio in the project -
+> and it still failed, for that reason and not because the structure was fake.
+>
+> **Also settled in Round 6:**
+> - **The stop-hunt family is closed (040).** `failed_break` + `flush` fade is
+>   negative at all seven clocks, -0.079 to -0.157, a spread of 0.078 R over
+>   five years. Both blocks were individually inert on gross; **together they are
+>   worse than either alone.** Keep this as a general caution: a combination of
+>   two inert blocks is not automatically inert, because the second selects the
+>   subset of the first where the first is most wrong.
+> - **`ema_cross` + `supertrend_flip` + `di_side` (042) cannot be measured.**
+>   152 TRAIN signals, the bare minimum, and four of seven clocks are
+>   INCONCLUSIVE on 49-71 VALID trades. The strictness that is the point of the
+>   hypothesis is what makes it untestable at this frequency.
+> - **041@15m is the only SKILL since 022/023** - valid +0.1738, CI [+0.0041,
+>   +0.3510], 88 trades, entry beating random timing on both TRAIN and VALID.
+>   It is a **WATCH**, so `--final` is refused; spending a holdout on a WATCH is
+>   the owner's decision (`PLAN.md` §5). Its benchmark is NO_EDGE and 2023
+>   carries it. **Not my call.**
+> - **Round 6 used `cooldown_bars: 0`.** The plan's signal counts were taken that
+>   way; Round 5's cooldown of 6 bars was my own addition and it pushed four
+>   grid values under the 150-signal floor. With a 48-120 h hold the engine's
+>   one-position-at-a-time rule already prevents re-entry, so it adds nothing.
+>
+> **The best configuration the project ever produced, for the record:**
+> **039 `donchian_break(960)` + `taker_flow(n 288, thresh 0.5)` +
+> `volume_spike(n 1440, k 1.5)`, 5m clock, 6% stop, no TP, trail armed 2R
+> trailing 20.8 ATR, 96 h hold, both directions** (TRAIN 177 trades +0.0351;
+> VALID 106 trades `gross_r` +0.2416, `cost_r` 0.0193, mean R **+0.2223**, CI
+> [+0.0728, +0.3786], CAGR +10.9%, maxDD 3.4%; HOLDOUT 95 trades, `gross_r`
+> **+0.032**, mean R **+0.0129**, CAGR +0.6% - **FAILED**). It is not a strategy:
+> the entry does not beat a random one.
+
+> **Round 6 was the last round** (`PLAN.md` §4, Exp 027): five combination ideas, then stop unless one is CONFIRMED (Exp 027).
 >
 > **Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost.
 >
@@ -135,9 +196,16 @@ _Last updated: 2026-09-29, after Exp 025 (Round 5 review). Rules for agents:
   not: the round's PASS was the project's first PASS + ALPHA (beta +0.01, alpha
   +10.2%/yr) and it **FAILED the holdout with a negative gross**. Details:
   `experiments.md` Exp 024.
-- 🏁 **The plan is complete. Read `journal/BTCUSDT/FINAL_REPORT.md`.** Project
-  total **173 evaluations**, 136 idea files, all 7 native timeframes. 6 rows ever
-  read PASS, **0 CONFIRMED**, holdout used three times and FAILED all three. The
+- **Round 6 is done: 35 evaluations, 1 PASS, 12 WATCH, 18 REJECT, 4
+  INCONCLUSIVE.** Five untested block combinations, cost-first. One clean family
+  kill (040, stop-hunt, negative at all seven clocks), one untestable-by-
+  construction (042), one PASS (039) that **failed the holdout with a positive
+  gross** and the project's first-ever 12.5:1 gross-to-cost ratio. Details:
+  `experiments.md` Exp 028.
+- 🏁 **The plan is complete and the stop rule has fired. Read
+  `journal/BTCUSDT/FINAL_REPORT.md`.** Project total **210 evaluations**, 207
+  idea files, all 7 native timeframes. 7 distinct configurations have read
+  PASS, **0 CONFIRMED**, holdout used four times and FAILED all four. The
   answer: **no tested technique on BTCUSDT at VIP0 costs has an edge that
   survives a random-entry control and a buy-and-hold benchmark.**
 - **The cost finding holds and is the most reusable thing here.** Every long
@@ -235,31 +303,34 @@ Neighbouring timeframes agree (1h: train +0.099 / valid +0.110; 4h: +0.058 /
 
 ## Next step
 
-**All five rounds of `PLAN.md` are done.** 173 evaluations, 6 rows ever read
-PASS, 0 CONFIRMED, holdout spent three times and failed three times. The
-deliverable is `journal/BTCUSDT/FINAL_REPORT.md` and its §8 lists what would
-count as new information. Per `PLAN.md` §7 the remaining choices are the
-owner's, and none of them is another round on BTCUSDT.
+**None, on this market. The stop rule agreed in the Round 6 pre-registration
+has fired:** `PLAN.md` §4 says research on BTCUSDT stops when Round 6 ends
+without a holdout CONFIRMED. It did. 210 evaluations, 7 configurations ever read
+PASS, 0 CONFIRMED, holdout spent four times and failed four times. The
+deliverable is `journal/BTCUSDT/FINAL_REPORT.md`; its §9 lists what would count
+as new information. **Do not start a seventh round.**
 
-**Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost. Item 1 below is therefore closed.
+**Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost. This closes what Exp 024 left open.
 
-Three things to raise with the owner 🛑:
-1. **Funding carry (033) is the one hypothesis untested rather than refuted.**
-   It earns from funding instead of from price, and it cannot be measured in
-   this engine because a 96h hold plus a 0.015%-per-8h threshold cannot reach 100 VALID
-   trades. Measuring it means a different instrument — a rolling funding
-   position held for weeks, with the stop and the time stop removed because
-   carry is not a price trade. That is a Level 3 proposal and needs approval.
+The evidence is consistent rather than inconclusive, and it says something more specific than "no edge":
+- cost is the first-order term and it is a **design choice**, not a fate (`--mode time` + a 6% stop puts `cost_r` at ~0.02 R on every timeframe);
+- with cost solved, several both-sided multi-day structures produce a **real** positive gross move — 039's held on unseen data, in both holdout years, through a ×1.5 cost stress, at 12.5:1 gross-to-cost;
+- and **none of them has timing skill**: random entries with the same stop, hold and filters do as well or better.
+
+So the value is not in the entry, and this harness cannot test where it would be instead — that is execution and position sizing, not a trading technique.
+
+Two things to raise with the owner 🛑 (neither is mine to decide):
+1. **041@15m is the only SKILL since 022/023** — `momentum` +
+   `funding_not_crowded` + `volume_spike`, valid +0.1738, CI [+0.0041, +0.3510],
+   88 trades, and the entry beat random timing on **both** TRAIN and VALID. It is
+   a WATCH, so `--final` refuses it; `PLAN.md` §5 reserves spending a holdout on
+   a WATCH for the owner. Its benchmark is NO_EDGE and 2023 carries it (+0.2815
+   on 41 trades against +0.08 on 47). I did not run it and I do not recommend
+   it: the prior from 022, 038 and 039 is that a WATCH's VALID does not survive.
 2. **A different coin, or a different market.** Every finding here is specific
    to BTCUSDT at VIP0 costs, and BTC is the most arbitraged market in
    existence. The harness transfers unchanged. Adding a symbol to
-   `SYMBOL_SPECS` is also a Level 3 change and needs the owner's approval.
-3. **Whether to continue at all on this market.** 173 evaluations is a complete
-   answer, and the evidence is consistent rather than inconclusive: cost is the
-   first-order term and it is a design choice; with cost solved, several
-   both-sided structures produce a positive gross of ~1% of price per trade and
-   **none of them has timing skill**, so the gross belongs to the period and not
-   to the entry.
+   `SYMBOL_SPECS` is a Level 3 change and needs the owner's approval.
 
 Never build a weekday or session-hour filter, never retry mean reversion,
 squeeze→expansion, funding crowding, `taker_flow`/`funding_not_crowded`, any
@@ -276,4 +347,24 @@ unmeasurable in this design. **Do not add a sixth round on BTCUSDT.**
 **Exp 027 — owner decision: Round 6 is approved** (`PLAN.md` §4, Round 6):
 five combination ideas with Round 5's cost design, hard-capped, and with a
 stop rule agreed in advance. If Round 6 ends with no holdout CONFIRMED,
-BTCUSDT research stops. This replaces the line above.
+BTCUSDT research stops.
+
+**Exp 028 — Round 6 is done, and the stop rule fired.** The ban above is now
+also backed by Round 6:
+- **The stop-hunt family is closed.** `failed_break` + `flush` fade (040) is
+  negative at all seven clocks (−0.079 to −0.157, spread 0.078 R over five
+  years). Both blocks were individually inert on gross; together they are
+  *worse* than either alone. The general lesson, worth keeping: a combination of
+  two inert blocks is not automatically inert, because the second block selects
+  the subset of the first where the first is most wrong.
+- **`taker_flow` and `funding_not_crowded` are no longer banned** — Round 6
+  lifted that ban to test them both-sided at a multi-day hold, and they are the
+  two ideas that produced Round 6's only PASS and its only SKILL. The old ban
+  was a 15m short-only artefact and does not apply at this horizon.
+- `ema_cross` + `supertrend_flip` + `di_side` (042) is too rare to measure, not
+  refuted: 152 TRAIN signals, four of seven clocks INCONCLUSIVE on 49-71 VALID
+  trades. Do not retry it with a looser confirmation - the strictness is the
+  hypothesis.
+
+**No further round on BTCUSDT.** The plan's six rounds are done and the stop
+rule has fired.
