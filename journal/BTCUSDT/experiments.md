@@ -1134,3 +1134,100 @@ start Round 1: `PLAN.md` §2 is built on "the short side is the only positive si
 on "no new long-only ideas in Rounds 1-2", and both of those are now false, so the plan
 needs revising before it is executed. This is a Level 3 change (`src/backtest.py`) and
 AGENTS.md §5 / PLAN.md §9 require the owner's yes before the fix is made.
+
+
+---
+
+## Exp 015 — Engine fixed (short sign, account sizing); all 18 ideas re-evaluated
+
+**Date:** 2026-09-29
+**Status:** complete. Owner approved the engine fix and the 1,000 USDT research account.
+
+### Fix 1 — the short-side P&L sign (found in Exp 014)
+`backtest.close_position()` now signs the price move by `pos_side`
+(`move = qty * side * (exit - entry)`), used by cash, net P&L, `gross_pnl` and
+`gross_r`. The reference implementation in `test_engine.py` had the same line
+and was fixed too. New `test_engine.py` section 9, which **failed on the old
+code** (a stopped-out short read +0.80 R instead of −1.30 R) and passes now:
+- A: the same trade long vs short, zero costs, gives exactly opposite P&L and R
+- B: mirror the whole price series, flip every random signal, and every trade's
+  R must be identical (5 seeds). No remembered sign convention is involved,
+  and a shared-assumption reference can't fool it
+- C: a hand-computed short stopped out by a rally, with real fees and slippage
+- D: an unsizable trade is counted in `size_skips`, never silently dropped
+
+### Fix 2 — the 100 USDT account could not size most trades
+Found while checking the fix: after correcting the sign, idea 010's recorded
+parameters produced 170 validation trades instead of 219. Cause: BTC's qty
+step is 0.001 BTC. At 2024 prices (60–100k) with a 2% stop, one step already
+risks 1.2–2 USD, which is more than 1% of 100 USDT, so the engine floored qty to
+0 and skipped the trade. It was worse than a sample-size problem:
+
+| idea 010, VALID, recorded params | trades | 2023 / 2024 | mean R |
+|---|---|---|---|
+| 100 USDT account (as run so far) | 170 | 160 / **10** | −0.163 |
+| unconstrained sizing | 376 | 172 / 204 | −0.144 |
+
+**The skipping depended on P&L:** a losing strategy's equity falls, more of its
+trades become unsizable, and its later losses are never booked. Under the sign
+bug the (wrongly) winning shorts grew the account and could keep trading,
+which is part of why 219 trades had been reported.
+
+Owner decision: research runs use `C.EVAL_EQUITY = 1000` USDT (1% risk still;
+R, CI, drawdown % and CAGR measure the same thing). Whether the owner's real
+100 USDT account can size a candidate is checked in its strategy card
+(PLAN.md §6). The engine now reports `size_skips`, and `evaluate.py` prints
+it in every report. Every re-run below has `size_skips = 0`.
+
+### Records
+The Exp 011–014 records (`evaluations.csv`, `evaluations.md`, trade lists)
+were moved unchanged to `results/BTCUSDT/legacy/pre_signfix/`. The 16 plain
+`.csv` trade files committed alongside the `.csv.gz` ones were duplicates and
+were removed. `holdout_log.csv` is unchanged (one row, the example's lock test).
+All 18 idea files were then re-evaluated from scratch with `--rerun`: a replay
+of past decisions on a correct engine, not new tuning, so the version budget
+was not applied.
+
+### Result: 0 PASS, 0 WATCH, 16 REJECT, 2 INCONCLUSIVE
+
+| idea | eval_id | tf | direction chosen | old valid (n / mean R) | train mean R | valid n | valid mean R | 95% CI | ×1.5 cost | maxDD | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 001_trend_breakout_trail | 252109899e | 15m | both | 699 / -0.024 | -0.029 | 818 | -0.057 | [-0.168, +0.065] | -0.138 | 49% | REJECT |
+| 002_pct_stop_trend_breakout | 5066a68b70 | 15m | both | 455 / +0.039 | -0.043 | 786 | -0.031 | [-0.126, +0.066] | -0.092 | 37% | REJECT |
+| 003_funding_fade | 55b321947e | 15m | both | 7 / -0.943 | +0.058 | 13 | +0.218 | [-0.280, +0.732] | +0.179 | 5% | INCONCLUSIVE |
+| 004_squeeze_expansion | d3042109b4 | 15m | both | 195 / +0.064 | -0.049 | 198 | -0.190 | [-0.408, +0.051] | -0.319 | 34% | REJECT |
+| 005_session_open_break | cdde91ae48 | 15m | both | 318 / -0.075 | +0.079 | 390 | +0.067 | [-0.079, +0.214] | -0.002 | 17% | REJECT |
+| 006_long_only_trend | c208dafd61 | 30m | long | 42 / +0.244 | +0.002 | 52 | +0.136 | [-0.048, +0.334] | +0.103 | 2% | INCONCLUSIVE |
+| 007_direction_ablation_pct_stop | 93ef5c196c | 15m | long | 233 / +0.070 | -0.031 | 418 | +0.051 | [-0.041, +0.147] | +0.010 | 14% | REJECT |
+| 008_short_breakout_exit_by_price | 0269bf5d77 | 15m | short | 233 / +0.070 | -0.075 | 296 | -0.133 | [-0.249, -0.015] | -0.171 | 37% | REJECT |
+| 009_short_breakout_5m_pct_stop | 32e903fb0d | 5m | short | 205 / +0.037 | -0.052 | 197 | -0.110 | [-0.229, +0.017] | -0.156 | 20% | REJECT |
+| 010_short_breakout_post_only | 70fb497bcf | 15m | short | 219 / +0.085 | -0.123 | 339 | -0.120 | [-0.206, -0.027] | -0.146 | 32% | REJECT |
+| 011_short_breakout_wider_stop | 29b6b39400 | 15m | short | 202 / +0.064 | -0.075 | 395 | -0.086 | [-0.134, -0.038] | -0.105 | 27% | REJECT |
+| 012_short_breakout_taker_flow | 72454823e9 | 15m | short | 219 / +0.085 | -0.049 | 166 | -0.126 | [-0.244, -0.001] | -0.152 | 19% | REJECT |
+| 013_squeeze_expansion_pct_stop | 7bcd1ac0d7 | 15m | both | 166 / +0.050 | -0.002 | 187 | -0.091 | [-0.234, +0.061] | -0.123 | 17% | REJECT |
+| 014_short_breakout_funding_crowding | 942d22a978 | 15m | short | 219 / +0.085 | -0.153 | 380 | -0.160 | [-0.255, -0.062] | -0.192 | 46% | REJECT |
+| 015_short_supertrend_robustness | 785b9ba3b1 | 15m | short | 147 / +0.038 | +0.041 | 227 | -0.120 | [-0.221, -0.013] | -0.147 | 24% | REJECT |
+| 016_long_mean_reversion_pct_stop | dc08ab8828 | 15m | long | 74 / -0.061 | -0.066 | 85 | -0.146 | [-0.341, +0.062] | -0.185 | 14% | REJECT |
+| example_range_reversion | c89e3474cc | 15m | both | 112 / +0.060 | +0.092 | 131 | -0.150 | [-0.324, +0.025] | -0.228 | 20% | REJECT |
+| example_trend_breakout | bd648a5e36 | 15m | both | 497 / +0.016 | -0.049 | 678 | -0.042 | [-0.117, +0.032] | -0.099 | 31% | REJECT |
+
+### What we learned
+- **Shorting breakouts on BTC loses, and significantly.** All 7 short-only
+  ideas are negative on VALID and 6 of 7 have the whole CI below zero. The
+  mirror image of a losing short isn't a free long, because costs are paid on
+  both sides: idea 010 grosses −0.058 R and pays 0.063 R of cost, so the reverse
+  trade would gross about +0.058 R, roughly what its own costs would take.
+- When TRAIN chooses the direction (007), it now chooses **long**.
+- **Leads, none passing:** 005 (session-open range break, both sides) is
+  positive on both TRAIN (+0.079) and VALID (+0.067, 390 trades) and fails only
+  on CI and at ×1.5 cost (−0.002). 006 (long-only 30m EMA cross) is +0.136 on
+  52 VALID trades, too few, and flat on TRAIN.
+- Exp 014's corrected table was right in direction; its exact values differ
+  because it kept the old TRAIN parameter choices and the 100 USDT sizing.
+- Everything about costs from Exp 012 stands (`pct` stops, never compare
+  gross_r, post-only).
+
+### Verdict
+`KEEP` the engine fixes and the 1,000 USDT research account. The research
+direction flips: long side and both-side structures, session effects, and no
+more short-only breakout variants. `PLAN.md` Round 1 is revised accordingly.

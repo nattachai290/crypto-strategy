@@ -293,6 +293,7 @@ def run_backtest(
     exposure_bars = 0
     entry_signals = 0   # signals that reached the entry decision
     entry_fills = 0     # of those, the ones that actually got filled
+    size_skips = 0      # filled signals too small to trade (qty step / min notional)
 
     def close_position(i: int, px: float, reason: str) -> None:
         nonlocal cash, pos_side, pos_qty, pos_fees, pos_funding
@@ -301,17 +302,21 @@ def run_backtest(
         # The fee is charged on the price we actually traded at, i.e. after
         # slippage - same as the entry side does.
         fee = pos_qty * px_adj * fee_taker
-        cash += pos_qty * (px_adj - pos_entry) - fee
+        # Signed by side: a short gains when price falls. This line had no
+        # pos_side until Exp 014 (Sep 2026), so every short's P&L was
+        # inverted; test_engine section 9 now checks long/short symmetry.
+        move = pos_qty * pos_side * (px_adj - pos_entry)
+        cash += move - fee
         total_fees += fee
         # net MUST include the entry fee, otherwise sum(net_pnl) != equity
         # change and every expectancy/R statistic downstream is wrong.
-        net = pos_qty * (px_adj - pos_entry) - fee - pos_fees + pos_funding
+        net = move - fee - pos_fees + pos_funding
         r = net / (pos_risk if pos_risk > 0 else 1.0)
         risk_u = pos_risk if pos_risk > 0 else 1.0
         # slippage drag: we cross the spread on entry and on exit
         slip_drag = pos_qty * slippage * (pos_entry + px_adj)
         cost_total = (pos_fees + fee) + slip_drag - pos_funding
-        gross_r = (pos_qty * (px_adj - pos_entry) + slip_drag) / risk_u
+        gross_r = (move + slip_drag) / risk_u
         trades.append(
             Trade(
                 entry_time=idx_obj[pos_entry_i],
@@ -323,7 +328,7 @@ def run_backtest(
                 stop_px=pos_stop,
                 target_px=pos_tp,
                 bars=i - pos_entry_i + 1,
-                gross_pnl=pos_qty * (px_adj - pos_entry),
+                gross_pnl=move,
                 fees=pos_fees + fee,
                 funding=pos_funding,
                 net_pnl=net,
@@ -417,9 +422,15 @@ def run_backtest(
                                 # sizing off a meaningless equity.
                                 pos_side = 0
                                 pos_qty = 0.0
-                        # else: unfilled or dust - no position, no fee. The
-                        # bar is still marked to market below, so this must
-                        # NOT `continue` past the end of the loop body.
+                        else:
+                            # Dust: the stop is too wide for this equity at the
+                            # contract's qty step. Counted, because a skip that
+                            # depends on equity silently truncates a losing run
+                            # (Exp 014: 100 USDT could not size most 2024 trades).
+                            size_skips += 1
+                        # unfilled or dust - no position, no fee. The bar is
+                        # still marked to market below, so this must NOT
+                        # `continue` past the end of the loop body.
 
         # ---------------- manage open position -----------------------------
         if pos_side != 0:
@@ -509,6 +520,7 @@ def run_backtest(
     metrics["entry_signals"] = entry_signals
     metrics["entry_fills"] = entry_fills
     metrics["fill_rate"] = (entry_fills / entry_signals) if entry_signals else 1.0
+    metrics["size_skips"] = size_skips
     return BacktestResult(
         metrics=metrics,
         trades=trades,

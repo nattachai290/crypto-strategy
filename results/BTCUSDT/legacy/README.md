@@ -8,6 +8,12 @@ Exp 010 found that experiments 003–009 ran on bars shifted one window into the
 past, so most of these files are stale. Break-even/trailing variants are also
 biased by the exit bugs fixed in Exp 011.
 
+**Exp 015: every number here that involves short trades is wrong.** Until Exp 015
+the engine booked short P&L with the wrong sign, and runs used a 100 USDT account
+that couldn't size many trades (worse as a strategy lost). The ✅ marks below
+refer only to the data fix of Exp 010, not to these two defects.
+`pre_signfix/` holds the Exp 011–014 `evaluate.py` records, unchanged.
+
 | File | Script | Exp | Data | Trust |
 |---|---|---|---|---|
 | `definitive_oos.csv` | `definitive.py` | 007 / 010 | fixed | ✅ headline before Exp 011 |

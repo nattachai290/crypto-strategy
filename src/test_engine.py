@@ -97,7 +97,7 @@ def reference_backtest(bars, signals, *, init=100.0, risk=0.01, lev=10.0,
         if reason:
             px_adj = px * (1 - slip) if pos["side"] > 0 else px * (1 + slip)
             fee_x = pos["qty"] * px_adj * fee
-            pnl = pos["qty"] * (px_adj - pos["entry"]) - fee_x
+            pnl = pos["qty"] * pos["side"] * (px_adj - pos["entry"]) - fee_x
             cash += pnl
             # R must include BOTH fees, matching backtest.py
             r = (pnl - pos["fee_in"] + pos["funding"]) / (
@@ -112,7 +112,7 @@ def reference_backtest(bars, signals, *, init=100.0, risk=0.01, lev=10.0,
         px = float(bars["close"].iloc[-1])
         px_adj = px * (1 - slip) if pos["side"] > 0 else px * (1 + slip)
         fee_x = pos["qty"] * px_adj * fee
-        pnl = pos["qty"] * (px_adj - pos["entry"]) - fee_x
+        pnl = pos["qty"] * pos["side"] * (px_adj - pos["entry"]) - fee_x
         cash += pnl
         r = (pnl - pos["fee_in"] + pos["funding"]) / (
             pos["qty"] * abs(pos["entry"] - pos["stop"]))
@@ -322,6 +322,7 @@ def main() -> None:
     test_dynamic_exits()
     test_recipe_blocks_causal()
     test_tf_variants()
+    test_short_side()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -479,6 +480,92 @@ def test_tf_variants() -> None:
           tp_["stop"]["pct"] == 0.02 and tp_["tp"]["r"] == 2.0 and tp_["be_at"] == 1.0
           and tp_["max_hold_hours"] == 8 and tp_["filters"][1]["min"] == 20
           and t["grid"]["filters.1.min"] == [20, 25])
+
+
+# --------------------------------------------------------------------------
+# 9. Shorts: the P&L sign (Exp 014)
+# --------------------------------------------------------------------------
+def test_short_side() -> None:
+    """Every earlier test either used longs or compared against a reference
+    that shared the engine's assumption, and a short's P&L had the wrong sign
+    for the whole project (Exp 014). These checks need no reference and no
+    remembered convention: a short is a mirror image of a long."""
+    print("\n9. shorts: mirror symmetry and a hand-computed short")
+    n = 30
+    idx = pd.date_range("2024-01-01", periods=n, freq="15min", tz="UTC")
+    c = np.linspace(100.0, 95.0, n)
+    o = np.r_[c[0], c[:-1]]
+    bars = pd.DataFrame({"open": o, "high": np.maximum(o, c) + 0.01,
+                         "low": np.minimum(o, c) - 0.01, "close": c, "volume": 1.0},
+                        index=idx)
+    zero = dict(fee_taker=0.0, fee_maker=0.0, slippage=0.0, session_start=0,
+                session_end=24, flat_at_session_end=False, min_notional=0.0,
+                qty_step=1e-9)
+    res = {}
+    for side in (1, -1):
+        sig = pd.DataFrame(0.0, index=idx, columns=["side", "stop_dist", "tp_dist", "max_hold"])
+        sig.iloc[0] = [side, 20.0, 0.0, 10]
+        res[side] = run_backtest(bars, sig, **zero)
+    tl, ts = res[1].trades[0], res[-1].trades[0]
+    check("A. falling market: the short profits, the long loses",
+          ts.net_pnl > 0 > tl.net_pnl, f"short {ts.net_pnl:+.5f} long {tl.net_pnl:+.5f}")
+    check("A. same trade, opposite side: exactly opposite P&L and R (zero costs)",
+          abs(ts.net_pnl + tl.net_pnl) < 1e-12 and abs(ts.r_multiple + tl.r_multiple) < 1e-12)
+    check("A. short: cash = start + net P&L",
+          abs(res[-1].metrics["final_equity"] - (100.0 + ts.net_pnl)) < 1e-9)
+
+    # B. mirror the whole market and flip every signal: every R must be identical
+    bad = []
+    for seed in (1, 2, 3, 7, 11):
+        b, sig, _ = _random_case(seed)
+        mid = 2 * float(b["close"].mean())
+        m = pd.DataFrame({"open": mid - b["open"], "high": mid - b["low"],
+                          "low": mid - b["high"], "close": mid - b["close"],
+                          "volume": b["volume"]}, index=b.index)
+        sig_m = sig.copy()
+        sig_m["side"] = -sig["side"]
+        r1 = run_backtest(b, sig, **zero)
+        r2 = run_backtest(m, sig_m, **zero)
+        a1 = [(t.entry_time, t.exit_reason, round(t.r_multiple, 9)) for t in r1.trades]
+        a2 = [(t.entry_time, t.exit_reason, round(t.r_multiple, 9)) for t in r2.trades]
+        if a1 != a2:
+            bad.append(seed)
+    check("B. mirrored market + flipped sides reproduces every trade's R (5 seeds)",
+          not bad, f"seeds failing: {bad}")
+
+    # C. hand-computed short, stopped out by a rally, with real costs
+    c2 = np.linspace(50000.0, 50600.0, 40)
+    o2 = np.r_[c2[0], c2[:-1]]
+    idx2 = pd.date_range("2024-01-01", periods=40, freq="5min", tz="UTC")
+    b2 = pd.DataFrame({"open": o2, "high": np.maximum(o2, c2) * 1.0002,
+                       "low": np.minimum(o2, c2) * 0.9998, "close": c2, "volume": 1.0},
+                      index=idx2)
+    sig2 = pd.DataFrame(0.0, index=idx2, columns=["side", "stop_dist", "tp_dist", "max_hold"])
+    sig2.iloc[0] = [-1.0, 200.0, 0.0, 30]
+    r = run_backtest(b2, sig2, session_start=0, session_end=24, flat_at_session_end=False)
+    ok = len(r.trades) == 1 and r.trades[0].exit_reason == "stop"
+    if ok:
+        t = r.trades[0]
+        slip, fee = 0.0002, 0.0005
+        entry = b2["open"].iloc[1] * (1 - slip)          # sell: slippage lowers the fill
+        stop = entry + 200.0
+        exit_ = stop * (1 + slip)                          # buy back: slippage raises it
+        pnl = t.qty * (entry - exit_) - t.qty * fee * (entry + exit_)
+        check("C. hand-computed short stopped out: fills, P&L and R",
+              abs(t.entry_px - entry) < 1e-6 and abs(t.exit_px - exit_) < 1e-4
+              and abs(t.net_pnl - pnl) < 1e-6 and abs(t.r_multiple - pnl / (t.qty * 200.0)) < 1e-9
+              and t.r_multiple < -1.0,
+              f"R {t.r_multiple:.6f} expected {pnl / (t.qty * 200.0):.6f}")
+    else:
+        check("C. hand-computed short stopped out: fills, P&L and R", False,
+              f"trades {len(r.trades)}")
+
+    # D. a trade the account cannot size is counted, never silently dropped
+    r = run_backtest(b2, sig2, initial_equity=10.0, session_start=0, session_end=24,
+                     flat_at_session_end=False)
+    check("D. unsizable trade (10 USDT, 0.001 BTC step) is reported in size_skips",
+          len(r.trades) == 0 and r.metrics.get("size_skips", 0) == 1,
+          f"trades {len(r.trades)} size_skips {r.metrics.get('size_skips')}")
 
 
 # --------------------------------------------------------------------------
