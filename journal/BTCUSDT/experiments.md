@@ -2790,3 +2790,37 @@ and are not to be proposed, built or tested. Funding stays usable as a
 **signal** (e.g. `funding_extreme`, `funding_window`) and is always paid or
 received as a **cost** by the engine. This closes the "carry" item that Exp
 024 and FINAL_REPORT.md left open; 033 stays INCONCLUSIVE as recorded.
+
+---
+
+## Exp 027 — Round 6 added to the plan: untested combinations, cost-first
+
+**Date:** 2026-09-29
+**Status:** plan (no evaluation; holdout untouched)
+
+The owner asked for new techniques and for combinations of techniques, and
+approved Round 6 (`PLAN.md` §4). It combines blocks that were barely used or
+never used together:
+- R6.1: breakout + `taker_flow` + `volume_spike`
+- R6.2: `failed_break` + `flush` fade, `trigger_mode: all`
+- R6.3: `momentum` + `funding_not_crowded` + `volume_spike`
+- R6.4: `ema_cross` + `supertrend_flip` + `di_side`
+- R6.5: `donchian_break` + `squeeze`
+
+It keeps Round 5's cost design: 4h sources, `--mode time`, 6% stops,
+48–120 h holds, both sides, no trend filter. Signal counts were taken on
+4h TRAIN only (numbers in the plan). They led to two design changes before
+anything ran:
+- R6.4 reaches 150 signals only with `confirm_bars` 18, so its grid covers
+  exits only.
+- R6.5 drops `volume_spike`, which leaves 103–122 signals.
+
+**Hard cap and stop rule:** exactly five ideas, and no ensemble of earlier
+WATCHes (they were selected on VALID). If no holdout CONFIRMED comes out of
+this round, BTCUSDT research stops.
+
+The bans on `taker_flow` / `funding_not_crowded` (short-only 15m breakouts) and
+on squeeze → expansion (≤ 12 h holds) are lifted for this round only, because
+neither was ever tested both-sided at a multi-day hold.
+
+Next journal entry: **Exp 028** (Round 6 pre-registration).

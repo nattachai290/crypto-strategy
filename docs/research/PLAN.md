@@ -14,6 +14,9 @@
 > - **รอบ 5** (เพิ่มหลัง Exp 023): **ออกแบบจากต้นทุนก่อน** ต้นทุนราว 0.11% ของราคาต่อไม้ในทุก TF จึงต้องถือไม้หลายวัน (48–120 ชม.)
 >   ใช้ stop 4–7% และเข้าได้ทั้งสองทางเพื่อตัดผลจากตลาดขาขึ้นออก ไอเดีย: funding carry, กลับตัวหลายวัน, โมเมนตัมหลายสัปดาห์, Keltner
 >   ทุก TF ใช้ `--mode time` (stop % และชั่วโมงถือเท่ากันทุก TF)
+> - **รอบ 6** (เพิ่มหลัง Exp 026): **ผสมเทคนิคที่ยังไม่เคยลองร่วมกัน** 5 ไอเดีย เช่น เบรก + แรงซื้อขายจริง + volume,
+>   กับดักล่า stop (เบรกหลอก + liquidation), โมเมนตัมตอนฝูงชนยังไม่แน่น, ต้นเทรนด์ที่ยืนยัน 3 ทาง, บีบตัวแล้วเบรก
+>   ใช้กติกาต้นทุนของรอบ 5 **ถ้ารอบ 6 ไม่มีตัวไหนผ่าน holdout ให้หยุดวิจัย BTC**
 >
 > ไอเดียไหน PASS → ทดสอบกับข้อมูลที่ล็อกไว้ (2025–26) ครั้งเดียว → ถ้ายืนยันผ่าน ทำใบสรุปกลยุทธ์
 > และทดลองเทรดกระดาษ (สัญญาณอย่างเดียว ไม่ส่งออเดอร์) อย่างน้อย 3 เดือน ก่อนที่คุณจะตัดสินใจเรื่องเงินจริง
@@ -392,6 +395,72 @@ next step (other markets, VIP fees; funding/basis strategies are out of
 scope by the owner's decision) is the owner's
 decision, not the agent's.
 
+### Round 6 — Combinations nobody has tested, cost-first (≈ 6 h; owner-approved after Exp 026)
+
+**Why.** Rounds 1–5 tested one idea family at a time. Several blocks were
+barely used or never combined: `taker_flow`, `funding_not_crowded`,
+`di_side`, `squeeze` (only with a trend filter at 15m), `supertrend_flip`,
+`momentum`, and `trigger_mode: "all"` (used once). Each idea below
+**combines 2–3 blocks for one stated reason**. Round 5's cost design is kept,
+because it is the only one where cost does not decide the answer.
+
+**Hard limits for this round (write them into the pre-registration):**
+- **Exactly the five ideas below**, × 7 timeframes = 35 evaluations, plus
+  `_v2` / `_v3` only for a WATCH, with a diagnosis (AGENTS.md step 8). No sixth
+  idea, and no ensemble or vote of earlier WATCHes (035, 036, 038): they were
+  picked by their VALID results, which is the selection that made 038 fail.
+- **Motivate everything from TRAIN numbers or from the hypothesis, never from
+  a VALID number** (Exp 025, item 4).
+- **Stop rule, agreed in advance:** if Round 6 ends with no holdout
+  `CONFIRMED`, research on BTCUSDT stops. The next step is the owner's.
+
+**Design constraints (Round 5's, unchanged):**
+- 4h source files, variants made with `--mode time`;
+- `pct` stop 4–7% (use **6%**: with a 96 h hold, 5% breaks the cost limit);
+- hold 48–120 h;
+- expected cost `(0.14% + hold_h / 8 × 0.01%) / stop` ≤ 0.05 R, written
+  before running;
+- `direction: "both"`, and no `htf_trend` / `trend_ema` / `price_vs_ema`;
+- ≥ 150 TRAIN signals for every grid value, counted before running.
+
+**Bans lifted for this round, and why.** `taker_flow` and
+`funding_not_crowded` were banned after short-only 15m breakouts (idea
+012/014), and short-only breakouts lose whatever the filter. Squeeze →
+expansion was banned at 15m / ≤ 12 h holds, where the gross move was under
+the cost. None of those tests was both-sided at a multi-day hold. Every other
+ban stands.
+
+**Signal counts.** Taken with `recipe()` on 4h bars, TRAIN 2020–2022 only,
+`direction: both`, when this plan was written. The agent re-counts in the
+pre-registration and drops any grid value under 150 **before** running.
+
+| # | Idea: what is combined, and who is on the other side | Recipe sketch (4h source) | TRAIN signals (long / short) | Kill if |
+|---|---|---|---|---|
+| R6.1 | **Breakout with real aggressive flow.** A breakout that aggressive buyers (sellers) keep hitting, on above-average volume, is new positioning, and it continues. A breakout without that flow is a stop run that fills the breakout traders and reverses. The other side: resting liquidity and short-term faders | trigger `donchian_break` n [20, 30]; filters `taker_flow` (n 6, thresh 0.5) + `volume_spike` (n 30, k [1.2, 1.5]) | n20: k1.2 121/132, k1.5 89/100; n30: k1.2 103/103, k1.5 78/80 (all ≥ 150) | TRAIN gross_r ≤ 0 |
+| R6.2 | **Stop-hunt trap.** Price pierces an n-bar extreme and closes back inside (`failed_break`), and within a few bars there is a liquidation-sized bar (`flush`, fade mode). Forced sellers (buyers) have been cleared at the extreme, and whoever took the other side of the cascade holds the better price. Both blocks exist; they were only ever tested apart | triggers `failed_break` (n 30, n_bars 6) + `flush` (mode fade, k [1.5, 2.0], m 1.5, lookback 30), `trigger_mode: "all"`, `confirm_bars` 3 | k1.5 214/270, k2.0 122/178 | TRAIN gross_r ≤ 0 |
+| R6.3 | **Impulse before the crowd.** Follow a strong multi-bar move (`momentum`) with volume, but only while funding shows the crowd is **not** already on that side. Momentum fails when it is crowded, because the late side is who gets squeezed. Funding is used as a signal here, not earned (Exp 026) | trigger `momentum` (n 6, atr_k [1.5, 2.0]); filters `funding_not_crowded` (thresh [0.0002, 0.0003]) + `volume_spike` (n 30, k 1.5) | atr_k 1.5: 85–88 / 109–110; atr_k 2.0: 66–70 / 94 | TRAIN gross_r ≤ 0, or all of it is on one side |
+| R6.4 | **Trend start confirmed three ways.** An EMA cross and a Supertrend flip in the same direction within 3 days, with +DI/−DI agreeing. Each indicator's false starts are mostly its own noise and do not coincide. Both directions, which Rounds 1–2 never tried for these blocks | triggers `ema_cross` (10, 30) + `supertrend_flip` (n 10, mult 2.0), `trigger_mode: "all"`, `confirm_bars` 18; filter `di_side` (n 14). Only this confirm value reaches 150 (confirm 12 gives 145, 6 gives 132), so the grid is exits only: stop [0.05, 0.06] × hold [48, 96] | 72 / 80 | TRAIN gross_r ≤ 0 |
+| R6.5 | **Compression, then a both-sided break, held for days.** A Donchian break straight out of a Bollinger squeeze. Volatility clusters, so the break of a quiet range starts a larger move. The earlier test had a trend filter and 12 h holds; this one has neither | trigger `donchian_break` n 20; filter `squeeze` (n 20, q [0.2, 0.3], lookback 180). No `volume_spike`: with it, n 20 gives only 103–122 signals | q0.2 93/68, q0.3 104/84 | TRAIN gross_r ≤ 0 |
+
+Grids stay ≤ 8 combos: the 1m `--mode time` variant scales bar counts ×240
+(for example, squeeze's lookback 180 becomes 43,200 bars), so 1m is slow.
+
+**Before any `--final` (Exp 025, item 3):**
+- write the idea's seven timeframe results in the journal;
+- in `--mode time` every timeframe is the same trade on a finer clock, so a
+  PASS on one clock while the others are negative is most likely luck: say so;
+- one-line check that the block did what the idea says: long/short counts in
+  the trade file, and that the filter changed the trade list (not DUPLICATE).
+
+**Judge.** PASS + `baseline.py` SKILL (TRAIN and VALID), or ALPHA, then
+`--final`, as always. With both-sided, filter-light ideas, SKILL is
+meaningful: mode B (random entries within the same filters) is the real test
+of whether the *combination* adds anything over its filters.
+
+**Use of the results.** A CONFIRMED goes to §6 (strategy card and paper trading,
+never real money first). Otherwise, add a "Round 6" section to
+`FINAL_REPORT.md` and stop, per the stop rule.
+
 ---
 
 ## 5. What to do with a PASS
@@ -513,4 +582,5 @@ Never say "profitable" unless the holdout is CONFIRMED.
 | 3 | ≈ 6 h | 5 regime ideas × 7 timeframes + benchmark.py on each + a reference table |
 | 4 | ≈ 6 h | 4–5 new blocks + ideas × 7 timeframes |
 | 5 | ≈ 6 h | 4–5 cost-first ideas × 7 timeframes (`--mode time`); the 1m variants are the slow part |
+| 6 | ≈ 6 h | 5 combination ideas × 7 timeframes (`--mode time`), then stop unless something is CONFIRMED |
 | §6 | 3–4 h to build + ≥ 3 months of paper trading | only after a CONFIRMED |
