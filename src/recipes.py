@@ -291,8 +291,10 @@ def t_month_turn_fade(b, f, before=2, after=2, lookback=6):
     idx = b.index
     day = idx.day.to_numpy()
     # distance in days to the nearest month boundary, from the calendar alone:
-    # days left until the 1st (inclusive), or days since this month's 1st
-    to_next = 32 - day
+    # days left until the 1st (inclusive), or days since this month's 1st.
+    # Uses the real month length (Exp 025: `32 - day` treated every month as
+    # 31 days, so February never fired before the turn).
+    to_next = idx.days_in_month.to_numpy() + 1 - day
     to_prev = day - 1
     in_win = (to_next <= int(before)) | (to_prev <= int(after))
     c = b["close"].to_numpy(float)
@@ -482,6 +484,33 @@ def _block(spec: dict, table: dict, kind: str):
     return table[name], spec
 
 
+def check_trigger_output(name: str, out, n: int) -> np.ndarray:
+    """A trigger must return ONE array of length n with values in {-1, 0, +1}.
+
+    A (long, short) tuple used to be stacked by np.asarray into a (2, n)
+    array and read as "either side fired" = LONG: opening_range traded
+    long-only through all of Exp 022 that way (Exp 024). Refuse it loudly."""
+    if isinstance(out, tuple):
+        raise TypeError(f"trigger {name!r} returned a tuple; a trigger returns ONE signed "
+                        f"array (+1 long, -1 short, 0 none) - use _side(long, short)")
+    arr = np.nan_to_num(np.asarray(out, dtype=float))
+    if arr.shape != (n,):
+        raise TypeError(f"trigger {name!r} returned shape {arr.shape}, expected ({n},)")
+    if not np.isin(arr, (-1.0, 0.0, 1.0)).all():
+        raise TypeError(f"trigger {name!r} returned values other than -1/0/+1")
+    return arr
+
+
+def check_filter_output(name: str, out, n: int) -> tuple[np.ndarray, np.ndarray]:
+    """A filter must return (long_ok, short_ok): two arrays of length n."""
+    if not (isinstance(out, tuple) and len(out) == 2):
+        raise TypeError(f"filter {name!r} must return (long_ok, short_ok)")
+    lo, sh = (np.nan_to_num(np.asarray(x, dtype=float)) for x in out)
+    if lo.shape != (n,) or sh.shape != (n,):
+        raise TypeError(f"filter {name!r} returned shapes {lo.shape}/{sh.shape}, expected ({n},)")
+    return lo, sh
+
+
 def _bar_minutes(index: pd.DatetimeIndex) -> float:
     return float(pd.Series(index[:1000]).diff().dt.total_seconds().median() / 60.0)
 
@@ -506,7 +535,7 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
     sides = []
     for t in triggers:
         fn, p = _block(t, TRIGGERS, "trigger")
-        sides.append(np.nan_to_num(np.asarray(fn(bars, funding, **p), dtype=float)))
+        sides.append(check_trigger_output(t.get("type"), fn(bars, funding, **p), n))
     S = np.vstack(sides)
     if trigger_mode == "any":
         up, dn = (S > 0).any(axis=0), (S < 0).any(axis=0)
@@ -529,9 +558,9 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
     short_ok = np.ones(n, bool)
     for flt in filters or []:
         fn, p = _block(flt, FILTERS, "filter")
-        lo, sh = fn(bars, funding, **p)
-        long_ok &= np.nan_to_num(np.asarray(lo, dtype=float)) > 0
-        short_ok &= np.nan_to_num(np.asarray(sh, dtype=float)) > 0
+        lo, sh = check_filter_output(flt.get("type"), fn(bars, funding, **p), n)
+        long_ok &= lo > 0
+        short_ok &= sh > 0
     side = np.where((side > 0) & long_ok, 1.0, np.where((side < 0) & short_ok, -1.0, 0.0))
 
     # 3. direction

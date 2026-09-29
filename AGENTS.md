@@ -230,7 +230,7 @@ together. Never report only a return, a win rate, or a Sharpe.
 | Level | You may | Requirements |
 |---|---|---|
 | **1 — idea files** (default, do this most) | Write `ideas/*.json` using existing blocks and strategies | None beyond §1 |
-| **2 — new building block** | Add a trigger or filter function to `src/recipes.py` (or a strategy to `src/strategies.py` + `REGISTRY`) | Docstring with a one-line description. Causal. `python src/test_engine.py` passes: test 7 automatically checks that every block is causal. Mention it in TECHNIQUES.md |
+| **2 — new building block** | Add a trigger or filter function to `src/recipes.py` (or a strategy to `src/strategies.py` + `REGISTRY`) | Docstring with a one-line description. Causal. A trigger returns **one** array of -1/0/+1 (use `_side(long, short)`, never a tuple); a filter returns `(long_ok, short_ok)`. `python src/test_engine.py` passes: test 7 automatically checks that every block is causal and has that output shape. Mention it in TECHNIQUES.md |
 | **3 — engine change** | Change `src/backtest.py` (e.g. partial TP, scale-in, stop-and-reverse) | **Ask the owner first.** New behaviour must be off by default. Add a hand-computed test in `test_engine.py` that fails before your change and passes after. All old tests unchanged and passing. Journal entry explaining it |
 
 `src/config.py` costs/gates, `src/evaluate.py` gates and the split dates are

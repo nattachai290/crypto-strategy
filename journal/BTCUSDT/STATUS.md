@@ -1,8 +1,17 @@
 # BTCUSDT — status and handoff
 
-_Last updated: 2026-09-29, after Exp 024 (Round 5 complete). Rules for agents:
+_Last updated: 2026-09-29, after Exp 025 (Round 5 review). Rules for agents:
 `AGENTS.md`. Research plan: `docs/research/PLAN.md` (all five rounds done)._
 
+> **Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost.
+>
+> **Exp 025 (review of Round 5):** `recipe()` now refuses a trigger that
+> returns anything but one -1/0/+1 array (and a filter that is not
+> `(long_ok, short_ok)`), and `test_engine.py` checks every block, so the
+> `opening_range` tuple bug cannot recur silently. `month_turn_fade` now uses
+> the real month length (037's recorded rows predate the fix). Corrections to
+> Exp 024 are in `experiments.md` Exp 025. The next direction is the owner's.
+>
 > **Exp 024 — Round 5 is done, the plan is finished, and the answer did not
 > change.** 42 evaluations: 1 PASS, 9 WATCH, 17 REJECT, 15 INCONCLUSIVE. Project
 > total **173**.
@@ -15,7 +24,8 @@ _Last updated: 2026-09-29, after Exp 024 (Round 5 complete). Rules for agents:
 >    NO_EDGE) still stand and the round's conclusion is unchanged, but 029 was
 >    never a both-sided result. **Check after adding any block: every trigger
 >    returns a 1-D array of 0/+1/-1, every filter returns two boolean arrays.**
-> 2. **`--mode time` is the fix for the cost problem, and it is not cosmetic.**
+> 2. **`--mode time` is the fix for the cost problem of multi-day holds (Exp 025:
+>    not for short holds, which still pay ≈ 0.11% of price per trade).**
 >    With 4h source files and `--mode time`, `cost_r` is **0.016–0.023 R on all
 >    seven timeframes** instead of chart mode's 0.505 R (1m) to 0.019 R (4h) — a
 >    26:1 spread becomes 1.4:1. Use it for anything with a multi-day hold.
@@ -34,7 +44,7 @@ _Last updated: 2026-09-29, after Exp 024 (Round 5 complete). Rules for agents:
 >    days) had the best reversion gross measured here (+0.32% of price vs 0.108%
 >    cost) and went to VALID at **−0.098**, REJECT at all seven timeframes.
 > 6. **Funding carry (033) is INCONCLUSIVE, not refuted** — the one hypothesis
->    left untested. A 96h hold plus a 0.15% funding threshold cannot reach 100
+>    left untested. A 96h hold plus a 0.015%-per-8h funding threshold cannot reach 100
 >    VALID trades. It earns from funding rather than from price, and measuring it
 >    needs a different instrument, not another idea file.
 > 7. **Turn-of-month fade (037, my own idea) is unmeasurable in this design**,
@@ -229,10 +239,12 @@ deliverable is `journal/BTCUSDT/FINAL_REPORT.md` and its §8 lists what would
 count as new information. Per `PLAN.md` §7 the remaining choices are the
 owner's, and none of them is another round on BTCUSDT.
 
+**Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost. Item 1 below is therefore closed.
+
 Three things to raise with the owner 🛑:
 1. **Funding carry (033) is the one hypothesis untested rather than refuted.**
    It earns from funding instead of from price, and it cannot be measured in
-   this engine because a 96h hold plus a 0.15% threshold cannot reach 100 VALID
+   this engine because a 96h hold plus a 0.015%-per-8h threshold cannot reach 100 VALID
    trades. Measuring it means a different instrument — a rolling funding
    position held for weeks, with the stop and the time stop removed because
    carry is not a price trade. That is a Level 3 proposal and needs approval.

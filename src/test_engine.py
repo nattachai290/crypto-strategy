@@ -429,6 +429,37 @@ def test_recipe_blocks_causal() -> None:
                     bad.append(f"{kind}:{name}")
                     break
     check("all recipe triggers and filters are causal", not bad, ", ".join(bad))
+
+    # Exp 025: output contract. opening_range returned a (long, short) tuple and
+    # recipe() read it as "either side fired" = LONG for all of Exp 022.
+    bad_shape = []
+    for name, fn in RC.TRIGGERS.items():
+        try:
+            RC.check_trigger_output(name, fn(bars, funding), len(bars))
+        except TypeError as e:
+            bad_shape.append(str(e))
+    for name, fn in RC.FILTERS.items():
+        try:
+            RC.check_filter_output(name, fn(bars, funding), len(bars))
+        except TypeError as e:
+            bad_shape.append(str(e))
+    check("every trigger returns one -1/0/+1 array, every filter (long_ok, short_ok)",
+          not bad_shape, "; ".join(bad_shape))
+    RC.TRIGGERS["_tuple_bug"] = lambda b, f: (np.zeros(len(b)), np.ones(len(b)))
+    try:
+        RC.recipe(bars, funding, triggers=[{"type": "_tuple_bug"}], stop={"type": "pct", "pct": 0.02})
+        refused = False
+    except TypeError:
+        refused = True
+    finally:
+        del RC.TRIGGERS["_tuple_bug"]
+    check("recipe refuses a trigger that returns a (long, short) tuple", refused)
+    idx = pd.date_range("2024-02-25", "2024-03-04", freq="D", tz="UTC")
+    cal = pd.DataFrame({"close": np.arange(len(idx), 0, -1, dtype=float)}, index=idx)
+    mt = np.asarray(RC.t_month_turn_fade(cal, None, before=2, after=0, lookback=1))
+    fired = [d.day for d, s in zip(idx, mt) if s != 0]
+    check("month_turn_fade uses the real month length (Feb 2024: 28th, 29th, 1st)",
+          fired == [28, 29, 1], str(fired))
     sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],
                     filters=[{"type": "trend_ema", "fast": 20, "slow": 50}],
                     stop={"type": "swing", "n": 10}, tp={"type": "r", "r": 2.0},
