@@ -197,6 +197,86 @@ def t_random(b, f, p=0.01, seed=0):
     return np.where(u[:, 0] < p, np.where(u[:, 1] < 0.5, 1.0, -1.0), 0.0)
 
 
+def _daily_extremes(b: pd.DataFrame, days: int):
+    """High/low of the calendar day `days` before each bar's own day (UTC).
+
+    The level is taken from a *completed* earlier day, never from the current
+    one, so a bar can never see the extreme it is about to set.
+    """
+    day = b.index.floor("D")
+    hi = b["high"].groupby(day).max()
+    lo = b["low"].groupby(day).min()
+    prev = day - pd.Timedelta(days=days)
+    return hi.reindex(prev).to_numpy(float), lo.reindex(prev).to_numpy(float)
+
+
+def t_prev_day_break(b, f, days=1):
+    """Close breaks the high (long) or the low (short) of the previous UTC day.
+
+    Yesterday's extreme is a level people actually use: stops sit just beyond
+    it and breakout orders are queued at it, so a break is where both get
+    triggered. Only completed previous days are used.
+    """
+    c = b["close"]
+    hi_p, lo_p = _daily_extremes(b, int(days))
+    return _side((c.to_numpy(float) > hi_p), (c.to_numpy(float) < lo_p))
+
+
+def t_opening_range(b, f, mins=60, hour=0):
+    """Close breaks the high (long) or low (short) of the first `mins` minutes
+    of the given UTC hour of its own day.
+
+    The daily open resets positioning: every day, leveraged traders and market
+    makers rebuild their brackets around the 00:00 UTC print, and the first
+    range is the agreed reference. The window must be COMPLETE before it can be
+    used, so the trigger only fires on bars at or after the window closes.
+    """
+    day = b.index.floor("D")
+    start = day + pd.Timedelta(hours=int(hour))
+    in_win = (b.index - start) < pd.Timedelta(minutes=int(mins))
+    win_hi = b["high"].where(in_win).groupby(day).max().reindex(day).to_numpy(float)
+    win_lo = b["low"].where(in_win).groupby(day).min().reindex(day).to_numpy(float)
+    closed = (b.index - start) >= pd.Timedelta(minutes=int(mins))
+    ok = closed & np.isfinite(win_hi) & np.isfinite(win_lo)
+    c = b["close"].to_numpy(float)
+    up = np.where(ok, _cross_up(c, win_hi), 0.0)
+    dn = np.where(ok, _cross_dn(c, win_lo), 0.0)
+    return up, dn
+
+
+def t_keltner_break(b, f, n=20, mult=2.0):
+    """Close crosses outside an EMA(n) +- mult*ATR channel: a volatility
+    channel break, which widens with volatility instead of lagging it like a
+    Donchian, so it should produce fewer false breaks in quiet regimes."""
+    c = b["close"]
+    mid = ta.ema(c, int(n))
+    band = float(mult) * ta.atr_(b["high"], b["low"], c, 14)
+    return _side(_cross_up(c, mid + band), _cross_dn(c, mid - band))
+
+
+def t_flush(b, f, k=2.0, m=1.5, lookback=96, mode="follow", atr_n=14):
+    """A bar whose range exceeds k*ATR while volume exceeds m*its own average:
+    a liquidation cascade. `mode` decides which side is the trade - "follow"
+    takes the cascade's direction, "fade" takes the opposite one, because the
+    two hypotheses are opposites and the data has to choose between them.
+    The volume average is shifted one bar so it never contains this bar."""
+    h, l, c = b["high"], b["low"], b["close"]
+    atr = ta.atr_(h, l, c, int(atr_n))
+    v = b["volume"]
+    vma = v.rolling(int(lookback), min_periods=int(lookback) // 2).mean().shift(1)
+    wide = (h - l) > float(k) * atr
+    busy = v > float(m) * vma
+    hit = wide & busy & np.isfinite(vma) & (atr > 0)
+    o = b["open"]
+    down = hit & (c < o)
+    up = hit & (c > o)
+    if mode == "follow":
+        return _side(up, down)
+    if mode == "fade":
+        return _side(down, up)
+    raise ValueError("flush mode must be 'follow' or 'fade'")
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -212,6 +292,10 @@ TRIGGERS = {
     "failed_break": t_failed_break,
     "trend_state": t_trend_state,
     "random": t_random,
+    "prev_day_break": t_prev_day_break,
+    "opening_range": t_opening_range,
+    "keltner_break": t_keltner_break,
+    "flush": t_flush,
 }
 
 
@@ -293,6 +377,21 @@ def f_vwap_side(b, f):
     return (c > vw).to_numpy(), (c < vw).to_numpy()
 
 
+def f_funding_window(b, f, hours=2):
+    """Allow a direction only within `hours` of a funding settlement (00/08/16
+    UTC): positions are opened and closed around funding times, and the flow
+    around them is not the flow in between. The settlement CLOCK is Binance's
+    published 8-hour grid, not a value read from the data, so deriving it from
+    each bar's own timestamp keeps the block causal (a truncated series sees
+    the same grid as the full one) and no rate is read before it is published."""
+    step = 8 * 3600 * 10**9
+    tol = int(float(hours)) * 3600 * 10**9
+    t = np.asarray(b.index.to_numpy(), dtype="datetime64[ns]").astype("int64")
+    g = (t // step) * step                      # most recent 00/08/16 UTC
+    near = ((t - g) <= tol) | ((g + step - t) <= tol)
+    return near, near
+
+
 def f_volume_spike(b, f, n=96, k=1.5):
     """Volume on the signal bar > k * its n-bar average (participation)."""
     v = b["volume"]
@@ -328,6 +427,7 @@ FILTERS = {
     "squeeze": f_squeeze,
     "taker_flow": f_taker_flow,
     "vwap_side": f_vwap_side,
+    "funding_window": f_funding_window,
     "volume_spike": f_volume_spike,
     "funding_not_crowded": f_funding_not_crowded,
     "hours": f_hours,

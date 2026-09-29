@@ -50,6 +50,10 @@ Exp 004. Prefer ATR stops of ~2.5–5x on 15m, or 15m/30m bars over 1m/3m.
 | `vwap_revert` | z=2.0, z_n=200 | stretched from the daily VWAP, snapping back |
 | `funding_extreme` | thresh=0.0003 | fade a crowded side when funding is extreme |
 | `failed_break` | n=48, n_bars=8 | a break of the n-bar extreme that failed (close back inside within n_bars bars): the breakout traders are trapped and must cover. **Tested in Exp 016, REJECTed at all 7 timeframes** (`gross_r` negative everywhere: −0.015 at 15m, −0.034 at 1h). Kept as a documented negative: the reclaim has already happened when the signal fires, so the fade pays the whole spread for a move that is over. |
+| `prev_day_break` | days=1 | close breaks **yesterday's** UTC high/low — the level where stops sit and breakout orders queue. Only completed previous days are read. |
+| `opening_range` | mins=60, hour=0 | close crosses outside the high/low of the first N minutes after a UTC hour. The window must be complete before it can be used, so it only fires after the window closes. |
+| `keltner_break` | n=20, mult=2.0 | close crosses outside EMA(n) ± mult·ATR: a volatility channel that widens with volatility instead of lagging like a Donchian. |
+| `flush` | k=2.0, m=1.5, lookback=96, mode follow/fade | bar range > k·ATR **and** volume > m·its own shifted average: a liquidation cascade. `mode` picks which side is the trade, because "cascades overshoot" and "cascades start trends" are opposite hypotheses and the data has to choose between them. |
 
 ### 🧩 Worth adding (Level 2 blocks)
 
@@ -92,6 +96,7 @@ at the future).
 | `squeeze` | n=20, q=0.2, lookback=500 | only right after compression |
 | `taker_flow` | n=20, thresh=0.52 | aggressive buyers for longs / sellers for shorts |
 | `vwap_side` | — | long above daily VWAP, short below |
+| `funding_window` | hours=2 | only within N hours **of** a funding settlement. Uses Binance's published 00/08/16 UTC grid, not a value read from the data, so it stays causal |
 | `volume_spike` | n=96, k=1.5 | only with participation |
 | `funding_not_crowded` | thresh=0.0003 | don't join a crowded side |
 | `hours` | hours=[13,14,15,16] | only some UTC hours (sessions) |

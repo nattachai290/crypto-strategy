@@ -2172,3 +2172,99 @@ NO_EDGE). 023@1h stays PASS + NO_EDGE and does **not** go to the holdout. Next
 is Round 4 (PLAN.md §4): blocks that do not come from BTC's direction.
 Project count unchanged: 96 evaluations, holdout used by `example_trend_breakout`
 (lock test) and 022 only.
+
+---
+
+## Exp 022 - Round 4 pre-registration (new blocks: market structure, not direction)
+
+**Date:** 2026-09-29
+**Status:** pre-registration, written BEFORE any Round 4 evaluation. Zero
+evaluations in this entry; `results/BTCUSDT/evaluations.csv` is untouched by
+it. Project count on entry: **96 evaluations**. HOLDOUT sealed (used only by
+`example_trend_breakout` in the Exp 011 lock test and 022, which FAILED).
+
+### Where this round starts
+
+Rounds 1-3 closed everything that came from **BTC's direction**:
+
+- 6 long entries: 5 DRIFT against a random-entry control, 1 (022) holdout FAILED
+- the short side: loses significantly, re-confirmed on the fixed engine
+- the long/flat regime rule (023): PASS + NO_EDGE - a sixth of buy & hold's
+  drawdown at a Sharpe of 1.59 against 2.01
+- **every `benchmark.py` run in the project is NO_EDGE (20/20)**
+
+So Round 4 does not look for a better entry. It asks whether any edge exists
+that does not depend on BTC going up. The plan's candidates are market-structure
+ideas that classic indicators miss, and Exp 020's summary picked four of them:
+previous-day high/low, the opening range, funding windows, liquidation flushes.
+
+### New blocks (Level 2 additions to `src/recipes.py`)
+
+All five added this round, all causal, `test_engine.py` ALL CHECKS PASSED
+(test 7 checks every block in `TRIGGERS`/`FILTERS` automatically). Verified
+independently as well, with a stronger test than the prefix comparison: every
+bar after index 30000 was moved +10% and every signal up to and including
+index 30000 had to be unchanged. All five new blocks and four old ones pass.
+
+| block | kind | what it reads |
+|---|---|---|
+| `prev_day_break(days)` | trigger | close vs the high/low of the previous UTC day, from completed days only |
+| `opening_range(mins, hour)` | trigger | close crosses the high/low of the first N minutes after a UTC hour; only fires once that window is complete |
+| `keltner_break(n, mult)` | trigger | close crosses outside EMA(n) ± mult·ATR |
+| `flush(k, m, lookback, mode)` | trigger | bar range > k·ATR and volume > m× its own shifted average; `mode` follow/fade |
+| `funding_window(hours)` | filter | only within N hours of a settlement, on Binance's published 00/08/16 UTC grid |
+
+`funding_window` first version read the settlement times out of the funding
+data and **failed** the causality test, because in a truncated series the next
+settlement does not exist yet. It now derives the 8-hour grid from each bar's
+own timestamp, which is what the published schedule actually is.
+
+**`flush` is one block with a `mode`, not two blocks**, because "cascades
+overshoot, so fade them" and "cascades start trends, so follow them" are
+opposite hypotheses about the same event, and one grid that chooses between them
+is a cleaner test than two ideas that are mirror images.
+
+**Deliberately not built: `after_drop` (plan R4.6).** It was to be built from the
+R1.0 finding that a -1.5%..-3% move in the 12 h before entry produced 72% of
+005's profit. That finding was measured on 005's long leg, and Exp 017 showed
+005's long leg is DRIFT - random entries with the same filters do as well. A
+pre-entry effect measured on a drift result is not a foundation, so there is
+nothing to build and the honest move is to leave the backlog item closed.
+
+### Stop width is designed, not inherited
+
+Exp 021 added the `UNSIZABLE` verdict, and the arithmetic is unforgiving: 1,000
+USDT × 1% = 10 USDT of risk, BTC's step is 0.001, so a stop of `s` can be sized
+only while BTC < 10/(0.001·s). BTC's TRAIN+VALID peak is 108,367, so:
+
+- a **6%** stop is sizeable to 166,667 - safe
+- an **8%** stop is sizeable to exactly 125,000 - and BTC's all-time peak in
+  this data is 125,986, so an 8% stop is already outside the line
+- a **10%** stop breaks above 100,000, and 33.9% of HOLDOUT bars are above it
+
+Every Round 4 idea is therefore written at **1h with a 3% stop** (grid 2-3%),
+so its 4h variant is 6% and every timeframe stays sizeable. Round 3's 023 used a
+10% stop and its 4h variant was UNSIZABLE with 807 skips; that must not
+happen twice.
+
+### The ideas, and what would kill each
+
+| # | file | hypothesis | kill if |
+|---|---|---|---|
+| R4.1 | `028_prev_day_break.json` | Yesterday's high/low is a level with real orders behind it: stops sit just beyond it and breakout traders queue at it, so a break is where both are triggered at once and price continues for a few hours. The counterparty is the stop order, not a mood | gross_r ≤ 0 (no gross edge to pay costs with) |
+| R4.2 | `029_opening_range.json` | The 00:00 UTC print resets positioning - every day leveraged traders and market makers rebuild brackets around it - so the first hour's range is the day's agreed reference and the first break of it shows the day's direction | gross_r ≤ 0 |
+| R4.3 | `030_funding_window.json` | Positions are opened and closed around funding settlements, so the flow within a couple of hours of a settlement is not the flow between them. This is a **timing** claim, not a directional one: the entry is the round's other blocks plus a window filter | gross_r ≤ 0, or the filter is inert (the result matches the same idea without it) |
+| R4.4 | `031_liquidation_flush.json` | A bar with 2× the ATR range on 1.5× the volume is a liquidation cascade. Two opposite readings, and the grid chooses: `follow` if cascades start trends, `fade` if they overshoot. `direction: both` either way | gross_r ≤ 0 in BOTH modes - then the event has no exploitable side at all |
+| R4.5 | `032_keltner_break.json` | A Keltner channel widens with volatility where a Donchian lags, so it should produce fewer false breaks in quiet regimes - the one structural difference from a price channel, tested on the same idea otherwise | gross_r ≤ 0 |
+
+**Budget:** 5 ideas x 7 native timeframes = **35 evaluations**, plus
+`baseline.py` + `benchmark.py` on every WATCH or PASS. Project total goes to
+131. Grids ≤ 12 combos. Every report must show `size_skips 0`, and any
+non-REJECT result with skips is read as `UNSIZABLE`, not as a result.
+
+**Judge:** `benchmark.py` as in Round 3. A regime rule would need ALPHA; none of
+these is a regime rule, so SKILL counts - but 20 of 20 benchmarks in this
+project are NO_EDGE, and a rule that cannot beat holding BTC is not a strategy
+card. A negative answer here is the expected and acceptable outcome: it would
+mean the project has tested direction, timing, regime, exit management and now
+market structure, and the answer is that BTCUSDT at VIP0 costs leaves no edge.
