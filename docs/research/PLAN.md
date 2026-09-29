@@ -319,7 +319,9 @@ line in `TECHNIQUES.md` §2/§3 → pre-registered idea file → `evaluate.py`.
    beyond its BTC exposure) → stop here: it is not a strategy. Record it and
    continue the plan. SKILL or ALPHA → step 2.
 2. `python src/evaluate.py ideas/<idea>.json --final` (one time; refused
-   without PASS + (SKILL or ALPHA)).
+   without PASS + (SKILL or ALPHA)). SKILL is judged on TRAIN and VALID. The
+   holdout run includes a random-entry control on the holdout, and
+   CONFIRMED needs the idea to beat its median (Exp 019).
 3. **FAILED** on holdout → record it (it's now spent for that config), lesson
    into `TECHNIQUES.md`, continue the plan.
 4. **CONFIRMED** → tell the owner right away (Thai, full table), then build the

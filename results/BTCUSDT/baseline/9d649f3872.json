@@ -3,7 +3,7 @@
   "name": "017_session_open_long_tf60",
   "tf": 60,
   "n_per_mode": 200,
-  "timestamp": "2026-09-29 00:52 UTC",
+  "timestamp": "2026-09-29 01:06 UTC",
   "idea_valid_mean_r": 0.021104066928608327,
   "idea_valid_trades": 80,
   "idea_train_mean_r": 0.19476936702688002,
@@ -16,6 +16,10 @@
     "share_random_ge_idea": 0.645,
     "valid_trades_median": 85.0,
     "train_median": 0.009545623974833214,
+    "train_p95": 0.11259628599704542,
+    "train_share_random_ge_idea": 0.0,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": true,
     "idea_beats_p95": false
   },
   "B": {
@@ -26,7 +30,12 @@
     "share_random_ge_idea": 0.8,
     "valid_trades_median": 77.0,
     "train_median": 0.04502337219760029,
+    "train_p95": 0.17405335135988173,
+    "train_share_random_ge_idea": 0.025,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": true,
     "idea_beats_p95": false
   },
-  "verdict": "DRIFT"
+  "verdict": "DRIFT",
+  "rule": "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
 }

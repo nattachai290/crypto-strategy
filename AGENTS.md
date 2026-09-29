@@ -92,9 +92,10 @@ python src/baseline.py ideas/NNN_short_name.json
 ```
 It re-runs the idea's frozen exits and filters with **random entries** (200
 seeds, about the same number of signals) and asks whether the real entries
-beat random timing: **SKILL** only if the idea's VALID mean R is above the
-95th percentile of both "random at any time" and "random within the same
-filters". Otherwise **DRIFT**: the result comes from the market's move (e.g.
+beat random timing: **SKILL** only if the idea's mean R is above the 95th
+percentile of both "random at any time" and "random within the same
+filters", on **both TRAIN and VALID** (VALID alone let a bull-market drift
+pass as skill: idea 022, Exp 019). Otherwise **DRIFT**: the result comes from the market's move (e.g.
 being long in the 2023–24 bull market) or from the filters, not from the
 entry. Report both numbers. A DRIFT idea is not a strategy, whatever its
 verdict. Written to `results/<SYMBOL>/baseline/` and
@@ -117,7 +118,9 @@ exposure small).
 python src/evaluate.py ideas/NNN_short_name.json --final
 ```
 `--final` refuses unless the verdict is PASS **and** `baseline.py` said SKILL
-or `benchmark.py` said ALPHA.
+or `benchmark.py` said ALPHA. The holdout run also runs the random-entry
+control on the holdout itself: `CONFIRMED` additionally requires the idea to
+beat the median random entry (modes A and B) on the holdout.
 This runs the frozen choice **one time** on HOLDOUT (2025-01 → 2026-08),
 data nothing has been tuned on. `CONFIRMED` = a real candidate: tell the owner
 right away. `FAILED` = it was luck: record it and move on. The script refuses

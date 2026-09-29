@@ -3,7 +3,7 @@
   "name": "019_pullback_uptrend_long_tf30",
   "tf": 30,
   "n_per_mode": 200,
-  "timestamp": "2026-09-29 00:52 UTC",
+  "timestamp": "2026-09-29 01:06 UTC",
   "idea_valid_mean_r": 0.056155309597616505,
   "idea_valid_trades": 300,
   "idea_train_mean_r": 0.030205221152427693,
@@ -16,7 +16,11 @@
     "share_random_ge_idea": 0.03,
     "valid_trades_median": 454.5,
     "train_median": -0.01544824319458104,
-    "idea_beats_p95": true
+    "train_p95": 0.0366825259415721,
+    "train_share_random_ge_idea": 0.075,
+    "idea_beats_p95_valid": true,
+    "idea_beats_p95_train": false,
+    "idea_beats_p95": false
   },
   "B": {
     "label": "random entries, same filters",
@@ -26,7 +30,12 @@
     "share_random_ge_idea": 0.35,
     "valid_trades_median": 374.0,
     "train_median": 0.011518550592867605,
+    "train_p95": 0.04535766767471236,
+    "train_share_random_ge_idea": 0.23,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": false,
     "idea_beats_p95": false
   },
-  "verdict": "DRIFT"
+  "verdict": "DRIFT",
+  "rule": "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
 }

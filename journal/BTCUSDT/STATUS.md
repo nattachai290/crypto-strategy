@@ -12,6 +12,12 @@ Research plan: `docs/research/PLAN.md`._
 > `evaluate.py --final` refuses without it. Details: `experiments.md` Exp 017,
 > `journal/BTCUSDT/baselines.md`.
 >
+> **Exp 019 (after Round 2):** Round 2's idea 022 was the first PASS; it spent the
+> holdout and FAILED (−0.010 R). `baseline.py` SKILL now needs TRAIN *and* VALID
+> (under that rule 022 is DRIFT), and `--final` also runs a random-entry control
+> on the holdout (CONFIRMED must beat its median). **Journal numbering:** the two
+> Round 2 entries headed "Exp 017" are 017b/017c; the next entry is **Exp 020**.
+>
 > **Exp 018:** Round 3 (PLAN.md) now asks "when to be long BTC" and judges ideas
 > against **buy & hold** with `src/benchmark.py` (alpha, Sharpe, drawdown).
 > 018@30m and 019@1h: alpha ≈ 0, Sharpe below buy & hold → NO_EDGE.

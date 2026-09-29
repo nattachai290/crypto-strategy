@@ -15,8 +15,9 @@ about the same number of signals.
                                                without the trigger's timing
 
 For each of N seeds it records the mean R on TRAIN and VALID. The idea shows
-SKILL only if its VALID mean R is above the 95th percentile of BOTH random
-distributions. Otherwise its result is explained by drift or by the filters
+SKILL only if its mean R is above the 95th percentile of BOTH random
+distributions on BOTH TRAIN and VALID (TRAIN includes the 2022 bear market;
+VALID alone let a bull-market drift pass as skill, Exp 019). Otherwise its result is explained by drift or by the filters
 (DRIFT), and `evaluate.py --final` refuses to spend the holdout on it.
 
 Output: results/<SYMBOL>/baseline/<eval_id>.json (summary, read by
@@ -71,14 +72,17 @@ def _random_params(params: dict, p: float, seed: int, keep_filters: bool) -> dic
     return q
 
 
-def _calibrate(params: dict, target: int, keep_filters: bool) -> float:
-    """p so that the random frame has about as many VALID signals as the idea."""
+def _calibrate(params: dict, target: int, keep_filters: bool, start=None, end=None) -> float:
+    """p so that the random frame has about as many signals in [start, end)
+    as the idea (default window: VALID)."""
+    start = V.T_VALID if start is None else start
+    end = V.T_HOLD if end is None else end
     bars = V._G["bars"]
-    n_valid = int(((bars.index >= V.T_VALID) & (bars.index < V.T_HOLD)).sum())
-    p = max(target, 1) / max(n_valid, 1)
+    n_win = int(((bars.index >= start) & (bars.index < end)).sum())
+    p = max(target, 1) / max(n_win, 1)
     for _ in range(4):  # filters and cooldown remove signals; scale p up to match
         got = _count(R.recipe(bars, V._G["funding"], **_random_params(params, p, 0, keep_filters)),
-                     V.T_VALID, V.T_HOLD)
+                     start, end)
         if got == 0:
             p = min(p * 4, 0.5)
             continue
@@ -94,6 +98,60 @@ def _one(args) -> dict:
     va_r, va_n = _mean_r(V.backtest(sig, V.T_VALID, V.T_HOLD, ex))
     return {"mode": mode, "seed": seed, "p": p, "train_mean_r": tr_r, "train_trades": tr_n,
             "valid_mean_r": va_r, "valid_trades": va_n}
+
+
+def _one_window(args) -> dict:
+    mode, seed, params, ex, p, start, end = args
+    sig = R.recipe(V._G["bars"], V._G["funding"],
+                   **_random_params(params, p, seed, keep_filters=(mode == "B")))
+    r, n = _mean_r(V.backtest(sig, start, end, ex))
+    return {"mode": mode, "seed": seed, "mean_r": r, "trades": n}
+
+
+def skill_check(real_train: float, real_valid: float, runs: pd.DataFrame) -> dict:
+    """SKILL needs the idea above the 95th percentile of BOTH random modes on
+    BOTH periods. VALID alone is not enough: in a one-directional period
+    (2023-24) every long entry gets the same tailwind, so beating random
+    timing there can still be drift (Exp 019, idea 022). TRAIN contains the
+    2022 bear market."""
+    out = {"modes": {}, "skill": True}
+    for mode in ("A", "B"):
+        r = runs[runs["mode"] == mode]
+        res = {}
+        for per, real in (("train", real_train), ("valid", real_valid)):
+            x = r[f"{per}_mean_r"].dropna()
+            p95 = float(np.percentile(x, SKILL_PCTL)) if len(x) else float("nan")
+            ok = bool(len(x)) and np.isfinite(real) and real > p95
+            res[per] = {"median": float(x.median()) if len(x) else float("nan"), "p95": p95,
+                        "share_ge_idea": float((x >= real).mean()) if len(x) else float("nan"),
+                        "idea_beats_p95": ok}
+            out["skill"] &= ok
+        out["modes"][mode] = res
+    return out
+
+
+def holdout_control(params: dict, ex: dict, tf: int, n: int = 200, workers: int = 1) -> dict:
+    """Random-entry control on the HOLDOUT, run inside evaluate.py --final's one
+    permitted holdout run. Uses no information the holdout run itself doesn't.
+    Returns the median and 95th percentile of mean R for modes A and B."""
+    V._init_worker(tf)
+    real = R.recipe(V._G["bars"], V._G["funding"], **params)
+    target = _count(real, V.T_HOLD, V.T_END)
+    jobs = []
+    for mode, keep in (("A", False), ("B", True)):
+        p = _calibrate(params, target, keep, V.T_HOLD, V.T_END)
+        jobs += [(mode, s, params, ex, p, V.T_HOLD, V.T_END) for s in range(1, n + 1)]
+    if workers > 1:
+        with ProcessPoolExecutor(workers, initializer=V._init_worker, initargs=(tf,)) as pool:
+            runs = pd.DataFrame(list(pool.map(_one_window, jobs, chunksize=4)))
+    else:
+        runs = pd.DataFrame([_one_window(j) for j in jobs])
+    out = {}
+    for mode in ("A", "B"):
+        x = runs.loc[runs["mode"] == mode, "mean_r"].dropna()
+        out[mode] = {"median": float(x.median()) if len(x) else float("nan"),
+                     "p95": float(np.percentile(x, SKILL_PCTL)) if len(x) else float("nan")}
+    return out
 
 
 def main() -> None:
@@ -137,25 +195,29 @@ def main() -> None:
             "timestamp": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
             "idea_valid_mean_r": real_va, "idea_valid_trades": real_va_n,
             "idea_train_mean_r": real_tr, "idea_train_trades": real_tr_n}
-    skill = True
+    chk = skill_check(real_tr, real_va, runs)
+    skill = chk["skill"]
     lines = []
     for mode, label in (("A", "random entries, any time"),
                         ("B", "random entries, same filters")):
         r = runs[runs["mode"] == mode]
-        va, tr = r["valid_mean_r"].dropna(), r["train_mean_r"].dropna()
-        p95 = float(np.percentile(va, SKILL_PCTL)) if len(va) else float("nan")
-        beaten = float((va >= real_va).mean()) if len(va) else float("nan")
-        ok = bool(len(va)) and real_va > p95
-        skill &= ok
-        summ[mode] = {"label": label, "p": float(r["p"].iloc[0]), "valid_median": float(va.median()),
-                      "valid_p95": p95, "share_random_ge_idea": beaten,
+        m = chk["modes"][mode]
+        summ[mode] = {"label": label, "p": float(r["p"].iloc[0]),
+                      "valid_median": m["valid"]["median"], "valid_p95": m["valid"]["p95"],
+                      "share_random_ge_idea": m["valid"]["share_ge_idea"],
                       "valid_trades_median": float(r["valid_trades"].median()),
-                      "train_median": float(tr.median()) if len(tr) else float("nan"),
-                      "idea_beats_p95": ok}
-        lines.append(f"| {mode}: {label} | {r['valid_trades'].median():.0f} | "
-                     f"{va.median():+.4f} | {p95:+.4f} | {beaten:.0%} | "
-                     f"{tr.median():+.4f} | {'✅' if ok else '❌'} |")
+                      "train_median": m["train"]["median"], "train_p95": m["train"]["p95"],
+                      "train_share_random_ge_idea": m["train"]["share_ge_idea"],
+                      "idea_beats_p95_valid": m["valid"]["idea_beats_p95"],
+                      "idea_beats_p95_train": m["train"]["idea_beats_p95"],
+                      "idea_beats_p95": m["valid"]["idea_beats_p95"] and m["train"]["idea_beats_p95"]}
+        tick = lambda ok: "✅" if ok else "❌"  # noqa: E731
+        lines.append(f"| {mode}: {label} | {m['train']['median']:+.4f} / {m['train']['p95']:+.4f} "
+                     f"{tick(m['train']['idea_beats_p95'])} | "
+                     f"{m['valid']['median']:+.4f} / {m['valid']['p95']:+.4f} "
+                     f"{tick(m['valid']['idea_beats_p95'])} | {m['valid']['share_ge_idea']:.0%} |")
     summ["verdict"] = "SKILL" if skill else "DRIFT"
+    summ["rule"] = "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / f"{eval_id}.json").write_text(json.dumps(summ, indent=2) + "\n", encoding="utf-8")
@@ -165,9 +227,9 @@ def main() -> None:
         f"### {eval_id} — {idea['name']} ({C.SYMBOL} {tf}m) — **{summ['verdict']}**", "",
         f"- {summ['timestamp']} · {a.n} random runs per mode · idea VALID mean R "
         f"**{real_va:+.4f}** on {real_va_n} trades (TRAIN {real_tr:+.4f} on {real_tr_n})", "",
-        "| baseline | median VALID trades | median VALID mean R | 95th pct | share of random runs ≥ idea | median TRAIN mean R | idea > 95th pct |",
-        "|---|---|---|---|---|---|---|", *lines, "",
-        ("- SKILL: the entries beat random timing with the same exits and filters."
+        "| baseline | TRAIN median / 95th pct | VALID median / 95th pct | share of random runs ≥ idea (VALID) |",
+        "|---|---|---|---|", *lines, "",
+        ("- SKILL: the entries beat random timing with the same exits and filters, on TRAIN and VALID."
          if skill else
          "- DRIFT: random entries with the same exits (and filters) do about as well; "
          "the result is explained by the market's move or the filters, not by the entry. "
