@@ -496,3 +496,21 @@ The project's answer, now on two coins and 259 evaluations:
 > them. The value, if there is any, is in the cost structure, which is an
 > execution and position-sizing decision rather than a trading technique, and
 > this harness has no instrument for it.
+
+---
+
+## Exp 004 — The funding defect of Exp 002 is fixed (BTC Exp 030)
+
+**Date:** 2026-09-29
+**Status:** complete (no evaluation recorded; ETH holdout untouched)
+
+The owner approved the fix. `backtest.py` now charges funding as notional ×
+rate, and test 1b fails before the fix and passes after it. All 49 ETH
+configs were re-run in scratch. VALID mean R changes by a median of
+−0.0027 R (5th–95th percentile −0.0086 to +0.0061). Two verdicts change:
+- 035@1h: WATCH → REJECT;
+- 034@4h: REJECT → WATCH (+0.0115, CI far below 0).
+
+041@1m, the closest config, goes from +0.2760 to +0.2714, and its CI low
+goes from −0.0033 to −0.0075 (it stays a WATCH). No PASS. The Exp 003 stop rule stands: ETH research stops. Details
+and the BTC side are in `journal/BTCUSDT/experiments.md` Exp 030.

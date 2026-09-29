@@ -314,6 +314,10 @@ Engine facts to remember:
   leverage).
 - Break-even and trailing stops move using the **previous** bar's close
   (fixed in Exp 011).
+- Funding is charged as **position notional × rate** (qty × price at the open
+  of the bar holding the settlement). Before BTC Exp 030 it was qty × rate,
+  i.e. almost zero; every record made before that has near-zero funding
+  (found in ETH Exp 002, fixed in BTC Exp 030).
 - Short P&L is signed by side (fixed in Exp 015; before that every short was
   inverted). `evaluate.py` runs on a 1,000 USDT research account
   (`C.EVAL_EQUITY`) so every trade can be sized. Each report shows

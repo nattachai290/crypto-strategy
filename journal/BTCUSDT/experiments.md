@@ -3235,3 +3235,78 @@ The stop rule agreed before Round 6 has fired: **BTCUSDT research is closed.**
 
 The owner approved moving the research to **ETHUSDT** (Exp 000 in
 `journal/ETHUSDT/experiments.md`, `PLAN.md` §11).
+
+---
+
+## Exp 030 — Engine fix: funding is notional × rate (owner-approved, Level 3)
+
+**Date:** 2026-09-29
+**Status:** complete (engine fix + impact check; no record changed, no holdout used)
+
+### The defect (found by the research agent in ETH Exp 002)
+`src/backtest.py` charged funding as `qty × rate`, with no price. The
+correct charge is position notional × rate (`qty × price × rate`), so funding
+was understated by the price itself: ~40,000× on BTC, ~3,900× on ETH. In
+practice every record up to now carries almost no funding.
+
+`test_engine.py`'s reference implementation had the **identical line**. That
+is why the differential test never saw it: both sides agreed on the wrong
+number. It is the same failure mode as the short-sign bug of Exp 014.
+
+### The fix
+- `backtest.py`: `amt = pos_qty * o[i] * sum(rates) * sgn`. The price is the
+  open of the bar that holds the settlement. That is the latest price known
+  there, and on 1h/4h bars it is the settlement time itself.
+- The reference implementation in `test_engine.py` gets the same
+  correction. This is a fix to the specification the test compares
+  against, not a weakening: the differential test now compares real funding
+  amounts, where before it compared two near-zero numbers.
+- New test **1b**: a long and a short held across one 0.01% settlement at a
+  flat 50,000. Expected: 0.005 × 50,000 × 0.0001 = 0.025 USDT, paid by the
+  long and received by the short.
+  - **Fails before the fix:** the engine charged 0.000001.
+  - **Passes after the fix.**
+  - All other tests are unchanged and pass.
+
+### Impact: every recorded config re-run with the fix (scratch, nothing recorded)
+The frozen `chosen_params` of all 207 BTC and 49 ETH evaluations were run
+again on TRAIN, VALID and VALID ×1.5 cost. The comparison leaves out rows
+whose other code changed since they were recorded:
+- 029: the `opening_range` fix;
+- 037: the `month_turn_fade` fix.
+
+It also ignores rows whose recorded verdict came from rules outside
+`verdict()`:
+- INCONCLUSIVE when no grid combo had enough TRAIN trades;
+- UNSIZABLE (introduced in Exp 021).
+
+| | rows | VALID mean R change: median | mean | 5th pct | 95th pct |
+|---|---|---|---|---|---|
+| BTC | 193 | −0.0015 | −0.0020 | −0.0126 | +0.0054 |
+| ETH | 49 | −0.0027 | −0.0024 | −0.0086 | +0.0061 |
+
+**Verdicts that change because of funding (7 of 242):**
+
+| coin | config | recorded | with correct funding | why |
+|---|---|---|---|---|
+| BTC | 022 exit risk side @30m | PASS | **WATCH** | CI low +0.0023 → −0.0118. It is long-only and pays funding; its holdout had already FAILED |
+| BTC | 023 regime long @15m | WATCH | REJECT | TRAIN +0.0053 → −0.0037 |
+| BTC | 026 regime + vol @30m | WATCH | REJECT | TRAIN and stress fall |
+| BTC | 017 session open long @1h | WATCH | REJECT | stress falls below 0 |
+| BTC | 039 breakout + flow @1h | WATCH | REJECT | TRAIN +0.0017 → −0.0083 |
+| ETH | 035 momentum @1h | WATCH | REJECT | VALID +0.0084 → −0.0017 |
+| ETH | 034 reversal @4h | REJECT | WATCH | VALID +0.0036 → +0.0115, CI [−0.148, …]; meaningless |
+
+**No new PASS.** Every PASS that was not already a holdout failure keeps its
+verdict: 023@1h, 027@30m, 038@4h, 039@5m. The four configs that spent a
+holdout would be slightly worse. The answer does not change: 0 CONFIRMED on
+either coin.
+
+ETH Exp 002 said "0 verdicts change". That is corrected here: seven change,
+six of them downward. None of them moves the conclusion.
+
+### Records
+`evaluations.csv` and `holdout_log.csv` stay as recorded (rule 4). Every row
+made before this commit used near-zero funding. The table above is the
+correction to read them by. From now on every evaluation charges real funding.
+`test_engine.py`: ALL CHECKS PASSED.
