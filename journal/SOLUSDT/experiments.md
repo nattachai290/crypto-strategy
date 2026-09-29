@@ -217,3 +217,44 @@ long/short counts - **plus the same config's BTC and ETH result.**
 **Stop rule, agreed in advance, for this coin:** if S1 ends with no holdout
 CONFIRMED on SOL, research on SOL stops. If both S1 and B1 stop, the project's
 answer stands for all four coins. **No fifth coin - that is the owner's.**
+
+---
+
+## Exp 001b - SOLUSDT data-gap decision (owner), recorded before the first evaluation
+
+**Date:** 2026-09-29
+**Status:** decision record. Zero evaluations in this entry.
+
+Exp 001 reported that `datafeed.py` ends with `VALIDATION: PROBLEMS FOUND` on
+SOLUSDT - two gaps, both in TRAIN - which does not satisfy the start-of-session
+checklist in `AGENTS.md` §0, and stated that the SOL round would not start
+until the owner decided. The gap measurement given with the question:
+
+| | |
+|---|---|
+| gaps | 2022-02-25 23:00 -> 2022-03-01 00:00 (73 h, SOL +6.3%); 2022-03-31 23:00 -> 2022-04-03 00:00 (49 h, SOL +9.1%) |
+| split | **both entirely inside TRAIN**; VALID and HOLDOUT clean |
+| signal bars that could be inside a gap | **32 of 1,430 = 2.2%** (19 long, 13 short) |
+| cause of the effect | with no bars there is no high/low, so an open position cannot be stopped at the bar level and is exited at the next bar's open |
+
+**The owner's decision: run it, and record the limitation.**
+
+Two things are therefore fixed for the whole of Round S1 and are restated here
+so they cannot be forgotten when the results are read:
+
+1. **The data-gap limitation is a standing caveat on every SOLUSDT result.** Any
+   SOLUSDT TRAIN number carries an upper bound of about 2% of its signals
+   affected by a stop that could not be checked, biased against shorts and in
+   favour of longs (SOL rose across both gaps). The verdict is decided on VALID
+   and the holdout test would be decided on HOLDOUT, and **both of those are
+   clean**, so the limitation cannot manufacture a PASS - it can only move TRAIN
+   selection slightly. It is recorded, not corrected.
+2. **All seven families run unchanged**, as `PLAN.md` §12 requires, including
+   039, 041 and 043 whose SOLUSDT TRAIN signal counts are 136, 106 and 136 -
+   under the 150 floor, so INCONCLUSIVE is the expected outcome for them.
+   Exp 001 said so in advance, and the owner's decision is to keep them in
+   rather than drop three families after seeing the counts, because dropping a
+   family on a data-count argument is selecting on the data rather than on the
+   hypothesis - the same selection error that BTC Exp 029 criticised in Round 6.
+
+No idea file is edited. The SOL HOLDOUT stays sealed.
