@@ -52,7 +52,8 @@ on a broken setup.
 
 Repeat this loop. One loop = one idea = one hypothesis.
 
-**Step 1 — Pick an idea.** Take one from the backlog in
+**Step 1 — Pick an idea.** Read `docs/research/LESSONS.md` first (what 354
+evaluations taught: cost, holding time, long bias, luck). Take one from the backlog in
 `docs/research/TECHNIQUES.md` §6, or invent a new one. First check
 `journal/<SYMBOL>/evaluations.md` and `results/<SYMBOL>/evaluations.csv` to
 make sure it was not already tried.
@@ -310,6 +311,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `test_engine.py` | engine and block tests; must pass |
 | `ml_filter.py`, `run_ml.py`, `definitive.py`, `sweep.py`, `cost_lab.py`, `round*.py`, `diagnose.py` | older experiments (Exp 003–010); they write to `results/<SYMBOL>/legacy/` (`C.LEGACY`) |
 | `ledger*.py`, `report_data.py`, `make_report.py` | reporting for the older experiments |
+| `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:
 - R = stop distance. `gross_r - cost_r = mean R` per trade. At a 0.5%
