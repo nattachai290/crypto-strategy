@@ -1,0 +1,47 @@
+{
+  "name": "047_tv_wavetrend",
+  "hypothesis": "TradingView port (PLAN.md section 13), 'WaveTrend Oscillator [LazyBear]'. The indicator's idea: a smoothed channel index of hlc3; when its fast line crosses its slow line inside the overbought/oversold zone, the stretch is exhausted and price turns. Author defaults kept: channel length 10, average length 21, signal SMA 4, level 2 = 53. It is an indicator, so an entry rule had to be chosen: long when wt1 crosses above wt2 below -53, short when it crosses below wt2 above +53 (the published zone lines). DEVIATIONS the engine forces: the TradingView version stays in the market and only reverses on the opposite signal; the engine has no stop-and-reverse and every trade must risk 1%, so a pct stop and a time stop are added and are the only grid keys. TradingView's default commission is 0; here it is 0.05% taker + 0.02% slippage + funding. Source chart 4h; variants in chart mode (the same bar counts on every chart).",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [
+      {
+        "type": "wavetrend",
+        "n1": 10,
+        "n2": 21,
+        "level": 53
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.05,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 240,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [
+      0.04,
+      0.06
+    ],
+    "max_hold_hours": [
+      120,
+      480
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  }
+}

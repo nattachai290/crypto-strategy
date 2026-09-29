@@ -1,0 +1,48 @@
+{
+  "name": "045_tv_ut_bot_tf60",
+  "hypothesis": "TradingView port (PLAN.md section 13), 'UT Bot Alerts' (QuantNomad / Yo_adriiiiaan), one of the most-used scripts on the platform. The author's claim: an ATR trailing stop (key value 1, ATR 10) that ratchets with the close marks the trend, and a close crossing it starts a new trend worth following, long above and short below. Counterparty: traders still positioned for the old trend. Author defaults kept: key 1.0, ATR 10, source close. DEVIATIONS the engine forces: the TradingView version stays in the market and only reverses on the opposite signal; the engine has no stop-and-reverse and every trade must risk 1%, so a pct stop and a time stop are added and are the only grid keys. TradingView's default commission is 0; here it is 0.05% taker + 0.02% slippage + funding. Source chart 4h; variants in chart mode (the same bar counts on every chart). [Timeframe variant of 045_tv_ut_bot, 240m -> 60m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 60,
+  "params": {
+    "triggers": [
+      {
+        "type": "ut_bot",
+        "key": 1.0,
+        "atr_n": 10
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.025,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 60.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [
+      0.02,
+      0.03
+    ],
+    "max_hold_hours": [
+      30.0,
+      120.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "045_tv_ut_bot",
+  "variant_mode": "chart"
+}

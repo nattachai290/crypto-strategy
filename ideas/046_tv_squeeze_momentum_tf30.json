@@ -1,0 +1,48 @@
+{
+  "name": "046_tv_squeeze_momentum_tf30",
+  "hypothesis": "TradingView port (PLAN.md section 13), 'Squeeze Momentum Indicator [LazyBear]'. The indicator's idea: when the Bollinger band contracts inside the Keltner channel, volatility is compressed, and the release is the start of a move whose direction the momentum value (a linear regression of close minus the channel midpoint) shows. Author defaults kept: length 20, KC multiplier 1.5, true range, and LazyBear's own choice of using the KC multiplier for the BB deviation. It is an indicator, so an entry rule had to be chosen: the bar the squeeze releases (on at the previous bar, off now), long if momentum > 0, short if < 0. DEVIATIONS the engine forces: the TradingView version stays in the market and only reverses on the opposite signal; the engine has no stop-and-reverse and every trade must risk 1%, so a pct stop and a time stop are added and are the only grid keys. TradingView's default commission is 0; here it is 0.05% taker + 0.02% slippage + funding. Source chart 4h; variants in chart mode (the same bar counts on every chart). [Timeframe variant of 046_tv_squeeze_momentum, 240m -> 30m, mode chart: same bar counts and ATR multiples, hold x0.125, pct stop x0.354.]",
+  "strategy": "recipe",
+  "tf": 30,
+  "params": {
+    "triggers": [
+      {
+        "type": "squeeze_momentum",
+        "length": 20,
+        "mult_kc": 1.5
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0177,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 30.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [
+      0.0141,
+      0.0212
+    ],
+    "max_hold_hours": [
+      15.0,
+      60.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "046_tv_squeeze_momentum",
+  "variant_mode": "chart"
+}

@@ -1,0 +1,49 @@
+{
+  "name": "048_tv_macd_strategy_tf5",
+  "hypothesis": "TradingView port (PLAN.md section 13), TradingView's own built-in 'MACD Strategy'. Its logic: MACD(12, 26) minus its signal EMA(9) crossing zero marks a change of momentum; long on the cross up, short on the cross down. Defaults kept: 12 / 26 / 9, close. DEVIATIONS the engine forces: the TradingView version stays in the market and only reverses on the opposite signal; the engine has no stop-and-reverse and every trade must risk 1%, so a pct stop and a time stop are added and are the only grid keys. TradingView's default commission is 0; here it is 0.05% taker + 0.02% slippage + funding. Source chart 4h; variants in chart mode (the same bar counts on every chart). [Timeframe variant of 048_tv_macd_strategy, 240m -> 5m, mode chart: same bar counts and ATR multiples, hold x0.0208333, pct stop x0.144.]",
+  "strategy": "recipe",
+  "tf": 5,
+  "params": {
+    "triggers": [
+      {
+        "type": "macd_cross",
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0072,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 5.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "stop.pct": [
+      0.0058,
+      0.0087
+    ],
+    "max_hold_hours": [
+      2.5,
+      10.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "048_tv_macd_strategy",
+  "variant_mode": "chart"
+}

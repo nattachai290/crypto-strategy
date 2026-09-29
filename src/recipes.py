@@ -307,6 +307,108 @@ def t_month_turn_fade(b, f, before=2, after=2, lookback=6):
     return _side(np.where(win, dn, 0.0), np.where(win, up, 0.0))
 
 
+# --------------------------------------------------------------------------
+# TradingView ports (PLAN.md section 13). Each follows the published Pine
+# script's formulas; where the script is an indicator, the entry rule chosen
+# for it is stated in the docstring.
+# --------------------------------------------------------------------------
+def _linreg_end(y: pd.Series, n: int) -> pd.Series:
+    """Pine `linreg(y, n, 0)`: the least-squares line over the last n values,
+    evaluated at the newest one. Rolling closed form, so it stays causal."""
+    n = int(n)
+    x = np.arange(n, dtype=float)
+    sx, sxx = x.sum(), (x * x).sum()
+    den = n * sxx - sx * sx
+    v = y.to_numpy(float)
+    sy = y.rolling(n, min_periods=n).sum().to_numpy(float)
+    # sum_k k * y[t-k] for k = 0..n-1, then flip to sum_j j * y[t-n+1+j]
+    back = np.convolve(v, x, mode="full")[: len(v)]
+    sxy = (n - 1) * sy - back
+    slope = (n * sxy - sx * sy) / den
+    icpt = (sy - slope * sx) / n
+    return pd.Series(icpt + slope * (n - 1), index=y.index)
+
+
+def t_ut_bot(b, f, key=1.0, atr_n=10):
+    """UT Bot Alerts (TradingView): close crosses an ATR trailing stop.
+
+    Pine: nLoss = key * ATR(atr_n); the stop ratchets up under a rising close
+    (max(prev, close - nLoss)), down over a falling close, and flips when the
+    close crosses it. Buy = close crosses above the stop, sell = below."""
+    c = b["close"].to_numpy(float)
+    nl = float(key) * ta.atr_(b["high"], b["low"], b["close"], int(atr_n)).to_numpy(float)
+    ts = np.zeros(len(c))
+    for i in range(len(c)):
+        prev = ts[i - 1] if i else 0.0
+        cp = c[i - 1] if i else np.nan
+        if not np.isfinite(nl[i]):
+            ts[i] = 0.0                      # Pine: na, read back as nz() = 0
+        elif c[i] > prev and cp > prev:
+            ts[i] = max(prev, c[i] - nl[i])
+        elif c[i] < prev and cp < prev:
+            ts[i] = min(prev, c[i] + nl[i])
+        elif c[i] > prev:
+            ts[i] = c[i] - nl[i]
+        else:
+            ts[i] = c[i] + nl[i]
+    ok = np.isfinite(nl) & np.r_[False, np.isfinite(nl[:-1])]
+    up = _cross_up(c, ts) & (c > ts) & ok
+    dn = _cross_dn(c, ts) & (c < ts) & ok
+    return _side(up, dn)
+
+
+def t_squeeze_momentum(b, f, length=20, mult_kc=1.5):
+    """Squeeze Momentum Indicator [LazyBear] (TradingView): the bar a squeeze
+    releases, in the direction of the momentum value.
+
+    Pine: BB(length) with dev = mult_kc * stdev (LazyBear's script uses the
+    KC multiplier here, kept as published); KC = SMA +- mult_kc * SMA(true
+    range); squeeze on = BB inside KC. val = linreg(close - avg(avg(highest
+    high, lowest low), SMA close), length, 0). Entry rule chosen for this
+    indicator: squeeze on at the previous bar and off now; long if val > 0,
+    short if val < 0."""
+    h, l, c = b["high"], b["low"], b["close"]
+    n = int(length)
+    basis = c.rolling(n, min_periods=n).mean()
+    dev = float(mult_kc) * c.rolling(n, min_periods=n).std(ddof=0)
+    rng = ta.true_range(h, l, c).rolling(n, min_periods=n).mean()
+    sqz_on = ((basis - dev) > (basis - rng * float(mult_kc))) & \
+             ((basis + dev) < (basis + rng * float(mult_kc)))
+    mid = ((h.rolling(n, min_periods=n).max() + l.rolling(n, min_periods=n).min()) / 2 + basis) / 2
+    val = _linreg_end(c - mid, n).to_numpy(float)
+    on = sqz_on.to_numpy(bool)
+    release = np.r_[False, on[:-1]] & ~on & np.isfinite(val)
+    return _side(release & (val > 0), release & (val < 0))
+
+
+def t_wavetrend(b, f, n1=10, n2=21, level=53):
+    """WaveTrend Oscillator [LazyBear] (TradingView): wt1 crosses wt2 inside
+    an extreme zone.
+
+    Pine: ap = hlc3, esa = EMA(ap, n1), d = EMA(|ap - esa|, n1),
+    ci = (ap - esa) / (0.015 d), wt1 = EMA(ci, n2), wt2 = SMA(wt1, 4).
+    Entry rule chosen for this indicator: long when wt1 crosses above wt2
+    below -level (oversold), short when it crosses below wt2 above +level."""
+    ap = (b["high"] + b["low"] + b["close"]) / 3.0
+    esa = ta.ema(ap, int(n1))
+    d = ta.ema((ap - esa).abs(), int(n1))
+    ci = (ap - esa) / (0.015 * d.replace(0.0, np.nan))
+    wt1 = ta.ema(ci, int(n2))
+    wt2 = wt1.rolling(4, min_periods=4).mean()
+    w = wt1.to_numpy(float)
+    return _side(_cross_up(wt1, wt2) & (w < -float(level)),
+                 _cross_dn(wt1, wt2) & (w > float(level)))
+
+
+def t_macd_cross(b, f, fast=12, slow=26, signal=9):
+    """TradingView built-in "MACD Strategy": MACD minus its signal line
+    crosses zero (up = long, down = short)."""
+    c = b["close"]
+    macd = ta.ema(c, int(fast)) - ta.ema(c, int(slow))
+    delta = macd - ta.ema(macd, int(signal))
+    return _side(_cross_up(delta, 0.0), _cross_dn(delta, 0.0))
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -327,6 +429,10 @@ TRIGGERS = {
     "keltner_break": t_keltner_break,
     "flush": t_flush,
     "month_turn_fade": t_month_turn_fade,
+    "ut_bot": t_ut_bot,
+    "squeeze_momentum": t_squeeze_momentum,
+    "wavetrend": t_wavetrend,
+    "macd_cross": t_macd_cross,
 }
 
 
