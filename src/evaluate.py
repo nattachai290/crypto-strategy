@@ -161,6 +161,15 @@ def _prior_signature(row: pd.Series) -> str:
 # --------------------------------------------------------------------------
 # running
 # --------------------------------------------------------------------------
+def baseline_verdict(eval_id: str) -> str:
+    """'SKILL', 'DRIFT' or 'MISSING' from results/<SYMBOL>/baseline/<eval_id>.json
+    (written by baseline.py). The holdout is only for SKILL."""
+    f = C.RESULTS / "baseline" / f"{eval_id}.json"
+    if not f.exists():
+        return "MISSING"
+    return json.loads(f.read_text(encoding="utf-8")).get("verdict", "MISSING")
+
+
 def _init_worker(tf: int) -> None:
     """Load the data in each worker. With fork (Linux) the parent's _G is
     already copied in; with spawn (Windows, macOS) it starts empty and every
@@ -373,6 +382,11 @@ def main() -> None:
             print(f"--final refused: {eval_id} was evaluated as {r['verdict']}; "
                   f"the holdout is only for PASS.")
             return
+        if a.final and idea["strategy"] == "recipe" and baseline_verdict(eval_id) != "SKILL":
+            print(f"--final refused: random-entry baseline for {eval_id} is "
+                  f"{baseline_verdict(eval_id)}. Run `python src/baseline.py {idea_path}` first; "
+                  f"the holdout is only for a PASS whose entries beat random timing (SKILL).")
+            return
         if not (a.rerun or a.final):
             print(f"already evaluated as {eval_id}: verdict {r['verdict']} "
                   f"(valid mean R {r['valid_mean_r']:+.4f}, CI [{r['valid_ci_lo']:+.4f}, "
@@ -476,6 +490,9 @@ def main() -> None:
         used = pd.read_csv(HOLDOUT_CSV) if HOLDOUT_CSV.exists() else pd.DataFrame()
         if verd != "PASS":
             print(f"\n--final refused: verdict is {verd}, the holdout is only for PASS.")
+        elif idea["strategy"] == "recipe" and baseline_verdict(eval_id) != "SKILL":
+            print(f"\n--final refused: random-entry baseline is {baseline_verdict(eval_id)}; "
+                  f"run src/baseline.py first (SKILL required).")
         elif len(used) and hkey in set(used["holdout_key"]):
             print(f"\n--final refused: holdout already used for this exact config ({hkey}). "
                   f"Result stands; see {HOLDOUT_CSV.name}.")

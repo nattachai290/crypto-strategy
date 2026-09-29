@@ -1,0 +1,32 @@
+{
+  "eval_id": "7bcaa9ca12",
+  "name": "018_trend_breakout_long_tf60",
+  "tf": 60,
+  "n_per_mode": 200,
+  "timestamp": "2026-09-29 00:41 UTC",
+  "idea_valid_mean_r": 0.10974223145074799,
+  "idea_valid_trades": 120,
+  "idea_train_mean_r": 0.09909421219836728,
+  "idea_train_trades": 170,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.024574846642600894,
+    "valid_median": 0.055330373490339965,
+    "valid_p95": 0.1617463094067109,
+    "share_random_ge_idea": 0.17,
+    "valid_trades_median": 141.0,
+    "train_median": 0.013231502695718687,
+    "idea_beats_p95": false
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.06422351751924413,
+    "valid_median": 0.08945195739640306,
+    "valid_p95": 0.19567292744580642,
+    "share_random_ge_idea": 0.37,
+    "valid_trades_median": 117.0,
+    "train_median": 0.03210474849856086,
+    "idea_beats_p95": false
+  },
+  "verdict": "DRIFT"
+}

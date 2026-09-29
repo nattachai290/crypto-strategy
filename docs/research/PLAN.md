@@ -128,8 +128,10 @@ with every PASS (AGENTS.md rule 15). The holdout exists for exactly this.
    exactly as pre-registered. Grid ≤ 4 keys; sweep only what the hypothesis
    is about. Then generate the timeframe variants of each (§2b).
 3. **Run each** (source + 6 variants): `python src/evaluate.py ideas/<file>.json`.
-4. **Act on each verdict** (AGENTS.md §1 step 6). WATCH may get ≤ 2 diagnosed
-   versions. PASS → §5 immediately.
+4. **Act on each verdict** (AGENTS.md §1 step 6). Run `python src/baseline.py`
+   on **every WATCH and PASS** (AGENTS.md step 6b) and put SKILL/DRIFT next to
+   it in the round summary. WATCH may get ≤ 2 diagnosed versions; a DRIFT
+   WATCH should get a *different entry*, not a tuned one. PASS → §5.
 5. **Round summary:** append "Exp NNN — Round X results" (template: AGENTS.md
    §8), plus a section **"What this round tells the next round"**: 2–4
    bullets that feed §4 of the next round. Update `STATUS.md` and
@@ -193,6 +195,14 @@ qualifies.
 **Why:** with the same entry, the exit decides how much of the gross edge
 is kept. Exits were mis-simulated before Exp 011 and have never been studied
 properly.
+
+**Read first (Exp 017):** every Round 1 WATCH, including 018@30m, is
+**DRIFT**: random long entries inside the same trend filters earn about the
+same (+0.05..+0.10 R). The exit study is still worth running, because exits
+decide what is kept from whatever the entries catch. But judge every exit
+result with `baseline.py` too: an exit that "improves" the idea but improves
+random entries just as much is an exit improvement, not an entry edge. Say
+which it is.
 
 Take the chosen entry from Round 1, **at the timeframe where it did best on
 TRAIN**, and keep it exactly as it is. Run **2
@@ -266,11 +276,14 @@ line in `TECHNIQUES.md` §2/§3 → pre-registered idea file → `evaluate.py`.
 
 ## 5. What to do with a PASS
 
-1. Immediately: `python src/evaluate.py ideas/<idea>.json --final` (one time,
-   allowed by AGENTS.md for a PASS).
-2. **FAILED** on holdout → record it (it's now spent for that config), lesson
+1. `python src/baseline.py ideas/<idea>.json`. **DRIFT** → stop here: it is not
+   a strategy (the entries don't beat random timing), record it and continue
+   the plan. **SKILL** → step 2.
+2. `python src/evaluate.py ideas/<idea>.json --final` (one time; refused
+   without PASS + SKILL).
+3. **FAILED** on holdout → record it (it's now spent for that config), lesson
    into `TECHNIQUES.md`, continue the plan.
-3. **CONFIRMED** → tell the owner right away (Thai, full table), then build the
+4. **CONFIRMED** → tell the owner right away (Thai, full table), then build the
    strategy card and paper trading (§6). Continue the research rounds in
    parallel only if the owner wants.
 

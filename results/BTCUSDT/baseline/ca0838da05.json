@@ -1,0 +1,32 @@
+{
+  "eval_id": "ca0838da05",
+  "name": "019_pullback_uptrend_long_tf30",
+  "tf": 30,
+  "n_per_mode": 200,
+  "timestamp": "2026-09-29 00:42 UTC",
+  "idea_valid_mean_r": 0.056155309597616505,
+  "idea_valid_trades": 300,
+  "idea_train_mean_r": 0.030205221152427693,
+  "idea_train_trades": 440,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.04947813361323543,
+    "valid_median": 0.011065536743071376,
+    "valid_p95": 0.05211304743598585,
+    "share_random_ge_idea": 0.03,
+    "valid_trades_median": 454.5,
+    "train_median": -0.01544824319458104,
+    "idea_beats_p95": true
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.09963937730523321,
+    "valid_median": 0.0466810597277964,
+    "valid_p95": 0.09004593011883952,
+    "share_random_ge_idea": 0.35,
+    "valid_trades_median": 374.0,
+    "train_median": 0.011518550592867605,
+    "idea_beats_p95": false
+  },
+  "verdict": "DRIFT"
+}
