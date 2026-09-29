@@ -2710,3 +2710,68 @@ and sharper than "no edge exists", and it is worth stating precisely:
 Per `PLAN.md` §7 the next step is the owner's: other markets, cross-exchange
 basis and funding data, or VIP fee tiers. **Nothing in this project is a
 profitable strategy, and the holdout has never confirmed anything.**
+
+---
+
+## Exp 025 — Review of Round 5: block output contract, month_turn_fade fix, corrections
+
+**Date:** 2026-09-29
+**Status:** complete (tooling + corrections; no new evaluation, holdout untouched)
+
+### Review of Exp 024
+Process followed the plan. The pre-registration came before any result, and
+grid values under 150 TRAIN signals were dropped before running. The
+pre-registration also caught that the plan's own R5.1 sketch broke the cost
+constraint. `cost_r` came out flat across timeframes. Baseline and benchmark
+ran on every WATCH/PASS. 038 was PASS + ALPHA, so its `--final` was allowed
+and was run once. Its holdout random control was A = B median −0.036, against
+038's −0.112. `evaluations.csv` (131 earlier rows) and `holdout_log.csv`
+(2 earlier rows) were re-written with new columns. Compared field by field,
+no earlier value changed. The agent's `opening_range` bug find was real and
+important. The Exp 023 review read that block and missed it.
+
+### Changes
+- `recipes.py`: `check_trigger_output` / `check_filter_output`. `recipe()`
+  refuses a trigger that returns a tuple, a wrong shape, or values other than
+  −1/0/+1, and a filter that is not `(long_ok, short_ok)` of bar length.
+  Correct blocks give identical signals: 038@4h `--trades-only` reproduces
+  155 trades, +0.1753, and an identical trade list.
+- `test_engine.py` test 7:
+  - every trigger and filter meets that contract;
+  - `recipe()` refuses an injected tuple trigger;
+  - `month_turn_fade` fires on 28 Feb, 29 Feb and 1 Mar 2024 with `before=2`.
+
+  Checked that the contract test **fails** with the old tuple-returning
+  `opening_range` put back, and passes with the fix.
+- `month_turn_fade`: the days to the next month used `32 − day`, which treats
+  every month as 31 days (February never fired before the turn, 30-day months
+  had a 1-day window). It now uses the real month length. **037's recorded
+  rows predate the fix and cannot be reproduced**: 037@4h VALID was 43 trades
+  +0.0547 and is 48 trades +0.0102 now. The rows stay as recorded (rule 4);
+  all were INCONCLUSIVE, and no verdict is affected.
+- AGENTS.md §5 Level 2 states the output contract.
+
+### Corrections to Exp 024 (and FINAL_REPORT.md / STATUS.md, edited with a note)
+1. **The funding threshold is 0.00015 = 0.015% per 8 h**, not "0.15%".
+2. **"The cost problem was an artefact of how variants were built, and it is
+   removable"** holds for multi-day holds only. `--mode time` keeps a
+   multi-day trade's cost at ≈ 0.02 R on every timeframe because it is the
+   same multi-day trade. A short-horizon trade still pays ≈ 0.11% of price
+   per trade against a small move.
+3. **038 was a single positive timeframe.** Its neighbours were 1h −0.022
+   (REJECT), 30m +0.016 (WATCH) and 15m −0.042 (REJECT). PLAN §2b says to
+   call that "most likely luck" in the summary, and the pre-`--final` text
+   did not. At 4h, `opening_range` with `mins` 60 is the whole 00:00–04:00
+   bar (the window cannot be shorter than one bar; Exp 023, item 5), so the
+   4h source tested "break of the first 4h bar", while the other timeframes
+   tested the first hour.
+4. **038's selection used VALID information.** The pre-registration justified
+   R5.6 by 029@4h's gross of +0.141, which is its **VALID** `gross_r`. Picking
+   an idea because of a VALID number is the selection AGENTS.md rule 3 warns
+   about. The holdout did its job and failed it, but the next agent should
+   motivate ideas from TRAIN numbers only.
+
+### Verdict
+KEEP the Exp 024 conclusion: 173 evaluations, 0 CONFIRMED, holdout 3/3 FAILED.
+The plan is complete. The next direction (stop, or a basis / funding-carry
+study, which needs spot data and a two-leg engine: Level 3) is the owner's.

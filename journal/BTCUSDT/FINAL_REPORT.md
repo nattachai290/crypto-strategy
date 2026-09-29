@@ -220,10 +220,12 @@ delivered what it promised:
 |---|---|---|
 | `cost_r` across the 7 timeframes | 0.505 R (1m) to 0.019 R (4h), a **26:1 spread** | 0.016-0.023 R on **all seven**, a 1.4:1 spread |
 
-That is the round's methodological win: **the cost problem that dominated
-Rounds 1-4 was an artefact of how the timeframe variants were built, and it is
-removable.** A signal can finally be compared across timeframes without cost
-deciding the answer.
+That is the round's methodological result, with its limit stated (corrected in
+Exp 025): **for a multi-day hold, `--mode time` keeps cost at ≈ 0.02 R on every
+timeframe**, so a multi-day signal can be compared across timeframes without
+cost deciding the answer. It does not make short-horizon trading affordable:
+a trade held for minutes or hours still pays ≈ 0.11% of price against a small
+move, exactly as in Rounds 1-4.
 
 With cost solved the answer did not change. **038 (00:00 opening-range break, 4h)
 became the project's first and only PASS + ALPHA** - valid 155 trades, gross
@@ -257,7 +259,7 @@ Round 5 also settled three more things:
   price against a 0.108% cost, and went to VALID at **-0.098**, REJECT at all
   seven timeframes. BTC's multi-day overshoots do not come back within five days.
 - **Funding carry is the one hypothesis untested rather than refuted.** It is
-  INCONCLUSIVE (100 TRAIN trades, 28 VALID) because a 96h hold and a 0.15%
+  INCONCLUSIVE (100 TRAIN trades, 28 VALID) because a 96h hold and a 0.015%-per-8h
   extreme-funding threshold cannot produce 100 VALID trades. It is the only idea
   in 173 evaluations that earns from funding instead of from price, and measuring
   it needs a different instrument, not another idea file.
@@ -287,3 +289,9 @@ confirmed anything.**
 _Corrections (Exp 023, 2026-09-29): the Thai summary's reasons for 023's refusal,
 the ATR stop figures and the holdout count; 20 → 22 benchmarks; the 029
 opening-range column in §3 is not a same-signal comparison. No verdict changed._
+
+_Corrections (Exp 025, 2026-09-29): the funding threshold is 0.015% per 8 h
+(0.00015), not 0.15%; `--mode time` removes the cross-timeframe cost spread for
+multi-day holds only. 038 is a single positive timeframe (1h −0.022, 30m
++0.016, 15m −0.042) whose 4h opening range is the whole 00:00–04:00 bar, and its
+selection cited 029's VALID gross. No verdict changed._
