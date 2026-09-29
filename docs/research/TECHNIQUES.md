@@ -385,16 +385,3 @@ entries inside the same trend filters do as well. A long-only result on
 - `funding_extreme` as a trigger: 23 train trades (idea 003). It is a crossing
   on 8h data, so it almost never fires on 15m bars. Use `funding_not_crowded`
   as a filter on a price trigger instead.
-
-## TradingView ports (PLAN.md §13)
-
-Blocks that reproduce published TradingView scripts. The author's formulas are
-kept, and the docstrings state which entry rule was chosen for scripts that
-are indicators:
-- `ut_bot(key, atr_n)`: UT Bot Alerts, the close crossing an ATR trailing stop.
-- `squeeze_momentum(length, mult_kc)`: LazyBear's squeeze release, in the
-  direction of the linreg momentum value.
-- `wavetrend(n1, n2, level)`: LazyBear's WaveTrend, wt1/wt2 crosses beyond ±level.
-- `macd_cross(fast, slow, signal)`: TradingView's built-in MACD Strategy.
-- The ChartArt RSI + Bollinger port reuses `rsi_revert` + `bb_revert` with
-  `trigger_mode: all`.

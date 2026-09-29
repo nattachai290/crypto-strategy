@@ -490,14 +490,6 @@ def test_recipe_blocks_causal() -> None:
     cal = pd.DataFrame({"close": np.arange(len(idx), 0, -1, dtype=float)}, index=idx)
     mt = np.asarray(RC.t_month_turn_fade(cal, None, before=2, after=0, lookback=1))
     fired = [d.day for d, s in zip(idx, mt) if s != 0]
-    # TradingView ports (PLAN.md section 13): Pine linreg(y, n, 0) = the fitted
-    # line's value at the newest point; checked against numpy's polyfit
-    y = pd.Series(np.random.default_rng(4).normal(0, 1, 300).cumsum())
-    lr = RC._linreg_end(y, 20)
-    ref = [np.polyval(np.polyfit(np.arange(20), y.iloc[t - 19:t + 1], 1), 19) for t in (19, 150, 299)]
-    check("linreg (squeeze_momentum) matches a least-squares fit at the newest bar",
-          np.allclose(lr.iloc[[19, 150, 299]].to_numpy(), ref, atol=1e-9) and lr.iloc[:19].isna().all(),
-          f"{lr.iloc[[19, 150, 299]].round(6).tolist()} vs {np.round(ref, 6).tolist()}")
     check("month_turn_fade uses the real month length (Feb 2024: 28th, 29th, 1st)",
           fired == [28, 29, 1], str(fired))
     sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],

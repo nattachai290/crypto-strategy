@@ -819,31 +819,8 @@ writes them.
   016, Exp 024). It is run anyway because the owner asked for this script.
   Record it as a port, not as a retry.
 
-### Ports T2–T5 (picked by the planner at the owner's request)
-The owner asked the planner to choose. The choice is by **popularity and by
-different logic**, not by any backtest: none of these was run on market data
-before being written down. Four new Level 2 blocks were added in
-`src/recipes.py`. They pass test 7 (causal, output shape), and the regression
-helper behind `squeeze_momentum` is checked against a least-squares fit.
-
-| # | files | TradingView script | block (author defaults) | what is ours, not the author's |
-|---|---|---|---|---|
-| T2 | `045_tv_ut_bot*` | UT Bot Alerts (QuantNomad) | `ut_bot(key 1.0, atr_n 10)`: close crosses the ATR trailing stop | stop/time exit (it reverses in TradingView) |
-| T3 | `046_tv_squeeze_momentum*` | Squeeze Momentum Indicator [LazyBear] | `squeeze_momentum(length 20, mult_kc 1.5)`, keeping LazyBear's use of the KC multiplier for the BB | **the entry rule** (it is an indicator): the release bar, in momentum's direction; stop/time exit |
-| T4 | `047_tv_wavetrend*` | WaveTrend Oscillator [LazyBear] | `wavetrend(n1 10, n2 21, level 53)` | **the entry rule** (it is an indicator): wt1/wt2 cross beyond ±53; stop/time exit |
-| T5 | `048_tv_macd_strategy*` | TradingView built-in "MACD Strategy" | `macd_cross(12, 26, 9)`: MACD − signal crosses 0 | stop/time exit (it reverses in TradingView) |
-
-The exit grid for every port is `stop.pct` [4%, 6%] × `max_hold_hours`
-[120, 480] at 4h, the same as T1. One known difference: Pine seeds an EMA
-with an SMA, while pandas seeds it with the first value. This only affects
-the first few dozen bars of the data.
-
-**Round size:** 5 ports × 7 timeframes × 2 coins = **70 evaluations**. The
-1m files of T2 (`ut_bot` is a per-bar loop) and T3 (rolling windows) are the
-slow ones.
-
 **Pre-registration** (BTC journal Exp 031 and ETH journal Exp 006, before the
-first run; it covers all five ports):
+first run):
 1. TRAIN signal counts of the 4h source on each coin. The same-bar coincidence
    of the two crosses may be rare. Under 150 means expect INCONCLUSIVE; run
    it anyway and do not change the file.
