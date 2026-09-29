@@ -258,3 +258,153 @@ so they cannot be forgotten when the results are read:
    hypothesis - the same selection error that BTC Exp 029 criticised in Round 6.
 
 No idea file is edited. The SOL HOLDOUT stays sealed.
+
+---
+
+## Exp 002 - SOLUSDT Round S1: the first PASS + SKILL in the project, and the pre-`--final` record
+
+**Date:** 2026-09-29
+**Status:** complete (49 evaluations + controls; the holdout run is the next step,
+written up separately in Exp 003)
+
+**49 evaluations: 1 PASS, 19 WATCH, 19 REJECT, 10 INCONCLUSIVE.** SOL project
+total **49**. HOLDOUT still sealed at the time of writing.
+
+**The falsifiable prediction in Exp 001 held.** I wrote that measured VALID
+`cost_r` would be about 0.020-0.024 R and not the 0.1038 R that
+`PLAN.md` §12 item 3's formula gives. Measured: **min 0.0123, median 0.0182, max
+0.0286**, with `size_skips` 0 on TRAIN and VALID throughout. The formula
+overstates the real cost by roughly 20x because it multiplies the *absolute*
+funding rate by the number of settlements when a position pays the signed sum -
+and SOL's TRAIN funding is *negative* on average. Had I taken the plan's
+formula at face value I would have stopped both rounds before starting them.
+
+### The PASS: 041 `momentum` + `funding_not_crowded` + `volume_spike` at 5m
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-10..2022-12 | 132 | | | **+0.1999** | | +11.7% | 8.8% |
+| valid 2023-2024 | 112 | +0.3216 | 0.0182 | **+0.2656** | **[+0.0195, +0.5274]** | +15.3% | 7.4% |
+| valid x1.5 cost | | | | +0.2582 | | | |
+
+Frozen: `momentum(n 288, atr_k 10.392)` + `funding_not_crowded(0.0002)` +
+`volume_spike(n 1440, k 1.5)`, 6% `pct` stop, no TP, trail armed 2R trailing
+20.8 ATR, 96 h hold, both directions.
+
+**`baseline.py`: SKILL.** Only **2%** of random-any-time runs and **1%** of
+random-same-filters runs beat it - the idea is above the 95th percentile of
+*both* modes on *both* TRAIN and VALID.
+
+**`benchmark.py`: ALPHA.** alpha **+12.95%/yr, CI [+1.8%, +25.9%]** on VALID and
++10.68%/yr CI [−2.6%, +23.7%] on TRAIN, **beta +0.0089**, Sharpe 1.59 against
+buy & hold's 2.05, maxDD 5.3% against 44.9%, time in market 42%.
+
+### The four pre-`--final` checks that `PLAN.md` §12 requires, written before the run
+
+**1. The seven clocks, and whether the PASS is the best one of them.**
+
+| clock | TRAIN mean R | VALID mean R | VALID CI low | trades | stress | verdict |
+|---|---|---|---|---|---|---|
+| 1m | +0.0921 | +0.1670 | −0.1458 | 73 | +0.1596 | INCONCLUSIVE |
+| 3m | +0.2438 | +0.0675 | −0.1509 | 110 | +0.0600 | WATCH |
+| **5m** | **+0.1999** | **+0.2656** | **+0.0195** | **112** | **+0.2582** | **PASS** |
+| 15m | +0.2276 | +0.0265 | −0.2059 | 100 | +0.0192 | WATCH |
+| 30m | +0.1237 | +0.1579 | −0.0688 | 132 | +0.1504 | WATCH |
+| 1h | +0.2066 | +0.2504 | −0.0220 | 103 | +0.2430 | WATCH |
+| 4h | +0.3097 | +0.2110 | −0.0701 | 95 | +0.2035 | INCONCLUSIVE |
+
+**All seven clocks are positive on both TRAIN and VALID** - 14 of 14. **The PASS
+is the best of the seven, and that is the selection risk Round 6 flagged on BTC
+039, so it is stated plainly: the margin over second place is small (+0.2656
+against 1h's +0.2504) and the honest central estimate across clocks is nearer
++0.21, not +0.27.** What is different from BTC 039 is that its neighbours were
+not close - 039 went from +0.2223 at 5m down to +0.026 at 30m. Here four of the
+seven clocks are above +0.15.
+
+**2. The per-year split**, recomputed from the trade list, not read off the
+summary: **2023 +0.361 on 56 trades, 2024 +0.170 on 56 trades.** Both years
+positive, equal trade counts. **2023 carries about two thirds of the VALID
+result**, and 2023 was a bull year, so this is the same shape that sank 022, 038
+and 039 - it is better than those only because 2024 is solidly positive rather
+than marginal.
+
+**3. The long/short counts, and the two legs separately** - this is the most
+important single line in this entry:
+
+| leg | trades | mean R | median R | sum R |
+|---|---|---|---|---|
+| long | 55 | **+0.3342** | +0.2200 | +18.38 |
+| short | 57 | **+0.1994** | +0.2606 | +11.37 |
+
+**Both sides are positive on their own, and they are almost equally
+populated.** Every previous positive result in this project was either
+one-sided or a disguised long; this one is not. Exit mix 49% stop, 50% time,
+0% TP, win rate 54.5%, profit factor 1.61.
+
+**4. The same family on the other three coins** - and this is the strongest
+supporting evidence in the round:
+
+| coin | VALID mean R across the seven clocks | TRAIN mean R across the seven clocks | verdicts |
+|---|---|---|---|
+| BTCUSDT | +0.145, +0.063, +0.095, **+0.174**, +0.119, +0.120, −0.024 | +0.072, +0.138, +0.042, +0.185, +0.144, +0.127, +0.063 | 6 WATCH, 1 REJECT |
+| ETHUSDT | **+0.276**, +0.061, +0.063, +0.107, +0.065, +0.017, +0.129 | +0.195, +0.049, +0.102, +0.109, +0.136, +0.263, +0.161 | 7 WATCH |
+| BNBUSDT | +0.058, +0.171, −0.075, −0.006, −0.022, −0.061, −0.129 | +0.250, +0.255, +0.039, +0.182, +0.051, +0.124, +0.173 | 1 WATCH, 5 REJECT, 1 INC |
+| **SOLUSDT** | +0.167, +0.067, **+0.266**, +0.026, +0.158, +0.250, +0.211 | +0.092, +0.244, +0.200, +0.228, +0.124, +0.207, +0.310 | **1 PASS**, 4 WATCH, 2 INC |
+
+**TRAIN is positive on all seven clocks on all four coins - 28 of 28.** That is
+not a selection, it is the parameter-selection period for every one of those 28
+configurations, and it is the first thing in this project that is positive
+everywhere by that much margin.
+
+### Why this is not 038 or 039, which also passed the gates
+
+The project has now had four holdout runs and all four failed. The three that
+failed after passing were:
+
+| config | coin | baseline | benchmark | holdout |
+|---|---|---|---|---|
+| 022 | BTC | SKILL (a *vacuous* SKILL - a regime rule, where modes A and B are the same experiment) | NO_EDGE | FAILED |
+| 038 | BTC | **DRIFT** | ALPHA | FAILED, gross negative |
+| 039 | BTC | **DRIFT** | ALPHA | FAILED, beaten by a random entry |
+
+**Every genuine PASS the project has produced was DRIFT - the entry had no
+measured timing skill and the return came from holding the asset both ways.**
+041@5m on SOL is the first configuration in 259+ evaluations that is
+**PASS + SKILL with a non-vacuous SKILL**: only 1-2% of random entries with the
+same stops, holds and filters match it, on both periods. That is the one
+property the three failures did not have.
+
+Two other things the failures did not have: **both legs positive independently**
+(long +0.334, short +0.199), and **TRAIN positive at 7/7 clocks on all four
+coins**.
+
+The family has read SKILL once before: **BTC 041@15m** (+0.1738, CI [+0.004,
++0.351], 88 trades), which is a WATCH and never saw a holdout. So this is the
+second coin on which this family beats random timing, and the first on which it
+also cleared every gate.
+
+### What is still wrong with it, stated before the run rather than after
+
+1. **The CI lower bound is +0.0195.** The gate is `> 0`. It clears by less than
+   2% of the mean. This is a thin pass and it should be described as one.
+2. **2023 carries two thirds of VALID.**
+3. **The PASS is the maximum of seven clocks**, so part of its number is the
+   choice of clock.
+4. **SOL's TRAIN has the two data gaps** (Exp 001b, owner-approved): an upper
+   bound of 2.2% of TRAIN signals affected, biased against shorts. It cannot
+   manufacture a PASS, which is decided on VALID, and the holdout - the test that
+   matters - is clean.
+5. **SOL and BNB perps are thinner than BTC/ETH**, so real slippage is likely
+   higher than the 0.02% modelled. The x1.5 cost stress passed at +0.2582, which
+   is the protection §12 asks for, and it has room to spare.
+
+### The decision
+
+`--final` is **permitted and required**: the verdict is PASS, and both
+`baseline.py` (SKILL) and `benchmark.py` (ALPHA) say so, so both of the two
+routes `AGENTS.md` step 7 allows are open. The plan routes a PASS through §5, and
+§5 step 2 is `--final`. **I am not going to refuse to spend this holdout**, and
+the reasoning is specific rather than optimistic: the prior from 038 and 039 is
+that a DRIFT result dies on the holdout, and this is not a DRIFT result. That is
+the one substantive difference, and the holdout is the instrument that tests it.
+The SOL holdout has never been touched.
