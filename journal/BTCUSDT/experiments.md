@@ -1946,3 +1946,143 @@ survives the holdout, or a clean NO_EDGE on all five plus a RISK_EDGE reported
 to the owner. Both are useful. What is *not* acceptable is a CAGR comparison
 dressed up as an edge, which the plan forbids and which the 1% sizing makes
 guaranteed to fail.
+
+---
+
+## Exp 020 - Round 3 results: two PASSes, and no timing rule beats holding BTC
+
+**Date:** 2026-09-29
+**Status:** complete. 35 evaluations: **2 PASS, 11 WATCH, 19 REJECT, 3 INCONCLUSIVE.**
+Project total 96 evaluations. 13 `baseline.py` + 13 `benchmark.py` runs.
+HOLDOUT **not** spent - see the owner question at the end.
+
+### Ideas tested (VALID mean R / n trades by timeframe)
+
+| idea | 1m | 3m | 5m | 15m | 30m | 1h | 4h |
+|---|---|---|---|---|---|---|---|
+| 023 regime long/flat | -0.656/1279 | -0.147/2252 | -0.066/2078 | +0.035/742 | +0.053/348 | **+0.115/198 PASS** | +0.056/113 |
+| 024 regime long/short | -0.500/1441 | -0.188/2172 | -0.109/2350 | -0.043/2799 | +0.025/509 | +0.042/250 | -0.002/137 |
+| 025 regime + ADX | -0.466/1544 | -0.126/2406 | -0.072/2044 | +0.005/701 | +0.020/382 | +0.037/200 | +0.192/54 |
+| 026 regime + vol filter | -0.599/1502 | -0.167/2312 | -0.076/2709 | -0.009/903 | +0.020/489 | +0.047/263 | +0.170/61 |
+| 027 multi-day pullback | -0.360/1789 | -0.111/1659 | -0.058/987 | +0.071/345 | **+0.197/175 PASS** | +0.374/97 | +0.203/30 |
+
+### The two PASSes
+
+**023_trend_regime_long, 1h** (eval 087d112106) - long while close > EMA(200) on
+1h, flat otherwise, 10% crash stop, 24-72h re-check interval, taker entry.
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 290 | | | +0.0576 | | | |
+| valid 2023-2024 | 198 | +0.1369 | **0.0221** | **+0.1148** | **[+0.014, +0.220]** | +10.4% | **4.8%** |
+| valid x1.5 cost | | | | +0.0996 | | | |
+
+**027_multiday_pullback_long, 30m** (eval 19897b3269) - `pullback` + `trend_ema`
+50/200, long, 2-4 day hold, 4% stop.
+
+| split | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|
+| train 2020-2022 | 251 | | | +0.0712 | | | |
+| valid 2023-2024 | 175 | +0.2332 | 0.0364 | **+0.1967** | **[+0.025, +0.373]** | +16.8% | 8.6% |
+| valid x1.5 cost | | | | +0.1818 | | | |
+
+Both cost_r figures are the point: **0.022 and 0.036 R against Round 2's false
+PASS at 0.106.** A regime rule with a 10% stop and a pullback with a 4% stop are
+the first configurations in this project where the cost of trading is genuinely
+small, and that is what made positive expectancy possible. Exp 012's mechanism -
+`cost_r = cost / stop_pct` - is the only thing in this project that has reliably
+produced a result.
+
+### The controls: 13 configurations, and not one beats holding BTC
+
+| config | verdict | baseline.py | benchmark.py |
+|---|---|---|---|
+| 023 regime long, 1h | **PASS** | **SKILL** | **NO_EDGE** |
+| 023 regime long, 30m | WATCH | SKILL | NO_EDGE |
+| 023 regime long, 15m | WATCH | SKILL | NO_EDGE |
+| 023 regime long, 4h | WATCH | DRIFT | NO_EDGE |
+| 027 multi-day pullback, 30m | **PASS** | **DRIFT** | **NO_EDGE** |
+| 024, 025, 026 regime variants (8 configs) | WATCH | DRIFT | NO_EDGE |
+| 027 at 1h / 15m | WATCH | DRIFT | NO_EDGE |
+| Rounds 1-2 best (021, 022, 017, 018, 019 - 5 configs, R3.6) | WATCH/PASS | DRIFT | NO_EDGE |
+
+**Every `benchmark.py` run in the project's history is NO_EDGE. 21 of 21.** No
+configuration has ALPHA, none is RISK_EDGE. The best case, 023 at 1h:
+
+| period | trades | time in market | beta | alpha/yr [95% CI] | CAGR idea / B&H | maxDD idea / B&H | Sharpe idea / B&H |
+|---|---|---|---|---|---|---|---|
+| TRAIN 2020-22 | 290 | 76% | 0.06 | +1.8% [−2.4, +6.2] | +5.1% / +32.0% | 10.9% / 76.7% | 0.85 / 0.76 |
+| VALID 2023-24 | 198 | 78% | 0.10 | +0.3% [−5.6, +4.5] | +10.4% / +137.3% | 4.5% / 26.3% | 1.59 / 2.01 |
+
+It is a genuinely smoother ride - a sixth of buy & hold's drawdown - and it is
+still NO_EDGE, because its Sharpe is *below* buy & hold's on VALID (1.59 against
+2.01) and its alpha is indistinguishable from zero on both periods. Not
+RISK_EDGE either: that verdict needs a better Sharpe on **both** periods, and
+TRAIN is the only period where it wins (0.85 against 0.76).
+
+### What we learned
+
+1. **The tightened baseline earned its place immediately.** 027 at 30m passed
+   every gate on VALID (+0.1967, CI [+0.025, +0.373]) and is **DRIFT**: on TRAIN
+   its +0.0712 is below the 95th percentile of random entries at any time
+   (+0.0792) and well below random entries with the same filters (+0.1428), with
+   6% of same-filter random runs beating it. Under the pre-Exp-019 rule, which
+   compared VALID only, this would have looked like SKILL and been a candidate.
+   It is the same failure mode as 022, caught one step earlier, and the only
+   reason it was caught is that the control was tightened.
+
+2. **`SKILL` is nearly vacuous for a regime rule, and the output shows it.** For
+   023, baseline.py's mode A and mode B rows are *identical* (+0.0215/+0.0347
+   and +0.0788/+0.0962, 0% in both), because `trend_state` has no separate
+   filters: the trigger *is* the filter, so "random entries with the same
+   filters" is not a different experiment. A regime rule will therefore almost
+   always read SKILL, and reading that as evidence of a trading edge would be a
+   mistake. The plan says as much ("baseline.py will usually say DRIFT for
+   regime ideas; for this round the benchmark is the test that matters"), and
+   here it read SKILL and the benchmark still said NO_EDGE.
+
+3. **Cost is the whole game, and this is the first round where that produced
+   positive expectancy rather than a cost warning.** `cost_r` 0.022 (023) and
+   0.036 (027) versus 0.106 for the 30m 1%-stop configuration that produced the
+   project's only PASS, which the holdout killed. The 1m-5m REJECTs across all
+   five Round 3 ideas (cost_r 0.5-0.2 R) are the same arithmetic as Exp 016, now
+   seen for the third round running.
+
+4. **Adding a filter to a regime rule made it worse, three times out of three.**
+   023 (plain EMA regime) is positive at 30m/1h/4h. 025 (+ADX) and 026 (+vol
+   filter) are positive at fewer timeframes and lower: at 1h, +0.115 becomes
+   +0.037 and +0.047. Both filters are supposed to remove the whipsaw that
+   costs the regime rule its drawdown, and both reduce the return instead. The
+   honest reading is that on BTC the whipsaw is not what makes a trend regime
+   rule expensive - the re-check interval and the beta are, and the filters only
+   add missed trend.
+
+5. **Shorting the down-regime does not pay (R3.2 answered).** 024 is worse than
+   023 at every timeframe where both trade, and negative on VALID at 15m
+   (-0.043) and 4h (-0.002). The short leg of a long/short regime rule costs
+   more than it earns, which is the pre-Exp-015 finding re-confirmed on a correct
+   engine and with a regime rule rather than a breakout.
+
+### Verdict
+
+`NO_EDGE`, plainly. Round 3's question was "is there a rule for when to be in
+BTC that beats holding BTC", and the answer across 35 evaluations, 26 controls
+and two PASSes is **no**. Two configurations have positive expectancy on both
+TRAIN and VALID with confidence intervals that exclude zero, and both are
+dominated by simply owning the asset: 023 by 4.5% against 26.3% drawdown but at
+a Sharpe of 1.59 against 2.01, 027 by alpha indistinguishable from zero.
+
+That is a real and useful result, and it is the answer the plan asked for. It
+also means **the holdout should not be spent on 023**, because PLAN.md Round 3
+sends only `ALPHA + PASS` to the holdout and 023 is NO_EDGE. Spending the
+project's last clean holdout on a rule that its own benchmark has already
+previewed would burn the lock for a foregone conclusion. That is a question for
+the owner and it is asked below rather than answered here.
+
+For Round 4: every edge that has come from BTC's *direction* is now closed -
+six long entries DRIFT or holdout-FAILED, one regime rule NO_EDGE, the short side
+loses. The remaining untested hypotheses in this project do not come from
+direction at all: previous-day high/low, the opening range, funding windows and
+liquidation flushes. Round 4 should look there, and `benchmark.py` stays the
+judge, because a rule that cannot beat holding BTC is not worth a strategy card
+however good its own mean R looks.

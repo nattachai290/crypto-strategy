@@ -1,0 +1,48 @@
+{
+  "name": "024_trend_regime_both_tf3",
+  "hypothesis": "R3.1 asks whether a long-or-flat trend regime is a calmer way to hold BTC. This asks the other half of the same question and it is the one that decides whether the family is worth more than a smoother ride: when the regime is DOWN, is the right answer to be flat, or to be short? The counterparty for a short in a down-regime is the long crowd that has not yet capitulated, and the cost of being wrong is a whipsaw back through a 200-bar EMA. Buy & hold's 2022 was -64% and a rule that was short for even part of that would beat it outright; a rule whose short leg loses money is not a regime rule, it is a long rule with a fee, which is why the kill condition here is written on the short leg's own gross_r and not on the combined mean R. [Timeframe variant of 024_trend_regime_both, 60m -> 3m, mode chart: same bar counts and ATR multiples, hold x0.05, pct stop x0.224.]",
+  "strategy": "recipe",
+  "tf": 3,
+  "params": {
+    "triggers": [
+      {
+        "type": "trend_state",
+        "n": 200
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0224,
+      "min_atr": 1.5,
+      "max_atr": 12.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 2.4,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.n": [
+      100,
+      200,
+      400
+    ],
+    "max_hold_hours": [
+      1.2,
+      3.6
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "024_trend_regime_both",
+  "variant_mode": "chart"
+}

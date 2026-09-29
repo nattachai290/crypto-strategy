@@ -1,0 +1,54 @@
+{
+  "name": "025_trend_regime_adx_tf3",
+  "hypothesis": "A close-versus-EMA regime rule is a price rule, and price rules fail in exactly one market: the one with no direction. While BTC oscillates around a 200-hour EMA the rule flips on every re-check interval, pays a round trip each flip, and ends up long or short at random - the whipsaw that gives back the drawdown the rule was built to avoid. ADX is the cheapest available measure of whether there is a direction at all, so requiring ADX above 20-25 should keep the rule out of the regime while it is chop. The cost of that filter is time out of the market during the early part of every new trend, which is the part that does the most work, so this idea is a genuine trade-off and not an obvious improvement: it is worth running precisely because the honest expectation is that it cuts drawdown and costs alpha. [Timeframe variant of 025_trend_regime_adx, 60m -> 3m, mode chart: same bar counts and ATR multiples, hold x0.05, pct stop x0.224.]",
+  "strategy": "recipe",
+  "tf": 3,
+  "params": {
+    "triggers": [
+      {
+        "type": "trend_state",
+        "n": 200
+      }
+    ],
+    "filters": [
+      {
+        "type": "adx_min",
+        "n": 14,
+        "min": 20
+      }
+    ],
+    "direction": "long",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0224,
+      "min_atr": 1.5,
+      "max_atr": 12.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 2.4,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.n": [
+      100,
+      200,
+      400
+    ],
+    "filters.0.min": [
+      20,
+      25
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "025_trend_regime_adx",
+  "variant_mode": "chart"
+}

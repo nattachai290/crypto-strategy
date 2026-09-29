@@ -1,0 +1,23 @@
+{
+  "name": "023_trend_regime_long",
+  "hypothesis": "Exp 017 showed that every long entry this project has tried earns about the same as a random long entry inside the same filters, so the interesting question is not WHEN to buy but WHETHER TO BE IN THE MARKET AT ALL. Being long only while BTC trades above its own multi-day trend should keep the compounding during the regimes that carry it and be flat through the ones that do not: buy & hold lost 64% in 2022 and 76.7% peak-to-trough over 2020-22, and a large part of that is unbroken drift below the trend rather than any single crash. The claim is deliberately modest - this is not an alpha claim, it is that the same return arrives with a fraction of the drawdown, which is a HIGHER SHARPE, not a higher CAGR, because 1% risk sizing with a 10% stop keeps only ~10% of the account in BTC and a small beta caps CAGR by construction. The engine cannot exit when the regime ends, so max_hold_hours is a re-check interval and each re-entry pays a real round trip; that cost is 0.009 R at this stop width, cheap enough for the rule to be honest about it.",
+  "strategy": "recipe",
+  "tf": 60,
+  "params": {
+    "triggers": [{"type": "trend_state", "n": 200}],
+    "filters": [],
+    "direction": "long",
+    "stop": {"type": "pct", "pct": 0.10, "min_atr": 1.5, "max_atr": 12.0},
+    "tp": {"type": "none"},
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 48,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.n": [100, 200, 400],
+    "max_hold_hours": [24, 72]
+  },
+  "execution": {"entry_mode": "taker", "entry_offset_atr": 0.0, "entry_fill_ratio": 1.0}
+}

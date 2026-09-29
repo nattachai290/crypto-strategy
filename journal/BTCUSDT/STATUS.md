@@ -35,13 +35,29 @@ Research plan: `docs/research/PLAN.md`._
 > any new information. VALID was carried by 2023 (+0.3496) over 2024 (+0.1355),
 > and a CI lower bound of +0.0023 is indistinguishable from zero. See
 > `experiments.md` Exp 017.
+>
+> **Exp 020 (Round 3) - the headline answer to the project's question.**
+> 35 evaluations on "when to be in BTC", 13 `baseline.py` + 13 `benchmark.py`
+> runs. **Two PASSes** - 023 (long/flat regime, 1h: valid +0.1148, CI
+> [+0.014, +0.220], cost_r **0.022**, maxDD 4.8%) and 027 (multi-day pullback,
+> 30m: valid +0.1967, CI [+0.025, +0.373], cost_r 0.036) - and **every
+> `benchmark.py` run in the project is NO_EDGE: 21 of 21.** No configuration has
+> alpha and none is RISK_EDGE. **No tested timing rule beats simply holding BTC
+> after costs.** 027 is DRIFT (its TRAIN sits below random entries, caught by
+> the Exp 019 tightening); 023 is NO_EDGE by its own benchmark, Sharpe 1.59
+> against buy & hold's 2.01 on VALID despite a sixth of its drawdown. The
+> holdout was **not** spent - see the owner question in `experiments.md`
+> Exp 020.
 
 ## Where things stand
 
 - **Round 1 is done: 40 evaluations, 0 PASS, 5 WATCH, 29 REJECT, 6 INCONCLUSIVE.**
   Project total 58. Pre-registration and full results: `experiments.md` Exp 016.
 - **Round 2 is done: 2 evaluations, 1 WATCH (DRIFT/NO_EDGE), 1 PASS whose holdout
-  FAILED.** Project total 61. Details: `experiments.md` Exp 017.
+  FAILED.** Details: `experiments.md` Exp 017.
+- **Round 3 is done: 35 evaluations, 2 PASS, 11 WATCH, 19 REJECT, 3 INCONCLUSIVE.**
+  Project total 96. **Answer: no timing rule beats holding BTC.** Every
+  `benchmark.py` run in the project is NO_EDGE (21/21). Details: Exp 020.
 - **The cost finding holds and is the most reusable thing here.** Every long
   structure tested is negative at 1m/3m/5m and positive at 30m/1h/4h, on TRAIN
   as well as on VALID, for two different entries. The cause is measured, not
@@ -128,20 +144,27 @@ Neighbouring timeframes agree (1h: train +0.099 / valid +0.110; 4h: +0.058 /
 
 ## Next step
 
-**Round 2 is next** (`PLAN.md` §4): two exit-only evaluations on idea 018 at
-30m, grids as the plan specifies, entry frozen. The diagnosis to act on is that
-the exits are inert — `trail_at` 1.5R with a 2.83% stop needs a 4.2% move, so
-the TP never triggers and 69% of trades are closed by a 24h clock, which means
-its +0.102 R is measuring drift rather than managing a trade.
+Round 3's answer is negative and it closes the whole "when to be long BTC"
+family: 96 evaluations, 21/21 NO_EDGE on the benchmark, one PASS whose holdout
+failed, and two PASSes that the benchmark says are dominated by owning the asset.
 
-Then Round 3 (swing horizons, written at 1h) and Round 4 (new blocks). Exp 016
-adds three instructions for those rounds:
+Round 4 is the last round and the plan says it should look for edges that do
+**not** come from BTC's direction: previous-day high/low, the opening range,
+funding windows, liquidation flushes. `benchmark.py` stays the judge — a rule
+that cannot beat holding BTC is not worth a strategy card however good its own
+mean R looks.
 
-1. Write swing ideas at **1h, not 15m** — every long structure is negative
-   below 30m and the reason is `cost_r`, which is 0.505 R on 1m.
-2. Re-test 005's long leg as its own idea **keeping the `volume_spike` filter
-   and the 8-hour range**. Its gross edge of +0.309 R is the largest in the
-   project and idea 017 destroyed it by loosening the entry.
-3. Never build a weekday or session-hour filter, never retry mean reversion,
-   squeeze→expansion, funding crowding, `taker_flow`/`funding_not_crowded`, or
-   any short-only breakout.
+Three things to raise with the owner 🛑:
+1. **Whether to spend the holdout on 023** (PASS + SKILL but NO_EDGE). The plan
+   sends only ALPHA + PASS to the holdout; the benchmark says NO_EDGE. My
+   recommendation is not to spend it, and I have not.
+2. Whether partial take-profit or scale-in is worth an engine proposal — Round 2
+   measured that exit management redistributes outcomes but adds none, so the
+   answer looks like no, and I would not bring it again without evidence.
+3. Whether to run Round 4 at all, or stop and write `FINAL_REPORT.md` now: 96
+   evaluations is already a complete answer to the question the project was
+   asked.
+
+Never build a weekday or session-hour filter, never retry mean reversion,
+squeeze→expansion, funding crowding, `taker_flow`/`funding_not_crowded`, any
+short-only breakout, or any long Donchian/pullback entry on 15m-30m.

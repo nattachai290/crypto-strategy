@@ -1,0 +1,56 @@
+{
+  "name": "026_trend_regime_vol_filter_tf5",
+  "hypothesis": "The other way a trend regime rule fails is not chop but panic: a close below a 200-hour EMA during a volatility spike is a liquidation cascade, and re-enting short or exiting long into one is how a drawdown gets bigger rather than smaller. Volatility spikes cluster at the moment of maximum loss for a long holder, so being flat while the fast ATR is an extreme multiple of the slow ATR should remove the worst tail of the distribution without giving up the compounding. The honest cost is that volatility is also elevated in the early stages of large genuine moves, so this filter is late by construction; the question is whether the tail it removes is bigger than the trend it misses. It is also the cheapest possible filter to state and the easiest to falsify, which is why it is worth a slot: if it does nothing, the regime rule's drawdown is not coming from panic bars. [Timeframe variant of 026_trend_regime_vol_filter, 60m -> 5m, mode chart: same bar counts and ATR multiples, hold x0.0833333, pct stop x0.289.]",
+  "strategy": "recipe",
+  "tf": 5,
+  "params": {
+    "triggers": [
+      {
+        "type": "trend_state",
+        "n": 200
+      }
+    ],
+    "filters": [
+      {
+        "type": "vol_regime",
+        "fast": 14,
+        "slow": 100,
+        "lo": 0.0,
+        "hi": 1.3
+      }
+    ],
+    "direction": "long",
+    "stop": {
+      "type": "pct",
+      "pct": 0.0289,
+      "min_atr": 1.5,
+      "max_atr": 12.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 4.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.n": [
+      100,
+      200,
+      400
+    ],
+    "filters.0.hi": [
+      1.2,
+      1.5
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "026_trend_regime_vol_filter",
+  "variant_mode": "chart"
+}

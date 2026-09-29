@@ -284,6 +284,41 @@ entries inside the same trend filters do as well. A long-only result on
   (018@30m, 018@1h, 019@30m, 019@1h, 017@1h) and one holdout FAILED (022@30m,
   whose holdout is spent). Do not open this family again.
 
+**After Round 3 (Exp 020, 35 evaluations, 2 PASS, 21/21 NO_EDGE):**
+
+- **No tested timing rule beats simply holding BTC after costs.** Every
+  `benchmark.py` run in the project is NO_EDGE: no configuration has alpha, and
+  none is RISK_EDGE. If you are comparing a rule to buy & hold, compare **Sharpe
+  and alpha**, never CAGR — 1% risk sizing with a wide stop keeps beta at
+  0.03-0.13 and caps CAGR by construction.
+- **Two configurations have real positive expectancy and are still not
+  strategies.** `trend_regime` long/flat on 1h (long while close > EMA(200),
+  10% stop, 24-72h re-check): valid +0.1148, CI [+0.014, +0.220], `cost_r`
+  **0.022**, maxDD 4.8% — and Sharpe 1.59 against buy & hold's 2.01.
+  `pullback` + `trend_ema` on 30m held 2-4 days: valid +0.1967, CI
+  [+0.025, +0.373], `cost_r` 0.036 — and DRIFT, because its TRAIN mean R
+  (+0.0712) is below random entries at any time (+0.0792).
+- **`cost_r` is what produced every positive expectancy in this project**, and
+  only two configurations ever got it small: a 10% stop (0.022 R) and a 4% stop
+  at a 2-4 day hold (0.036 R). Both were reached by making the stop *wide* and
+  the hold *long*, never by a better signal.
+- **Filters on a regime rule make it worse.** Adding `adx_min` or a
+  `vol_regime` ceiling to the plain EMA regime cut 1h VALID from +0.115 to
+  +0.037 and +0.047. Both filters are meant to remove the whipsaw; both just
+  miss the early part of every real trend.
+- **Shorting the down-regime does not pay.** `direction: both` on the same
+  regime rule is worse at every shared timeframe and negative on VALID at 15m
+  and 4h. Re-confirmed on a correct engine, and it is a regime rule this time,
+  not a breakout.
+- **`SKILL` is near-vacuous for a regime rule**: when the trigger *is* the
+  filter, `baseline.py`'s mode A and mode B come out identical and the control
+  cannot discriminate. For `trend_state` ideas the benchmark is the real test.
+- **A regime rule's `max_hold_hours` is a re-check interval, not a holding
+  period** - the engine has no "exit when the regime ends", so each interval
+  boundary pays a real round trip when the rule re-enters. `cost_r` per re-entry
+  is 0.009 R at a 10% stop, which is why the interval is cheap enough to ignore
+  and why `cost_r` 0.022 is achievable at all.
+
 **Before the fix (Exp 003–014, history; results unreliable where shorts were involved):**
 
 - Single-indicator strategies (EMA, Donchian, BB, VWAP, Supertrend, ADX,
