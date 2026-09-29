@@ -284,7 +284,7 @@ entries inside the same trend filters do as well. A long-only result on
   (018@30m, 018@1h, 019@30m, 019@1h, 017@1h) and one holdout FAILED (022@30m,
   whose holdout is spent). Do not open this family again.
 
-**After Round 3 (Exp 020, 35 evaluations, 2 PASS, 21/21 NO_EDGE):**
+**After Round 3 (Exp 020, 35 evaluations, 2 PASS, 20/20 NO_EDGE; 4h variants UNSIZABLE per Exp 021):**
 
 - **No tested timing rule beats simply holding BTC after costs.** Every
   `benchmark.py` run in the project is NO_EDGE: no configuration has alpha, and

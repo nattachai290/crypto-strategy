@@ -53,7 +53,7 @@ findings survive from that period.
 | Mean reversion (016 long, example range reversion) and squeeze→expansion (004, 013): negative on VALID after the fix | Answered. Don't repeat those structures |
 | Hold time: Exp 009's "edges need 6–18 h" was measured with the sign bug | Unknown. Keep `max_hold_hours` in the grid when hold time matters to the hypothesis |
 | The 18 evaluations were almost all 15m. 1m, 3m, 1h and 4h were never tested in the current workflow | Every idea now runs on all seven timeframes (§2b) |
-| Research account = 1,000 USDT (`C.EVAL_EQUITY`), 1% risk; every report shows `size_skips` | If `size_skips` > 0, stop and report it: results with skipped trades are biased |
+| Research account = 1,000 USDT (`C.EVAL_EQUITY`), 1% risk; every report shows `size_skips` (TRAIN and VALID) | If `size_skips` > 0 the verdict is `UNSIZABLE` (unless REJECT): results with skipped trades are biased. Say so in the batch summary |
 
 ---
 
@@ -252,7 +252,9 @@ BTC?** For that kind of strategy the opponent isn't random entries, it's
   (return beyond that exposure), CAGR, max drawdown and Sharpe next to buy &
   hold's. Verdicts:
   - **ALPHA**: alpha > 0 on TRAIN and VALID, VALID CI above 0. The rule adds
-    return beyond its exposure. A PASS with ALPHA may go to `--final`.
+    return beyond its exposure. A PASS with ALPHA may go to `--final`. **A
+    regime rule (`trend_state`) goes to `--final` only with ALPHA**: SKILL
+    does not count for it, and `evaluate.py` enforces this (Exp 021).
   - **RISK_EDGE**: no proven alpha, but on both periods Sharpe beats buy &
     hold **and** max drawdown is under half of buy & hold's. That's a calmer
     way to hold BTC, not an edge. 🛑 Report it to the owner, who decides.
@@ -262,9 +264,13 @@ BTC?** For that kind of strategy the opponent isn't random entries, it's
   choice, not a result.** Compare Sharpe and alpha (and its CI), never CAGR.
   For reference, Round 1's 018@30m and 019@1h scored alpha ≈ 0, beta
   0.05–0.12, Sharpe below buy & hold → NO_EDGE (`journal/BTCUSDT/benchmarks.md`).
-- `baseline.py` will usually say DRIFT for regime ideas, because their entries
-  are "any bar in the regime" by design. For this round the benchmark is the
-  test that matters. Still run both and report both.
+- `baseline.py` is nearly meaningless for regime ideas: the trigger is the
+  filter, so its modes A and B are the same experiment, and it said SKILL for
+  023 at 1h (Exp 020). For this round the benchmark is the test that matters.
+  Still run both and report both.
+- The stop must be sizable: a 10% stop can be sized by the 1,000 USDT research
+  account only while BTC < 100,000, and the 4h variant in chart mode doubles it
+  to 20% (sizable only below 50,000). Such results are `UNSIZABLE` (Exp 021).
 
 | # | Idea (source tf 1h) | Recipe sketch |
 |---|---|---|
@@ -317,9 +323,11 @@ line in `TECHNIQUES.md` §2/§3 → pre-registered idea file → `evaluate.py`.
 1. `python src/baseline.py ideas/<idea>.json` and `python src/benchmark.py ideas/<idea>.json`.
    Neither SKILL (entries beat random timing) nor ALPHA (beats buy & hold
    beyond its BTC exposure) → stop here: it is not a strategy. Record it and
-   continue the plan. SKILL or ALPHA → step 2.
+   continue the plan. SKILL or ALPHA → step 2. A regime rule (`trend_state`)
+   needs ALPHA; its SKILL does not count (Exp 021).
 2. `python src/evaluate.py ideas/<idea>.json --final` (one time; refused
-   without PASS + (SKILL or ALPHA)). SKILL is judged on TRAIN and VALID. The
+   without PASS + (SKILL or ALPHA), and for a regime rule without ALPHA).
+   SKILL is judged on TRAIN and VALID. The
    holdout run includes a random-entry control on the holdout, and
    CONFIRMED needs the idea to beat its median (Exp 019).
 3. **FAILED** on holdout → record it (it's now spent for that config), lesson

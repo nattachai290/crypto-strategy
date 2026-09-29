@@ -85,6 +85,7 @@ It selects parameters on TRAIN (2020–2022), tests the frozen choice on VALID
 | `REJECT` | Failed | Record one line of *why* (step 8). Move to a **different** idea |
 | `INCONCLUSIVE` | Fewer than 30 validation trades | Make the idea trade more (looser filter, lower tf) or drop it |
 | `DUPLICATE` | Validation result identical to an earlier evaluation: your change affected no trade | Not new evidence. Record why the change was inert and move on. It can never go to `--final` |
+| `UNSIZABLE` | `size_skips` > 0 on TRAIN or VALID: the 1,000 USDT research account could not size some signals (stop too wide for BTC's 0.001 qty step at high prices), so the trade list is not the rule's | No evidence either way, never goes to `--final`, and no baseline/benchmark. Usually a `pct` stop above ≈ 9% (4h variants in chart mode double the stop): narrow the stop in a new idea file, or drop that timeframe. A losing result with skips stays `REJECT` |
 
 **Step 6b — Random-entry baseline (every WATCH and every PASS):**
 ```bash
@@ -118,7 +119,11 @@ exposure small).
 python src/evaluate.py ideas/NNN_short_name.json --final
 ```
 `--final` refuses unless the verdict is PASS **and** `baseline.py` said SKILL
-or `benchmark.py` said ALPHA. The holdout run also runs the random-entry
+or `benchmark.py` said ALPHA. **A regime rule** (trigger `trend_state`, or any
+trigger in `evaluate.REGIME_TRIGGERS`: it fires on every bar of a market
+state) **needs ALPHA**: its trigger is its filter, so SKILL only says "long in
+up-regimes beats long at random", and the question it must answer is whether
+it beats holding BTC (Exp 021). The holdout run also runs the random-entry
 control on the holdout itself: `CONFIRMED` additionally requires the idea to
 beat the median random entry (modes A and B) on the holdout.
 This runs the frozen choice **one time** on HOLDOUT (2025-01 → 2026-08),
@@ -285,7 +290,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 |---|---|
 | `evaluate.py` | **the research gate**: idea file → TRAIN select → VALID verdict → optional one-time HOLDOUT |
 | `baseline.py` | random-entry control for a WATCH/PASS: SKILL or DRIFT |
-| `benchmark.py` | buy-and-hold comparison for a WATCH/PASS: ALPHA, RISK_EDGE or NO_EDGE. `--final` needs SKILL or ALPHA |
+| `benchmark.py` | buy-and-hold comparison for a WATCH/PASS: ALPHA, RISK_EDGE or NO_EDGE. `--final` needs SKILL or ALPHA (regime rules: ALPHA) |
 | `recipes.py` | building blocks: `TRIGGERS`, `FILTERS`, and `recipe()` that combines them with exits |
 | `tf_variants.py` | writes an idea's variants for every other timeframe (chart mode default, `--mode time` optional) |
 | `strategies.py` | older hand-written strategies (`REGISTRY`), also usable in idea files |
@@ -309,7 +314,11 @@ Engine facts to remember:
 - Short P&L is signed by side (fixed in Exp 015; before that every short was
   inverted). `evaluate.py` runs on a 1,000 USDT research account
   (`C.EVAL_EQUITY`) so every trade can be sized. Each report shows
-  `size_skips`: it must be 0.
+  `size_skips` for TRAIN and VALID: it must be 0, and since Exp 021 a
+  non-REJECT result with skips is `UNSIZABLE`. 1,000 USDT × 1% = 10 USDT of
+  risk; with a 0.001 BTC step a stop of `s` can be sized only while
+  BTC < 10 / (0.001 × s): a 10% stop stops sizing at 100,000, a 20% stop at
+  50,000. `tf_variants.py` warns when a variant's stop is past that line.
 
 ---
 
@@ -356,6 +365,7 @@ holdout is `CONFIRMED`.
 | `grid has N combinations; the limit is 64` | fewer values per grid key |
 | `already evaluated as ...` | the exact idea exists. Change the idea (new file) — `--rerun` only after a code fix |
 | `--final refused` | working as intended. Do not bypass it |
+| Verdict `UNSIZABLE`, or `tf_variants.py` prints `!! ... can be sized only while` | the stop is too wide for the research account at BTC's price. Narrow the `pct` stop in the source idea (new file), or leave that timeframe out with `--tfs`. Never raise `EVAL_EQUITY` or the risk |
 | `refused: N evaluations already share this idea's structure` | the version budget for this idea is used up. Test a structurally different hypothesis. Never add a do-nothing filter just to change the structure |
 | Windows: every combo crashed | fixed; if it recurs, run with `--workers 1` and report it |
 | `test_engine.py` shows FAIL | undo your last change to `src/`, or fix it. Never edit the test to pass |

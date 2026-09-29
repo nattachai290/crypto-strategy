@@ -2086,3 +2086,89 @@ direction at all: previous-day high/low, the opening range, funding windows and
 liquidation flushes. Round 4 should look there, and `benchmark.py` stays the
 judge, because a rule that cannot beat holding BTC is not worth a strategy card
 however good its own mean R looks.
+
+---
+
+## Exp 021 — Review of Round 3: two rule gaps closed, and corrections to Exp 020
+
+**Date:** 2026-09-29
+**Status:** complete (tooling + corrections; no new evaluation, holdout untouched)
+
+### Why
+The Round 3 review (Exp 020) found two gaps in the rules, not in the research:
+
+1. **`size_skips` was reported but did not change any verdict.** Exp 020 does
+   not mention it, yet 32 of the 96 evaluations have VALID skips. 27 are REJECT,
+   mostly 1m–5m variants whose account was drawn down until it could not size
+   a trade. **Five are not REJECT, and all five are 4h variants** whose chart-mode
+   `pct` stop was doubled from the 1h source:
+
+   | eval_id | idea | verdict | valid trades | valid mean R | valid size_skips |
+   |---|---|---|---|---|---|
+   | 334db458ff | 023_trend_regime_long_tf240 | WATCH | 113 | +0.0558 | 807 (train 421) |
+   | af65d82f6c | 025_trend_regime_adx_tf240 | INCONCLUSIVE | 54 | +0.1919 | 348 |
+   | e5f7dc5947 | 026_trend_regime_vol_filter_tf240 | INCONCLUSIVE | 61 | +0.1699 | 444 |
+   | a92e8f27cd | 027_multiday_pullback_long_tf240 | INCONCLUSIVE | 30 | +0.2027 | 6 |
+   | c7955fa3ba | 019_pullback_uptrend_long_tf240 (Round 1) | INCONCLUSIVE | 38 | +0.1685 | 1 |
+
+   Mechanism: 1,000 USDT × 1% = 10 USDT of risk, and BTC's qty step is 0.001,
+   so a stop of `s` can be sized only while BTC < 10 / (0.001 × s). 023 at 4h
+   had a 20% stop, so it traded only while BTC was below 50,000, i.e. in 2023
+   and early 2024 (valid per year: 2023 73 trades, 2024 40). Its trade list is
+   a price-filtered subset of the rule's, and so are its baseline and benchmark
+   (`results/BTCUSDT/{baseline,benchmark}/334db458ff.json`). **None of the five
+   rows is evidence either way.** No PASS is affected: 023@1h (10% stop before its
+   `max_atr` clamp) and 027@30m (4%) have 0 skips.
+
+2. **`--final` accepted SKILL for a regime rule.** 023@1h is PASS + SKILL, so
+   AGENTS.md step 7 allowed its holdout while PLAN.md Round 3 said ALPHA only.
+   The Round 3 agent saw the conflict and asked instead of running it, which
+   was right. SKILL is nearly vacuous for a `trend_state` rule: the trigger is
+   the filter, so baseline modes A and B are the same experiment (identical
+   numbers for 023), and SKILL only says "long in up-regimes beats long at
+   random times". The question such a rule must answer is Round 3's: does it
+   beat holding BTC? 023@1h's benchmark says no (NO_EDGE: alpha +0.3%/yr,
+   CI [−5.6%, +4.5%]; Sharpe 1.59 vs buy & hold 2.01 on VALID).
+
+### Changes (owner-approved, ก + ข)
+- `evaluate.py`: new verdict **`UNSIZABLE`**: `size_skips` > 0 on TRAIN or
+  VALID turns PASS / WATCH / INCONCLUSIVE into UNSIZABLE (a REJECT stays
+  REJECT). TRAIN skips are now recorded (`train_size_skips`) and shown in the
+  report next to VALID's. `--final` also refuses a recorded row with skips.
+  Re-running 023@4h (outside the records) reproduces its row exactly (113
+  trades, +0.0558) and now reads UNSIZABLE with gate `size_skips==0 ❌`.
+- `evaluate.py`: `REGIME_TRIGGERS = {"trend_state"}`; `holdout_ticket` needs
+  benchmark **ALPHA** for any idea whose trigger is in that set. 023@1h's
+  `--final` is now refused with that reason (checked, nothing recorded).
+- `tf_variants.py`: warns (`!! ... can be sized only while BTCUSDT < X`) when
+  an idea's widest `pct` stop cannot be sized at the TRAIN+VALID price peak
+  (108,367), for the source idea and each variant.
+- `test_engine.py` section 10: regime rule SKILL-only → no ticket, ALPHA →
+  ticket; verdicts PASS / UNSIZABLE (valid skips, train skips) / REJECT stays;
+  the sizing formula and warning. ALL CHECKS PASSED.
+- AGENTS.md (verdict table, step 7, engine facts, troubleshooting) and PLAN.md
+  (§2 table, Round 3 tools, §5) say the same thing.
+- Existing rows are **not** edited (rule 4). The five rows above keep their
+  recorded verdicts; read them as UNSIZABLE.
+
+### Corrections to Exp 020 (the journal is append-only)
+1. "EVERY benchmark.py run in the project is NO_EDGE: 21 of 21": there are
+   **20** benchmark files (`results/BTCUSDT/benchmark/`), all NO_EDGE. The
+   conclusion stands.
+2. The Round 3 tables list 023@4h as a WATCH with baseline DRIFT / benchmark
+   NO_EDGE, and 025/026/027@4h as INCONCLUSIVE. All four are UNSIZABLE (above).
+   The "positive at 30m/1h/4h" pattern for 023 rests on 30m and 1h only.
+3. "Spending the project's last clean holdout": the lock is per configuration
+   (`holdout_key`), not one holdout for the project. The point behind it
+   stands: every look at 2025–26 makes the next one less clean, so it is spent
+   only when a result could change a decision.
+4. `evaluations.csv` shows the 022 row changed in the Exp 020 commit. Checked
+   field by field: only float formatting in the last digit (pandas re-writes
+   the file on every append); no value changed.
+
+### Verdict
+KEEP the Exp 020 conclusion: no timing rule tested beats holding BTC (20/20
+NO_EDGE). 023@1h stays PASS + NO_EDGE and does **not** go to the holdout. Next
+is Round 4 (PLAN.md §4): blocks that do not come from BTC's direction.
+Project count unchanged: 96 evaluations, holdout used by `example_trend_breakout`
+(lock test) and 022 only.
