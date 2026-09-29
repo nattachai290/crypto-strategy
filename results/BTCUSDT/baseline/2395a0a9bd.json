@@ -3,7 +3,7 @@
   "name": "021_exit_profit_side",
   "tf": 30,
   "n_per_mode": 200,
-  "timestamp": "2026-09-29 00:57 UTC",
+  "timestamp": "2026-09-29 01:07 UTC",
   "idea_valid_mean_r": 0.09913164035967172,
   "idea_valid_trades": 232,
   "idea_train_mean_r": 0.08904616133904524,
@@ -16,6 +16,10 @@
     "share_random_ge_idea": 0.085,
     "valid_trades_median": 274.0,
     "train_median": 0.00047818216228803,
+    "train_p95": 0.0630091766969838,
+    "train_share_random_ge_idea": 0.02,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": true,
     "idea_beats_p95": false
   },
   "B": {
@@ -26,7 +30,12 @@
     "share_random_ge_idea": 0.34,
     "valid_trades_median": 222.0,
     "train_median": 0.04111663359841426,
+    "train_p95": 0.11572945330160664,
+    "train_share_random_ge_idea": 0.16,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": false,
     "idea_beats_p95": false
   },
-  "verdict": "DRIFT"
+  "verdict": "DRIFT",
+  "rule": "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
 }

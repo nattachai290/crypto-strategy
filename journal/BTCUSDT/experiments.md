@@ -1805,3 +1805,55 @@ either DRIFT or killed by the holdout. Round 3 should test whether anything
 survives at swing horizons with `cost_r` made negligible, and Round 4's
 new blocks (previous-day high/low, opening range, liquidation flush,
 funding windows) are the remaining untested hypotheses in this project.
+
+---
+
+## Exp 019 — Stricter controls after the Round 2 holdout failure
+
+**Date:** 2026-09-29
+**Status:** complete. Owner-approved changes to `baseline.py` and `evaluate.py --final`.
+
+**Numbering note.** The two Round 2 entries above are headed "Exp 017" but
+come after Exp 017 (random-entry baseline) and Exp 018 (benchmark tools).
+Read them as **Exp 017b / 017c** (Round 2 pre-registration and results). The
+journal is append-only, so the headings stay as they are. **The next entry is
+Exp 020.**
+
+### Why
+Round 2's idea 022 was PASS and SKILL, spent the holdout, and FAILED
+(−0.010 R on 211 trades). Its SKILL was measured on VALID only (2023–24, a
+strong bull market), where every long entry gets the same tailwind. The Round 2
+results entry suggested fixing the control, and the owner approved two changes.
+
+### (a) SKILL now needs TRAIN as well as VALID
+`baseline.skill_check()`: the idea's mean R must beat the 95th percentile of
+both random modes (A: any time, B: within the idea's filters) on **TRAIN and
+VALID**. TRAIN contains the 2022 bear market. New test in `test_engine.py` §10.
+
+Re-running the baseline for all 7 configurations evaluated so far:
+
+| config | old verdict (VALID only) | new verdict | why |
+|---|---|---|---|
+| 018@30m, 018@1h, 019@30m, 019@1h, 017@1h, 021 | DRIFT | DRIFT | unchanged |
+| **022 exit risk side** | **SKILL** | **DRIFT** | TRAIN +0.094 < random 95th pct A +0.101 / B +0.154 |
+
+**Under the new rule, 022 would have been refused at `--final` and the holdout
+would not have been spent.** (It was spent correctly under the rules at the
+time.)
+
+### (b) The holdout run now includes a random-entry control
+`evaluate.py --final` runs `baseline.holdout_control()` on the holdout inside
+the one permitted run (no extra information: the holdout run already sees
+those bars). `CONFIRMED` now also needs the idea's holdout mean R above the
+**median** random entry of modes A and B. Both medians are stored in
+`holdout_log.csv`.
+
+For reference, on idea 022's already-spent holdout: random median A −0.104,
+B −0.065; 022 made −0.010. So 022 did beat random timing out of sample, but
+with a 1% stop its costs (0.108 R) exceeded its gross edge (+0.098 R). A
+relative edge in timing is not a profitable strategy after costs.
+
+### Verdict
+`KEEP` both changes. Every future SKILL is judged on two periods with
+different market regimes, and every future CONFIRMED is judged against random
+entries in the holdout itself.

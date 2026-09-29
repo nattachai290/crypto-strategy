@@ -3,7 +3,7 @@
   "name": "018_trend_breakout_long_tf30",
   "tf": 30,
   "n_per_mode": 200,
-  "timestamp": "2026-09-29 00:51 UTC",
+  "timestamp": "2026-09-29 01:06 UTC",
   "idea_valid_mean_r": 0.10236385449685849,
   "idea_valid_trades": 234,
   "idea_train_mean_r": 0.06118395205057791,
@@ -16,6 +16,10 @@
     "share_random_ge_idea": 0.055,
     "valid_trades_median": 275.0,
     "train_median": -0.00841442081548148,
+    "train_p95": 0.0556203524037561,
+    "train_share_random_ge_idea": 0.045,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": true,
     "idea_beats_p95": false
   },
   "B": {
@@ -26,7 +30,12 @@
     "share_random_ge_idea": 0.25,
     "valid_trades_median": 225.0,
     "train_median": 0.023070685262766163,
+    "train_p95": 0.09669895774670009,
+    "train_share_random_ge_idea": 0.235,
+    "idea_beats_p95_valid": false,
+    "idea_beats_p95_train": false,
     "idea_beats_p95": false
   },
-  "verdict": "DRIFT"
+  "verdict": "DRIFT",
+  "rule": "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
 }

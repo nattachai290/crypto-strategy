@@ -589,6 +589,14 @@ def test_random_null_model() -> None:
           EV.baseline_verdict("0000000000") == "MISSING")
     check("--final gate: no baseline and no benchmark -> no holdout ticket",
           EV.benchmark_verdict("0000000000") == "MISSING" and not EV.holdout_ticket("0000000000"))
+    import baseline as BL
+    runs = pd.DataFrame({"mode": ["A"] * 100 + ["B"] * 100,
+                         "train_mean_r": np.r_[np.linspace(-0.1, 0.1, 100), np.linspace(0.0, 0.2, 100)],
+                         "valid_mean_r": np.r_[np.linspace(-0.1, 0.1, 100), np.linspace(0.0, 0.2, 100)]})
+    check("SKILL needs TRAIN too: beating random on VALID only is DRIFT",
+          not BL.skill_check(real_train=0.05, real_valid=0.30, runs=runs)["skill"])
+    check("SKILL when the idea beats both modes' 95th pct on TRAIN and VALID",
+          BL.skill_check(real_train=0.30, real_valid=0.30, runs=runs)["skill"])
 
 
 # --------------------------------------------------------------------------

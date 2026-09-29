@@ -519,6 +519,18 @@ def main() -> None:
             ok = (hold["trades"] >= C.EVAL_MIN_ANY_TRADES and hold["mean_r"] > 0
                   and h_stress["mean_r"] > 0 and hold["p_gt_0"] >= 0.90
                   and hold["max_dd"] <= C.EVAL_MAX_DD)
+            ctrl = {}
+            if idea["strategy"] == "recipe":
+                # Random-entry control on the same holdout, inside this one run
+                # (Exp 019): CONFIRMED also needs the idea to beat the median
+                # random entry, at any time (A) and within its filters (B).
+                import baseline as BL  # lazy: baseline imports this module
+                ctrl = BL.holdout_control(p_best, ex_best, tf, workers=a.workers)
+                beats = hold["mean_r"] > ctrl["A"]["median"] and hold["mean_r"] > ctrl["B"]["median"]
+                print(f"\nholdout random control: idea {hold['mean_r']:+.4f} vs random median "
+                      f"A {ctrl['A']['median']:+.4f} / B {ctrl['B']['median']:+.4f} -> "
+                      f"{'beats both' if beats else 'does NOT beat both'}")
+                ok = ok and beats
             row["holdout_verdict"] = "CONFIRMED" if ok else "FAILED"
             save_trades(res_h, eval_id, "holdout")
             _append_csv(HOLDOUT_CSV, {
@@ -526,7 +538,10 @@ def main() -> None:
                 "name": idea["name"], "tf": tf, "params": row["chosen_params"], "exec": row["chosen_exec"],
                 **{f"holdout_{k}": (json.dumps(val) if isinstance(val, dict) else val)
                    for k, val in hold.items()},
-                "holdout_stress_mean_r": h_stress["mean_r"], "holdout_verdict": row["holdout_verdict"]})
+                "holdout_stress_mean_r": h_stress["mean_r"],
+                "holdout_random_a_median": ctrl.get("A", {}).get("median", float("nan")),
+                "holdout_random_b_median": ctrl.get("B", {}).get("median", float("nan")),
+                "holdout_verdict": row["holdout_verdict"]})
 
     _append_csv(EVAL_CSV, row)
     block = report_block(row, v, gates, hold)
