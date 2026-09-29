@@ -3,6 +3,8 @@
 _Last updated: 2026-09-29, after Exp 025 (Round 5 review). Rules for agents:
 `AGENTS.md`. Research plan: `docs/research/PLAN.md` (all five rounds done)._
 
+> **Next: Round 6** (`PLAN.md` §4): five combination ideas, then stop unless one is CONFIRMED (Exp 027).
+>
 > **Owner decision (2026-09-29): trading only.** The project studies trades that earn from price moves. Funding carry, basis / cash-and-carry and any other strategy that earns the funding fee are **out of scope**: do not propose, build or test them. Funding may still be used as a *signal* or paid as a cost.
 >
 > **Exp 025 (review of Round 5):** `recipe()` now refuses a trigger that
@@ -270,3 +272,8 @@ both are now closed for real: multi-day mean reversion (034) is REJECT at all
 seven timeframes despite a 3:1 gross-to-cost ratio, and funding carry (033) is
 INCONCLUSIVE because the sample cannot be built. Turn-of-month fade (037) is
 unmeasurable in this design. **Do not add a sixth round on BTCUSDT.**
+
+**Exp 027 — owner decision: Round 6 is approved** (`PLAN.md` §4, Round 6):
+five combination ideas with Round 5's cost design, hard-capped, and with a
+stop rule agreed in advance. If Round 6 ends with no holdout CONFIRMED,
+BTCUSDT research stops. This replaces the line above.
