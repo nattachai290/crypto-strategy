@@ -626,3 +626,79 @@ is not run by this agent** - a qualifying config stops the round and goes to the
 owner, because a holdout is one-shot per config; report each port's TradingView
 claim next to what is left after costs and controls; **a round with no holdout
 CONFIRMED ends the TradingView question unless the owner brings new scripts.**
+
+---
+
+## Exp 007 - TradingView ports T1-T6 on ETHUSDT: 0 PASS, 3 WATCH, all DRIFT and all NO_EDGE
+
+**Date:** 2026-09-30
+**Status:** complete. 24 evaluations. ETH HOLDOUT UNTOUCHED - no PASS, so
+`--final` was not a candidate and was not run. No idea file edited.
+
+**24 evaluations: 0 PASS, 3 WATCH, 16 REJECT, 5 INCONCLUSIVE.** Both controls on
+all 3 WATCH rows. ETH now has 73 evaluations.
+
+### Per port, VALID mean R by clock
+
+| port | 15m | 30m | 1h | 4h | verdicts |
+|---|---|---|---|---|---|
+| **T1** 044 ChartArt RSI+BB v1.1 | −0.202 | −0.038 | −0.337 | −0.448 | 3 REJ, 1 INC |
+| **T2** 045 LuxAlgo SMC | −0.199 | **+0.250** | −0.136 | **+0.200** | 2 WATCH, 2 REJ |
+| **T3** 046 ChartArt MACD+SMA200 | +0.013 | −0.162 | −0.065 | −0.050 | 3 REJ, 1 INC |
+| **T4** 047 Super Scalper | −0.142 | −0.094 | −0.035 | **+0.270** | 3 REJ, 1 WATCH |
+| **T5** 048 ChartArt RSI+BB long-only | −0.062 | −0.064 | −0.422 | −0.658 | 2 REJ, 2 INC |
+| **T6** 049 Liquidity Sweep | −0.251 | −0.126 | −0.099 | **+0.403** | 3 REJ, 1 INC |
+
+**ETH is markedly harsher than BTC for these ports: 16 REJECT against 13, and
+three of the six ports are negative at every clock (T1, T5) or nearly so (T3).**
+`LESSONS.md` §5 predicted a same-idea-file result keeps its sign on BTC/ETH
+71-73% of the time, Spearman +0.30 to +0.43, so this is agreement with the
+project's own measurement, not a surprise - but the direction is worth stating:
+**of the 24 ports x clock cells, the two coins disagree in sign on 9 of the 18
+BTC-positive-or-negative cells that have a counterpart here.**
+
+### The three WATCH rows, with controls
+
+| config | v trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S | baseline | benchmark |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **047 T4 @4h** | 114 | +0.3073 | 0.0369 | **+0.2704** | [−0.0224, +0.6171] | +15.6% | 6.9% | **57/57** | DRIFT | NO_EDGE |
+| 045 T2 @4h | 87 | +0.2393 | 0.0388 | +0.2004 | [−0.0934, +0.5155] | +8.6% | 6.8% | 43/44 | DRIFT | NO_EDGE |
+| 045 T2 @30m | 92 | +0.3654 | 0.1154 | +0.2500 | [−0.2425, +0.8142] | +10.5% | 13.6% | 53/39 | DRIFT | NO_EDGE |
+
+**All three are DRIFT and all three are NO_EDGE - the same verdict pair as the
+project's 102 of 108.** No SKILL reading anywhere on ETH, against two on BTC.
+
+### What is different about ETH, and it is the reverse of the BTC long prior
+
+- **T1 and T5 are negative at all four clocks on ETH, and both were positive at
+  4h on BTC.** T5 is the long-only script, and `LESSONS.md` §2 had given it a
+  *better* drift prior on ETH than on BTC (78% of ETH evaluations had a positive
+  long leg against BTC's 56%). **That prior was wrong in the only direction that
+  could have flattered it**: T5's 4h row is −0.658 on ETH against +1.616 on BTC.
+  The lesson generalises - a drift prior computed from a coin's aggregate
+  statistics is not a prior about a specific rule.
+- **T4 is the port that agrees across coins.** BTC 4h +0.1001 on 141 trades,
+  70 long / 71 short; ETH 4h +0.2704 on 114 trades, **57 / 57**. Both DRIFT and
+  both NO_EDGE. **The only port that is positive on the same clock on both coins
+  with balanced sides on both, and it is still not an edge** - which is the same
+  lesson as 039's 21-of-21 clocks on three coins and then 2-of-7 on BNB.
+- **T4's cost_r is 0.0369 at 4h on ETH against 0.0324 on BTC**, both far inside
+  `LESSONS.md` §1's 0.1 R band, because the ATR stop is 9.21% of ETH's price at
+  4h against 7.11% of BTC's. **T3 is the expensive one on both coins** (0.115 to
+  0.151 R on BTC, 0.116-0.176 R here) because of the invented time cap, and on
+  ETH it is negative anyway.
+- **T6's 4h row is +0.403 on 7 trades** (3 long, 4 short) and INCONCLUSIVE. The
+  pre-registration measured 15 ETH signals for that cell and predicted INCONCLUSIVE
+  from the session geometry - only the 12:00 bar is inside UTC 12-15 on a 4h
+  chart. It is negative at 15m, 30m and 1h, which is where the script was designed
+  to run.
+
+### Verdict
+
+`REJECT`, and the round's stop rule: **no PASS on ETH, so no holdout was used.**
+24 evaluations, 0 PASS, 3 WATCH (all DRIFT, all NO_EDGE), 16 REJECT, 5
+INCONCLUSIVE.
+
+Across both coins the round is **48 evaluations, 0 PASS, 8 WATCH (2 SKILL), 29
+REJECT, 11 INCONCLUSIVE**, and **not one published strategy cleared the gates on
+the timeframe its author published it for.**

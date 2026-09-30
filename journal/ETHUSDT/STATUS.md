@@ -1,12 +1,54 @@
 # ETHUSDT - status and handoff
 
-> **Next (owner request): TradingView strategy ports** (`docs/research/PLAN.md` §13). Round 1 = ports T1–T6, `ideas/044_*` to `ideas/049_*` (24 files: 15m 30m 1h 4h), to be run on this coin and on the other of BTC/ETH (48 evaluations). The project's own families stay closed.
+> **Exp 007 — TradingView port round 1 is DONE on this coin: 24 evaluations,
+> 0 PASS, 3 WATCH (all DRIFT, all NO_EDGE), 16 REJECT, 5 INCONCLUSIVE. No
+> holdout was used, because nothing passed.** ETH is now **16 REJECT against
+> BTC's 13**, and **no SKILL reading appeared on ETH at all** where BTC had two.
+> ETH now has **73 evaluations**.
+>
+> | port | 15m | 30m | 1h | 4h |
+> |---|---|---|---|---|
+> | T1 044 ChartArt RSI+BB | −0.202 | −0.038 | −0.337 | −0.448 |
+> | T2 045 LuxAlgo SMC | −0.199 | **+0.250** | −0.136 | **+0.200** |
+> | T3 046 ChartArt MACD+SMA200 | +0.013 | −0.162 | −0.065 | −0.050 |
+> | T4 047 Super Scalper | −0.142 | −0.094 | −0.035 | **+0.270** |
+> | T5 048 ChartArt RSI+BB long-only | −0.062 | −0.064 | −0.422 | −0.658 |
+> | T6 049 Liquidity Sweep | −0.251 | −0.126 | −0.099 | **+0.403** (7 trades) |
+>
+> The three WATCH rows, all DRIFT / NO_EDGE:
+> **047 T4 @4h** 114 trades, gross +0.3073, cost 0.0369, mean R **+0.2704**,
+> CI [−0.0224, +0.6171], CAGR +15.6%, maxDD 6.9%, **57 long / 57 short** ·
+> **045 T2 @4h** 87 trades, +0.2004, CI [−0.0934, +0.5155], 43/44 ·
+> **045 T2 @30m** 92 trades, +0.2500, CI [−0.2425, +0.8142], 53/39.
+>
+> **Two findings, and one of them corrects a lesson of mine.**
+> 1. **T4 is the only port that agrees across coins**: BTC 4h +0.1001 on 141
+>    trades 70/71, ETH 4h +0.2704 on 114 trades **57/57** — both DRIFT, both
+>    NO_EDGE. The same lesson as 039's 21-of-21 clocks on three coins and then
+>    2-of-7 on BNB: **consistency across coins is not an edge.**
+> 2. **`LESSONS.md` §2's ETH long prior was wrong, in the one direction that
+>    could only flatter it.** T5 is the long-only script and §2 said ETH's long
+>    leg was positive in 78% of its evaluations against BTC's 56%, so T5 should
+>    have had a *better* drift prior here. It is **−0.658 at 4h on ETH against
+>    +1.616 on BTC**. A drift prior computed from a coin's aggregate statistics
+>    is not a prior about a specific rule.
+> 3. **T6's 4h row is +0.403 on 7 trades and the pre-registration predicted it**:
+>    the session is UTC 12-15 and only the 12:00 bar is inside it on a 4h chart,
+>    so 15 ETH signals in three years. Negative at 15m, 30m and 1h, which is where
+>    the script was designed to run.
+>
+> Details: `journal/ETHUSDT/experiments.md` Exp 006 (pre-registration) and
+> Exp 007 (results). BTC half: BTC Exp 032 / Exp 033.
+
+> **Next (owner request): TradingView strategy ports** (`docs/research/PLAN.md` §13). Round 1 = ports T1–T6, `ideas/044_*` to `ideas/049_*` (24 files: 15m 30m 1h 4h), to be run on this coin and on the other of BTC/ETH (48 evaluations). The project's own families stay closed. **Round 1 is now complete on both coins — see the Exp 007 block above. The round's stop rule (`PLAN.md` §13): no holdout CONFIRMED ends the TradingView question unless the owner brings new scripts.**
 
 > **CLOSED** (Exp 003 stop rule). The funding defect is fixed (Exp 004). Research continues on
 > **SOLUSDT and BNBUSDT** (`docs/research/PLAN.md` §12).
 
-_Last updated: 2026-09-29, Exp 003 (Round E1 complete). Rules: `AGENTS.md`.
-Plan: `docs/research/PLAN.md` §11. BTCUSDT is closed (BTC Exp 029)._
+_Last updated: 2026-09-30, Exp 007 (TradingView port round 1 done on ETHUSDT —
+0 PASS, no holdout used). Rules: `AGENTS.md`.
+Plan: `docs/research/PLAN.md` §11 and §13. BTCUSDT is closed for its own
+families (BTC Exp 029); SOLUSDT and BNBUSDT are closed too._
 
 > **Exp 003 - ROUND E1 IS DONE. 0 PASS, 0 CONFIRMED, the ETH holdout is
 > untouched.** 49 evaluations: **0 PASS, 32 WATCH, 14 REJECT, 3 INCONCLUSIVE.**

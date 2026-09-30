@@ -1,6 +1,47 @@
 # BTCUSDT — status and handoff
 
-> **Next (owner request): TradingView strategy ports** (`docs/research/PLAN.md` §13). Round 1 = ports T1–T6, `ideas/044_*` to `ideas/049_*` (24 files: 15m 30m 1h 4h), to be run on this coin and on the other of BTC/ETH (48 evaluations). The project's own families stay closed.
+> **Exp 033 — TradingView port round 1 is DONE on this coin: 24 evaluations,
+> 0 PASS, 5 WATCH (2 of them SKILL), 14 REJECT, 5 INCONCLUSIVE. No holdout was
+> used, because nothing passed.** The round's own stop rule (`PLAN.md` §13): a
+> round with no holdout CONFIRMED ends the TradingView question unless the owner
+> brings new scripts. BTCUSDT now has **234 evaluations**.
+>
+> **The answer to the owner's question — do published TradingView strategies
+> survive honest testing? — is no, and not one of the six came close to the
+> gates on the timeframe its author published it for.**
+>
+> | port | TradingView presents it as | BTC best clock | controls |
+> |---|---|---|---|
+> | T1 044 ChartArt RSI+BB v1.1 | "double strategy", "made more successful in backtesting" | +0.353 on **28** trades, INCONCLUSIVE | — |
+> | T2 045 LuxAlgo SMC | a free indicator with alert conditions | +0.219 on 75 trades | **DRIFT** / NO_EDGE |
+> | T3 046 ChartArt MACD+SMA200 | trend strategy with a 200-SMA filter | +0.482 on 33 trades; +0.217 on 161 | **SKILL** / **NO_EDGE** |
+> | T4 047 Super Scalper | a 5m/15m scalper | **−0.215 on its own 15m chart**; +0.100 on 141 at 4h, 70/71 | **DRIFT** / NO_EDGE |
+> | T5 048 ChartArt RSI+BB long-only v1.2 | "long-only made it more successful" | +1.616 on **11** trades, 11 long / 0 short, INCONCLUSIVE | — |
+> | T6 049 Liquidity Sweep | intraday session reversal | negative at 15m/30m/1h; +0.077 on 10 trades at 4h | — |
+>
+> **Three findings worth keeping:**
+> 1. **T3 is the only port positive at all four timeframes on BTC** (+0.166,
+>    +0.217, +0.251, +0.482) and the only one that reads SKILL — and it is also
+>    the most expensive (`cost_r` 0.115–0.151 R, the invented time cap being
+>    reached because the reversals do not come on a frequent-signal chart) and it
+>    is **NO_EDGE**. A published strategy can be a real timing signal and still
+>    not be worth trading. That is the `SKILL + NO_EDGE` shape of BTC 022, which
+>    spent a holdout and returned −0.0102 R.
+> 2. **T4 works only on a timeframe its author did not publish it for**: negative
+>    on the 15m source chart, positive at 4h, and the 4h row is balanced
+>    70 long / 71 short. `LESSONS.md` §1's cost rule, showing up again.
+> 3. **T5's +1.616 on 11 trades is the largest VALID number in the project and is
+>    worthless** — the same-bar RSI+Bollinger coincidence fires 15 times in three
+>    years on the 4h chart. Reported because a TradingView screenshot never shows
+>    a number that large next to a trade count that small.
+>
+> **Also confirmed, fifth time on a fresh idea set: 15m is the worst clock and 4h
+> the best.** And the pre-registration's cost ceiling was approached rather than
+> exceeded (T3 measured 0.115–0.151 R against a predicted 0.048–0.284), which
+> validates writing both a floor and a ceiling down before running.
+>
+> Details: `journal/BTCUSDT/experiments.md` Exp 032 (pre-registration) and
+> Exp 033 (results). ETH half: ETH Exp 006 / Exp 007.
 
 > **Exp 030: engine funding fix** (notional × rate; before, funding was ~0). Re-checked on every record: 7 of 242 verdicts change, 6 downward, no new PASS (022 PASS→WATCH).
 >
@@ -8,9 +49,9 @@
 > 4/4 FAILED, 0 CONFIRMED. Do not add rounds on BTCUSDT. Research continues on
 > **ETHUSDT** (`journal/ETHUSDT/STATUS.md`, `docs/research/PLAN.md` §11).
 
-_Last updated: 2026-09-29, after Exp 028 (Round 6 complete — the stop rule has
-fired). Rules for agents: `AGENTS.md`. Research plan: `docs/research/PLAN.md`
-(six rounds done)._
+_Last updated: 2026-09-30, after Exp 033 (TradingView port round 1 done on
+BTCUSDT — 0 PASS, no holdout used). Rules for agents: `AGENTS.md`. Research
+plan: `docs/research/PLAN.md` (six BTC rounds done, ports in §13)._
 
 > **Exp 028 — ROUND 6 IS DONE AND THE STOP RULE HAS FIRED. BTCUSDT research
 > stops here.** 35 evaluations: 1 PASS, 12 WATCH, 18 REJECT, 4 INCONCLUSIVE.

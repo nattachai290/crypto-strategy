@@ -3658,3 +3658,106 @@ be a published script whose author's claim survives this harness, which is a
 test of the *claim* rather than another test of the family. That is why the round
 is worth running at all, and why the honest report must put "what TradingView
 claims" next to the measured number.
+
+---
+
+## Exp 033 - TradingView ports T1-T6 on BTCUSDT: 0 PASS, 5 WATCH, 2 of them SKILL
+
+**Date:** 2026-09-30
+**Status:** complete. 24 evaluations. HOLDOUT UNTOUCHED - no PASS, so `--final`
+was not a candidate and was not run. No idea file edited, no port or timeframe
+added.
+
+**24 evaluations: 0 PASS, 5 WATCH, 14 REJECT, 5 INCONCLUSIVE.** Both controls on
+all 5 WATCH rows. BTC now has 234 evaluations. Per port: T1 3 REJECT + 1 INC,
+T2 3 REJECT + 1 WATCH, T3 3 WATCH + 1 INC, T4 3 REJECT + 1 WATCH, T5 2 REJECT +
+2 INC, T6 3 REJECT + 1 INC.
+
+### Per port
+
+| port | 15m | 30m | 1h | 4h | verdicts |
+|---|---|---|---|---|---|
+| **T1** 044 ChartArt RSI+BB v1.1 | −0.092 | −0.327 | −0.288 | **+0.353** | 3 REJ, 1 INC |
+| **T2** 045 LuxAlgo SMC | −0.086 | −0.113 | +0.017 | **+0.219** | 2 WATCH, 2 REJ |
+| **T3** 046 ChartArt MACD+SMA200 | **+0.166** | **+0.217** | **+0.251** | **+0.482** | 3 WATCH, 1 INC |
+| **T4** 047 Super Scalper | −0.215 | −0.023 | +0.015 | **+0.100** | 3 REJ, 1 WATCH |
+| **T5** 048 ChartArt RSI+BB long-only | −0.106 | +0.070 | −0.035 | **+1.616** | 2 REJ, 2 INC |
+| **T6** 049 Liquidity Sweep | −0.286 | −0.126 | −0.151 | +0.077 | 3 REJ, 1 INC |
+
+VALID mean R by clock. **The pattern is the same one every round of this project
+has produced, and it is now the fifth time it has been measured on a fresh set of
+ideas: 15m is the worst clock and 4h the best, and only 4h is reliably positive.**
+
+### The five WATCH rows, with controls
+
+| config | v trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S | baseline | benchmark |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 046 T3 @1h | 76 | +0.3662 | 0.1151 | +0.2511 | [−0.4069, +1.0494] | +7.6% | 13.8% | 37/39 | DRIFT | NO_EDGE |
+| **046 T3 @30m** | 161 | +0.3415 | 0.1246 | **+0.2170** | [−0.2999, +0.7941] | +13.9% | 26.0% | 89/72 | **SKILL** | NO_EDGE |
+| **046 T3 @15m** | 303 | +0.3167 | 0.1511 | **+0.1656** | [−0.1868, +0.5499] | +18.3% | 36.9% | 165/138 | **SKILL** | NO_EDGE |
+| 045 T2 @4h | 75 | +0.2680 | 0.0492 | +0.2188 | [−0.0800, +0.5350] | +7.5% | 5.9% | 45/30 | DRIFT | NO_EDGE |
+| 047 T4 @4h | 141 | +0.1325 | 0.0324 | +0.1001 | [−0.1342, +0.3856] | +6.2% | 10.6% | 70/71 | DRIFT | NO_EDGE |
+
+**Two SKILL readings, both T3, and both NO_EDGE.** Per `PLAN.md` §5 step 1 a
+configuration with one control and not the other is not a strategy, so T3 is
+stopped here: it beats random entry timing on BTC at 15m and 30m, and holding
+BTC beats it. That is the `SKILL + NO_EDGE` shape of BTC 022, which spent a
+holdout and returned −0.0102 R.
+
+**T3's cost_r is the round's highest anywhere: 0.115 to 0.151 R**, against the
+fee-only floor of 0.027-0.040 R I wrote in the pre-registration. The difference
+is the invented 30-120 h time cap being reached: with a 1.0-1.5% stop and
+`exit_on: "opposite"` on a chart where the signal is frequent, the reversals do
+not come, so trades run to the cap and pay funding for it. **This is the
+pre-registration's ceiling being approached, not exceeded** (I wrote 0.048-0.284
+for 15m), and it puts T3's net figures inside `LESSONS.md` §1's 0.1 R band at
+1h-4h. Its +0.48 at 4h is on 33 trades, which is the number to hold on to.
+
+### What each author's claim is worth after this harness
+
+| port | TradingView presents it as | measured on BTC, best clock | verdict |
+|---|---|---|---|
+| T1 ChartArt RSI+BB v1.1 | "double strategy", "made more successful in backtesting" (v1.1) | +0.353 on **28** trades, DRIFT-family, INCONCLUSIVE | too few trades to say anything; and mean reversion, which the project closed for its own ideas (Exp 016, Exp 024) |
+| T2 LuxAlgo SMC | a free indicator with alert conditions | +0.219 on 75 trades, **DRIFT**, NO_EDGE | the entry is not better than random |
+| T3 ChartArt MACD+SMA200 | a trend strategy with a 200-SMA filter | +0.482 on 33 trades; +0.217 on 161 with **SKILL** but **NO_EDGE** | skill present, dominated by holding BTC |
+| T4 Super Scalper | a 5m/15m scalper, "super scalper" | +0.100 on 141 trades, **DRIFT**, NO_EDGE; **negative on its own 15m chart (−0.215)** | the worst of the round on the chart it was written for |
+| T5 ChartArt RSI+BB long-only v1.2 | "long-only made it more successful" | +1.616 on **11** trades, 11 long / 0 short, INCONCLUSIVE | 11 trades in two years; the number is noise, and it is long-only by construction, which `LESSONS.md` §2 says is the drift shape |
+| T6 Liquidity Sweep Reversal | an intraday session reversal | +0.077 on **10** trades at 4h; **negative at 15m, 30m and 1h** | the only port with the author's own exits (stop, TP 1.5R, break-even) and it is negative where it was designed to run |
+
+### The three results worth carrying, and one that is only a curiosity
+
+1. **T4 is the most consistent port across both coins.** On BTC 4h +0.1001 on
+   141 VALID trades with **70 long / 71 short** - as balanced as the project has
+   ever seen - and on ETH 4h +0.2704 on 114 trades with **57 / 57**. Both are
+   DRIFT and NO_EDGE. Being balanced on both coins is worth noting because
+   `LESSONS.md` §2 says the project's positive results have all been long
+   positions; T4 is not, and it is still not an edge.
+2. **T4 is negative on the chart it was written for** - its source is 15m, the
+   author's own chart alongside 5m, and 15m gives **−0.215 on BTC and −0.142 on
+   ETH**. The only positive clocks are 4h, where the script's "a bar that rose
+   more than one ATR band" becomes a much rarer and much larger event. **The port
+   works on a timeframe the author did not publish it for.** That is a real
+   finding about the script, and it is the kind `LESSONS.md` §1 predicts: a
+   15m hold cannot pay for itself.
+3. **T5's +1.616 on 11 trades is the largest VALID number in the project and is
+   worthless.** 11 long trades, 0 short, in two years, CI [−0.356, +3.805]. It
+   is the same-bar RSI+Bollinger coincidence that the pre-registration measured
+   at 15 signals in three years on the 4h chart. Reported because a reader of
+   TradingView's screenshots will never see a number that large.
+4. **The curiosity: T3 is the only port that is positive at every one of the four
+   timeframes on BTC** (+0.166, +0.217, +0.251, +0.482), and the only one that
+   reads SKILL. It is also the most expensive, at `cost_r` 0.115-0.151 R, and it
+   is NO_EDGE. A published strategy can be a real timing signal and still not be
+   worth trading, and T3 is the clean example in this project.
+
+### Verdict
+
+`REJECT`, and with it the round's own stop rule: **no PASS, so no holdout was
+used and none is warranted.** 24 evaluations, 0 PASS, 5 WATCH (2 SKILL, all 5
+NO_EDGE), 14 REJECT, 5 INCONCLUSIVE.
+
+The answer the owner asked for - *do published TradingView strategies survive
+honest testing?* - is **no, and not one of the six came close to the gates on
+the timeframe its author published it for.** Two of the six (T3 at 15m/30m on
+BTC) show a timing signal that beats random entry, and both are dominated by
+simply holding BTC. T1 and T5 cannot produce a testable number at 4h at all.
