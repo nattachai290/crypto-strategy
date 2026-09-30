@@ -4092,3 +4092,137 @@ goes to the owner, because a holdout is one-shot per config; per-idea long/short
 split reported on every row; and **`PLAN.md` §14's stop rule - if no config
 reaches a holdout CONFIRMED, the new-data question is closed for these four
 signals, and any other use of the metrics needs a new owner decision.**
+
+---
+
+## Exp 037 - New data M1-M4 on BTCUSDT: 0 PASS, 7 WATCH, and every one of them NO_EDGE
+
+**Date:** 2026-10-01
+**Status:** complete. 16 evaluations. **HOLDOUT UNTOUCHED - no PASS, so `--final`
+was not a candidate and was not run.** No idea file edited, no idea or timeframe
+added. BTCUSDT now has **250 evaluations**.
+
+**16 evaluations: 0 PASS, 7 WATCH (3 SKILL), 4 REJECT, 5 INCONCLUSIVE.** Both
+controls on all 7 WATCH rows. **All 7 are NO_EDGE**, and 4 of the 7 are DRIFT.
+
+### The four ideas, VALID mean R by clock
+
+| idea | 15m | 30m | 1h | 4h | verdicts |
+|---|---|---|---|---|---|
+| **M1** 050 `oi_flush_reversal` | −0.173 | −0.064 | −0.167 | +0.182 | 3 REJ, 1 INC |
+| **M2** 051 `retail_crowd_fade` | **+0.150** | **+0.106** | **+0.239** | **+0.334** | 3 WATCH, 1 INC |
+| **M3** 052 `smart_money_divergence` | **+0.109** | **+0.080** | **+0.249** | +0.038 | 3 WATCH, 1 INC |
+| **M4** 053 `oi_confirmed_breakout` | +0.800 | +0.489 | −0.009 | −0.069 | 1 WATCH, 1 REJ, 2 INC |
+
+### The seven WATCH rows, with controls
+
+| config | v trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S | baseline | benchmark |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 051 M2 @1h | 89 | +0.2846 | 0.0454 | +0.2393 | [−0.1171, +0.6230] | +10.2% | 14.1% | 39/50 | DRIFT | NO_EDGE |
+| 051 M2 @15m | 96 | +0.2483 | 0.0979 | +0.1503 | [−0.1768, +0.5019] | +6.6% | 12.8% | 51/45 | DRIFT | NO_EDGE |
+| 051 M2 @30m | 198 | +0.1704 | 0.0647 | +0.1057 | [−0.0506, +0.2715] | +9.6% | 15.8% | 90/108 | **SKILL** | NO_EDGE |
+| 052 M3 @1h | 108 | +0.3028 | 0.0537 | +0.2491 | [−0.1057, +0.6224] | +12.0% | 13.0% | 51/57 | DRIFT | NO_EDGE |
+| 052 M3 @30m | 153 | +0.1473 | 0.0672 | +0.0800 | [−0.1095, +0.2851] | +5.7% | 12.1% | 76/77 | **SKILL** | NO_EDGE |
+| 052 M3 @15m | 311 | +0.2045 | 0.0957 | +0.1088 | [−0.0782, +0.3180] | +15.8% | 21.4% | 151/160 | **SKILL** | NO_EDGE |
+| 053 M4 @30m | 59 | +0.5635 | 0.0742 | +0.4892 | [+0.1302, +0.8893] | +14.6% | 4.7% | 49/10 | DRIFT | NO_EDGE |
+
+**Every one is NO_EDGE, and the 3 SKILL rows are 2 of M2/M3 at the two fastest
+clocks plus M2@30m - all of them dominated by simply holding BTC.** Per
+`PLAN.md` §5 step 1 a configuration with one control and not the other is not a
+strategy. `LESSONS.md` §2's record is DRIFT on 102 of 108 and NO_EDGE on 101;
+this round is DRIFT on 4 of 8 and NO_EDGE on 8 of 8, so it is the most
+NO_EDGE-heavy round in the project.
+
+**Two rows have a CI lower bound above zero and neither is tradeable:**
+`051 M2 @4h` +0.3343 on **44** trades, CI **[+0.0057, +0.6876]** (INCONCLUSIVE for
+want of trades, no controls run), and `053 M4 @30m` +0.4892 on 59 trades, CI
+[+0.1302, +0.8893] (**DRIFT / NO_EDGE**).
+
+### What the trade lists say, and it is the real output of this round
+
+Per-leg mean R on VALID, read from `results/BTCUSDT/eval_trades/`:
+
+| idea | clock | long leg | short leg | 2023 | 2024 |
+|---|---|---|---|---|---|
+| M1 | 15m | −0.116 (169) | **−0.261** (110) | −0.220 | −0.109 |
+| M1 | 30m | +0.018 (97) | **−0.165** (79) | −0.107 | −0.018 |
+| M1 | 1h | −0.115 (68) | **−0.261** (38) | −0.072 | −0.282 |
+| M1 | 4h | +0.486 (18) | **−0.366** (10) | +0.256 | +0.107 |
+| M2 | 1h | **+0.609** (39) | −0.049 (50) | +0.400 | +0.082 |
+| M2 | 4h | **+0.519** (28) | +0.012 (16) | +0.636 | +0.059 |
+| M3 | 1h | **+0.805** (51) | **−0.248** (57) | +0.080 | +0.432 |
+| M3 | 15m | +0.365 (151) | −0.133 (160) | +0.163 | +0.050 |
+| M4 | 15m | +0.770 (27) | +1.198 (**2**) | +0.867 | +0.728 |
+| M4 | 30m | +0.438 (49) | +0.742 (10) | +0.419 | +0.558 |
+
+**1. M1's short leg is the loser, not its long leg - and I framed the
+pre-registration's question about the wrong leg.** The pre-registration asked
+whether a price fall with collapsing open interest is capitulation or the start
+of a cascade, and said M1's long leg was where the idea lived or died. **The
+long leg is roughly flat to slightly negative (−0.116 to +0.018) and the short
+leg is −0.165 to −0.261 at every clock.** So the finding is the mirror image of
+the prediction: **fading a rally that arrives with rising open interest is the
+losing trade, in 2023 and in 2024, at every timeframe.** That is mechanically
+sensible - an up-flush with OI rising is new longs, and fading new money is how
+you lose money in a bull market - and it is a new statement, because no earlier
+idea in this project had a data column that could separate "a rally on new
+positions" from "a rally on short covering". M1's TRAIN is negative on this coin
+at all four clocks too (−0.091, −0.055, −0.145, −0.265), so it is not a
+VALID-only artefact. **M1 is a clean REJECT: 3 of 4 clocks negative on both
+periods.**
+
+**2. M2 and M3 agree in sign, and what they agree on is "be long" - which is the
+round's most important negative result.** The pre-registration made these a
+paired test: M2 fades the all-account crowd, M3 follows the top traders against
+the crowd, and the prediction was that they should agree, and that if they did,
+the "smart money versus retail" framing was not what was being measured. **On
+this coin they agree at every clock, and they agree in the same way: the long
+leg is positive and the short leg is negative or flat.** M2's long leg is
+positive at all four clocks (+0.167 to +0.609); M3's long leg is +0.251 to
++0.805 with its short leg −0.089 to −0.263. Two different Binance columns, two
+different stories about who is smarter, **the same trade.** The pre-registration
+also said M2 was the idea with a structural reason to be long in a falling
+market, because retail is short there - that prediction is confirmed on VALID,
+and it is also exactly `LESSONS.md` §2: the positive result is a long position.
+
+**3. M4 produced the two largest numbers in the round and they are the
+worthless ones.** `053 @15m` is **+0.8000 on 29 trades, 27 long and 2 short, CI
+[+0.0803, +1.5880], max drawdown 5.6%** - and `053 @30m` is +0.4892 on
+59 trades, 49 long and 10 short. Both pass the CI gate. **Both fail the
+100-trade gate, both are ~90% long, the 30m row reads DRIFT / NO_EDGE, and ETH is
+negative at the same two clocks** (see ETH Exp 010). `AGENTS.md` §9's rule -
+"a result that looks amazing, assume a bug or luck until the gates say
+otherwise" - applies literally here, and the reason is not a bug: 29 trades, 27
+of them long, in the best two years BTC has ever had. M4 is also the only idea
+here that is a **price trigger with a metrics filter** rather than a metrics
+trigger, and it is the worst of the four.
+
+**4. The year split decays on this coin and ETH does the opposite, so this is
+not one bull-market effect.** M2's long leg at 1h is +0.400 in 2023 and +0.082
+in 2024, and at 4h +0.636 then +0.059. On ETH the same cells run +0.050 then
++0.233 at 1h. **The two coins decay in opposite directions and both stay
+positive**, which is the strongest thing that can be said for M2 and still falls
+short of an edge, because in both years the long leg is what paid.
+
+**5. Cost: the pre-registration's worry about funding was the right place to look
+and it turned out to be small.** Measured VALID `cost_r` on this coin is
+**0.0349 to 0.1082, median 0.0634**, against a pre-registered fee-only floor of
+0.023-0.093. At 15m the floor is 0.093 and the measurement is 0.095, so
+**funding added about 0.002 R** - against the port round, where T3's invented
+120 h cap was genuinely reached and pushed cost to 0.151. The 12-36 h caps here
+are not reached. **The only cells above `LESSONS.md` §1's 0.1 R line are the 15m
+ones (0.095-0.108), and 15m is again the worst clock on this coin for the
+seventh time in this project.**
+
+### Verdict
+
+`REJECT`, and the round's own stop rule: **no PASS, so no holdout was used and
+none is warranted.** 16 evaluations, 0 PASS, 7 WATCH (3 SKILL, 4 DRIFT, **7 of 7
+NO_EDGE**), 4 REJECT, 5 INCONCLUSIVE.
+
+The owner asked whether the one data source the project had never read carries
+an edge. **On this coin it does not.** Open interest and the long/short ratios
+produced 7 positive-but-NO_EDGE configurations, 3 of which beat random entry
+timing and were all dominated by holding BTC - and the two ideas that were
+supposed to be opposites, "fade the crowd" and "follow the smart money", turned
+out to be the same long trade.

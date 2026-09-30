@@ -1,4 +1,65 @@
-> **Next (owner-approved 2026-09-30): new data** - open interest and long/short ratios (`docs/research/PLAN.md` §14, BTC Exp 035). BTC is the primary coin (TRAIN with metrics 2020-09..2022-12, 28 months). Round M1-M4 = `ideas/050_*`-`053_*`, 16 files. Pre-register in Exp 036. First run `python src/datafeed.py --metrics`.
+> **Exp 037 — the new-data round M1-M4 is DONE on this coin: 16 evaluations,
+> 0 PASS, 7 WATCH (3 SKILL, 4 DRIFT, 7 of 7 NO_EDGE), 4 REJECT, 5 INCONCLUSIVE.
+> No holdout was used, because nothing passed.** BTCUSDT now has **250
+> evaluations**.
+>
+> **The answer to the owner's question — does the one data source this project
+> had never read carry an edge? — is no.** Open interest and the long/short ratios
+> produced 7 positive-but-NO_EDGE configurations. Three of them beat random
+> entry timing and all three were dominated by simply holding BTC.
+>
+> | idea | 15m | 30m | 1h | 4h | verdicts |
+> |---|---|---|---|---|---|
+> | M1 050 `oi_flush_reversal` | −0.173 | −0.064 | −0.167 | +0.182 | 3 REJ, 1 INC |
+> | M2 051 `retail_crowd_fade` | **+0.150** | **+0.106** | **+0.239** | **+0.334** | 3 WATCH, 1 INC |
+> | M3 052 `smart_money_divergence` | **+0.109** | **+0.080** | **+0.249** | +0.038 | 3 WATCH, 1 INC |
+> | M4 053 `oi_confirmed_breakout` | +0.800 | +0.489 | −0.009 | −0.069 | 1 WATCH, 1 REJ, 2 INC |
+>
+> **Four findings worth keeping:**
+> 1. **M1's short leg is the loser, not its long leg — and my pre-registration
+>    asked about the wrong leg.** The long leg after an OI flush is flat to
+>    slightly negative (−0.116 to +0.018) and the short leg is **−0.165 to
+>    −0.261 at every clock, in 2023 and in 2024**. Fading a rally that arrives
+>    with *rising* open interest is the losing trade. That is a new statement:
+>    no earlier idea had a column that could tell "a rally on new positions"
+>    from "a rally on short covering". M1's TRAIN is negative at all four clocks
+>    too, so it is a clean REJECT, not a VALID artefact. It replicates on ETH
+>    (short leg −0.278 to −0.010).
+> 2. **The paired test came out the way the pre-registration said it would, and
+>    that is the round's most important negative result.** M2 "fade the all-account
+>    crowd" and M3 "follow the top traders against the crowd" are two different
+>    Binance columns and two different stories about who is smarter — **and they
+>    are the same trade: be long.** Both have a positive long leg at all four
+>    clocks and a negative or flat short leg (M2 long +0.167..+0.609, M3 long
+>    +0.251..+0.805, M3 short −0.089..−0.263). The "smart money versus retail"
+>    framing is not what is being measured; `LESSONS.md` §2 again, in a data
+>    source the project had never read.
+> 3. **M4's +0.8000 on 29 trades is 27 long and 2 short** (CI [+0.0803, +1.5880],
+>    maxDD 5.6%) and **+0.4892 on 59 trades at 30m** — the two largest VALID
+>    numbers of the round, both ~90% long, both under the 100-trade gate, the
+>    30m one DRIFT / NO_EDGE, and **both negative on ETH at the same clocks**.
+> 4. **Cost: the pre-registered funding worry was the right place to look and it
+>    turned out small.** VALID `cost_r` 0.0349–0.1082, median 0.0634, against a
+>    fee-only floor of 0.023–0.093 — at 15m the floor is 0.093 and the
+>    measurement 0.095, so **funding added ~0.002 R**. The 12–36 h caps are not
+>    reached, unlike the port round's 120 h cap. **15m is again the worst clock
+>    and the only one above the 0.1 R line, for the seventh time.**
+>
+> **The data limitation, recorded by owner decision 2026-10-01:**
+> `datafeed.py --metrics` prints `METRICS VALIDATION: PROBLEMS FOUND` on both
+> coins, because Binance reports `sum_open_interest = 0` on 473 BTC rows (0.075%)
+> and 208 ETH rows (0.042%). **No code was changed.** The impact was measured
+> rather than assumed: `t_oi_flush` produced 137 / 80 signals on BTC TRAIN 1h
+> with the zeros kept and **exactly 137 / 80 with them read as missing — zero
+> spurious signals** — because the 720-bar z-score cannot be moved by 11 zeros in
+> 26,304 bars. (BTC's 3 missing days from the download were repaired by
+> re-fetching those zips; it is now 2,191/2,191 days.) The other limitation is
+> structural: **the top-trader columns are 37.6% NaN in this coin's TRAIN and
+> 0.013% in VALID** (80.8% and 0.014% on ETH), so M3 is trained on 62% of TRAIN
+> here and 19% on ETH while being tested on essentially all of VALID.
+>
+> Details: `journal/BTCUSDT/experiments.md` Exp 036 (pre-registration) and
+> Exp 037 (results). ETH half: ETH Exp 009 / Exp 010.
 
 > **Exp 034 (review, 2026-09-30):** the round's verdict stands. Corrections: the pre-registered cost floor was about 3.5× too low, so the 15m ports died on cost as `LESSONS.md` §1 predicted; T3's cost is fees and slippage, not the time cap; T3's BTC SKILL does not replicate on ETH and leans on 2023.
 
@@ -53,9 +114,11 @@
 > 4/4 FAILED, 0 CONFIRMED. Do not add rounds on BTCUSDT. Research continues on
 > **ETHUSDT** (`journal/ETHUSDT/STATUS.md`, `docs/research/PLAN.md` §11).
 
-_Last updated: 2026-09-30, after Exp 033 (TradingView port round 1 done on
-BTCUSDT — 0 PASS, no holdout used). Rules for agents: `AGENTS.md`. Research
-plan: `docs/research/PLAN.md` (six BTC rounds done, ports in §13)._
+_Last updated: 2026-10-01, after Exp 037 (the new-data round M1–M4 is done on
+BTCUSDT — 0 PASS, no holdout used, the open-interest and long/short-ratio
+question is closed for these four signals per `PLAN.md` §14's stop rule). Rules
+for agents: `AGENTS.md`. Research plan: `docs/research/PLAN.md` (six BTC rounds
+done, ports in §13, new data in §14)._
 
 > **Exp 028 — ROUND 6 IS DONE AND THE STOP RULE HAS FIRED. BTCUSDT research
 > stops here.** 35 evaluations: 1 PASS, 12 WATCH, 18 REJECT, 4 INCONCLUSIVE.

@@ -840,3 +840,108 @@ Both controls on every WATCH and PASS; **`--final` is not run by this agent**; a
 the same `PLAN.md` §14 stop rule - no holdout CONFIRMED closes the new-data
 question for these four signals, and any other use of the metrics needs a new
 owner decision.
+
+---
+
+## Exp 010 - New data M1-M4 on ETHUSDT: 0 PASS, 1 WATCH (SKILL but NO_EDGE), and 10 of 16 rows too thin to read
+
+**Date:** 2026-10-01
+**Status:** complete. 16 evaluations. **ETH HOLDOUT UNTOUCHED - no PASS, so
+`--final` was not a candidate and was not run.** No idea file edited. ETH now
+has **89 evaluations**.
+
+**16 evaluations: 0 PASS, 1 WATCH, 5 REJECT, 10 INCONCLUSIVE.** Both controls on
+the 1 WATCH row. **The pre-registration's thinness prior was right and it is the
+headline on this coin: 9 of the 16 cells were measured at under 50 TRAIN signals
+before the first run, and 10 rows came back INCONCLUSIVE.**
+
+### The four ideas, VALID mean R by clock
+
+| idea | 15m | 30m | 1h | 4h | verdicts |
+|---|---|---|---|---|---|
+| **M1** 050 `oi_flush_reversal` | −0.159 | +0.028 | +0.018 | +0.303 (21 trades) | 3 INC, 1 REJ |
+| **M2** 051 `retail_crowd_fade` | +0.026 | **+0.080** | +0.151 | +0.099 (52) | 2 INC, 1 WATCH, 1 REJ |
+| **M3** 052 `smart_money_divergence` | −0.062 | −0.103 | −0.111 | +0.043 (18) | **4 INC** |
+| **M4** 053 `oi_confirmed_breakout` | −0.145 | −0.068 | −0.075 | +0.022 | 3 REJ, 1 INC |
+
+### The one WATCH row, with controls
+
+| config | v trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S | baseline | benchmark |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **051 M2 @30m** | 197 | +0.1453 | 0.0656 | **+0.0797** | [−0.1088, +0.2842] | +7.1% | 14.4% | 94/103 | **SKILL** | **NO_EDGE** |
+
+**One SKILL, one NO_EDGE, on the same row** - the same `SKILL + NO_EDGE` shape as
+BTC 022, which spent a holdout and returned −0.0102 R, and as the port round's
+ChartArt MACD+SMA200 rows. Per `PLAN.md` §5 step 1 that is not a strategy.
+
+### What the trade lists say
+
+Per-leg mean R on VALID, from `results/ETHUSDT/eval_trades/`:
+
+| idea | clock | long leg | short leg | 2023 | 2024 |
+|---|---|---|---|---|---|
+| M1 | 15m | −0.107 (157) | **−0.278** (69) | −0.298 | −0.013 |
+| M1 | 30m | +0.083 (134) | **−0.107** (55) | −0.038 | +0.096 |
+| M1 | 1h | +0.031 (60) | −0.010 (29) | −0.198 | +0.282 |
+| M2 | 30m | +0.133 (94) | +0.031 (103) | +0.005 | +0.134 |
+| M2 | 1h | **+0.294** (61) | +0.032 (74) | +0.050 | +0.233 |
+| M2 | 4h | **+0.684** (17) | **−0.185** (35) | +0.045 | +0.152 |
+| M3 | 1h | −0.139 (92) | −0.075 (73) | −0.039 | −0.167 |
+| M4 | 15m | −0.173 (282) | −0.099 (173) | −0.220 | −0.085 |
+| M4 | 30m | −0.054 (202) | −0.090 (134) | −0.110 | −0.035 |
+
+**1. M1's short leg loses here too, and by more.** −0.278 at 15m, −0.107 at 30m,
+−0.010 at 1h, −0.101 at 4h, against a long leg of −0.107 to +0.429. **The
+mirror-image finding from BTC Exp 037 replicates on the second coin: fading a
+rally that comes with rising open interest is the losing side, and it is worse
+on ETH than on BTC in 2023** (−0.298 against −0.220 at 15m). Two coins, one
+mechanism, and the mechanism is the reason the idea is wrong rather than the
+reason it is untested.
+
+**2. M2's long leg is positive on this coin too, and the 4h cell's long leg
+(+0.684 on 17 trades) has no short-side support at all** (−0.185 on 35). The
+pre-registered prediction - M2 is the idea with a structural reason to be long
+when retail is short - is confirmed here as well, which makes it the round's
+most replicated result and still only a DRIFT/SKILL/NO_EDGE reading. **The year
+split runs the other way from BTC's**: M2@1h is +0.050 in 2023 and +0.233 in
+2024 here, against +0.400 and +0.082 on BTC. Both coins positive in both years,
+in opposite order.
+
+**3. M3 is untestable on ETH, exactly as pre-registered, and this is a data
+limitation rather than evidence.** All four rows INCONCLUSIVE, VALID mean R
+negative at 15m/30m/1h, and the trade lists confirm the row is being fed by very
+few periods: 504 trades at 15m but a 1h TRAIN mean R of **+1.6635 against a VALID
+−0.1109**. The cause is measured, not guessed: **only 19.2% of this coin's TRAIN
+has a valid top-trader ratio against 80.79% NaN, while VALID is 0.014% NaN.**
+So the paired test the pre-registration wanted - do "fade the crowd" and "follow
+the smart money" agree? - **is available on the primary coin only, and BTC's
+answer was that they agree by both being long.** A negative ETH row for M3 is
+not evidence against top-trader divergence and must not be read as one.
+
+**4. M4 is negative at all three clocks where it trades, against BTC's +0.800
+and +0.489 at 15m and 30m.** BTC's two biggest numbers of the round do not
+replicate on the second coin, which is the cleanest possible statement that they
+were the bull market and not an edge. `AGENTS.md` §9's rule applied literally
+again: **+0.8000 on 29 trades, 27 of them long, in 2023-24 BTC.**
+
+### Cost, against the pre-registration
+
+Measured VALID `cost_r` here is **0.0218 to 0.1011, median 0.0672**, against a
+pre-registered fee-only floor of 0.023-0.093. At 15m the floor is 0.093 and the
+measurement is 0.0991, so **funding again added only about 0.006 R** - the
+pre-registration's funding ceiling of 0.14 R at 144 h was never approached,
+because realised holds are 33-85 bars, not the cap. The one cell above
+`LESSONS.md` §1's 0.1 R line is 15m at 0.1011, and 15m is again the worst clock.
+
+### Verdict
+
+`REJECT`, and the round's stop rule: **no PASS on this coin, so no holdout was
+used.** 16 evaluations, 0 PASS, 1 WATCH (SKILL / NO_EDGE), 5 REJECT, 10
+INCONCLUSIVE.
+
+Across both coins the round is **32 evaluations, 0 PASS, 8 WATCH (4 SKILL, 4
+DRIFT, 8 of 8 NO_EDGE), 9 REJECT, 15 INCONCLUSIVE**, and the project total is now
+**438 evaluation rows, 5 holdout runs, 5 FAILED, 0 CONFIRMED.** The one data
+source this project had never read - Binance's open interest and long/short
+ratios - did not produce an edge on either coin, and the two hypotheses written
+against it turned out to be the same long trade.

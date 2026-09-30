@@ -1,4 +1,54 @@
-> **Next (owner-approved 2026-09-30): new data** - open interest and long/short ratios (`docs/research/PLAN.md` §14, BTC Exp 035). ETH is replication only (TRAIN with metrics 2021-12..2022-12, 13 months). Round M1-M4 = `ideas/050_*`-`053_*`, 16 files. Pre-register in Exp 009. First run `python src/datafeed.py --metrics`.
+> **Exp 010 — the new-data round M1-M4 is DONE on this coin: 16 evaluations,
+> 0 PASS, 1 WATCH (SKILL / NO_EDGE), 5 REJECT, 10 INCONCLUSIVE. No holdout was
+> used, because nothing passed.** ETH now has **89 evaluations**. **The
+> pre-registration's thinness prior was the headline: 9 of the 16 cells were
+> measured at under 50 TRAIN signals before the first run, and 10 rows came back
+> INCONCLUSIVE.**
+>
+> | idea | 15m | 30m | 1h | 4h | verdicts |
+> |---|---|---|---|---|---|
+> | M1 050 `oi_flush_reversal` | −0.159 | +0.028 | +0.018 | +0.303 (21) | 3 INC, 1 REJ |
+> | M2 051 `retail_crowd_fade` | +0.026 | **+0.080** | +0.151 | +0.099 (52) | 2 INC, 1 WATCH, 1 REJ |
+> | M3 052 `smart_money_divergence` | −0.062 | −0.103 | −0.111 | +0.043 (18) | **4 INC** |
+> | M4 053 `oi_confirmed_breakout` | −0.145 | −0.068 | −0.075 | +0.022 | 3 REJ, 1 INC |
+>
+> The one WATCH row: **051 M2 @30m**, 197 trades, gross +0.1453, cost 0.0656,
+> mean R **+0.0797**, CI [−0.1088, +0.2842], CAGR +7.1%, maxDD 14.4%, 94 long /
+> 103 short — **SKILL and NO_EDGE on the same row**, the `SKILL + NO_EDGE` shape
+> of BTC 022 and of the port round's ChartArt MACD+SMA200.
+>
+> **Three things this coin adds, one of them a replication and one of them a
+> correction to what this coin can be used for:**
+> 1. **M1's losing leg replicates.** The short leg after an up-flush is −0.278 at
+>    15m and −0.107 at 30m here, worse than BTC in 2023 (−0.298 against −0.220).
+>    Two coins, one mechanism: fading a rally on *rising* open interest loses.
+> 2. **M2's long leg replicates** (+0.294 at 1h, +0.684 at 4h on 17 trades) and
+>    **the year split runs the opposite way from BTC's** — +0.050 in 2023 then
+>    +0.233 in 2024, against +0.400 then +0.082 on BTC. Both coins positive in
+>    both years, in opposite order. That is the strongest thing that can be said
+>    for M2, and it is still NO_EDGE.
+> 3. **M3 is untestable on ETH and that is a data limitation, not a result.**
+>    All four rows INCONCLUSIVE, VALID negative at 15m/30m/1h, and a 1h TRAIN
+>    mean R of **+1.6635 against VALID −0.1109**. Cause measured, not guessed:
+>    **80.79% of this coin's TRAIN has no top-trader ratio (21,908 valid rows of
+>    114,041) against 0.014% NaN in VALID.** So the round's paired test — do
+>    "fade the crowd" and "follow the smart money" agree? — **is available on the
+>    primary coin only**, and BTC's answer was that they agree by both being
+>    long. **A negative ETH row for M3 must not be read as evidence against
+>    top-trader divergence.**
+> 4. **BTC's two biggest numbers of the round do not replicate here**: M4 is
+>    negative at 15m/30m/1h against +0.800 / +0.489 on BTC. That is the
+>    cleanest statement available that they were the bull market.
+>
+> **The data limitation, by owner decision 2026-10-01:**
+> `datafeed.py --metrics` prints `METRICS VALIDATION: PROBLEMS FOUND` on this
+> coin because Binance reports `sum_open_interest = 0` on 208 of 499,540 rows
+> (0.042%). **No code was changed**; the measured effect on signals was nil on
+> BTC and is the same magnitude here. All 1,735 days are present and only 0.03%
+> of the 5-minute slots are missing.
+>
+> Details: `journal/ETHUSDT/experiments.md` Exp 009 (pre-registration) and
+> Exp 010 (results). BTC half: BTC Exp 036 / Exp 037.
 
 > **Exp 008 (review, 2026-09-30):** the round's verdict stands. Corrections: the pre-registered cost floor was about 3.5× too low, so the 15m ports died on cost as `LESSONS.md` §1 predicted; T3's cost is fees and slippage, not the time cap; T3's BTC SKILL does not replicate on ETH and leans on 2023.
 
@@ -49,10 +99,10 @@
 > **CLOSED** (Exp 003 stop rule). The funding defect is fixed (Exp 004). Research continues on
 > **SOLUSDT and BNBUSDT** (`docs/research/PLAN.md` §12).
 
-_Last updated: 2026-09-30, Exp 007 (TradingView port round 1 done on ETHUSDT —
-0 PASS, no holdout used). Rules: `AGENTS.md`.
-Plan: `docs/research/PLAN.md` §11 and §13. BTCUSDT is closed for its own
-families (BTC Exp 029); SOLUSDT and BNBUSDT are closed too._
+_Last updated: 2026-10-01, Exp 010 (the new-data round M1–M4 is done on ETHUSDT
+— 0 PASS, no holdout used, and M3 is untestable here for want of top-trader
+data). Rules: `AGENTS.md`. Plan: `docs/research/PLAN.md` §11, §13 and §14. BTCUSDT
+is closed for its own families (BTC Exp 029); SOLUSDT and BNBUSDT are closed too._
 
 > **Exp 003 - ROUND E1 IS DONE. 0 PASS, 0 CONFIRMED, the ETH holdout is
 > untouched.** 49 evaluations: **0 PASS, 32 WATCH, 14 REJECT, 3 INCONCLUSIVE.**
