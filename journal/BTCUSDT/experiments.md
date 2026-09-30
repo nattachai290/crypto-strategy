@@ -3399,3 +3399,262 @@ never positive (0 of 52). `tf_variants.py` now writes 15m 30m 1h 4h by default
 (`ideas/044_*`–`049_*`) are deleted. Round 1 is now **T1–T6: 24 idea files,
 48 evaluations** on BTCUSDT and ETHUSDT. T4's author also named 5m; that chart
 is dropped with the rest. Earlier records on 1m–5m stay as they are.
+
+---
+
+## Exp 032 - TradingView ports T1-T6, pre-registration (BTCUSDT)
+
+**Date:** 2026-09-30
+**Status:** pre-registration, written BEFORE the first port evaluation. Zero
+evaluations in this entry. No idea file is edited by this round and no port or
+timeframe is added to it.
+
+**What this round is.** All four coins are closed for the project's own idea
+families, and the owner asked a different question: **do published TradingView
+strategies survive honest testing?** A TradingView backtest usually has three
+things wrong with it - default commission 0, `request.security()` or intrabar
+fills that can see the future, and nothing held out. This harness fixes all
+three. **The ports themselves were written by the planner from Pine Script the
+owner pasted; this agent ran them and did not write any Pine from memory**
+(PLAN §13 rule 0, and AGENTS.md's header).
+
+**Round 1 = ports T1-T6 = 24 files x 2 coins = 48 evaluations.** Timeframes are
+**15m 30m 1h 4h** only; 1m, 3m and 5m were dropped by the owner on 2026-09-29
+before any run, on `LESSONS.md` §1 (cost made them negative on TRAIN and VALID).
+Variants are `tf_variants.py` **chart mode**, the same bar counts on every chart,
+which is how a TradingView user applies a script. The 4h file is the source for
+T1/T2/T3/T5 and the 15m file for T4/T6.
+
+**Session checklist passed first:** `test_engine.py` ends with **ALL CHECKS
+PASSED** and includes test **1b** (hand-computed funding, notional x rate);
+`datafeed.py` gives **VALIDATION: OK** on BTCUSDT and on ETHUSDT.
+
+### 1. TRAIN signal counts, per port, per timeframe, per coin
+
+`recipe()` on each coin's own TRAIN 2020-2022, `direction` as the file has it.
+**Bold = under the 150 floor**, which `PLAN.md` §13 says means expect
+INCONCLUSIVE: run it anyway and do not change the file.
+
+| port | 15m | 30m | 1h | 4h (source) |
+|---|---|---|---|---|
+| T1 044 RSI+BB both sides | 723 | 332 | **149** | **47** |
+| T2 045 LuxAlgo SMC | 408 | 202 | **95** | **23** |
+| T3 046 MACD+SMA200 | 977 | 571 | 254 | **77** |
+| T4 047 Super Scalper (src 15m) | **7,257** | 3,588 | 1,787 | 493 |
+| T5 048 RSI+BB long only | 357 | **156** | **67** | **15** |
+| T6 049 Liquidity Sweep (src 15m) | 461 | 319 | 168 | **10** |
+
+ETH, same measure:
+
+| port | 15m | 30m | 1h | 4h (source) |
+|---|---|---|---|---|
+| T1 044 | 714 | 342 | 178 | **44** |
+| T2 045 | 391 | 194 | **103** | **17** |
+| T3 046 | 1,053 | 575 | 274 | **68** |
+| T4 047 | **7,702** | 3,915 | 1,915 | 518 |
+| T5 048 | 338 | **136** | **61** | **14** |
+| T6 049 | 460 | 271 | 152 | **15** |
+
+Four things this says, all of them before the first run:
+
+- **The same-bar coincidence of two crosses is rare, and rarer the slower the
+  chart.** T5 needs `RSI(6)` to cross 50 on the same bar as the close crossing
+  through the Bollinger band. On the 4h chart that happens **15 times in three
+  years on BTC and 14 on ETH** - the T1/T2/T5 4h files cannot produce 100
+  VALID trades and are expected to be INCONCLUSIVE or REJECT for want of
+  trades, not for want of edge. T2's 4h is the same story at 23 and 17.
+  **On TradingView these scripts are read on 5m-15m charts**, and that is where
+  the signals exist: T1 has 723 on the 15m.
+- **T4 and T6 are the opposite problem: 7,257 and 461 signals on the 15m.** T4's
+  entry is "a bar that rose more than one ATR band and whose RSI(25) is above
+  its RSI(100)", which on a 15m chart is a common event. With one position at a
+  time and a 96 h cap, the trade count will be set by the cap, not by the
+  signals.
+- **T6 at 4h has 10 signals on BTC and 15 on ETH**, exactly as `PLAN.md` §13
+  predicted: the script's session is 1200-1600 exchange time = UTC 12-15 on
+  Binance, and on a 4h chart only the 12:00 bar falls inside it. T6@4h is
+  expected to be INCONCLUSIVE and that is a property of the port, not a defect.
+- **T5 never has a short signal, by construction** (`direction: long`), so its
+  counts are long-only. Per `LESSONS.md` §2, a long-only idea on a rising market
+  is exactly the shape the random-entry control exists to catch.
+
+### 2. Expected `cost_r` per timeframe
+
+Two bounds, and the gap between them is the whole point. Entry cost is 0.070% of
+price taker (0.05% + 0.02% slippage) or 0.040% post-only (0.02% + 0.02%); a round
+trip pays roughly twice that in fees. Funding on BTCUSDT TRAIN is 0.01886% per
+8h abs mean, on ETHUSDT 0.02325%.
+
+**The `fee-only` column is a floor and the `+ full hold` column is a ceiling.**
+The ceiling assumes every trade runs to its time cap; T1/T3/T5 reverse on the
+opposite signal and T2 has a 120-480 h cap, so most trades close much earlier and
+the realised cost should sit near the floor. Both are written down so the measured
+`valid_cost_r` can be checked against them afterwards.
+
+| port | tf | stop | fee-only cost_r | + full hold funding (ceiling) |
+|---|---|---|---|---|
+| T1 / T3 / T5 | 15m | 1.0-1.5% | **0.027-0.040** | 0.048-0.284 (BTC), 0.059-0.349 (ETH) |
+| T1 / T3 / T5 | 30m | 1.41-2.12% | **0.019-0.028** | 0.067-0.402, 0.083-0.495 |
+| T1 / T3 / T5 | 1h | 2.0-3.0% | **0.013-0.020** | 0.095-0.566, 0.116-0.698 |
+| T1 / T3 / T5 | 4h | 4.0-6.0% | **0.007-0.010** | 0.189-1.132, 0.233-1.395 |
+| T2 | 15m | 1.0-1.5% | **0.027-0.040** | 0.012-0.071 (BTC), 0.015-0.088 (ETH) |
+| T2 | 30m | 1.41-2.12% | **0.019-0.028** | 0.017-0.101, 0.021-0.124 |
+| T2 | 1h | 2.0-3.0% | **0.013-0.020** | 0.024-0.142, 0.029-0.175 |
+| T2 | 4h | 4.0-6.0% | **0.007-0.010** | 0.047-0.283, 0.058-0.349 |
+| T4 (ATR 2x swing) | 15m | median 1.66% BTC / 2.18% ETH | **0.024 / 0.018** | |
+| T4 | 30m | 2.47% / 3.22% | **0.016 / 0.012** | |
+| T4 | 1h | 3.55% / 4.61% | **0.011 / 0.009** | |
+| T4 | 4h | 7.11% / 9.21% | **0.006 / 0.004** | |
+| T6 (swing+1.2 ATR) | 15m | median 1.15% BTC / 1.49% ETH | **0.035 / 0.027** | |
+| T6 | 30m | 1.66% / 2.06% | **0.024 / 0.019** | |
+| T6 | 1h | 2.21% / 2.86% | **0.018 / 0.014** | |
+| T6 | 4h | 3.93% / 6.93% | **0.010 / 0.006** | |
+
+**Stated plainly: the fee-only cost is between 0.004 R and 0.040 R everywhere, and
+`LESSONS.md` §1's rule is about the 0.1 R line, which only the *ceiling* of the
+invented time caps crosses.** That ceiling is an artefact of the cap the engine
+forces on us, not of the scripts. So the prior for this round is **not** that
+these will die on cost the way 1m-15m variants did in Rounds 1-4; the prior is
+`LESSONS.md` §2 and §3, which is that they will be long-in-a-bull-market and will
+fall to about zero on a holdout. T5 is long-only and is that shape by
+construction.
+
+### 3. Deviations from the TradingView originals, port by port
+
+These are the planner's lists in `PLAN.md` §13, restated here so the record is
+self-contained. **Nothing below is a research choice; the only invented items are
+the stop and the time cap, because the engine has no stop-and-reverse and every
+trade must risk 1% (PLAN §13 rule 1).**
+
+**T1 `044_tv_chartart_rsi_bb` - ChartArt, "Bollinger + RSI, Double Strategy" v1.1**
+- Pine: long on `crossover(RSI(6), 50)` **and** `crossover(close, BB200 lower)`
+  on the same bar; short on the mirror. The port uses the existing blocks
+  `rsi_revert(6, 50, 50)` and `bb_revert(200, 2.0)` with `trigger_mode: all` and
+  `confirm_bars: 1`. They match Pine exactly: Wilder-smoothed RSI, SMA with a
+  population stdev, `crossover` meaning now above and the previous bar not above.
+- **Deviations:** the script has **no stop and no time cap**; the port adds a
+  `pct` stop of 4%/6% at 4h (scaled by chart mode) and a time cap of 480/1920 h
+  at 4h. Exit is the script's own reversal, ported as `exit_on: "opposite"`.
+  TradingView's commission and the stop-order fill at the next open are replaced
+  by this harness's costs and fill.
+- The author writes that v1.1 was "made more successful in backtesting". It was
+  tuned on the chart it is shown on, which is one more reason to expect VALID to
+  disappoint. **This is mean reversion, which the project closed for its own
+  ideas (BTC Exp 016, Exp 024). It is run as a port, not as a retry.**
+
+**T2 `045_tv_luxalgo_smc` - Smart Money Concepts [LuxAlgo], Pine v5**
+- **Licence CC BY-NC-SA 4.0, (c) LuxAlgo. Non-commercial use only; attribution is
+  in `src/recipes.py`.** The port (`smc_structure`) is a derivative under the same
+  licence.
+- **Ported line by line:** `leg(size)`, `getCurrentStructure` (a pivot is
+  confirmed `size` bars late), and `displayStructure` (a close crosses the last
+  pivot not yet crossed; CHoCH if against the structure trend, BOS if with it).
+  Internal breaks are ignored when the internal level equals the swing level; the
+  confluence filter is off, as in the defaults. Swing length 50, internal size 5.
+  The script's evaluation order is kept.
+- **Not ported, and they are not signals:** order blocks, fair value gaps (they
+  use `request.security(..., lookahead_on)`, which is the look-ahead this harness
+  exists to remove), equal highs/lows, MTF levels, premium/discount zones.
+- **It is an indicator.** The entries are its own alert conditions: long on a
+  bullish BOS/CHoCH, short on a bearish one. Which alert (swing/internal x
+  CHoCH/BOS) is a grid key chosen on TRAIN, giving 16 combinations.
+- **Deviations:** the invented `pct` stop 4%/6% and a 120/480 h cap at 4h. The
+  script has no exits of its own.
+- Test 7 checks causality, the output shape, and an 11-bar hand trace of the Pine
+  logic (bearish BOS -> bullish CHoCH -> bearish CHoCH -> bullish CHoCH).
+
+**T3 `046_tv_chartart_macd_sma` - ChartArt, "MACD + SMA 200 Strategy" v1.0**
+- Pine, author defaults 12/26/9/200, **all simple moving averages** - it is not
+  the usual EMA MACD: `macd = SMA12 - SMA26`, `hist = macd - SMA9(macd)`; long
+  on `crossover(hist, 0)` **and** `macd > 0` **and** `SMA12 > SMA26` **and**
+  `close[26] > SMA200`; short on the mirror. New block `chartart_macd_sma`,
+  checked in test 7 against a plain loop that follows the Pine lines (0
+  mismatches).
+- **Deviations:** the script only reverses and so does the port
+  (`exit_on: "opposite"`). The `pct` stop 4%/6% and the 480/1920 h cap are ours.
+  **The script's 50% intraday-loss halt is not modelled: at 1% risk it cannot
+  bind.** Its stop-order entry at the signal bar's low/high fills at the next open
+  unless the next bar gaps through; the `strategy.cancel` lines only remove
+  unfilled orders.
+
+**T4 `047_tv_super_scalper` - "Super Scalper - 5 Min 15 Min", Pine v5**
+- Pine, defaults kept: ATR 14 smoothed with **WMA**, multiplier 1.0, bands =
+  close +/- band; long when `open < close - band` (a bar that rose more than the
+  band) **and** `RSI(25) > RSI(100)`; short on the mirror.
+- **The EMA 21/65 "golden cross" in the script is only plotted, so it is not part
+  of the signal.**
+- **Deviations:** the script computes a stop (2 ATR beyond the signal bar's
+  low/high) and a take-profit (5 ATR) but **never uses them** - on TradingView it
+  only reverses. The port reverses (`exit_on: "opposite"`) and keeps the author's
+  2-ATR stop as the mandatory stop, dropping the never-executed target. A long
+  time cap is the only grid key. The ATR stop grows with the timeframe, so the
+  1h/4h variants may be `UNSIZABLE` at 2024-25 BTC prices - a recorded outcome,
+  not a reason to change the file. The author's other chart, 5m, is dropped with
+  1m-5m.
+
+**T5 `048_tv_chartart_rsi_bb_long_v12` - ChartArt, "Bollinger + RSI, Double
+Strategy Long-Only" v1.2**
+- Same entry as T1, **long only**. The exit is the script's own `strategy.close`:
+  `RSI(6)` crossing below 50 on the same bar the close crosses down through the
+  upper band - which is T1's short trigger - ported with `exit_on: "opposite"`
+  and `direction: long`.
+- **Deviations:** the script has no stop; the port adds the `pct` stop 4%/6% and
+  the time cap. It differs from T1 in direction, so it has its own structure and
+  version budget.
+- The author says long-only "made it more successful in backtesting". On a rising
+  market that is what being long does, and the two controls are there to catch it.
+
+**T6 `049_tv_liquidity_sweep` - "Liquidity Sweep Reversal Strategy", Pine v6
+(MPL 2.0)**
+- New trigger `liquidity_sweep` (Level 2). Pivot highs/lows (7/7) become levels,
+  deduplicated within 0.25 ATR and dropped after 150 bars. A sweep is a bar that
+  wicks through a level and closes back inside, with volume > 1.3 x SMA20 and
+  wick >= 1.5 x body, confirmed on the next bar past the sweep bar's midpoint. The
+  session is the `hours` filter with UTC 12-15.
+- **The script has its own exits and they are ported as they are:** stop 1.2 ATR
+  beyond the sweep wick, TP 1.5 R, break-even at 50% of the way to TP
+  (`be_at 0.75`). **This is the first port with a real stop and target, so it
+  needs no `exit_on`.**
+- **Deviations:** the stop is measured from the fill, not the confirmation close,
+  and is wider only when the confirmation bar trades below the sweep wick;
+  break-even reacts to a close, not an intrabar touch; a sweep during an open
+  trade is dropped, not kept pending; a time cap is added (the only grid key);
+  costs are 0.05% + 0.02% instead of TradingView's 0.04% + 1 tick.
+- Source 15m (the script names no timeframe; it is an intraday session strategy).
+  **On 4h only the 12:00 bar is in the session, so few trades there** - measured
+  above at 10 on BTC and 15 on ETH.
+
+**Refused by rule, and not present:** no port uses a grid beyond the invented
+stop/cap and T2's alert choice, none uses martingale, none averages down
+(AGENTS.md rule 7, PLAN §13 rule 4).
+
+### 4. How the round is judged, and what stops it
+
+- Every WATCH and PASS gets `baseline.py` and `benchmark.py` on both coins
+  (AGENTS.md step 6b/6c). `LESSONS.md` §2's record - DRIFT on 102 of 108, NO_EDGE
+  on 101 - is the prior.
+- **`--final` is not run by this agent.** If a config qualifies, the round stops
+  and the owner decides, because a holdout is a one-shot resource per config and
+  the plan reserves it.
+- **Report per port (PLAN §13 rule 5):** what TradingView claims, next to what is
+  left after costs, controls, and - for a PASS - the holdout.
+- **Stop rule (PLAN §13 rule 6): a round with no holdout CONFIRMED ends the
+  TradingView question unless the owner brings new scripts.**
+
+### 5. The prior, written down before the first run
+
+`LESSONS.md` §1 says cost is survivable here (the fee-only cost is 0.004-0.040 R
+everywhere). §2 says the positive results in this project have all been long
+positions in a bull market, and that a "both" idea whose short side loses is a
+long-only idea - so **the first thing to read on every port is its long and short
+split.** §3 says a VALID mean R of +0.2 should be read as "maybe +0.0 to +0.05".
+§6 says no entry family with 3+ ideas is positive on TRAIN and VALID, across 45
+price-and-volume ideas, and that the untested direction is data the project has
+never used: open interest, long/short account ratios, liquidations.
+
+**What would be new information here, then?** Not a new entry family - a port is
+still price and volume, plus session and volume detail. The new information would
+be a published script whose author's claim survives this harness, which is a
+test of the *claim* rather than another test of the family. That is why the round
+is worth running at all, and why the honest report must put "what TradingView
+claims" next to the measured number.

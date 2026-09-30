@@ -526,3 +526,103 @@ Round E1's stop rule (Exp 001) fired, so ETH research stops. 041@1m stays a
 WATCH and gets no holdout. The owner approved trying SOLUSDT and BNBUSDT with
 the same seven families, run by the research agent (`PLAN.md` §12,
 `journal/SOLUSDT/`, `journal/BNBUSDT/`).
+
+---
+
+## Exp 006 - TradingView ports T1-T6, pre-registration (ETHUSDT)
+
+**Date:** 2026-09-30
+**Status:** pre-registration, written BEFORE the first ETH port evaluation. Zero
+evaluations in this entry.
+
+**This is the ETH half of the round pre-registered on BTC as Exp 032.** The
+ports are the same files, run unchanged with `SYMBOL=ETHUSDT`; ETH's records,
+`eval_id`s and version budget are its own (PLAN §13 rule 3). The rule that the
+ports were written from the owner's pasted Pine source and not from memory, the
+deviation lists, the judgement and the stop rule are in BTC Exp 032 and are not
+repeated here. What follows is what is **specific to ETH**.
+
+**Session checklist passed first:** `test_engine.py` ends with **ALL CHECKS
+PASSED** with test **1b** present; `datafeed.py` gives **VALIDATION: OK** on
+ETHUSDT.
+
+### 1. TRAIN signal counts on ETH, per port, per timeframe
+
+`recipe()` on ETH TRAIN 2020-2022. **Bold = under the 150 floor** - run anyway,
+do not change the file (PLAN §13).
+
+| port | 15m | 30m | 1h | 4h (source) |
+|---|---|---|---|---|
+| T1 044 RSI+BB both sides | 714 | 342 | 178 | **44** |
+| T2 045 LuxAlgo SMC | 391 | 194 | **103** | **17** |
+| T3 046 MACD+SMA200 | 1,053 | 575 | 274 | **68** |
+| T4 047 Super Scalper (src 15m) | **7,702** | 3,915 | 1,915 | 518 |
+| T5 048 RSI+BB long only | 338 | **136** | **61** | **14** |
+| T6 049 Liquidity Sweep (src 15m) | 460 | 271 | 152 | **15** |
+
+**ETH's counts track BTC's closely**, within about 10% on every cell, so the
+shortage of 4h signals is a property of the ports rather than of the coin. T5's
+4h file has **14 signals in three years**; T2's has 17; T6's 4h has 15. Those
+five files cannot reach 100 VALID trades and are expected to be INCONCLUSIVE for
+want of trades. On the 15m chart the same ports produce 338 to 7,702.
+
+### 2. Expected `cost_r` on ETH
+
+Entry cost is the same 0.070% taker / 0.040% post-only of price. **ETH's TRAIN
+funding is 0.02325% per 8h abs mean against BTC's 0.01886% - 1.23x - so every
+ceiling below is about 23% higher than BTC's, and the fee-only floors are set by
+the stop width instead.** ETH's ATR is wider, so the ATR-stop ports are
+*cheaper* per R on ETH than on BTC at every timeframe:
+
+| port | tf | stop | fee-only cost_r (ETH) | + full hold funding, ceiling (ETH) |
+|---|---|---|---|---|
+| T1 / T3 / T5 | 15m | 1.0-1.5% | **0.027-0.040** | 0.059-0.349 |
+| T1 / T3 / T5 | 30m | 1.41-2.12% | **0.019-0.028** | 0.083-0.495 |
+| T1 / T3 / T5 | 1h | 2.0-3.0% | **0.013-0.020** | 0.116-0.698 |
+| T1 / T3 / T5 | 4h | 4.0-6.0% | **0.007-0.010** | 0.233-1.395 |
+| T2 | 15m | 1.0-1.5% | **0.027-0.040** | 0.015-0.088 |
+| T2 | 30m | 1.41-2.12% | **0.019-0.028** | 0.021-0.124 |
+| T2 | 1h | 2.0-3.0% | **0.013-0.020** | 0.029-0.175 |
+| T2 | 4h | 4.0-6.0% | **0.007-0.010** | 0.058-0.349 |
+| T4 (ATR 2x swing) | 15m | median 2.18% of price | **0.018** | |
+| T4 | 30m | 3.22% | **0.012** | |
+| T4 | 1h | 4.61% | **0.009** | |
+| T4 | 4h | 9.21% | **0.004** | |
+| T6 (swing + 1.2 ATR) | 15m | median 1.49% of price | **0.027** | |
+| T6 | 30m | 2.06% | **0.019** | |
+| T6 | 1h | 2.86% | **0.014** | |
+| T6 | 4h | 6.93% | **0.006** | |
+
+**The fee-only cost is 0.004-0.040 R on every ETH cell**, inside `LESSONS.md` §1's
+0.1 R rule, so the round's prior is not a cost death. It is `LESSONS.md` §2 -
+these will be long positions in a bull market - and §3, a VALID mean R of +0.2
+meaning "maybe +0.0 to +0.05".
+
+### 3. What is different about running these on ETH
+
+- **`LESSONS.md` §5: never carry a config to another coin without re-running it.
+  The same idea file has the same VALID sign on BTC/ETH 71-73% of the time,
+  Spearman +0.30 to +0.43.** So ETH is neither a free confirmation nor a wasted
+  duplicate; it is a 70%-correlated second look, and a disagreement is
+  informative rather than redundant.
+- **ETH's VALID 2023-24 is a bull year like BTC's but a different one**, and per
+  `LESSONS.md` §2 the ETH long side was positive in 78% of its evaluations
+  against BTC's 56% - so **T5, which is long-only by construction, has a better
+  prior on ETH than on BTC.** That is a drift prior, not an edge prior, and it is
+  exactly what `baseline.py` is there to separate.
+- **Sizing is a non-issue on ETH** (Exp 003: a 6% stop sizes while ETH < 166,667
+  against a holdout peak of 4,832, 34x headroom), so T4's and T6's wide ATR
+  stops at 1h and 4h - which `PLAN.md` §13 flags as possibly `UNSIZABLE` on BTC -
+  are comfortably sizable here. **That difference is recorded in advance**: a
+  `UNSIZABLE` on BTC and a clean REJECT on ETH for the same file would be a
+  sizing artefact on one side only.
+- **T2's licence (CC BY-NC-SA 4.0, LuxAlgo) travels with the port**, on either
+  coin: non-commercial use only.
+
+### 4. Judgement and stop rule
+
+Unchanged from BTC Exp 032: both controls on every WATCH and PASS; **`--final`
+is not run by this agent** - a qualifying config stops the round and goes to the
+owner, because a holdout is one-shot per config; report each port's TradingView
+claim next to what is left after costs and controls; **a round with no holdout
+CONFIRMED ends the TradingView question unless the owner brings new scripts.**
