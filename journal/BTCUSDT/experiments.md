@@ -3894,3 +3894,201 @@ reported) and alignment (the 4h bar closing at 04:00 uses the row created at
 - BTC primary, ETH replication only (13-month TRAIN);
 - 32 evaluations;
 - pre-registration in BTC **Exp 036** and ETH **Exp 009**.
+
+---
+
+## Exp 036 - New data: open interest and long/short ratios M1-M4, pre-registration (BTCUSDT)
+
+**Date:** 2026-10-01
+**Status:** pre-registration, written BEFORE the first M1-M4 evaluation. Zero
+evaluations in this entry. No idea file is edited by this round; no idea and no
+timeframe is added to it; `--final` is not run by this agent.
+
+**What this round is.** `LESSONS.md` §6 records that across 45 price-and-volume
+ideas no entry beat random timing, and 48 TradingView ports added nothing
+(§7). The one direction this project has never used is data it has not read:
+Binance's own 5-minute **open interest** and **long/short ratios**. The owner
+approved the round on 2026-09-30 (`PLAN.md` §14). BTCUSDT is **primary**,
+ETHUSDT is replication only and its numbers are never a finding on their own.
+
+**16 files = 4 ideas x 4 timeframes (15m 30m 1h 4h), on 2 coins = 32
+evaluations.** Source 1h for all four ideas; chart-mode variants. Stop 3% at 1h,
+scaled by chart mode to 1.5% / 2.12% / 6%. Cooldown 12 bars. Four grid cells per
+file (the idea's own threshold x the time cap). All four files are
+`direction: both`.
+
+**Session checklist.** `test_engine.py` ends with **ALL CHECKS PASSED** and
+contains test **1b** (funding, notional x rate) and test **11** (metrics: zip
+reading, causal alignment to the bars, blocks against loops).
+`datafeed.py` gives **VALIDATION: OK** on BTCUSDT and on ETHUSDT.
+
+### 1. The metrics data check, and one deviation from the plan, recorded
+
+`PLAN.md` §14's pre-registration item 1 asks for `METRICS VALIDATION: OK` on both
+coins. **It does not print OK, and the owner decided on 2026-10-01 that this is
+recorded as a limitation rather than fixed in code.** The numbers, in full:
+
+```
+[metrics] rows=630,374  2020-09-01 .. 2026-08-31  days=2188/2191
+           missing 5m slots=1,498 (0.24%)  dup=0  oi<=0=473  MISSING DAYS=[3 days]
+METRICS VALIDATION: PROBLEMS FOUND (see above)
+```
+
+Two separate things were in that, and only one survives.
+
+- **BTCUSDT was missing 3 whole days** - 2020-12-18, 2021-01-19, 2021-03-01 -
+  because the download's HTTPS connections were closed mid-transfer. **This was
+  repaired by re-fetching those three zips and merging them into the cache**
+  (630,374 rows, **2,191/2,191 days**, 99.900% of the 5-minute slots, 0
+  duplicates). No code was changed to do it; the repo's own `fetch_zip` and
+  `read_metrics_zip` were used, and `data/` is git-ignored.
+- **`sum_open_interest` equals 0 on 473 of 630,374 rows (0.075%)**, spread over
+  21 dates (2022-03-07/08, 2023-06-06, 2023-08-09, 2023-11-11/20/23/26,
+  2024-07-09..15, 2024-08-12, 2025-01-08, 2025-03-06, 2025-04-11/15, 2025-07-21).
+  **This is what keeps validation red.** The check in `src/datafeed.py` requires
+  open interest to be positive on every row, and Binance emits zeros.
+  **Owner decision 2026-10-01: leave the code alone and record it.**
+
+**What was measured about the impact, so the limitation is a number and not a
+worry.** The zeros do reach the bars as a real `0`, and `log(0)` in
+`t_oi_flush` does produce a divide-by-zero warning. But:
+
+| | bars with `oi == 0` | `t_oi_flush` signals: zeros kept vs zeros as missing |
+|---|---|---|
+| TRAIN 1h | 11 of 26,304 (0.042%) | 137 vs 137 at `oi_z` 1.5; **80 vs 80** at 2.5 |
+| VALID 1h | 29 of 13,952 (0.21%) | not re-measured; the effect cannot exceed the TRAIN one |
+| HOLDOUT 1h | 3 (0.02%) | - |
+
+**Zero spurious signals on this coin, at both grid values of M1.** The reason
+is that `_zscore` needs 90% of 720 bars present, so 11 zeros out of 26,304
+cannot move a mean or a standard deviation. The defect is real and the engine
+is left as it is; the measured effect on this round's signals is nil. ETH's
+equivalent is 208 rows (0.042%) and is recorded in ETH Exp 009.
+
+**Column coverage, per split, and this is the finding that shapes the round:**
+
+| split | window | rows | top-trader ratios NaN | all-account L/S NaN | taker ratio NaN | open interest NaN |
+|---|---|---|---|---|---|---|
+| TRAIN | 2020-09-01 .. 2022-12-31 | 244,875 | **37.63%** | 2.35% | 15.22% | 0% |
+| VALID | 2023-01-01 .. 2024-12-31 | 210,398 | **0.013%** | 0.009% | 0.000% | 0% |
+| HOLDOUT | 2025-01-01 .. 2026-08-31 | 175,101 | **0.031%** | 0.011% | 0.000% | 0% |
+
+**The top-trader ratios are missing for 37.6% of this coin's TRAIN and for
+0.013% of its VALID.** Counted in 5-minute rows, 152,731 of 244,875 TRAIN rows
+have a valid top-trader value against 210,370 of 210,398 in VALID - **the gap is
+not a clean start date, it is scattered through 2020-09 to 2021.** So **M3
+(`052_smart_money_divergence`) is trained on about 62% of TRAIN and tested on
+essentially 100% of VALID**, a coverage asymmetry that no gate in this harness
+measures. It is the same shape as the shorter-TRAIN problem `PLAN.md` §14 already
+names, one step worse and specific to M3.
+
+**Open interest itself is complete** on this coin, so M1 and M4 are not affected.
+That is the good news in this table.
+
+### 2. TRAIN signal counts, per idea, per timeframe
+
+`recipe()` on this coin's TRAIN with the metrics attached, per grid cell.
+**Bold = under the 150 floor**, so expect INCONCLUSIVE. Run anyway; do not
+change the file.
+
+| idea | 15m (stop 1.5%) | 30m (2.12%) | 1h (3%) | 4h (6%) |
+|---|---|---|---|---|
+| **M1** 050 `oi_flush_reversal` | 279-496 | 133-242 | **68-108** | **12-26** |
+| **M2** 051 `retail_crowd_fade` | 190-756 | **77-470** | **43-272** | **23-92** |
+| **M3** 052 `smart_money_divergence` | 423-681 | 201-402 | **99-244** | **30-71** |
+| **M4** 053 `oi_confirmed_breakout` | 142-1043 | 157-564 | **128-319** | **65-100** |
+
+**Every one of the four source-1h files is under 150 signals at the stricter of
+its two thresholds, and all four are under at 4h.** Only M4 at 1h and 4h, and
+M3 at 15m/30m, clear the floor in every cell. So the honest prior is that this
+round is **thin on trades**, not rich - the opposite of the port round, where
+T4 fired 7,257 times on its own 15m chart.
+
+The cause is visible in the counts: raising a z threshold from 1.5 to 2.5 costs
+roughly half the signals, because a rolling 720-bar z-score is a continuous
+variable and 2.5 is a much rarer event than 1.5. The grid chose on TRAIN between
+those two, so the looser cell is the one likely to be selected - and the looser
+cell is the one whose threshold is closest to "not extreme".
+
+**All four ideas are close to balanced long/short** in every cell (M1 1h 63 long
+/ 45 short, M2 1h 104/168, M3 1h 108/136, M4 1h 187/132 at the loose threshold).
+**This is the first round in the project where that is true** - the ports, the
+momentum ideas and every long-only idea were lopsided. `LESSONS.md` §2 says the
+project's positive results have all been long positions in a bull market, and
+§3 says a bull-market VALID will flatter a long leg. A balanced idea cannot hide
+behind that as easily, and the long/short split is therefore worth reading even
+on a REJECT.
+
+**The z-score warm-up also differs by clock.** 720 bars is 7.5 days at 15m but
+**120 days at 4h** (chart mode keeps 720 bars on every timeframe, per
+`PLAN.md` §14). So the 4h variants spend their first four months of TRAIN with
+no signal at all, on top of the metrics starting in September 2020. The 4h
+counts above are tiny for that reason as much as for the threshold.
+
+### 3. Expected `cost_r` per timeframe
+
+Round trip is about 0.14% of price (BTC Exp 034). Fee-only, funding excluded -
+and with holds of 12-576 h the funding term is the open question, as it was in
+the port round:
+
+| stop | 15m 1.5% | 30m 2.12% | 1h 3% | 4h 6% |
+|---|---|---|---|---|
+| fee-only `cost_r` | 0.093 | 0.066 | 0.047 | 0.023 |
+| inside `LESSONS.md` §1's 0.1 R line? | yes, just | yes | yes | yes |
+
+**The whole round sits inside the 0.1 R line on fees alone, at every
+timeframe** - the first time that has been true for a fresh idea set here, and a
+direct consequence of the 1.5-6% stops that this round uses. The prior is
+therefore **not** a cost death, the way 1m-15m variants were in Rounds 1-4. The
+risk sits in the funding term: at 1h the cap is 48-144 h, and BTC's TRAIN
+funding is 0.01886% per 8h abs mean, so 144 h of full hold is 0.34% of price,
+which on a 3% stop is 0.11 R - the same ceiling shape as the port round. The
+measured `valid_cost_r` is written down afterwards against this.
+
+### 4. What each idea should do in a falling market
+
+`PLAN.md` §14's item 4. **These are the falsifiable predictions, and they are the
+real output of the round** - the ETH TRAIN is 13 months of almost pure bear
+market, and this coin's TRAIN 2020-09 to 2022-12 ends in the 2022 bottom.
+
+- **M1 `oi_flush_reversal`** - long after a down-flush, short after an up-flush.
+  **The hypothesis is genuinely two-sided about a bear market and that is the
+  test.** If a sharp price fall with open interest collapsing is capitulation,
+  the long leg wins in a falling market. If it is the start of a liquidation
+  cascade, the long leg is a knife-catch and loses. **Prediction: M1's long leg
+  is where this idea lives or dies, and nothing else about it matters.**
+- **M2 `retail_crowd_fade`** - fade an extreme all-account long/short ratio.
+  Retail is short in a falling market, so an extreme short ratio should give a
+  long signal. **Prediction: M2 is the one of the four with a reason to have a
+  positive long leg in a bear market.**
+- **M3 `smart_money_divergence`** - follow the top traders against the crowd.
+  **This is the same bet as M2 read off a different column**, and that is the
+  point of running both: top traders lean short when the crowd leans long.
+  **Prediction: M2 and M3 should agree in sign, and M3's short leg should be
+  the one that earns in a bear market.** If M2 is positive and M3 is not, then
+  "smart money versus retail" is not a thing in this data and the loser is the
+  ratio, not the idea.
+- **M4 `oi_confirmed_breakout`** - a Donchian break taken only when open interest
+  is rising, i.e. new money rather than a short squeeze. This is trend
+  following, so **a downward break is a valid short signal and M4 should be able
+  to be short in a falling market.** But VALID 2023-24 is a bull year, so M4's
+  short leg will be thin there and the result will lean on the long side -
+  which is §2 and §3, and is why M4 needs both controls more than the others.
+
+**Where the round can honestly be new information.** §6 says no price-and-volume
+entry family is positive on both TRAIN and VALID; §7 says published scripts
+added nothing. A metrics idea is a different data source, so a PASS here would
+be the first thing in 406 evaluations that was not price and volume. **But the
+prior has to be the prior: `LESSONS.md` §2 (positive results are long positions
+in a bull market) and §3 (a VALID mean R of +0.2 means "maybe +0.0 to +0.05")**,
+and the thin signal counts above mean most cells will be INCONCLUSIVE before the
+gates are even read.
+
+### 5. Judgement and stop rule
+
+Unchanged from every earlier round: both controls on every WATCH and PASS;
+**`--final` is not run by this agent** - a qualifying config stops the round and
+goes to the owner, because a holdout is one-shot per config; per-idea long/short
+split reported on every row; and **`PLAN.md` §14's stop rule - if no config
+reaches a holdout CONFIRMED, the new-data question is closed for these four
+signals, and any other use of the metrics needs a new owner decision.**

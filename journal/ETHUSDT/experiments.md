@@ -722,3 +722,121 @@ The review of both coins is BTC journal **Exp 034**. Parts that apply here:
 
 The verdict stands: 0 PASS, 3 WATCH (all DRIFT, all NO_EDGE). The TradingView
 question is closed on ETH.
+
+---
+
+## Exp 009 - New data: open interest and long/short ratios M1-M4, pre-registration (ETHUSDT)
+
+**Date:** 2026-10-01
+**Status:** pre-registration, written BEFORE the first ETH M1-M4 evaluation.
+Zero evaluations in this entry.
+
+**This is the ETH half of the round pre-registered on BTC as Exp 036.** The
+files are the same, run unchanged with `SYMBOL=ETHUSDT`; ETH's records, `eval_id`s
+and version budget are its own. The checklist, the judgement, the stop rule and
+the bear-market predictions are in BTC Exp 036 and are not repeated. What follows
+is what is **specific to ETH**, and it is worse than BTC's on the data side.
+
+**Checklist:** `test_engine.py` ends with **ALL CHECKS PASSED** (tests 1b and 11
+present); `datafeed.py` gives **VALIDATION: OK** on ETHUSDT.
+
+### 1. The metrics data check
+
+```
+[metrics] rows=499,540  2021-12-01 .. 2026-08-31  days=1735/1735
+           missing 5m slots=140 (0.03%)  dup=0  oi<=0=208
+METRICS VALIDATION: PROBLEMS FOUND (see above)
+```
+
+No missing days and no duplicate rows on this coin - the 0.03% of missing
+5-minute slots is well inside the 1% tolerance. **The only cause of the red
+line is the same one as on BTC: `sum_open_interest` equals 0 on 208 of 499,540
+rows (0.042%)**, on 21 dates. **Owner decision 2026-10-01: recorded as a
+limitation, code unchanged** (BTC Exp 036 §1 has the full list and the measured
+impact: **zero spurious signals** on BTC at both grid values, because the 720-bar
+z-score is unmoved by 11 zeros in 26,304 bars; ETH's 208 rows are the same
+magnitude, and ETH's usable TRAIN is a quarter the size, so the same null result
+is expected here - and is not assumed, it will be visible in the trade counts).
+
+**Column coverage, and this is the serious limitation of the ETH half:**
+
+| split | window | rows | top-trader ratios NaN | all-account L/S NaN | taker ratio NaN | open interest NaN |
+|---|---|---|---|---|---|---|
+| TRAIN | 2021-12-01 .. 2022-12-31 | 114,041 | **80.79%** | 5.04% | 32.66% | 0% |
+| VALID | 2023-01-01 .. 2024-12-31 | 210,398 | **0.014%** | 0.009% | 0.000% | 0% |
+| HOLDOUT | 2025-01-01 .. 2026-08-31 | 175,101 | **0.032%** | 0.012% | 0.000% | 0% |
+
+**Counted in 5-minute rows, only 21,908 of ETH's 114,041 TRAIN rows (19.2%)
+carry a valid top-trader ratio, against 210,368 of 210,398 in VALID.** The
+metrics themselves start 2021-12-01, so the top-trader column is effectively
+usable for roughly the last three months of TRAIN and for all of VALID.
+
+**Consequences, stated before any run:**
+
+- **M3 `052_smart_money_divergence` is not testable on ETH at 1h or 4h.** A
+  720-bar z-score over a column that is missing 81% of the time cannot warm up.
+  The measured TRAIN counts below are **2-3 signals at 1h and 0 at 4h**. Those
+  files will be INCONCLUSIVE for want of trades, and the honest reading is that
+  **ETH says nothing at all about M3.** A negative ETH row for M3 is a data
+  limitation, not evidence against top-trader divergence.
+- **The whole ETH TRAIN is 13 months and is almost entirely the 2022 bear
+  market** (`PLAN.md` §14's own table). `LESSONS.md` §5 is the reason this half
+  is replication and not a finding: a config carries its sign from BTC to ETH
+  71-73% of the time, Spearman +0.30 to +0.43, so ETH is a 70%-correlated second
+  look - useful when it disagrees, not an independent confirmation.
+
+### 2. TRAIN signal counts on ETH
+
+**Bold = under the 150 floor.**
+
+| idea | 15m (stop 1.5%) | 30m (2.12%) | 1h (3%) | 4h (6%) |
+|---|---|---|---|---|
+| **M1** 050 `oi_flush_reversal` | 118-231 | **52-99** | **24-55** | **2-12** |
+| **M2** 051 `retail_crowd_fade` | **72-300** | **31-167** | **12-91** | **6-35** |
+| **M3** 052 `smart_money_divergence` | **50-54** | **15-26** | **2-3** | **0** |
+| **M4** 053 `oi_confirmed_breakout` | 42-454 | **49-250** | **46-151** | **26-40** |
+
+**ETH is thinner than BTC on every cell of every idea**, for the one reason
+stated above: 13 months of TRAIN against 28, and 63.9% of ETH's 1h TRAIN bars
+with no open interest at all (16,800 of 26,304). **Nine of the sixteen ETH cells
+are under 50 TRAIN signals.** M3 at 4h has **zero**. The prior written down
+before the run is therefore that **most ETH rows will be INCONCLUSIVE**, and that
+a REJECT on ETH is much more likely to be about the data than about the idea.
+
+**Long/short balance again:** M1 1h 33 long / 22 short, M2 1h 41/50, M4 1h
+77/74, M3 1h 2/1 - balanced or long-leaning, never the one-sided shape of the
+project's earlier positive results.
+
+### 3. Expected `cost_r` on ETH
+
+Identical to BTC because it is set by the stop, not the coin: **0.093 R at 1.5%,
+0.066 at 2.12%, 0.047 at 3%, 0.023 at 6%** - all inside `LESSONS.md` §1's 0.1 R
+line on fees alone. The funding ceiling is higher here: ETH's TRAIN funding is
+0.02325% per 8h abs mean against BTC's 0.01886%, **1.23x**, so 144 h of full
+hold at 1h is 0.42% of price, or 0.14 R on a 3% stop - above the 0.1 R line
+where BTC's 0.11 R only just reaches it. Sizing is a non-issue on ETH (a 6% stop
+sizes while ETH < 166,667 against a holdout peak of 4,832), so a 4h `UNSIZABLE`
+here would be a defect, not an artefact.
+
+### 4. The bear-market question, which ETH is unusually well placed to answer
+
+The ETH TRAIN is 13 months of a falling market and the VALID is 2023-24. **So on
+this coin the bear-market predictions in BTC Exp 036 §4 are directly testable on
+TRAIN and are the most informative thing in the ETH half** - with the standing
+caveat that a 13-month single-regime TRAIN is thin, so this is replication of the
+BTC question and never a finding on its own:
+
+- **M1's long leg** in a falling market - capitulation or cascade?
+- **M2's long leg** - the one idea with a reason to be long when retail is short.
+- **M2 and M3 must agree in sign.** On ETH **M3 cannot answer this** (19% of
+  TRAIN), so the "smart money versus retail" comparison is carried by BTC only.
+  That is worth saying plainly: the round's cleanest paired test is available on
+  the primary coin and unavailable on the replication coin.
+- **M4's short leg** - a downward Donchian break with open interest rising.
+
+### 5. Judgement and stop rule
+
+Both controls on every WATCH and PASS; **`--final` is not run by this agent**; and
+the same `PLAN.md` §14 stop rule - no holdout CONFIRMED closes the new-data
+question for these four signals, and any other use of the metrics needs a new
+owner decision.
