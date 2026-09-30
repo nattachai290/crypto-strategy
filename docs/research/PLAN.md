@@ -967,3 +967,95 @@ and ETH Exp 006.
 - In the pre-registration, add for T6: the TRAIN signal count
   per timeframe on each coin, and `cost_r` per timeframe. On 4h only the 12:00
   bar is in the session, so expect few trades there.
+
+## 14. New data: open interest and long/short ratios (owner-approved 2026-09-30)
+
+402 evaluations of price-and-volume ideas and 6 published TradingView scripts
+have produced no holdout CONFIRMED (`LESSONS.md`). The one direction never
+tested is data the project has not used. The owner approved this round on
+2026-09-30.
+
+### What the data is (checked 2026-09-30, BTC Exp 035)
+- **Binance `futures/um/daily/metrics`**, one zip per day, one row per 5
+  minutes. Columns: open interest in coins and in USDT; top-trader long/short
+  ratio by accounts and by position size; all-account long/short ratio; taker
+  buy/sell volume ratio.
+- **Coverage:** BTCUSDT from **2020-09-01**. ETH, SOL and BNB from
+  **2021-12-01**. No day is missing in either range.
+- **Quality:** early files repeat every row twice, and a few days miss some
+  5-minute rows. Binance left the top-trader ratios empty for 2022-11-08..10
+  (the FTX crash).
+- **Liquidations: not available.** `liquidationSnapshot` is empty on
+  data.binance.vision. Paid sources are out of scope. `oi_flush` is the proxy:
+  a large price move while open interest drops sharply.
+
+### How it enters the harness (Level 3, BTC Exp 035)
+- `python src/datafeed.py --metrics` downloads the files, caches
+  `data/cache/<SYMBOL>/<SYMBOL>_metrics.parquet`, and validates it: every day
+  present, OI > 0, under 1% of 5-minute slots missing. It must print
+  `METRICS VALIDATION: OK`.
+- When that cache exists, `experiment.get_bars(tf)` adds six columns to the
+  bars: `oi`, `oi_usd`, `top_acct_ls`, `top_pos_ls`, `acct_ls`, `taker_ls`.
+  **They are attached causally:**
+  - a row is used only 5 minutes after its `create_time` (Binance does not say
+    whether that time is the start or the end of the sample);
+  - a bar sees a row only if it is usable by the bar's close;
+  - a row older than 30 minutes at the close gives NaN, never a stale value;
+  - bars before `metrics_start` are NaN.
+- The engine never reads these columns. Without the cache the bars are exactly
+  as before.
+- New blocks: triggers `oi_flush`, `crowd_fade`, `smart_divergence`, filter
+  `oi_rising`. They refuse to run on bars without metrics, and read NaN as no
+  signal.
+- Test 11 in `test_engine.py` covers:
+  - zip reading;
+  - a hand-computed alignment (lag, as-of the close, stale → NaN);
+  - each block against a plain loop.
+
+### The shorter TRAIN, stated before any run
+The split dates do not move (AGENTS.md rule 1). With metrics starting later,
+TRAIN has less data:
+
+| coin | TRAIN with metrics | VALID | role |
+|---|---|---|---|
+| BTCUSDT | 2020-09 → 2022-12, **28 months** | 2023–24, full | **primary** |
+| ETHUSDT | 2021-12 → 2022-12, **13 months**, almost all bear market | 2023–24, full | replication only |
+
+- A 13-month, one-regime TRAIN is thin, so an ETH result counts only as
+  replication of a BTC result. It is never a finding on its own.
+- The rolling z-scores need 90% of 720 bars before they fire, so each coin's
+  first ~27 days of metrics give no signal (at 1h; chart mode keeps 720 bars
+  on every timeframe).
+
+### The round: M1–M4 (ideas 050–053), pre-registered
+Source 1h. Chart-mode variants at 15m, 30m and 4h (AGENTS.md step 4b). Stop
+3% at 1h. Holds of 2–6 days at 1h. Cooldown 12 bars.
+
+| # | file | hypothesis in one line | grid |
+|---|---|---|---|
+| M1 | `050_oi_flush_reversal` | price move + sharp OI drop = forced liquidation; fade it after the flush | OI z 1.5/2.5 × hold |
+| M2 | `051_retail_crowd_fade` | all-account L/S ratio at an extreme = crowded retail; fade it | z 1.5/2.5 × hold |
+| M3 | `052_smart_money_divergence` | top traders lean against the crowd; follow them | k 1.5/2.5 × hold |
+| M4 | `053_oi_confirmed_breakout` | a Donchian break with OI rising = new money; take only those | OI growth 0%/5% × hold |
+
+**16 files × 2 coins = 32 evaluations.** No idea, file or timeframe is added
+after the first run.
+
+**Pre-registration** (BTC journal **Exp 036**, ETH journal **Exp 009**,
+before the first run):
+1. `python src/datafeed.py --metrics` gives `METRICS VALIDATION: OK` on both
+   coins. Record its missing-slot share and NaN counts.
+2. TRAIN signal counts per idea and timeframe, on each coin. Under 150 means
+   expect INCONCLUSIVE. Run it anyway and do not change the file.
+3. The expected `cost_r` per timeframe, using ≈ 0.14% of price per round trip
+   (BTC Exp 034): 3% stop ≈ 0.05 R at 1h, 1.5% ≈ 0.09 R at 15m, 6% ≈ 0.02 R
+   at 4h.
+4. What each idea should do in a falling market (already stated in each
+   hypothesis). Check it on VALID's long/short split afterwards.
+
+**Controls, as always:** `baseline.py` and `benchmark.py` on every
+WATCH/PASS. `--final` only with the owner's approval.
+
+**Stop rule:** if no config reaches a holdout CONFIRMED, the new-data
+question is closed for these four signals. Any other use of the metrics
+needs a new owner decision.

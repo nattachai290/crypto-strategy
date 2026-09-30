@@ -1,0 +1,48 @@
+{
+  "name": "052_smart_money_divergence_tf15",
+  "hypothesis": "PLAN.md section 14, idea M3 (new data: top-trader position ratio vs all-account ratio). Binance's 'top traders' are the largest 20% of accounts by margin. When they lean long relative to their own history while the crowd of all accounts does not (d = z(top position ratio) - z(all-account ratio) crosses above +k), the better-capitalised, usually better-informed side is taking the other side of retail, and price tends to follow the larger money over days. Long on that crossing, short on the mirror (large accounts lean short while retail leans long). Counterparty: retail positioning against the large accounts. In a falling market the short side fires when large accounts de-risk while retail buys the dip, which is the classic distribution pattern. Held 2-6 days. Grid: the divergence threshold and the hold. Note: Binance left the top-trader ratios empty for 2022-11-08..10 (FTX); those bars read as no signal. [Timeframe variant of 052_smart_money_divergence, 60m -> 15m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "smart_divergence",
+        "z_n": 720,
+        "k": 2.0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.015,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 24.0,
+    "cooldown_bars": 12,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.k": [
+      1.5,
+      2.5
+    ],
+    "max_hold_hours": [
+      12.0,
+      36.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "052_smart_money_divergence",
+  "variant_mode": "chart"
+}

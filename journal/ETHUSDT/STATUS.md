@@ -1,3 +1,5 @@
+> **Next (owner-approved 2026-09-30): new data** - open interest and long/short ratios (`docs/research/PLAN.md` §14, BTC Exp 035). ETH is replication only (TRAIN with metrics 2021-12..2022-12, 13 months). Round M1-M4 = `ideas/050_*`-`053_*`, 16 files. Pre-register in Exp 009. First run `python src/datafeed.py --metrics`.
+
 > **Exp 008 (review, 2026-09-30):** the round's verdict stands. Corrections: the pre-registered cost floor was about 3.5× too low, so the 15m ports died on cost as `LESSONS.md` §1 predicted; T3's cost is fees and slippage, not the time cap; T3's BTC SKILL does not replicate on ETH and leans on 2023.
 
 # ETHUSDT - status and handoff

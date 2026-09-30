@@ -3829,3 +3829,68 @@ timeframe.** The corrections make it firmer. The 15m versions lose to cost,
 the one SKILL signal (T3) does not replicate on ETH and leans on 2023, and all
 8 WATCH rows are NO_EDGE. Per PLAN.md §13 the TradingView question is closed
 unless the owner brings new scripts.
+
+---
+
+## Exp 035 - New data: open interest and long/short ratios (Level 3, owner-approved)
+
+**Date:** 2026-09-30
+**Status:** complete. Code, tests and idea files only. No evaluation was run
+and no market-data backtest was made.
+
+**Why.** Across 402 evaluations of price-and-volume ideas, and the 6
+TradingView ports, no holdout came back CONFIRMED (`LESSONS.md` §6–7). The
+owner approved testing data the project has never used.
+
+**What exists (checked on data.binance.vision):**
+- `futures/um/daily/metrics`, 5-minute rows:
+  - open interest, in coins and in USDT;
+  - top-trader long/short ratio, by accounts and by position size;
+  - all-account long/short ratio;
+  - taker buy/sell volume ratio.
+- BTC from 2020-09-01; ETH, SOL and BNB from 2021-12-01. No day missing.
+- Sampled files: early days repeat every row twice, some days miss up to 3 of
+  288 rows, and the top-trader ratios are empty on 2022-11-08..10.
+- **Liquidations have no public history** (`liquidationSnapshot` is empty).
+  `oi_flush` uses OI as the proxy.
+
+**What changed:**
+- `config.py`: `metrics_start` per symbol (a data spec; no split, cost or
+  gate changed).
+- `datafeed.py --metrics`: download, cache and `validate_metrics()`.
+- `experiment.py`: `load_metrics()` and `attach_metrics()`. `get_bars()`
+  attaches six columns when the cache exists, causally:
+  - a row is usable 5 min after its `create_time`;
+  - as-of the bar close;
+  - more than 30 min stale gives NaN.
+  - Without the cache, the bars are unchanged, and the engine never reads the
+    columns.
+- `recipes.py`: triggers `oi_flush`, `crowd_fade`, `smart_divergence`, filter
+  `oi_rising`.
+- **Bug fixed in `datafeed.list_keys`.** The S3 continuation token was not
+  URL-encoded, so page 2 of any listing over 1,000 files returned HTTP 400.
+  The monthly kline listings never reached a second page, so no earlier data
+  was affected. The 2,220 daily metrics files did.
+
+**Tests.** New test 11 in `test_engine.py`. It fails before this change (the
+functions did not exist) and passes after:
+- a metrics zip with a header row and doubled rows is read correctly;
+- a hand-computed 6-bar alignment gives [NaN, 2, 4, 4, NaN, 9] (before the
+  data, lag, as-of, 20 min old kept, 35 min old dropped, after a gap);
+- each block matches a plain loop with 0 mismatches;
+- a metrics block on bars without metrics refuses.
+
+Test 7's synthetic bars now carry metrics columns with a 300-bar NaN prefix, so
+the causality check covers the new blocks. Every earlier test is unchanged.
+**ALL CHECKS PASSED.**
+
+**Checked end to end** on 3 real days (2022-11-08..10), written to a temp
+directory: the download, a second listing page, validation (OK, top-trader NaN
+reported) and alignment (the 4h bar closing at 04:00 uses the row created at
+03:55).
+
+**The round** is PLAN.md §14:
+- M1–M4 (ideas 050–053), source 1h, 16 files;
+- BTC primary, ETH replication only (13-month TRAIN);
+- 32 evaluations;
+- pre-registration in BTC **Exp 036** and ETH **Exp 009**.

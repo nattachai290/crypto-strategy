@@ -414,6 +414,7 @@ def main() -> None:
     test_tf_variants()
     test_short_side()
     test_random_null_model()
+    test_metrics()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -504,6 +505,17 @@ def test_recipe_blocks_causal() -> None:
     import recipes as RC
     bars, _, funding = _random_case(9, n=2500)
     bars["taker_buy_base"] = bars["volume"] * 0.5 * (1 + 0.2 * np.sin(np.arange(len(bars)) / 7))
+    # PLAN.md section 14 metrics columns, NaN for the first 300 bars as when
+    # metrics start after the klines, so the blocks must survive a NaN prefix
+    mrng = np.random.default_rng(14)
+    k = np.arange(len(bars))
+    oi = 1000 * np.exp(np.cumsum(mrng.normal(0, 0.02, len(bars))))
+    for col, val in (("oi", oi), ("oi_usd", oi * bars["close"].to_numpy()),
+                     ("top_acct_ls", np.exp(0.3 * np.sin(k / 40) + mrng.normal(0, .1, len(bars)))),
+                     ("top_pos_ls", np.exp(0.3 * np.sin(k / 55) + mrng.normal(0, .1, len(bars)))),
+                     ("acct_ls", np.exp(0.3 * np.cos(k / 30) + mrng.normal(0, .1, len(bars)))),
+                     ("taker_ls", np.exp(mrng.normal(0, .2, len(bars))))):
+        bars[col] = np.where(k < 300, np.nan, val)
     cut = 1700
     bad = []
     for kind, table in (("trigger", RC.TRIGGERS), ("filter", RC.FILTERS)):
@@ -917,6 +929,112 @@ def test_post_only() -> None:
                        entry_offset_atr=50.0)
     check("an unreachable limit never fills", far.metrics["fill_rate"] == 0.0,
           f"fill_rate={far.metrics['fill_rate']:.3f} trades={far.metrics['trades']}")
+
+
+# --------------------------------------------------------------------------
+# 11. Metrics data (PLAN.md section 14): file reading, causal alignment, blocks
+# --------------------------------------------------------------------------
+def test_metrics() -> None:
+    print("\n11. metrics: zip reading, causal alignment to bars, blocks vs loops")
+    import io
+    import tempfile
+    import zipfile
+    import datafeed as DF
+    import experiment as E
+    import recipes as RC
+
+    # (a) a daily file with a header row and every row twice (early files)
+    rows = ["create_time,symbol,sum_open_interest,sum_open_interest_value,"
+            "count_toptrader_long_short_ratio,sum_toptrader_long_short_ratio,"
+            "count_long_short_ratio,sum_taker_long_short_vol_ratio"]
+    for t, v in (("2020-09-01 00:00:00", 10), ("2020-09-01 00:05:00", 11)):
+        rows += [f"{t},BTCUSDT,{v},{v * 100},1.1,1.2,,0.9"] * 2
+    with tempfile.TemporaryDirectory() as d:
+        zp = Path(d) / "BTCUSDT-metrics-2020-09-01.zip"
+        with zipfile.ZipFile(zp, "w") as z:
+            z.writestr("BTCUSDT-metrics-2020-09-01.csv", "\n".join(rows) + "\n")
+        got = DF.read_metrics_zip(zp)
+    check("metrics zip: header dropped, duplicate rows dropped, UTC times, empty -> NaN",
+          len(got) == 2 and list(got["sum_open_interest"]) == [10.0, 11.0]
+          and str(got["create_time"].dt.tz) == "UTC"
+          and got["count_long_short_ratio"].isna().all(), f"{len(got)} rows")
+
+    # (b) alignment, hand-computed. 15m bars; metric rows at 00:00..00:20
+    # (values 0..4) then a gap until 01:20 (value 9). A row is usable 5 min
+    # after its create_time and only if it is at most 30 min old at the close.
+    #   bar 23:30 (close 23:45) -> before the first row      -> NaN
+    #   bar 00:00 (close 00:15) -> create <= 00:10           -> 2
+    #   bar 00:15 (close 00:30) -> create <= 00:25 -> 00:20  -> 4
+    #   bar 00:30 (close 00:45) -> 00:20, usable 00:25, 20 min old -> 4
+    #   bar 00:45 (close 01:00) -> 00:20 is 35 min old       -> NaN
+    #   bar 01:30 (close 01:45) -> 01:20                     -> 9
+    idx = pd.DatetimeIndex(["2020-08-31 23:30", "2020-09-01 00:00", "2020-09-01 00:15",
+                            "2020-09-01 00:30", "2020-09-01 00:45", "2020-09-01 01:30"], tz="UTC")
+    bars = pd.DataFrame({"close": 1.0}, index=idx)
+    ct = pd.to_datetime(["2020-09-01 00:00", "2020-09-01 00:05", "2020-09-01 00:10",
+                         "2020-09-01 00:15", "2020-09-01 00:20", "2020-09-01 01:20"], utc=True)
+    met = pd.DataFrame({"create_time": ct, **{c: [0, 1, 2, 3, 4, 9.0] for c in E.METRIC_NAMES.values()}})
+    out = E.attach_metrics(bars, met, 15)
+    want = [np.nan, 2, 4, 4, np.nan, 9]
+    check("metrics attach: 5-min lag, as-of the bar close, stale > 30 min -> NaN (hand-computed)",
+          np.allclose(out["oi"].to_numpy(), want, equal_nan=True)
+          and np.allclose(out["acct_ls"].to_numpy(), want, equal_nan=True)
+          and out.index.equals(bars.index), str(list(out["oi"])))
+
+    # (c) the blocks against plain loops that follow their docstrings
+    b, _, _ = _random_case(21, n=900)
+    rng = np.random.default_rng(3)
+    k = np.arange(len(b))
+    b["oi"] = np.where(k < 100, np.nan, 1000 * np.exp(np.cumsum(rng.normal(0, 0.03, len(b)))))
+    b["top_pos_ls"] = np.exp(0.4 * np.sin(k / 25) + rng.normal(0, .15, len(b)))
+    b["acct_ls"] = np.exp(0.4 * np.cos(k / 35) + rng.normal(0, .15, len(b)))
+    zn = 60
+
+    def zloop(x):
+        z = np.full(len(x), np.nan)
+        for i in range(len(x)):
+            w = x[max(0, i - zn + 1):i + 1]
+            w = w[np.isfinite(w)]
+            if len(w) >= int(0.9 * zn) and np.isfinite(x[i]):  # 90% of z_n present
+                z[i] = (x[i] - w.mean()) / w.std(ddof=1)
+        return z
+
+    c = b["close"].to_numpy(float)
+    oi = b["oi"].to_numpy(float)
+    lag = lambda a, n: np.r_[np.full(n, np.nan), a[:-n]]  # noqa: E731
+    zr, zo = zloop(np.log(c / lag(c, 4))), zloop(np.log(oi / lag(oi, 4)))
+    lc, sc = (zo <= -1.5) & (zr <= -1.5), (zo <= -1.5) & (zr >= 1.5)
+    exp = [1 if lc[i] and not (i and lc[i - 1]) else -1 if sc[i] and not (i and sc[i - 1]) else 0
+           for i in range(len(b))]
+    got = np.asarray(RC.t_oi_flush(b, None, n=4, z_n=zn, price_z=1.5, oi_z=1.5))
+    check("oi_flush matches a loop (first bar of price z and OI z both past the line)",
+          np.array_equal(got, np.array(exp, float)) and (got != 0).sum() >= 2,
+          f"{int((got != 0).sum())} signals, {int((got != np.array(exp)).sum())} mismatches")
+    za = zloop(np.log(b["acct_ls"].to_numpy(float)))
+    exp = [0] + [1 if za[i] < -1.5 and not za[i - 1] < -1.5 else
+                 -1 if za[i] > 1.5 and not za[i - 1] > 1.5 else 0 for i in range(1, len(b))]
+    got = np.asarray(RC.t_crowd_fade(b, None, col="acct_ls", z_n=zn, z=1.5))
+    check("crowd_fade matches a loop (long when the crowd ratio crosses below -z)",
+          np.array_equal(got, np.array(exp, float)) and (got != 0).sum() >= 2,
+          f"{int((got != 0).sum())} signals, {int((got != np.array(exp)).sum())} mismatches")
+    dd = zloop(np.log(b["top_pos_ls"].to_numpy(float))) - za
+    exp = [0] + [1 if dd[i] > 1.0 and not dd[i - 1] > 1.0 else
+                 -1 if dd[i] < -1.0 and not dd[i - 1] < -1.0 else 0 for i in range(1, len(b))]
+    got = np.asarray(RC.t_smart_divergence(b, None, z_n=zn, k=1.0))
+    check("smart_divergence matches a loop (top-trader z minus all-account z crosses +-k)",
+          np.array_equal(got, np.array(exp, float)) and (got != 0).sum() >= 2,
+          f"{int((got != 0).sum())} signals, {int((got != np.array(exp)).sum())} mismatches")
+    lo, sh = RC.f_oi_rising(b, None, n=10, min_pct=0.02)
+    exp = np.array([np.isfinite(oi[i]) and i >= 10 and oi[i] / oi[i - 10] - 1 > 0.02 for i in range(len(b))])
+    check("oi_rising = OI up more than min_pct over n bars, both sides",
+          np.array_equal(np.asarray(lo, bool), exp) and np.array_equal(np.asarray(sh, bool), exp)
+          and 0 < exp.sum() < len(b), f"{int(exp.sum())} bars allowed")
+    try:
+        RC.t_oi_flush(b.drop(columns=["oi"]), None)
+        refused = False
+    except ValueError:
+        refused = True
+    check("a metrics block on bars without metrics refuses loudly", refused)
 
 
 if __name__ == "__main__":

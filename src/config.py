@@ -28,6 +28,9 @@ SYMBOL_SPECS: dict[str, dict] = {
         #                      HOLDOUT [holdout_start, data_end]  (locked)
         valid_start="2023-01",
         holdout_start="2025-01",
+        # first daily file of futures/um/daily/metrics (open interest, long/short
+        # ratios; 5-minute rows). Earlier bars get NaN metrics (PLAN.md section 14).
+        metrics_start="2020-09-01",
     ),
     # Added in Exp 029 / ETH Exp 000 (owner-approved). Binance USDT-M ETHUSDT:
     # quantity step 0.001 ETH, minimum order notional 20 USDT. Same splits as
@@ -39,6 +42,7 @@ SYMBOL_SPECS: dict[str, dict] = {
         data_end="2026-08",
         valid_start="2023-01",
         holdout_start="2025-01",
+        metrics_start="2021-12-01",
     ),
     # Added in BTC Exp 031 (owner-approved). Binance USDT-M published specs.
     # SOLUSDT trades in WHOLE coins (step 1 SOL) and was listed 2020-09-14,
@@ -56,6 +60,7 @@ SYMBOL_SPECS: dict[str, dict] = {
         data_end="2026-08",
         valid_start="2023-01",
         holdout_start="2025-01",
+        metrics_start="2021-12-01",
     ),
     # BNBUSDT: step 0.01 BNB, listed 2020-02-10, first full month 2020-03.
     "BNBUSDT": dict(
@@ -65,6 +70,7 @@ SYMBOL_SPECS: dict[str, dict] = {
         data_end="2026-08",
         valid_start="2023-01",
         holdout_start="2025-01",
+        metrics_start="2021-12-01",
     ),
 }
 SYMBOL = os.environ.get("SYMBOL", "BTCUSDT").upper()
@@ -96,6 +102,7 @@ WEB = "https://data.binance.vision/data"
 # Data window (monthly files), per symbol
 DATA_START = SPEC["data_start"]
 DATA_END = SPEC["data_end"]
+METRICS_START = SPEC.get("metrics_start")  # None: no metrics for this symbol
 
 # Raw kline columns for Binance futures (no header in file)
 KLINE_COLS = [

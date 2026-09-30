@@ -5,9 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: TradingView strategy ports on BTCUSDT and ETHUSDT**
-(`docs/research/PLAN.md` §13): port **only Pine Script source the owner pastes**, never
-write one from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
+**Active work: new data, open interest and long/short ratios, on BTCUSDT
+(primary) and ETHUSDT (replication)** (`docs/research/PLAN.md` §14). The
+TradingView ports are closed (§13, BTC Exp 033/034); a new port needs Pine
+Script source the owner pastes, never one written from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
 `$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's
 `journal/<SYMBOL>/STATUS.md`.
 
@@ -39,6 +40,8 @@ pip install -r requirements.txt
 python src/test_engine.py        # must end with: ALL CHECKS PASSED
 python src/datafeed.py                  # BTCUSDT; first time ~3 min; must end with: VALIDATION: OK
 SYMBOL=ETHUSDT python src/datafeed.py   # same, for ETH
+python src/datafeed.py --metrics        # PLAN.md section 14; must end with: METRICS VALIDATION: OK
+SYMBOL=ETHUSDT python src/datafeed.py --metrics
 python src/evaluate.py --list    # the building blocks you can combine
 cat journal/BTCUSDT/STATUS.md journal/ETHUSDT/STATUS.md   # where things stand (PLAN.md section 13)
 ```
@@ -328,6 +331,13 @@ Engine facts to remember:
   close a position at the next bar's open (taker + slippage, reason
   `signal`). They are checked before entries, so an opposite entry on the same
   bar reverses. Off unless an idea sets `exit_on`.
+- **Metrics columns** (PLAN.md §14, BTC Exp 035): when
+  `data/cache/<SYMBOL>/<SYMBOL>_metrics.parquet` exists, `get_bars(tf)` adds
+  `oi`, `oi_usd`, `top_acct_ls`, `top_pos_ls`, `acct_ls`, `taker_ls`. A row
+  is used 5 min after its `create_time`, as-of the bar close. A row more than
+  30 min stale is NaN, and bars before `metrics_start` are NaN. The engine
+  never reads them. The blocks `oi_flush`, `crowd_fade`, `smart_divergence`
+  and `oi_rising` need them and refuse without them.
 - Funding is charged as **position notional × rate** (qty × price at the open
   of the bar holding the settlement). Before BTC Exp 030 it was qty × rate,
   i.e. almost zero; every record made before that has near-zero funding

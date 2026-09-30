@@ -538,6 +538,69 @@ def t_liquidity_sweep(b, f, pivot_len=7, max_age=150, min_gap_atr=0.25,
     return out
 
 
+# --------------------------------------------------------------------------
+# Metrics blocks (PLAN.md section 14): open interest and long/short ratios.
+# They read the columns experiment.get_bars() attaches when the metrics cache
+# exists (python src/datafeed.py --metrics). NaN = no metrics = no signal.
+# --------------------------------------------------------------------------
+def _metric(b: pd.DataFrame, col: str) -> pd.Series:
+    if col not in b.columns:
+        raise ValueError(f"bars have no '{col}' column: the metrics are not loaded. "
+                         f"Run: python src/datafeed.py --metrics (PLAN.md section 14)")
+    return b[col].astype(float)
+
+
+def _zscore(x: pd.Series, n: int) -> pd.Series:
+    """Causal z-score of x against its own last n bars (90% must be present)."""
+    n = int(n)
+    r = x.rolling(n, min_periods=max(2, int(0.9 * n)))
+    return (x - r.mean()) / r.std()
+
+
+def _edge(cond: pd.Series | np.ndarray) -> np.ndarray:
+    """True on the first bar of a run of True."""
+    c = pd.Series(np.asarray(cond, dtype=bool))
+    return (c & ~c.shift(1, fill_value=False)).to_numpy()
+
+
+def t_oi_flush(b, f, n=4, z_n=720, price_z=2.0, oi_z=2.0):
+    """Liquidation proxy: over n bars price falls (rises) by more than price_z
+    of its usual n-bar move while open interest drops by more than oi_z of its
+    usual n-bar change - positions were closed into the move, most of them
+    forced. Long after a down-flush, short after an up-flush, on the first bar
+    of the condition. z-scores use the previous z_n bars only."""
+    c = b["close"].astype(float)
+    oi = _metric(b, "oi")
+    zr = _zscore(np.log(c / c.shift(int(n))), z_n)
+    zo = _zscore(np.log(oi / oi.shift(int(n))), z_n)
+    flush = zo <= -float(oi_z)
+    return _side(_edge(flush & (zr <= -float(price_z))), _edge(flush & (zr >= float(price_z))))
+
+
+def t_crowd_fade(b, f, col="acct_ls", z_n=720, z=2.0):
+    """Fade a one-sided crowd: the long/short account ratio `col` (acct_ls =
+    all accounts, mostly retail) crosses above +z of its last z_n bars ->
+    short; below -z -> long."""
+    zl = _zscore(np.log(_metric(b, col)), z_n)
+    return _side(_cross_dn(zl, -float(z)), _cross_up(zl, float(z)))
+
+
+def t_smart_divergence(b, f, z_n=720, k=2.0):
+    """Top traders (by position size) lean long relative to all accounts:
+    d = z(top_pos_ls) - z(acct_ls) crosses above +k -> long; below -k ->
+    short. Follows the large accounts when they disagree with the crowd."""
+    d = (_zscore(np.log(_metric(b, "top_pos_ls")), z_n)
+         - _zscore(np.log(_metric(b, "acct_ls")), z_n))
+    return _side(_cross_up(d, float(k)), _cross_dn(d, -float(k)))
+
+
+def f_oi_rising(b, f, n=24, min_pct=0.0):
+    """Open interest grew by more than min_pct over the last n bars (new
+    positions are being opened, not closed). Allows both sides."""
+    oi = _metric(b, "oi")
+    return _both(((oi / oi.shift(int(n)) - 1.0) > float(min_pct)).to_numpy())
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -562,6 +625,9 @@ TRIGGERS = {
     "chartart_macd_sma": t_chartart_macd_sma,
     "super_scalper": t_super_scalper,
     "liquidity_sweep": t_liquidity_sweep,
+    "oi_flush": t_oi_flush,
+    "crowd_fade": t_crowd_fade,
+    "smart_divergence": t_smart_divergence,
 }
 
 
@@ -698,6 +764,7 @@ FILTERS = {
     "funding_not_crowded": f_funding_not_crowded,
     "hours": f_hours,
     "weekdays": f_weekdays,
+    "oi_rising": f_oi_rising,
 }
 
 NEEDS_FUNDING_BLOCKS = {"funding_extreme", "funding_not_crowded"}
