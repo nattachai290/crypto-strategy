@@ -1,0 +1,50 @@
+{
+  "name": "050_oi_flush_reversal_tf15",
+  "hypothesis": "PLAN.md section 14, idea M1 (new data: open interest). A liquidation cascade shows up as a large price move over a few hours while open interest FALLS sharply: positions are being closed into the move, and at that speed most of them are forced (margin calls, the liquidation engine's market orders), not chosen. Forced flow is price-insensitive, so it pushes price past where voluntary traders would take it; when the forced sellers (buyers) are exhausted, price reverts over the next days. Counterparty: the liquidated traders and the engine selling their positions. Rule: over 4 bars, price z-score beyond -price_z (a down-flush) with OI z-score below -oi_z -> long; the mirror (price up, OI down = shorts squeezed out) -> short. z-scores are against each series' own last 720 bars (30 days at 1h). In a falling market this still trades both ways: it buys capitulation lows and sells short-squeeze spikes, and the short-squeeze side is the one that should work in a decline. Held 2-6 days (LESSONS.md section 1: multi-day holds are the only ones that pay for cost). Grid: how large an OI drop counts as a flush, and the hold. [Timeframe variant of 050_oi_flush_reversal, 60m -> 15m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "oi_flush",
+        "n": 4,
+        "z_n": 720,
+        "price_z": 2.0,
+        "oi_z": 2.0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.015,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 24.0,
+    "cooldown_bars": 12,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.oi_z": [
+      1.5,
+      2.5
+    ],
+    "max_hold_hours": [
+      12.0,
+      36.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "050_oi_flush_reversal",
+  "variant_mode": "chart"
+}

@@ -1,0 +1,49 @@
+{
+  "name": "051_retail_crowd_fade_tf240",
+  "hypothesis": "PLAN.md section 14, idea M2 (new data: the all-accounts long/short ratio, mostly retail). When the account ratio is far above its own recent range, many small accounts are long with leverage; their stops and liquidations sit below price, and the funding they pay makes the position costly to hold, so the crowded side unwinds over the next days. Fade it: the log ratio's z-score (last 720 bars) crosses above +z -> short; crosses below -z (the crowd is unusually short) -> long. Counterparty: late retail positioning, the same crowd that funding_extreme tried to read through funding (Exp 016, REJECT), measured here directly by account counts instead of by price of carry. In a falling market retail typically buys the dip, so the ratio rises while price falls and this goes short with the trend; that is the case it should win. Held 2-6 days. Grid: how extreme the crowd must be, and the hold. [Timeframe variant of 051_retail_crowd_fade, 60m -> 240m, mode chart: same bar counts and ATR multiples, hold x4, pct stop x2.000.]",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [
+      {
+        "type": "crowd_fade",
+        "col": "acct_ls",
+        "z_n": 720,
+        "z": 2.0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.06,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 384.0,
+    "cooldown_bars": 12,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.z": [
+      1.5,
+      2.5
+    ],
+    "max_hold_hours": [
+      192.0,
+      576.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "051_retail_crowd_fade",
+  "variant_mode": "chart"
+}

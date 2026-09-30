@@ -1,3 +1,7 @@
+> **Next (owner-approved 2026-09-30): new data** - open interest and long/short ratios (`docs/research/PLAN.md` §14, BTC Exp 035). BTC is the primary coin (TRAIN with metrics 2020-09..2022-12, 28 months). Round M1-M4 = `ideas/050_*`-`053_*`, 16 files. Pre-register in Exp 036. First run `python src/datafeed.py --metrics`.
+
+> **Exp 034 (review, 2026-09-30):** the round's verdict stands. Corrections: the pre-registered cost floor was about 3.5× too low, so the 15m ports died on cost as `LESSONS.md` §1 predicted; T3's cost is fees and slippage, not the time cap; T3's BTC SKILL does not replicate on ETH and leans on 2023.
+
 # BTCUSDT — status and handoff
 
 > **Exp 033 — TradingView port round 1 is DONE on this coin: 24 evaluations,

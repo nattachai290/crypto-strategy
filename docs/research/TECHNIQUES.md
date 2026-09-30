@@ -396,3 +396,21 @@ entries inside the same trend filters do as well. A long-only result on
 - `chartart_macd_sma(fast, slow, signal, veryslow)` (T3): ChartArt's MACD + SMA 200 strategy (SMA-based MACD).
 - `super_scalper(atr_len, mult, rsi_fast, rsi_slow)` (T4): a big bar (body > WMA-ATR band) in the direction of RSI 25 vs RSI 100.
 - `liquidity_sweep(pivot_len, max_age, min_gap_atr, vol_mult, min_wick_ratio)` (T6): a swing high/low swept by a wick on a volume spike, closed back inside, confirmed next bar past the sweep bar's midpoint. Mozilla Public License 2.0 source.
+
+## Metrics blocks (new data, PLAN.md section 14)
+
+These need `python src/datafeed.py --metrics`. All z-scores are causal:
+against the series' own last `z_n` bars, with 90% of them present.
+
+- `oi_flush(n, z_n, price_z, oi_z)`: the n-bar price z-score is beyond
+  ±price_z while the n-bar OI change z-score is below −oi_z. This is the
+  liquidation proxy. It goes long after a down-flush and short after an
+  up-flush, on the first bar of the condition.
+- `crowd_fade(col, z_n, z)`: fades an extreme long/short account ratio
+  (`acct_ls` by default). It goes short when the ratio's z crosses above +z
+  and long when it crosses below −z.
+- `smart_divergence(z_n, k)`: d = z(`top_pos_ls`) − z(`acct_ls`). It goes long
+  when d crosses above +k and short when it crosses below −k.
+- filter `oi_rising(n, min_pct)`: open interest grew by more than min_pct over
+  n bars. It allows both sides.
+

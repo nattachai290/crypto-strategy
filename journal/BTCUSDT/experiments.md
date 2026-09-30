@@ -3761,3 +3761,136 @@ honest testing?* - is **no, and not one of the six came close to the gates on
 the timeframe its author published it for.** Two of the six (T3 at 15m/30m on
 BTC) show a timing signal that beats random entry, and both are dominated by
 simply holding BTC. T1 and T5 cannot produce a testable number at 4h at all.
+
+---
+
+## Exp 034 - Review of the TradingView round (Exp 032/033, ETH Exp 006/007)
+
+**Date:** 2026-09-30
+**Status:** complete. A review, no evaluations. It corrects Exp 032/033 without
+editing them (the journal is append-only).
+
+### Checked and correct
+- **Records.** 24 new rows on each coin (BTC 210 → 234, ETH 49 → 73). Every
+  earlier row is unchanged, cell for cell. The one new column,
+  `valid_signal_rate`, comes from the Exp 031 engine feature.
+  `holdout_log.csv` is unchanged. No holdout was used.
+- **Files.** No idea file and nothing in `src/` was changed.
+  `test_engine.py` ends with ALL CHECKS PASSED.
+- **Controls.** `baseline.py` and `benchmark.py` were run on all 8 WATCH rows:
+  - 6 DRIFT and 2 SKILL (T3 @15m and @30m on BTC);
+  - all 8 NO_EDGE.
+- **Size skips.** 047 @15m has `size_skips` 1,676 on BTC and 56 on ETH. The
+  cause is its 95.7% / 94.9% drawdown: equity fell until 1% of it could no
+  longer buy one qty step. A losing result with skips stays REJECT, as
+  AGENTS.md says.
+- **Verdicts.** 48 evaluations: 0 PASS, 8 WATCH, 29 REJECT, 11 INCONCLUSIVE.
+  The round's stop rule fired.
+
+### Corrections
+1. **The pre-registered cost floor was wrong by about 3.5×, and so was the
+   prior built on it.**
+   - Exp 032 §2 wrote 0.027–0.040 R for a 1.0–1.5% stop. A round trip is
+     taker 0.05% × 2 plus slippage 0.02% × 2, which is 0.14% of price. At a
+     1% stop that is ≈ 0.14 R (AGENTS.md: 0.5% stop ≈ 0.28 R).
+   - The medians it assumed were also too wide. Measured VALID median stops
+     at 15m:
+     - T4: 0.80%, not 1.66%;
+     - T6: 0.52%, not 1.15%.
+   - Measured `cost_r` at 15m:
+     - T4: 0.219, with `gross_r` +0.004;
+     - T6: 0.219, with `gross_r` −0.066.
+   - **So the 15m ports died on cost, exactly as `LESSONS.md` §1 predicted.**
+     Exp 032 §5 had said the opposite: "cost is survivable here".
+2. **T3's cost is fees and slippage, not the time cap.** Exp 033 and ETH
+   Exp 007 blame the invented time cap and funding. The trade files say
+   otherwise. For 046 @15m/30m/1h on BTC:
+   - exits are 78% stop, 12–14% signal and only 8–10% time;
+   - funding was a net **credit** (−0.011 to −0.045 R);
+   - the median stop is 1.00% / 1.41% / 2.00%, so fees plus slippage alone
+     are 0.10–0.15 R per trade.
+3. **T3's "positive at every timeframe" holds on BTC only.** On ETH, T3 is
+   +0.013 / −0.162 / −0.065 / −0.050 (15m/30m/1h/4h).
+   - On BTC it also leans on one year: 2023 carries it (+0.33 to +0.44 R per
+     trade) against 2024 (+0.03 to +0.08).
+   - A timing signal that fails to replicate on the second coin and lives in
+     one year is not a candidate, with or without SKILL.
+4. **Exp 033's per-port table has a counting error.** T2 on BTC is 1 WATCH and
+   3 REJECT, not 2 and 2. The header line of the same entry has it right.
+5. **ETH Exp 007 says the `LESSONS.md` §2 prior "was wrong" for T5.** That
+   rests on T5 @4h, which is 7 trades (INCONCLUSIVE). 7 trades cannot show a
+   prior wrong. T5 is negative at every clock on ETH, which is the evidence
+   that counts.
+
+### Verdict
+The round's conclusion stands: **none of the six published strategies
+survives honest testing on BTC or ETH, and none reached PASS on any
+timeframe.** The corrections make it firmer. The 15m versions lose to cost,
+the one SKILL signal (T3) does not replicate on ETH and leans on 2023, and all
+8 WATCH rows are NO_EDGE. Per PLAN.md §13 the TradingView question is closed
+unless the owner brings new scripts.
+
+---
+
+## Exp 035 - New data: open interest and long/short ratios (Level 3, owner-approved)
+
+**Date:** 2026-09-30
+**Status:** complete. Code, tests and idea files only. No evaluation was run
+and no market-data backtest was made.
+
+**Why.** Across 402 evaluations of price-and-volume ideas, and the 6
+TradingView ports, no holdout came back CONFIRMED (`LESSONS.md` §6–7). The
+owner approved testing data the project has never used.
+
+**What exists (checked on data.binance.vision):**
+- `futures/um/daily/metrics`, 5-minute rows:
+  - open interest, in coins and in USDT;
+  - top-trader long/short ratio, by accounts and by position size;
+  - all-account long/short ratio;
+  - taker buy/sell volume ratio.
+- BTC from 2020-09-01; ETH, SOL and BNB from 2021-12-01. No day missing.
+- Sampled files: early days repeat every row twice, some days miss up to 3 of
+  288 rows, and the top-trader ratios are empty on 2022-11-08..10.
+- **Liquidations have no public history** (`liquidationSnapshot` is empty).
+  `oi_flush` uses OI as the proxy.
+
+**What changed:**
+- `config.py`: `metrics_start` per symbol (a data spec; no split, cost or
+  gate changed).
+- `datafeed.py --metrics`: download, cache and `validate_metrics()`.
+- `experiment.py`: `load_metrics()` and `attach_metrics()`. `get_bars()`
+  attaches six columns when the cache exists, causally:
+  - a row is usable 5 min after its `create_time`;
+  - as-of the bar close;
+  - more than 30 min stale gives NaN.
+  - Without the cache, the bars are unchanged, and the engine never reads the
+    columns.
+- `recipes.py`: triggers `oi_flush`, `crowd_fade`, `smart_divergence`, filter
+  `oi_rising`.
+- **Bug fixed in `datafeed.list_keys`.** The S3 continuation token was not
+  URL-encoded, so page 2 of any listing over 1,000 files returned HTTP 400.
+  The monthly kline listings never reached a second page, so no earlier data
+  was affected. The 2,220 daily metrics files did.
+
+**Tests.** New test 11 in `test_engine.py`. It fails before this change (the
+functions did not exist) and passes after:
+- a metrics zip with a header row and doubled rows is read correctly;
+- a hand-computed 6-bar alignment gives [NaN, 2, 4, 4, NaN, 9] (before the
+  data, lag, as-of, 20 min old kept, 35 min old dropped, after a gap);
+- each block matches a plain loop with 0 mismatches;
+- a metrics block on bars without metrics refuses.
+
+Test 7's synthetic bars now carry metrics columns with a 300-bar NaN prefix, so
+the causality check covers the new blocks. Every earlier test is unchanged.
+**ALL CHECKS PASSED.**
+
+**Checked end to end** on 3 real days (2022-11-08..10), written to a temp
+directory: the download, a second listing page, validation (OK, top-trader NaN
+reported) and alignment (the 4h bar closing at 04:00 uses the row created at
+03:55).
+
+**The round** is PLAN.md §14:
+- M1–M4 (ideas 050–053), source 1h, 16 files;
+- BTC primary, ETH replication only (13-month TRAIN);
+- 32 evaluations;
+- pre-registration in BTC **Exp 036** and ETH **Exp 009**.

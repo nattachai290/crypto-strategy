@@ -1,0 +1,51 @@
+{
+  "name": "053_oi_confirmed_breakout",
+  "hypothesis": "PLAN.md section 14, idea M4 (new data: open interest as a confirmation). A 48-bar breakout can be new positioning or just short covering/long liquidation. If open interest ROSE over the last 24 bars, new positions are being opened into the break: fresh money that has to be defended and adds to the move. If OI fell, the break is positions closing, which runs out when they are closed. So take Donchian breaks (both sides) only when OI grew by more than min_pct. This is BTC's most-tested entry family (donchian_break, 105 evaluations, idea mean -0.032 R, LESSONS.md section 6); the question is only whether OI separates the good breaks from the bad ones, and the random-entry control 'within the same filters' is exactly that test. In a falling market it takes breakdowns with rising OI (new shorts piling in) and so trades short with the trend. Held 2-6 days. Grid: the OI growth required and the hold.",
+  "strategy": "recipe",
+  "tf": 60,
+  "params": {
+    "triggers": [
+      {
+        "type": "donchian_break",
+        "n": 48
+      }
+    ],
+    "filters": [
+      {
+        "type": "oi_rising",
+        "n": 24,
+        "min_pct": 0.0
+      }
+    ],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.03,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 96,
+    "cooldown_bars": 12,
+    "atr_n": 14
+  },
+  "grid": {
+    "filters.0.min_pct": [
+      0.0,
+      0.05
+    ],
+    "max_hold_hours": [
+      48,
+      144
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  }
+}

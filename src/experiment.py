@@ -75,6 +75,60 @@ def load_funding() -> pd.DataFrame | None:
     return f
 
 
+# Metrics columns attached to the bars (PLAN.md section 14), renamed from
+# Binance's file. Ratios are long/short: > 1 means more longs.
+METRIC_NAMES = {
+    "sum_open_interest": "oi",                        # open interest, in coins
+    "sum_open_interest_value": "oi_usd",              # open interest, in USDT
+    "count_toptrader_long_short_ratio": "top_acct_ls",  # top traders, by accounts
+    "sum_toptrader_long_short_ratio": "top_pos_ls",     # top traders, by position size
+    "count_long_short_ratio": "acct_ls",              # all accounts
+    "sum_taker_long_short_vol_ratio": "taker_ls",     # taker buy / sell volume
+}
+METRIC_LAG = pd.Timedelta(minutes=5)       # a row is used only 5 min after its create_time
+METRIC_TOLERANCE = pd.Timedelta(minutes=30)  # older than this at bar close -> NaN
+
+
+def load_metrics() -> pd.DataFrame | None:
+    """The metrics cache (python src/datafeed.py --metrics), or None."""
+    if "metrics" in _CACHE:
+        return _CACHE["metrics"]
+    p = C.CACHE / f"{C.SYMBOL}_metrics.parquet"
+    m = None
+    if p.exists():
+        m = pd.read_parquet(p)
+        m["create_time"] = pd.to_datetime(m["create_time"], utc=True)
+        m = m.sort_values("create_time").rename(columns=METRIC_NAMES)
+    _CACHE["metrics"] = m
+    return m
+
+
+def attach_metrics(bars: pd.DataFrame, metrics: pd.DataFrame, minutes: int) -> pd.DataFrame:
+    """Add the metrics columns to `bars`, causally.
+
+    The bar opening at t closes at t + minutes; its signal is filled at the
+    next open. It may only see a metrics row whose create_time + METRIC_LAG <=
+    t + minutes: the 5-minute lag is deliberate caution, because Binance does
+    not document whether create_time is the start or the end of the sample.
+    A row older than METRIC_TOLERANCE at the bar close (a gap in Binance's
+    file) gives NaN, never a stale value, and bars before metrics_start are
+    NaN. Blocks read NaN as 'no signal'."""
+    cols = list(METRIC_NAMES.values())
+    right = metrics[["create_time"] + cols].copy()
+    ns = "datetime64[ns, UTC]"  # both sides at one resolution, or merge_asof refuses
+    right["avail"] = (right["create_time"] + METRIC_LAG).astype(ns)
+    right = right.sort_values("avail")
+    left = pd.DataFrame({"close_time": (bars.index + pd.Timedelta(minutes=minutes)).astype(ns)})
+    left["_i"] = np.arange(len(left))
+    got = pd.merge_asof(left.sort_values("close_time"), right.drop(columns="create_time"),
+                        left_on="close_time", right_on="avail", direction="backward",
+                        tolerance=METRIC_TOLERANCE).sort_values("_i")
+    out = bars.copy()
+    for c in cols:
+        out[c] = got[c].to_numpy(float)
+    return out
+
+
 def get_bars(minutes: int) -> pd.DataFrame:
     """Binance's published klines for this timeframe.
 
@@ -85,7 +139,18 @@ def get_bars(minutes: int) -> pd.DataFrame:
     compared the output to the source. Loading the native file removes the
     whole class of error.
     """
-    return load_native(minutes)
+    key = f"bars{minutes}"
+    if key in _CACHE:
+        return _CACHE[key]
+    bars = load_native(minutes)
+    # PLAN.md section 14: when the metrics cache exists, its columns ride on
+    # the bars (oi, oi_usd, top_acct_ls, top_pos_ls, acct_ls, taker_ls). The
+    # engine never reads them; only the metrics blocks in recipes.py do.
+    m = load_metrics()
+    if m is not None:
+        bars = attach_metrics(bars, m, minutes)
+    _CACHE[key] = bars
+    return bars
 
 
 # --------------------------------------------------------------------------
