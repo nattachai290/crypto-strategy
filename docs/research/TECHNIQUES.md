@@ -385,3 +385,14 @@ entries inside the same trend filters do as well. A long-only result on
 - `funding_extreme` as a trigger: 23 train trades (idea 003). It is a crossing
   on 8h data, so it almost never fires on 15m bars. Use `funding_not_crowded`
   as a filter on a price trigger instead.
+
+## TradingView ports (PLAN.md §13; only from Pine source the owner supplies)
+
+- ChartArt RSI + Bollinger (T1): the existing `rsi_revert` + `bb_revert`, with
+  `trigger_mode: all`.
+- `smc_structure(structure, event, swing_len, internal_len)` (T2): LuxAlgo
+  Smart Money Concepts market structure. BOS/CHoCH follow the script's alert
+  conditions. CC BY-NC-SA 4.0: attribution LuxAlgo, non-commercial use only.
+- `chartart_macd_sma(fast, slow, signal, veryslow)` (T3): ChartArt's MACD + SMA 200 strategy (SMA-based MACD).
+- `super_scalper(atr_len, mult, rsi_fast, rsi_slow)` (T4): a big bar (body > WMA-ATR band) in the direction of RSI 25 vs RSI 100.
+- `liquidity_sweep(pivot_len, max_age, min_gap_atr, vol_mult, min_wick_ratio)` (T6): a swing high/low swept by a wick on a volume spike, closed back inside, confirmed next bar past the sweep bar's midpoint. Mozilla Public License 2.0 source.

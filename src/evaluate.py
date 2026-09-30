@@ -286,6 +286,7 @@ def summarise(res, tf: int) -> dict:
         "long_trades": m.get("long_trades", 0), "short_trades": m.get("short_trades", 0),
         "stop_rate": m.get("stop_rate", float("nan")), "tp_rate": m.get("tp_rate", float("nan")),
         "time_rate": m.get("time_rate", float("nan")),
+        "signal_rate": m.get("signal_rate", 0.0),
         "fill_rate": m.get("fill_rate", 1.0), "size_skips": int(m.get("size_skips", 0)),
         "per_year": years,
     }
@@ -368,7 +369,9 @@ def report_block(row: dict, v: dict, gates: dict, hold: dict | None) -> str:
           f"- valid: win {_fmt(v['win_rate'], '{:.0%}')}, PF {_fmt(v['profit_factor'], '{:.2f}')}, "
           f"avg hold {_fmt(v['avg_hold_h'], '{:.1f}')} h, long/short {v['long_trades']}/{v['short_trades']}, "
           f"exits stop/tp/time {_fmt(v['stop_rate'], '{:.0%}')}/{_fmt(v['tp_rate'], '{:.0%}')}/"
-          f"{_fmt(v['time_rate'], '{:.0%}')}, fill {_fmt(v['fill_rate'], '{:.0%}')}, "
+          f"{_fmt(v['time_rate'], '{:.0%}')}"
+          + (f"/signal {_fmt(v['signal_rate'], '{:.0%}')}" if v.get('signal_rate', 0) else "")
+          + f", fill {_fmt(v['fill_rate'], '{:.0%}')}, "
           f"size skips {v.get('size_skips', 0)} (train {row.get('train_size_skips', 0)})"
           + (" ⚠️ signals skipped because the account could not size them"
              if v.get("size_skips", 0) or row.get("train_size_skips", 0) else ""),

@@ -1,5 +1,7 @@
 # ETHUSDT - status and handoff
 
+> **Next (owner request): TradingView strategy ports** (`docs/research/PLAN.md` §13). Round 1 = ports T1–T6, `ideas/044_*` to `ideas/049_*` (24 files: 15m 30m 1h 4h), to be run on this coin and on the other of BTC/ETH (48 evaluations). The project's own families stay closed.
+
 > **CLOSED** (Exp 003 stop rule). The funding defect is fixed (Exp 004). Research continues on
 > **SOLUSDT and BNBUSDT** (`docs/research/PLAN.md` §12).
 

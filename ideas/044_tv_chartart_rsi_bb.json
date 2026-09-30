@@ -1,0 +1,55 @@
+{
+  "name": "044_tv_chartart_rsi_bb",
+  "hypothesis": "TradingView port (owner request): 'Bollinger + RSI, Double Strategy (by ChartArt) v1.1'. The author's claim: when price crosses back inside a 200-bar Bollinger band (2 sd) on the same bar as RSI(6) crosses 50 in the same direction, both indicators agree that an overextension is over, so the move reverts - long when close crosses up through the lower band while RSI(6) crosses above 50, short when close crosses down through the upper band while RSI(6) crosses below 50. Counterparty: late breakout traders caught outside the band. Author parameters are kept exactly (RSI 6, levels 50/50, BB 200 x 2.0, close). DEVIATIONS from the Pine script, which the engine forces: (1) the original has no stop and no exit - it only reverses on the opposite signal - and the engine has no stop-and-reverse and every trade must risk 1%, so a pct stop and a time stop are added and are the only grid keys; (2) the original enters with a stop order at the band, which the price has already crossed, so it fills at the next bar's open - the same as the engine's taker entry; (3) TradingView's default commission is 0, here it is 0.05% taker + 0.02% slippage + funding. The source chart is 4h; variants use chart mode (the same bar counts on every chart, as a TradingView user would apply it). UPDATE before any run (owner-approved engine feature exit_on): the TradingView script reverses on the opposite signal, and the port now does the same (exit_on 'opposite': the opposite trigger closes the position at the next open, and re-enters the other way if that side is allowed). The pct stop stays as the mandatory 1%-risk stop; the time stop is a long safety cap.",
+  "strategy": "recipe",
+  "tf": 240,
+  "params": {
+    "triggers": [
+      {
+        "type": "rsi_revert",
+        "n": 6,
+        "lo": 50,
+        "hi": 50
+      },
+      {
+        "type": "bb_revert",
+        "n": 200,
+        "k": 2.0
+      }
+    ],
+    "trigger_mode": "all",
+    "confirm_bars": 1,
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "pct",
+      "pct": 0.05,
+      "min_atr": 1.0,
+      "max_atr": 20.0
+    },
+    "tp": {
+      "type": "none"
+    },
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 960,
+    "cooldown_bars": 0,
+    "atr_n": 14,
+    "exit_on": "opposite"
+  },
+  "grid": {
+    "stop.pct": [
+      0.04,
+      0.06
+    ],
+    "max_hold_hours": [
+      480,
+      1920
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  }
+}

@@ -4,9 +4,11 @@
 `docs/research/TECHNIQUES.md` (what to try) and `journal/<SYMBOL>/STATUS.md`
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
-**`SOLUSDT` and `BNBUSDT` are the active coins** (`docs/research/PLAN.md`
-§12). Run every command with `SYMBOL=SOLUSDT` or `SYMBOL=BNBUSDT` (on
-Windows PowerShell: `$env:SYMBOL="SOLUSDT"`), and read that coin's
+`SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
+**Active work: TradingView strategy ports on BTCUSDT and ETHUSDT**
+(`docs/research/PLAN.md` §13): port **only Pine Script source the owner pastes**, never
+write one from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
+`$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's
 `journal/<SYMBOL>/STATUS.md`.
 
 Talk to the owner **in Thai**. Write code, idea files and the journal in English.
@@ -35,10 +37,10 @@ configurations found **no proven edge** (see STATUS.md). So:
 ```bash
 pip install -r requirements.txt
 python src/test_engine.py        # must end with: ALL CHECKS PASSED
-SYMBOL=SOLUSDT python src/datafeed.py   # first time ~3 min; must end with: VALIDATION: OK
-SYMBOL=BNBUSDT python src/datafeed.py   # same
+python src/datafeed.py                  # BTCUSDT; first time ~3 min; must end with: VALIDATION: OK
+SYMBOL=ETHUSDT python src/datafeed.py   # same, for ETH
 python src/evaluate.py --list    # the building blocks you can combine
-cat journal/SOLUSDT/STATUS.md journal/BNBUSDT/STATUS.md   # where each active coin stands
+cat journal/BTCUSDT/STATUS.md journal/ETHUSDT/STATUS.md   # where things stand (PLAN.md section 13)
 ```
 
 If any of these fails, **stop and fix that first** (see §9). Do not research
@@ -50,7 +52,8 @@ on a broken setup.
 
 Repeat this loop. One loop = one idea = one hypothesis.
 
-**Step 1 — Pick an idea.** Take one from the backlog in
+**Step 1 — Pick an idea.** Read `docs/research/LESSONS.md` first (what 354
+evaluations taught: cost, holding time, long bias, luck). Take one from the backlog in
 `docs/research/TECHNIQUES.md` §6, or invent a new one. First check
 `journal/<SYMBOL>/evaluations.md` and `results/<SYMBOL>/evaluations.csv` to
 make sure it was not already tried.
@@ -68,10 +71,12 @@ filters and exits in the `recipe` format.
 combinations (enforced). Sweep the things the hypothesis is actually about.
 Fix everything else at a sensible value.
 
-**Step 4b — Make the timeframe variants.** Every idea is tested on all
-seven native timeframes (1m 3m 5m 15m 30m 1h 4h), never just one:
-`python src/tf_variants.py ideas/NNN_short_name.json` writes the six other
-files (add `--mode time` when `docs/research/PLAN.md` says so, as in Round 5). Evaluate each. Read the docstring of `src/tf_variants.py` for what it
+**Step 4b — Make the timeframe variants.** Every idea is tested on four
+timeframes, **15m 30m 1h 4h**, never just one:
+`python src/tf_variants.py ideas/NNN_short_name.json` writes the three other
+files. 1m, 3m and 5m are no longer tested (owner's decision 2026-09-29,
+`docs/research/LESSONS.md` §1: cost made them negative on TRAIN and VALID);
+use them only if the owner asks (`--tfs 1,3,5`) (add `--mode time` when `docs/research/PLAN.md` says so, as in Round 5). Evaluate each. Read the docstring of `src/tf_variants.py` for what it
 rescales, and never rescale by hand.
 
 **Step 5 — Run it:**
@@ -308,6 +313,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `test_engine.py` | engine and block tests; must pass |
 | `ml_filter.py`, `run_ml.py`, `definitive.py`, `sweep.py`, `cost_lab.py`, `round*.py`, `diagnose.py` | older experiments (Exp 003–010); they write to `results/<SYMBOL>/legacy/` (`C.LEGACY`) |
 | `ledger*.py`, `report_data.py`, `make_report.py` | reporting for the older experiments |
+| `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:
 - R = stop distance. `gross_r - cost_r = mean R` per trade. At a 0.5%
@@ -317,6 +323,11 @@ Engine facts to remember:
   leverage).
 - Break-even and trailing stops move using the **previous** bar's close
   (fixed in Exp 011).
+- **Exit on a signal** (BTC Exp 031, owner-approved): optional signal
+  columns `exit_long` / `exit_short`, made by `recipe(..., exit_on="opposite")`,
+  close a position at the next bar's open (taker + slippage, reason
+  `signal`). They are checked before entries, so an opposite entry on the same
+  bar reverses. Off unless an idea sets `exit_on`.
 - Funding is charged as **position notional × rate** (qty × price at the open
   of the bar holding the settlement). Before BTC Exp 030 it was qty × rate,
   i.e. almost zero; every record made before that has near-zero funding

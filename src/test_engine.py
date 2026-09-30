@@ -226,6 +226,63 @@ def test_funding_hand_computed() -> None:
               abs(t.funding - expect) < 1e-9, f"{t.funding:.6f} vs {expect:.6f}")
 
 
+def test_signal_exit_hand_computed() -> None:
+    """Exit on a signal (Level 3, owner-approved; PLAN.md section 13 port T5).
+
+    Optional signal columns exit_long / exit_short: a flag set at the close
+    of bar j closes a matching position at the open of bar j+1, taker fee +
+    slippage, reason 'signal' - the same next-bar rule as entries. Checked
+    before entries, so an entry signal on the same bar reverses the position
+    at that open, as TradingView's strategy.entry does. Absent columns change
+    nothing (every other test)."""
+    print("\n1c. hand-computed exit on signal (and reversal)")
+    px = 50000.0
+    idx = pd.date_range("2024-01-01", periods=40, freq="5min", tz="UTC")
+    opens = [px + 10.0 * k for k in range(40)]          # distinct open per bar
+    bars = pd.DataFrame({"open": opens, "high": [p * 1.0005 for p in opens],
+                         "low": [p * 0.9995 for p in opens], "close": opens,
+                         "volume": 100.0, "trades": 1000.0, "taker_buy_base": 50.0,
+                         "taker_buy_quote": 2.5e6}, index=idx)
+
+    def sig_frame():
+        s = pd.DataFrame(0.0, index=idx, columns=["side", "stop_dist", "tp_dist", "max_hold",
+                                                   "exit_long", "exit_short"])
+        s.iloc[0, s.columns.get_loc("side")] = 1.0
+        s.iloc[0, s.columns.get_loc("stop_dist")] = 500.0
+        s.iloc[0, s.columns.get_loc("max_hold")] = 30
+        s.iloc[5, s.columns.get_loc("exit_long")] = 1.0
+        return s
+
+    res = run_backtest(bars, sig_frame(), session_start=0, session_end=24, flat_at_session_end=False)
+    t = res.trades[0] if res.trades else None
+    slip = 0.0002
+    ok = (t is not None and t.exit_reason == "signal" and t.exit_time == idx[6]
+          and abs(t.exit_px - opens[6] * (1 - slip)) < 1e-6 and t.entry_time == idx[1])
+    check("exit_long at bar 5 closes the long at bar 6's open (taker, slipped)", ok,
+          "no trade" if t is None else f"{t.exit_reason} at {t.exit_time}, px {t.exit_px:.2f}")
+
+    s = sig_frame()
+    s.iloc[5, s.columns.get_loc("side")] = -1.0
+    s.iloc[5, s.columns.get_loc("stop_dist")] = 500.0
+    s.iloc[5, s.columns.get_loc("max_hold")] = 3
+    s.iloc[5, s.columns.get_loc("exit_long")] = 1.0
+    res2 = run_backtest(bars, s, session_start=0, session_end=24, flat_at_session_end=False)
+    tr = res2.trades
+    ok2 = (len(tr) == 2 and tr[0].exit_time == idx[6] and tr[0].exit_reason == "signal"
+           and tr[1].side == -1 and tr[1].entry_time == idx[6]
+           and abs(tr[1].entry_px - opens[6] * (1 - slip)) < 1e-6)
+    check("exit + opposite entry on the same bar reverses at the next open", ok2,
+          f"{[(x.side, str(x.entry_time)[11:16], str(x.exit_time)[11:16], x.exit_reason) for x in tr]}")
+
+    s3 = sig_frame()
+    s3.iloc[0, s3.columns.get_loc("exit_long")] = 1.0      # same bar as the entry signal
+    s3.iloc[5, s3.columns.get_loc("exit_long")] = 0.0
+    res3 = run_backtest(bars, s3, session_start=0, session_end=24, flat_at_session_end=False)
+    check("an exit flag before the position existed is ignored",
+          len(res3.trades) == 1 and res3.trades[0].exit_reason != "signal",
+          str([x.exit_reason for x in res3.trades]))
+
+
 # --------------------------------------------------------------------------
 # 2. Differential test against the reference
 # --------------------------------------------------------------------------
@@ -347,6 +404,7 @@ def main() -> None:
     print("=" * 70)
     test_hand_computed()
     test_funding_hand_computed()
+    test_signal_exit_hand_computed()
     test_differential()
     test_cost_monotonicity()
     test_no_lookahead()
@@ -490,6 +548,116 @@ def test_recipe_blocks_causal() -> None:
     cal = pd.DataFrame({"close": np.arange(len(idx), 0, -1, dtype=float)}, index=idx)
     mt = np.asarray(RC.t_month_turn_fade(cal, None, before=2, after=0, lookback=1))
     fired = [d.day for d, s in zip(idx, mt) if s != 0]
+    # LuxAlgo SMC port (PLAN.md section 13), hand-traced through the Pine logic
+    # with pivot size 2 (leg flips confirm a pivot `size` bars back):
+    #   bar 2: leg 0->1, pivot low = low[2 bars ago] = 9 (bar 0)
+    #   bar 3: leg 1->0, pivot high = 12 (bar 1); close 8.5 crosses under 9,
+    #          no trend yet -> bearish BOS, trend bearish
+    #   bar 6: leg 0->1, pivot low = 7 (bar 4)
+    #   bar 7: close 12.5 crosses over 12 in a bearish trend -> bullish CHoCH
+    #   bar 9: leg 1->0, pivot high = 13 (bar 7); close 6.5 crosses under 7 in a
+    #          bullish trend -> bearish CHoCH
+    #   bar 11: close 13.5 crosses over 13 in a bearish trend -> bullish CHoCH
+    hlc = [(10, 9, 9.5), (12, 10, 11), (11, 10, 10.5), (10, 8, 8.5), (9, 7, 8), (10, 8, 9),
+           (11, 9, 10.5), (13, 11, 12.5), (12, 10, 10.5), (11, 6, 6.5), (9, 5, 8), (14, 8, 13.5)]
+    smc_bars = pd.DataFrame(hlc, columns=["high", "low", "close"], dtype=float)
+    ev = RC.smc_structure(smc_bars, swing_len=2, internal_len=2)
+    got = {k: np.flatnonzero(v).tolist() for k, v in ev.items() if k.startswith("swing") and v.any()}
+    check("smc_structure: BOS / CHoCH sequence matches a hand trace of the Pine logic",
+          got == {"swing_bear_bos": [3], "swing_bull_choch": [7, 11], "swing_bear_choch": [9]}, str(got))
+    # ChartArt MACD + SMA 200 port: the pandas block against a plain loop that
+    # follows the Pine lines one by one (SMA-based MACD, close[slow] vs SMA)
+    px = list(np.round(100 + np.random.default_rng(11).normal(0, 1, 400).cumsum(), 4))
+    cm = pd.DataFrame({"close": px, "high": px, "low": px, "open": px})
+    fa, sl, sg, vs = 3, 6, 4, 20
+
+    def _sma(v, i, n):
+        return sum(v[i - n + 1:i + 1]) / n if i >= n - 1 and all(x is not None for x in v[i - n + 1:i + 1]) else None
+    fm = [_sma(px, i, fa) for i in range(len(px))]
+    sm = [_sma(px, i, sl) for i in range(len(px))]
+    vm = [_sma(px, i, vs) for i in range(len(px))]
+    md = [a - b if a is not None and b is not None else None for a, b in zip(fm, sm)]
+    sgl = [_sma(md, i, sg) if md[i] is not None else None for i in range(len(px))]
+    hs = [m - s if m is not None and s is not None else None for m, s in zip(md, sgl)]
+    exp = []
+    for i in range(len(px)):
+        ok = i >= sl and hs[i] is not None and hs[i - 1] is not None and vm[i] is not None
+        lg = ok and hs[i] > 0 and not hs[i - 1] > 0 and md[i] > 0 and fm[i] > sm[i] and px[i - sl] > vm[i]
+        st = ok and hs[i] < 0 and not hs[i - 1] < 0 and md[i] < 0 and fm[i] < sm[i] and px[i - sl] < vm[i]
+        exp.append(1 if lg else -1 if st else 0)
+    got_m = np.asarray(RC.t_chartart_macd_sma(cm, None, fast=fa, slow=sl, signal=sg, veryslow=vs))
+    check("chartart_macd_sma matches a line-by-line loop of the Pine script",
+          np.array_equal(got_m, np.array(exp, float)) and (got_m != 0).sum() > 5,
+          f"{int((got_m != 0).sum())} signals, {int((got_m != np.array(exp)).sum())} mismatches")
+    # Super Scalper port: WMA as Pine defines it, and the entry rule against a
+    # plain loop over the Pine lines (bands from a hand-rolled WMA of TR)
+    wx = pd.Series([1.0, 2.0, 4.0, 7.0, 11.0])
+    check("wma (super_scalper) = sum(w_k x_k)/sum(w), newest weight n",
+          abs(RC._wma(wx, 3).iloc[-1] - (3 * 11 + 2 * 7 + 1 * 4) / 6) < 1e-12 and RC._wma(wx, 3).iloc[:2].isna().all())
+    rng = np.random.default_rng(21)
+    cl = 100 + rng.normal(0, 1, 600).cumsum()
+    op = cl + rng.normal(0, 1.2, 600)
+    ss = pd.DataFrame({"open": op, "close": cl, "high": np.maximum(op, cl) + rng.uniform(0, .5, 600),
+                       "low": np.minimum(op, cl) - rng.uniform(0, .5, 600)})
+    trl = [ss.high[0] - ss.low[0]] + [max(ss.high[i] - ss.low[i], abs(ss.high[i] - ss.close[i - 1]),
+                                           abs(ss.low[i] - ss.close[i - 1])) for i in range(1, 600)]
+    r1 = RC.ta.rsi(ss.close, 5).to_numpy()
+    r2 = RC.ta.rsi(ss.close, 20).to_numpy()
+    exp_s = []
+    for i in range(600):
+        if i < 13:
+            exp_s.append(0)
+            continue
+        bw = sum((14 - k) * trl[i - k] for k in range(14)) / 105.0
+        lg = ss.open[i] < ss.close[i] - bw and r1[i] > r2[i]
+        st = ss.open[i] > ss.close[i] + bw and r1[i] < r2[i]
+        exp_s.append(1 if lg else -1 if st else 0)
+    got_s = np.asarray(RC.t_super_scalper(ss, None, atr_len=14, mult=1.0, rsi_fast=5, rsi_slow=20))
+    check("super_scalper matches a line-by-line loop of the Pine script",
+          np.array_equal(got_s, np.array(exp_s, float)) and (got_s != 0).sum() > 5,
+          f"{int((got_s != 0).sum())} signals, {int((got_s != np.array(exp_s)).sum())} mismatches")
+    # liquidity_sweep (T6), hand trace, pivot_len 2. Flat bars (O=C=100, H 101,
+    # L 99, vol 100) give ties, so no pivots, except: bar 22 low 97 -> pivot
+    # low confirmed on bar 24 (bars 20,21,23,24 all 99), level 97 born bar 22.
+    # Bar 26 sweeps it: low 96 < 97, close 99.8 > 97, body 0.2, lower wick
+    # 3.8 >= 1.5 x 0.2, volume 300 > 1.3 x SMA20 (=110). Its mid is
+    # (96 + 99.8) / 2 = 97.9 and bar 27 closes 100 > 97.9 -> long on bar 27.
+    def _sweep_bars(vol26=300.0):
+        k = 30
+        op = np.full(k, 100.0); cl = op.copy(); hi = np.full(k, 101.0); lo = np.full(k, 99.0)
+        vo = np.full(k, 100.0)
+        lo[22] = 97.0
+        cl[26], hi[26], lo[26], vo[26] = 99.8, 100.1, 96.0, vol26
+        return pd.DataFrame({"open": op, "high": hi, "low": lo, "close": cl, "volume": vo},
+                            index=pd.date_range("2024-01-01", periods=k, freq="15min"))
+    sb = _sweep_bars()
+    got = np.asarray(RC.t_liquidity_sweep(sb, None, pivot_len=2))
+    mir = sb.copy()
+    mir["open"], mir["close"] = 200 - sb["open"], 200 - sb["close"]
+    mir["high"], mir["low"] = 200 - sb["low"], 200 - sb["high"]
+    got_m = np.asarray(RC.t_liquidity_sweep(mir, None, pivot_len=2))
+    quiet = np.asarray(RC.t_liquidity_sweep(_sweep_bars(vol26=120.0), None, pivot_len=2))
+    aged = np.asarray(RC.t_liquidity_sweep(sb, None, pivot_len=2, max_age=2))
+    swept_age4 = np.asarray(RC.t_liquidity_sweep(sb, None, pivot_len=2, max_age=3))
+    check("liquidity_sweep hand trace: long on bar 27 only; mirrored -> short; "
+          "no signal without the volume spike or after the level ages out",
+          list(np.flatnonzero(got)) == [27] and got[27] == 1.0
+          and list(np.flatnonzero(got_m)) == [27] and got_m[27] == -1.0
+          and not quiet.any() and not aged.any() and swept_age4[27] == 1.0,
+          f"long {list(np.flatnonzero(got))} short {list(np.flatnonzero(got_m))} "
+          f"quiet {int(quiet.any())} aged {int(aged.any())}")
+    # exit_on="opposite" (engine signal exit): exit columns = the raw trigger's
+    # opposite events; exit_on="none" leaves the signal frame exactly as before
+    kw = dict(triggers=[{"type": "donchian_break", "n": 20}], filters=[{"type": "trend_ema", "fast": 20, "slow": 50}],
+              direction="long", stop={"type": "pct", "pct": 0.02})
+    base = RC.recipe(bars, funding, **kw)
+    opp = RC.recipe(bars, funding, exit_on="opposite", **kw)
+    raw = np.asarray(RC.t_donchian_break(bars, funding, n=20))
+    check("exit_on='opposite' flags exit_long on every raw bearish trigger, and adds nothing else",
+          np.array_equal(opp["exit_long"].to_numpy() != 0, raw < 0)
+          and np.array_equal(opp["exit_short"].to_numpy() != 0, raw > 0)
+          and base.equals(opp.drop(columns=["exit_long", "exit_short"]))
+          and "exit_long" not in base, f"{int((raw < 0).sum())} bearish triggers")
     check("month_turn_fade uses the real month length (Feb 2024: 28th, 29th, 1st)",
           fired == [28, 29, 1], str(fired))
     sig = RC.recipe(bars, funding, triggers=[{"type": "donchian_break", "n": 20}],

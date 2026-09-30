@@ -32,7 +32,8 @@ rule there applies. `AGENTS.md` says **how** to test an idea; this plan says
 **which ideas, in what order, and what to do with the results**.
 
 Scope: BTCUSDT (closed, BTC Exp 029), ETHUSDT (closed, ETH Exp 003), and
-**SOLUSDT + BNBUSDT (§12, active)**. Do not add other coins without the owner.
+SOLUSDT + BNBUSDT (§12, closed), and **TradingView strategy ports (§13, active)**.
+Do not add other coins without the owner.
 **Trading only** (owner, 2026-09-29): strategies that earn the funding fee
 (funding carry, basis / cash-and-carry) are out of scope. Funding may be used
 as a signal or paid as a cost, never as the thing the strategy earns.
@@ -756,3 +757,208 @@ and PASS. The benchmark compares with holding that coin.
 holdout CONFIRMED, research on that coin stops. If both stop, the project's
 answer stands for all four coins. **Do not add a fifth coin**; that decision
 belongs to the owner. A CONFIRMED goes to §6 and to the owner at once.
+
+---
+
+## 13. TradingView strategy ports (owner request, after SOL Exp 005 / BNB Exp 003)
+
+All four coins are closed for the project's own idea families. The owner asked
+for a different question: **do published TradingView strategies survive honest
+testing?** A TradingView backtest usually has three things wrong with it:
+- the default commission is 0;
+- `request.security()` or intrabar fills can see the future;
+- nothing is held out.
+
+This harness fixes all three. The research agent runs the ports; the planner
+writes them.
+
+**Engine feature for ports (BTC Exp 031, owner-approved Level 3):**
+`exit_on: "opposite"` in a recipe closes a position at the next open when the
+entry trigger fires the other way, before filters and direction. If the other
+side is allowed, it re-enters that way on the same open, which is
+TradingView's reversal. `strategy.close` on a signal is ported the same way.
+It is off by default, and every earlier record is unaffected.
+
+**Rules for every port** (on top of AGENTS.md):
+0. **Only from source code the owner supplies.** A port is written from the
+   Pine Script the owner pastes, and nothing else. No agent (planner or
+   researcher) writes a port from memory, from a description or from another
+   website's copy (owner's decision; ports T2–T5 written from memory were
+   withdrawn before any run). The pasted source is saved with the idea: quote
+   the script name and version in the hypothesis.
+1. **Faithful.** The author's parameters are kept exactly. The only grid keys
+   are what the engine forces us to invent: usually a `pct` stop and a time
+   stop, because the engine has no stop-and-reverse and every trade must risk
+   1%. Every deviation from the Pine script is listed in the idea's
+   hypothesis.
+2. **Chart mode.** Variants use `tf_variants.py` default chart mode: the same
+   bar counts on every chart, as a TradingView user applies a script. The 4h
+   file is the source, and all seven timeframes are run.
+3. **Coins:** BTCUSDT and ETHUSDT (`SYMBOL=...`). Their records and version
+   budgets are separate. A port is a new structure, so a PASS may use that
+   coin's holdout for that config, under the usual `--final` rule.
+4. **Refused:** grid, martingale, and averaging down without a limit
+   (AGENTS.md rule 7). A port that needs one is recorded as "not portable",
+   with the reason.
+5. **Report per port:** what TradingView claims (if the owner supplies it)
+   next to what is left after costs, controls and, for a PASS, the holdout.
+6. **Budget:** at most 5 ports per round (the owner's scripts), pre-registered together.
+   **Round 1 is 6 ports (T1–T6): the owner's decision, 2026-09-29, before any run.** **Stop
+   rule:** a round with no holdout CONFIRMED ends the TradingView question
+   unless the owner brings new scripts.
+
+### Port T1 — `044_tv_chartart_rsi_bb` (ChartArt, "Bollinger + RSI, Double Strategy" v1.1)
+- Pine logic:
+  - **long** when `crossover(RSI(6), 50)` and `crossover(close, BB200 lower)` on
+    the same bar;
+  - **short** when `crossunder(RSI(6), 50)` and `crossunder(close, BB200 upper)`.
+
+  The entry is a stop order at the band, which price has already crossed, so
+  it fills at the next open.
+- The port uses the existing blocks `rsi_revert(n 6, lo 50, hi 50)` and
+  `bb_revert(n 200, k 2.0)`, with `trigger_mode: all` and `confirm_bars: 1`
+  (both on the same bar). They match Pine exactly:
+  - RSI with Wilder smoothing (RMA);
+  - SMA with a population stdev;
+  - `crossover` meaning now above and the previous bar not above.
+- **Exit, as the original does:** it reverses on the opposite signal
+  (`exit_on: "opposite"`, BTC Exp 031).
+- **Added** (every trade must risk 1%): a `pct` stop of 4% / 6%, plus a long
+  time cap of 480 h / 1920 h at 4h, scaled by chart mode.
+- Files: `ideas/044_tv_chartart_rsi_bb.json` (4h) plus `_tf15`, `_tf30`, `_tf60`,
+  already generated. **Run each on BTCUSDT and on ETHUSDT: 8 evaluations.**
+- The author writes that v1.1 was "made more successful in backtesting". It
+  was tuned on the chart it is shown on, which is one more reason to expect
+  VALID to disappoint.
+- This is mean reversion, which the project closed for its own ideas (BTC Exp
+  016, Exp 024). It is run anyway because the owner asked for this script.
+  Record it as a port, not as a retry.
+
+### Port T2 — `045_tv_luxalgo_smc` (Smart Money Concepts [LuxAlgo], Pine v5, from the owner's source)
+- **Licence: CC BY-NC-SA 4.0**, © LuxAlgo. The port (`smc_structure` in
+  `src/recipes.py`) is a derivative under the same licence: attribution is in
+  the code, and use is non-commercial only.
+- **Ported:** the market-structure engine, line by line:
+  - `leg(size)`;
+  - `getCurrentStructure` (a pivot is confirmed `size` bars late);
+  - `displayStructure`: a close crosses the last pivot not yet crossed; CHoCH
+    if against the structure trend, BOS if with it. Internal breaks are
+    ignored when the internal level equals the swing level; the confluence
+    filter is off, as in the defaults.
+- Defaults are kept: swing length 50, internal size 5. The script's
+  evaluation order is kept: swing, then internal pivots; internal, then swing
+  breaks. Pine's `na != x` (false) is reproduced.
+- **Not ported (not signals):** order blocks, fair value gaps (they use
+  `request.security(..., lookahead_on)`), equal highs/lows, MTF levels,
+  premium/discount zones.
+- **It is an indicator.** The entries are **its own alert conditions**: long
+  on a bullish BOS/CHoCH, short on a bearish one. Which alert
+  (`structure` swing/internal × `event` CHoCH/BOS) is a grid key chosen on
+  TRAIN, together with the invented exits (stop 4%/6%, hold 120/480 h at 4h).
+  That makes 16 combos.
+- Test 7: causal, correct output shape, and an 11-bar hand trace of the Pine
+  logic (bearish BOS → bullish CHoCH → bearish CHoCH → bullish CHoCH).
+- Files: `ideas/045_tv_luxalgo_smc.json` plus 3 chart-mode variants.
+  **Run on BTCUSDT and ETHUSDT: 8 evaluations.**
+
+### Port T3 — `046_tv_chartart_macd_sma` (ChartArt "MACD + SMA 200 Strategy" v1.0, from the owner's source)
+- Pine logic, author defaults 12 / 26 / 9 / 200, **all simple moving
+  averages** (it is not the usual EMA MACD):
+  - `macd = SMA12 − SMA26`, `hist = macd − SMA9(macd)`;
+  - **long** when `crossover(hist, 0)` and `macd > 0` and `SMA12 > SMA26`
+    and `close[26] > SMA200`;
+  - **short** on the mirror image.
+- New block `chartart_macd_sma`. Test 7 checks it against a plain loop that
+  follows the Pine lines one by one (0 mismatches), plus causality and
+  output shape.
+- **Deviations:**
+  - The script only reverses. The port reverses too (`exit_on: "opposite"`).
+    The stop (4%/6%) and a long time cap (480/1920 h at 4h) are ours. The
+    script's 50% intraday-loss halt is not modelled: at 1% risk it cannot
+    bind.
+  - Its stop-order entry at the signal bar's low/high fills at the next open
+    unless the next bar gaps through that level.
+  - The `strategy.cancel` lines only remove unfilled orders.
+- Files: `ideas/046_tv_chartart_macd_sma.json` plus 3 chart-mode variants.
+  **Run on BTCUSDT and ETHUSDT: 8 evaluations.**
+
+### Port T4 — `047_tv_super_scalper` ("Super Scalper - 5 Min 15 Min", Pine v5, from the owner's source)
+- Pine logic, defaults kept:
+  - ATR 14 smoothed with **WMA**, multiplier 1.0, bands = close ± band;
+  - **long** when `open < close − band` (a bar that rose more than the band)
+    and `RSI(25) > RSI(100)`;
+  - **short** on the mirror image.
+- The EMA 21/65 "golden cross" in the script is **only plotted**, so it is
+  not part of the signal.
+- New block `super_scalper`. Test 7 checks the WMA against Pine's definition,
+  checks the block against a plain loop of the Pine lines (0 mismatches),
+  and checks causality and output shape.
+- **Deviations:**
+  - The script computes a stop (2 ATR beyond the signal bar's low/high) and a
+    take-profit (5 ATR) but **never uses them**; on TradingView it only
+    reverses. The port reverses (`exit_on: "opposite"`). It keeps the
+    author's 2-ATR stop (`swing` n 1 + 2 ATR) as the mandatory stop and drops
+    the never-executed target.
+  - A long time cap is the only grid key (48 / 192 h at 15m).
+- **Source chart 15m** (the author's timeframe), chart-mode variants on the
+  other six. The ATR stop grows with the timeframe: the 1h/4h variants on BTC
+  may be `UNSIZABLE` at 2024–25 prices. That is a recorded outcome, not a
+  reason to change the file.
+- Files: `ideas/047_tv_super_scalper.json` plus 3 variants. **Run on BTCUSDT
+  and ETHUSDT: 8 evaluations.** (The author's other chart, 5m, is dropped with
+  1m–5m.)
+
+### Port T5 — `048_tv_chartart_rsi_bb_long_v12` (ChartArt "Bollinger + RSI, Double Strategy Long-Only" v1.2, from the owner's source)
+- Same entry as T1, **long only**. The exit is the script's own
+  `strategy.close`: RSI(6) crosses below 50 on the same bar that the close
+  crosses down through the upper band, i.e. T1's short trigger. It is ported
+  with `exit_on: "opposite"` and `direction: long`.
+- The author says long-only "made it more successful in backtesting". On a
+  rising market that is what being long does, and baseline and benchmark are
+  there to catch it.
+- **Added:** a pct stop of 4%/6% (the script has none) and a long time cap.
+- Files: `ideas/048_tv_chartart_rsi_bb_long_v12.json` plus 3 variants.
+  **Run on BTCUSDT and ETHUSDT: 8 evaluations.** It differs from T1 in
+  direction, so it has its own structure and version budget.
+
+**The round is full: T1–T6 = 48 evaluations (4 timeframes, owner's decision 2026-09-29) (T6 below, added by the owner
+before any run). No port is added after it starts.**
+
+**Pre-registration** (BTC journal **Exp 032** and ETH journal Exp 006, before the
+first run):
+1. TRAIN signal counts of the 4h source on each coin. The same-bar coincidence
+   of the two crosses may be rare. Under 150 means expect INCONCLUSIVE; run
+   it anyway and do not change the file.
+2. List the deviations above.
+3. The expected `cost_r` per timeframe (15m 30m 1h 4h; 1m–5m were dropped by
+   the owner on 2026-09-29, before any run, and their files deleted).
+
+### Port T6 — `049_tv_liquidity_sweep` ("Liquidity Sweep Reversal Strategy", Pine v6, Mozilla Public License 2.0, from the owner's source)
+**In round 1 (owner's decision, 2026-09-29, before any run): round 1 is
+T1–T6, 48 evaluations.** T6 is pre-registered with the others in BTC Exp 032
+and ETH Exp 006.
+
+- New trigger `liquidity_sweep` (Level 2, `src/recipes.py`). Pivot highs/lows
+  (7/7) become levels, deduplicated within 0.25 ATR and dropped after 150
+  bars. A sweep is a bar that wicks through a level and closes back inside,
+  with volume > 1.3 × SMA20 and wick ≥ 1.5 × body. It is confirmed on the next
+  bar past the sweep bar's midpoint. The session is the `hours` filter with
+  UTC 12–15 (the script's 1200-1600 in exchange time, which is UTC on
+  Binance).
+- **The script has its own exits, and they are ported as they are:** stop
+  1.2 ATR beyond the sweep wick (swing stop n 2 + 1.2 ATR buffer), TP 1.5 R,
+  break-even at 50% of the way to TP (`be_at` 0.75). This is the first port
+  with a real stop and target, so it needs no `exit_on`.
+- Deviations (full list in the idea file):
+  - the stop is measured from the fill, not from the confirmation close. It
+    is wider only when the confirmation bar trades below the sweep wick;
+  - break-even reacts to a close, not an intrabar touch;
+  - a sweep that happens during an open trade is dropped, not kept pending;
+  - a time cap is added (the only grid key, 48/192 h at 15m);
+  - costs: 0.05% + 0.02% instead of TradingView's 0.04% + 1 tick.
+- Source 15m (the script names no timeframe; it is an intraday session
+  strategy), chart mode, 4 files. **Run on BTCUSDT and ETHUSDT: 8
+  evaluations.**
+- In the pre-registration, add for T6: the TRAIN signal count
+  per timeframe on each coin, and `cost_r` per timeframe. On 4h only the 12:00
+  bar is in the session, so expect few trades there.

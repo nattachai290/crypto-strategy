@@ -307,6 +307,237 @@ def t_month_turn_fade(b, f, before=2, after=2, lookback=6):
     return _side(np.where(win, dn, 0.0), np.where(win, up, 0.0))
 
 
+# --------------------------------------------------------------------------
+# TradingView port T2 (PLAN.md section 13), from the Pine source the owner
+# supplied: "Smart Money Concepts [LuxAlgo]" (Pine v5), (c) LuxAlgo, licensed
+# CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/).
+# This translation of its structure logic is a derivative under the same
+# licence: attribution LuxAlgo, non-commercial use only. Only the market
+# structure part is ported (leg / getCurrentStructure / displayStructure);
+# order blocks, fair value gaps (which use lookahead_on), equal highs/lows and
+# MTF levels are drawing features and are not used as signals.
+# --------------------------------------------------------------------------
+def _smc_leg(h: np.ndarray, l: np.ndarray, size: int) -> np.ndarray:
+    """Pine leg(size): 0 after high[size] > highest(size) (bearish leg),
+    1 after low[size] < lowest(size) (bullish leg), else unchanged."""
+    s = int(size)
+    hi = pd.Series(h).rolling(s, min_periods=s).max().to_numpy()
+    lo = pd.Series(l).rolling(s, min_periods=s).min().to_numpy()
+    hs = np.r_[np.full(s, np.nan), h[:-s]]
+    ls = np.r_[np.full(s, np.nan), l[:-s]]
+    new_high = hs > hi
+    new_low = (ls < lo) & ~new_high
+    leg = np.zeros(len(h))
+    cur = 0.0
+    for i in range(len(h)):
+        if new_high[i]:
+            cur = 0.0
+        elif new_low[i]:
+            cur = 1.0
+        leg[i] = cur
+    return leg
+
+
+def _pine_ne(a: float, b: float) -> bool:
+    """Pine `a != b`: false when either side is na (Python's nan != x is True)."""
+    return bool(np.isfinite(a) and np.isfinite(b) and a != b)
+
+
+def smc_structure(b: pd.DataFrame, swing_len: int = 50, internal_len: int = 5) -> dict:
+    """LuxAlgo SMC market structure, bar by bar in the script's order:
+    getCurrentStructure(swing), getCurrentStructure(internal),
+    displayStructure(internal), displayStructure(swing).
+    Returns boolean arrays '<swing|internal>_<bull|bear>_<bos|choch>'.
+    Defaults are the script's: swing length 50, internal size 5, confluence
+    filter off. A pivot is only known `size` bars after it, as in Pine."""
+    h = b["high"].to_numpy(float)
+    l = b["low"].to_numpy(float)
+    c = b["close"].to_numpy(float)
+    n = len(c)
+    legs = {"swing": _smc_leg(h, l, swing_len), "internal": _smc_leg(h, l, internal_len)}
+    sizes = {"swing": int(swing_len), "internal": int(internal_len)}
+    lvl = {(k, s): np.nan for k in ("swing", "internal") for s in ("high", "low")}
+    crossed = {key: False for key in lvl}
+    prev_lvl = dict(lvl)
+    bias = {"swing": 0, "internal": 0}
+    out = {f"{k}_{d}_{e}": np.zeros(n, bool) for k in ("swing", "internal")
+           for d in ("bull", "bear") for e in ("bos", "choch")}
+    for i in range(n):
+        # getCurrentStructure: a leg change confirms a pivot `size` bars back
+        for k in ("swing", "internal"):
+            if i >= 1:
+                ch = legs[k][i] - legs[k][i - 1]
+                s = sizes[k]
+                if ch == 1 and i - s >= 0:      # start of bullish leg -> pivot low
+                    lvl[(k, "low")] = l[i - s]
+                    crossed[(k, "low")] = False
+                elif ch == -1 and i - s >= 0:   # start of bearish leg -> pivot high
+                    lvl[(k, "high")] = h[i - s]
+                    crossed[(k, "high")] = False
+        # displayStructure: internal first, then swing
+        for k in ("internal", "swing"):
+            hk, lk = (k, "high"), (k, "low")
+            up_x = (i >= 1 and c[i] > lvl[hk] and c[i - 1] <= prev_lvl[hk])
+            extra_up = True if k == "swing" else _pine_ne(lvl[hk], lvl[("swing", "high")])
+            if up_x and not crossed[hk] and extra_up:
+                ev = "choch" if bias[k] == -1 else "bos"
+                out[f"{k}_bull_{ev}"][i] = True
+                crossed[hk] = True
+                bias[k] = 1
+            dn_x = (i >= 1 and c[i] < lvl[lk] and c[i - 1] >= prev_lvl[lk])
+            extra_dn = True if k == "swing" else _pine_ne(lvl[lk], lvl[("swing", "low")])
+            if dn_x and not crossed[lk] and extra_dn:
+                ev = "choch" if bias[k] == 1 else "bos"
+                out[f"{k}_bear_{ev}"][i] = True
+                crossed[lk] = True
+                bias[k] = -1
+        prev_lvl = dict(lvl)
+    return out
+
+
+def t_smc_structure(b, f, structure="swing", event="choch", swing_len=50, internal_len=5):
+    """LuxAlgo Smart Money Concepts (TradingView, CC BY-NC-SA 4.0): a
+    structure break from the script's own alert conditions. Long on a bullish
+    `event` (bos / choch / any) of the `structure` (swing / internal), short on
+    a bearish one. The script is an indicator; its alerts are the entries."""
+    s = smc_structure(b, swing_len, internal_len)
+    ev = ("bos", "choch") if event == "any" else (str(event),)
+    up = np.zeros(len(b), bool)
+    dn = np.zeros(len(b), bool)
+    for e in ev:
+        up |= s[f"{structure}_bull_{e}"]
+        dn |= s[f"{structure}_bear_{e}"]
+    return _side(up, dn)
+
+
+def t_chartart_macd_sma(b, f, fast=12, slow=26, signal=9, veryslow=200):
+    """TradingView port T3 (PLAN.md section 13), from the Pine source the owner
+    supplied: "MACD + SMA 200 Strategy (by ChartArt)" v1.0. The MACD here is
+    built from SIMPLE moving averages, as in the script: fastMA = SMA(close,
+    fast), slowMA = SMA(close, slow), macd = fastMA - slowMA, signal =
+    SMA(macd, signal), hist = macd - signal. Long when hist crosses above 0,
+    macd > 0, fastMA > slowMA and close[slow] > SMA(close, veryslow); short on
+    the mirror image."""
+    c = b["close"]
+    fma = c.rolling(int(fast), min_periods=int(fast)).mean()
+    sma_ = c.rolling(int(slow), min_periods=int(slow)).mean()
+    vsma = c.rolling(int(veryslow), min_periods=int(veryslow)).mean()
+    macd = fma - sma_
+    hist = macd - macd.rolling(int(signal), min_periods=int(signal)).mean()
+    lag = c.shift(int(slow))                # close[slowLength]
+    up = _cross_up(hist, 0.0) & (macd > 0).to_numpy() & (fma > sma_).to_numpy() \
+        & (lag > vsma).to_numpy()
+    dn = _cross_dn(hist, 0.0) & (macd < 0).to_numpy() & (fma < sma_).to_numpy() \
+        & (lag < vsma).to_numpy()
+    return _side(up, dn)
+
+
+def _wma(x: pd.Series, n: int) -> pd.Series:
+    """Pine ta.wma: linear weights n (newest) .. 1 (oldest), divided by their sum."""
+    n = int(n)
+    w = np.arange(n, 0, -1, dtype=float)          # weight of x[t-k] is n-k
+    v = x.to_numpy(float)
+    num = np.convolve(v, w, mode="full")[: len(v)]
+    num[: n - 1] = np.nan
+    return pd.Series(num / w.sum(), index=x.index)
+
+
+def t_super_scalper(b, f, atr_len=14, mult=1.0, rsi_fast=25, rsi_slow=100):
+    """TradingView port T4 (PLAN.md section 13), from the Pine v5 source the
+    owner supplied: "Super Scalper - 5 Min 15 Min". Default ATR smoothing
+    'WMA': band = WMA(true range, atr_len) * mult around the close. Long when
+    open < close - band (a bar that rose more than the band) and RSI(rsi_fast)
+    > RSI(rsi_slow); short when open > close + band and RSI(rsi_fast) <
+    RSI(rsi_slow). The script's EMA 21/65 'golden cross' is only plotted, not
+    traded, so it is not part of the signal."""
+    o, c = b["open"], b["close"]
+    band = _wma(ta.true_range(b["high"], b["low"], c), atr_len) * float(mult)
+    fast, slow = ta.rsi(c, int(rsi_fast)), ta.rsi(c, int(rsi_slow))
+    up = ((o < c - band) & (fast > slow)).to_numpy()
+    dn = ((o > c + band) & (fast < slow)).to_numpy()
+    return _side(up, dn)
+
+
+def _pine_pivot(x: pd.Series, n: int, high: bool) -> np.ndarray:
+    """ta.pivothigh/pivotlow(x, n, n): on bar i, x[i-n] if it is strictly above
+    (below) every one of the n bars on each side, else NaN. Known only n bars
+    after the pivot, so it is causal. Ties give no pivot (TradingView does not
+    document its tie rule; with float prices ties are rare above 1m)."""
+    ctr = x.shift(n)
+    if high:
+        ok = (ctr > x.shift(n + 1).rolling(n).max()) & (ctr > x.rolling(n).max())
+    else:
+        ok = (ctr < x.shift(n + 1).rolling(n).min()) & (ctr < x.rolling(n).min())
+    return np.where(ok.to_numpy(), ctr.to_numpy(float), np.nan)
+
+
+def t_liquidity_sweep(b, f, pivot_len=7, max_age=150, min_gap_atr=0.25,
+                      vol_mult=1.3, min_wick_ratio=1.5):
+    """TradingView port T6 (PLAN.md section 13), from the Pine v6 source the
+    owner supplied: "Liquidity Sweep Reversal Strategy" (Mozilla Public
+    License 2.0). Pivot highs/lows (pivot_len each side) become levels, unless
+    within min_gap_atr x ATR(14) of a live one; a level dies after max_age
+    bars. A bar that wicks through a level and closes back inside, on volume
+    > vol_mult x SMA20(volume) and with the wick beyond the body >=
+    min_wick_ratio x the body, is a sweep. Next-bar confirmation (script
+    default): long on the next bar if its close is above the sweep bar's
+    (wick + close) / 2, short mirrored. As in the script, when both sides are
+    pending the last-written midpoint is used for both checks and a long wins.
+    The script's session window, SL, TP and break-even are exits/filters
+    applied in the idea file, not here. Unlike the script, the pending sweep
+    is not frozen while a position is open (a signal cannot see the
+    position): the engine simply ignores signals while in a trade."""
+    h, l, c, o = b["high"], b["low"], b["close"], b["open"]
+    L = int(pivot_len)
+    atr = ta.atr_(h, l, c, 14).to_numpy(float)
+    vol = b["volume"]
+    vol_ok = (vol > vol.rolling(20).mean() * float(vol_mult)).to_numpy()
+    body = (c - o).abs().to_numpy(float)
+    up_wick = (h - np.maximum(c, o)).to_numpy(float)
+    dn_wick = (np.minimum(c, o) - l).to_numpy(float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        hw_ok = ((body > 0) & (up_wick / body >= min_wick_ratio)) | ((body == 0) & (up_wick > 0))
+        lw_ok = ((body > 0) & (dn_wick / body >= min_wick_ratio)) | ((body == 0) & (dn_wick > 0))
+    piv_h, piv_l = _pine_pivot(h, L, True), _pine_pivot(l, L, False)
+    hh, ll, cc = h.to_numpy(float), l.to_numpy(float), c.to_numpy(float)
+    n = len(b)
+    out = np.zeros(n)
+    highs: list[list] = []  # [price, pivot bar]
+    lows: list[list] = []
+    p_long = p_short = False
+    p_mid = np.nan
+    for i in range(n):
+        gap = atr[i] * min_gap_atr  # NaN ATR -> never "too close", as in Pine
+        if np.isfinite(piv_h[i]) and not any(abs(p - piv_h[i]) < gap for p, _ in highs):
+            highs.append([piv_h[i], i - L])
+        if np.isfinite(piv_l[i]) and not any(abs(p - piv_l[i]) < gap for p, _ in lows):
+            lows.append([piv_l[i], i - L])
+        sw_h = sw_l = False
+        keep = []
+        for lv in highs:
+            if hh[i] > lv[0] and cc[i] < lv[0] and vol_ok[i] and hw_ok[i]:
+                sw_h = True
+            elif i - lv[1] <= max_age:
+                keep.append(lv)
+        highs = keep
+        keep = []
+        for lv in lows:
+            if ll[i] < lv[0] and cc[i] > lv[0] and vol_ok[i] and lw_ok[i]:
+                sw_l = True
+            elif i - lv[1] <= max_age:
+                keep.append(lv)
+        lows = keep
+        do_long = p_long and cc[i] > p_mid
+        do_short = p_short and cc[i] < p_mid
+        out[i] = 1.0 if do_long else -1.0 if do_short else 0.0
+        p_long = p_short = False
+        if sw_l:
+            p_long, p_mid = True, (ll[i] + cc[i]) / 2.0
+        if sw_h:
+            p_short, p_mid = True, (hh[i] + cc[i]) / 2.0
+    return out
+
+
 TRIGGERS = {
     "ema_cross": t_ema_cross,
     "donchian_break": t_donchian_break,
@@ -327,6 +558,10 @@ TRIGGERS = {
     "keltner_break": t_keltner_break,
     "flush": t_flush,
     "month_turn_fade": t_month_turn_fade,
+    "smc_structure": t_smc_structure,
+    "chartart_macd_sma": t_chartart_macd_sma,
+    "super_scalper": t_super_scalper,
+    "liquidity_sweep": t_liquidity_sweep,
 }
 
 
@@ -525,7 +760,7 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
            stop: dict | None = None, tp: dict | None = None,
            be_at: float = 0.0, trail_at: float = 0.0, trail_atr: float = 0.0,
            max_hold_hours: float = 4.0, cooldown_bars: int = 0,
-           atr_n: int = 14) -> pd.DataFrame:
+           atr_n: int = 14, exit_on: str = "none") -> pd.DataFrame:
     """Build a signal frame from a JSON-style recipe. See the module docstring."""
     n = len(bars)
     if not triggers:
@@ -552,6 +787,13 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
                         np.where(fired & recent_dn & ~recent_up, -1.0, 0.0))
     else:
         raise ValueError("trigger_mode must be 'any' or 'all'")
+    # The triggers' own verdict, before filters, direction and cooldown: with
+    # exit_on="opposite" a bearish trigger closes a long and a bullish one
+    # closes a short (TradingView's reversal / strategy.close on the opposite
+    # signal; PLAN.md section 13, owner-approved engine feature).
+    raw_side = side.copy()
+    if exit_on not in ("none", "opposite"):
+        raise ValueError("exit_on must be 'none' or 'opposite'")
 
     # 2. filters
     long_ok = np.ones(n, bool)
@@ -635,6 +877,9 @@ def recipe(bars: pd.DataFrame, funding: pd.DataFrame | None = None, *,
     out["tp_dist"] = np.where(active, np.nan_to_num(tp_dist), 0.0)
     out["max_hold"] = np.where(active, float(max_hold), 0.0)
     out["atr"] = np.nan_to_num(atr, nan=0.0)  # every bar: the trail reads it in-position
+    if exit_on == "opposite":
+        out["exit_long"] = (raw_side < 0).astype(float)
+        out["exit_short"] = (raw_side > 0).astype(float)
     out["be_at"] = np.where(active, be_at, 0.0)
     out["trail_at"] = np.where(active, trail_at, 0.0)
     out["trail_atr"] = np.where(active, trail_atr, 0.0)
