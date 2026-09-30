@@ -702,3 +702,23 @@ INCONCLUSIVE.
 Across both coins the round is **48 evaluations, 0 PASS, 8 WATCH (2 SKILL), 29
 REJECT, 11 INCONCLUSIVE**, and **not one published strategy cleared the gates on
 the timeframe its author published it for.**
+
+---
+
+## Exp 008 - Review of ETH Exp 006/007
+
+**Date:** 2026-09-30
+**Status:** complete. A review, no evaluations.
+
+The review of both coins is BTC journal **Exp 034**. Parts that apply here:
+- Records are intact: 49 → 73 rows, every old row unchanged. The ETH holdout
+  is still untouched.
+- Exp 006's cost floor was wrong by about 3.5×. A round trip is ≈ 0.14% of
+  price, i.e. ≈ 0.14 R at a 1% stop.
+- T3's cost is fees and slippage, not the time cap. Funding was a net credit.
+- The claim that T5 disproved the `LESSONS.md` §2 prior rests on 7 trades at
+  4h and cannot show that. T5 is negative at every clock, and that is the
+  evidence.
+
+The verdict stands: 0 PASS, 3 WATCH (all DRIFT, all NO_EDGE). The TradingView
+question is closed on ETH.

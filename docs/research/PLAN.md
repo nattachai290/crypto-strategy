@@ -762,6 +762,11 @@ belongs to the owner. A CONFIRMED goes to §6 and to the owner at once.
 
 ## 13. TradingView strategy ports (owner request, after SOL Exp 005 / BNB Exp 003)
 
+> **Round 1 is DONE (2026-09-30): 48 evaluations, 0 PASS, no holdout used.**
+> BTC Exp 033, ETH Exp 007, reviewed in BTC Exp 034. The stop rule (rule 6
+> below) has fired: the TradingView question is closed unless the owner brings
+> new scripts.
+
 All four coins are closed for the project's own idea families. The owner asked
 for a different question: **do published TradingView strategies survive honest
 testing?** A TradingView backtest usually has three things wrong with it:

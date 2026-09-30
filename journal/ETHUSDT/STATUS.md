@@ -1,3 +1,5 @@
+> **Exp 008 (review, 2026-09-30):** the round's verdict stands. Corrections: the pre-registered cost floor was about 3.5× too low, so the 15m ports died on cost as `LESSONS.md` §1 predicted; T3's cost is fees and slippage, not the time cap; T3's BTC SKILL does not replicate on ETH and leans on 2023.
+
 # ETHUSDT - status and handoff
 
 > **Exp 007 — TradingView port round 1 is DONE on this coin: 24 evaluations,
