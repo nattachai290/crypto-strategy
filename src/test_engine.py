@@ -1064,6 +1064,12 @@ def test_allocation() -> None:
     eqs, _, _ = AL.simulate(o, -t, 0.0, f)
     check("allocation: funding = notional x rate, long pays, short receives",
           np.isclose(eql[-1], 0.999) and np.isclose(eqs[-1], 1.001), f"{eql[-1]} {eqs[-1]}")
+    # (c2) liquidation: funding of 60% of notional per day empties a 1x long
+    # on day 3 (1 - 0.6 - 0.6 < 0); equity stays 0 even when price recovers
+    o = np.array([100., 100, 100, 100, 300])
+    eqL, posL, _ = AL.simulate(o, np.ones(5), 0.0, np.array([0, 0.6, 0.6, 0, 0]))
+    check("allocation: equity <= 0 is a liquidation - 0 from then on, no recovery",
+          np.allclose(eqL, [1, 0.4, 0, 0, 0]) and posL[-1] == 0, str(eqL))
     # (d) every rule is causal: the full run equals a truncated run on the prefix
     rng = np.random.default_rng(16)
     c = pd.Series(100 * np.exp(np.cumsum(rng.normal(0.0005, 0.03, 900))),

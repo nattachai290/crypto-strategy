@@ -4436,3 +4436,55 @@ By segment (total return / max drawdown):
 | sma200_long_short | - | - | -32% / 88% | +63% / 20% | +109% / 43% | -13% / 49% | -32% / 88% | +201% / 55% |
 
 
+
+---
+
+## Exp 041 - Review of the allocation run: two bugs in allocation.py, spot verdicts stand, perp must be re-run
+
+**Date:** 2026-10-01
+**Status:** complete. Code fixes and a review. No research run by the planner.
+The checks below used the public daily files in a temp directory, only to
+verify the tool.
+
+**Checked and correct.** Records: the run added only `results/<SYMBOL>/allocation/`
+and the generated reports, and no `src/` change. **Spot is right.** An
+independent vectorised re-computation of BTC spot `sma200` gives total +622%
+and max DD 64.2%. The script gives +618% and 64.2%; the small gap is units-held
+vs daily-rebalanced. The 64% drawdown is real. From the 2021-04-13 equity peak
+to 2021-12-29, BTC fell only 27%, but the rule was whipsawed around its
+200-day line through the May 2021 crash and the autumn top.
+
+**Bug 1 - a perp position could live on with negative equity.**
+- Measured funding on BTCUSDT, as a fraction of notional per year: 2020
+  0.172, **2021 0.306**, 2022 0.042, 2023 0.079, 2024 0.120, 2025 0.051.
+- A 1× perp long bought in July 2020 and never rebalanced pays that on a
+  notional that grew about 6×. Its equity reached 0 on **2022-11-10** (the
+  FTX crash) and went to −0.23.
+- `simulate` kept marking it and let it "recover" to 4.62×. That produced the
+  impossible perp `buy_hold` rows the run flagged (max DD 104%, 2023–24
+  −4465%).
+- **Fix:** equity ≤ 0 is a liquidation. Equity and position are 0 from that
+  day on. Test 12(c2) is hand-computed and fails before the fix. A real
+  exchange liquidates earlier, at the maintenance margin, so the floor is if
+  anything kind to the run.
+- Spot cannot reach 0 (long-only, no funding), so **every spot number and
+  verdict is unchanged.** Perp numbers change and must be re-run.
+- The bug also shows the owner's point in numbers: **holding a 1× BTC perp
+  long from mid-2020 would have been wiped out by funding plus the 2022
+  bear.** The same position in spot lost 77% at worst and survived.
+
+**Bug 2 - a dropped connection was not retried.** `datafeed._get` retried
+`HTTPError`/`URLError`/`TimeoutError` but not `RemoteDisconnected` or a reset
+(both are `OSError`). That is how BTC Exp 036 lost 3 metrics days, and it
+broke this check's first download. It now retries every `OSError`.
+
+**SOLUSDT, refused by the script.** Binance's SOL perp daily file lacks
+2022-02-25 and 2022-03-31. `load_daily` now accepts up to 3 missing days,
+lists them in `summary.json` and the report, and still refuses more. Units are
+held between changes, so a missing day only merges two daily returns.
+
+**Next (the research agent):**
+- `SYMBOL=<coin> python src/allocation.py --rerun` on BTCUSDT, ETHUSDT and
+  BNBUSDT. A code fix is the one case `--rerun` exists for.
+- A first run on SOLUSDT.
+- Spot verdicts should come out identical. Record the perp changes.
