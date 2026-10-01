@@ -1,3 +1,5 @@
+> **Reopened for one replication (owner-approved 2026-10-01, `docs/research/PLAN.md` §15):** run `ideas/051_retail_crowd_fade_tf30.json` unchanged on this coin. First run `SYMBOL=SOLUSDT python src/datafeed.py --metrics`. Pre-register in **Exp 006**. Run baseline + benchmark whatever the verdict. No `--final`. Nothing else is run.
+
 # SOLUSDT - status and handoff
 
 > **CLOSED (stop rule, Exp 003; review Exp 004).** Holdout used once, FAILED. Controls are still missing on 19 WATCH rows (Exp 004), which is for the research agent to complete.

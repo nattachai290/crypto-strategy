@@ -4226,3 +4226,104 @@ produced 7 positive-but-NO_EDGE configurations, 3 of which beat random entry
 timing and were all dominated by holding BTC - and the two ideas that were
 supposed to be opposites, "fade the crowd" and "follow the smart money", turned
 out to be the same long trade.
+
+---
+
+## Exp 038 - Review of the metrics round (Exp 036/037, ETH Exp 009/010)
+
+**Date:** 2026-10-01
+**Status:** complete. A review, no evaluations. It corrects Exp 037 and
+`LESSONS.md` §8 without editing past journal entries.
+
+### Checked and correct
+- **Records.** 16 new rows per coin (BTC 234 → 250, ETH 73 → 89). Every
+  earlier row is unchanged, cell for cell. `holdout_log.csv` is unchanged, and
+  the holdout was not used.
+- **Code.** No change in `src/` or in any idea file. `test_engine.py`: ALL
+  CHECKS PASSED.
+- **Controls.** Both controls were run on all 8 WATCH rows.
+- **OI = 0 rows.** Exp 036 measured their effect on TRAIN only, and said VALID
+  "cannot exceed" it. That reasoning does not hold, since VALID has more zero
+  bars (29 against 11). But the conclusion is right, for a different reason:
+  pandas rolling windows treat ±inf as missing, so a `log(0)` does not blank
+  the 720-bar z-score window. Checked on synthetic data: one zero adds 0 NaN
+  z-scores. `oi_rising` lets through about one bar per zero (x/0 = inf), which
+  is negligible.
+- **ETH M3.** The top-trader ratio is 80.8% NaN in ETH's TRAIN, so ETH says
+  nothing about M3. Correct, and correctly recorded.
+
+### Corrections
+1. **M1's losing short leg fades a short squeeze, not "a rally on rising open
+   interest".**
+   - `oi_flush` fires on *both* sides only when OI **falls** sharply
+     (`zo <= -oi_z`). The short is "price up while OI collapses", i.e. shorts
+     being forced out.
+   - Exp 037 point 1 and `LESSONS.md` §8 say the reverse ("an up-flush with OI
+     rising is new longs"). The measured fact stands: the short leg is
+     −0.165 to −0.261 on BTC at every clock, and −0.010 on ETH at 1h. The
+     corrected statement is: **fading a short squeeze lost money in 2023–24.**
+   - The rising-OI case was tested only by M4 (`oi_rising`), which was REJECT
+     or INCONCLUSIVE except one long-heavy WATCH.
+2. **"Fade the crowd and follow the smart money are the same long trade"
+   holds for M3, not for the M2 cell that matters.**
+   - M2 @30m on BTC has a short leg of **+0.055** and a long leg of +0.167.
+     Both are positive in 2024.
+   - Its `beta` to BTC is **−0.006**.
+   - It is the one M2 cell that read SKILL, and it is not a disguised long.
+3. **The round's most important row was not reported as such.**
+   `051_retail_crowd_fade @30m` is the first configuration in the project that
+   reads **SKILL on two coins**:
+   - TRAIN chose **the same parameters on each coin independently** (z 1.5,
+     24 h hold);
+   - market exposure is **~0 on both** (beta −0.006 BTC, +0.009 ETH);
+   - its alpha is positive on both coins and both periods (+0.105/yr BTC,
+     +0.072/yr ETH on VALID; +0.273 and +0.082 on TRAIN), but the VALID alpha
+     CI includes 0;
+   - it misses PASS only on the CI gate.
+
+   | coin | VALID trades | mean R | 95% CI | long / short leg | TRAIN | baseline | benchmark |
+   |---|---|---|---|---|---|---|---|
+   | BTC | 198 | +0.106 | [−0.051, +0.272] | +0.167 / +0.055 | +0.264 (326) | SKILL | NO_EDGE (alpha +0.105, CI [−0.049, +0.266]) |
+   | ETH | 197 | +0.080 | [−0.109, +0.284] | +0.133 / +0.031 | +0.200 (119) | SKILL | NO_EDGE (alpha +0.072, CI [−0.112, +0.233]) |
+
+   **This is still not an edge.** It has no PASS, so it cannot take the
+   holdout (AGENTS.md rule 4). The pooled VALID CI would still include zero.
+   And 438 evaluations means a cell like this is expected somewhere by chance.
+   It is recorded because it is the first result that replicated *the entry's
+   timing skill*, and not just a sign, across coins with no long tilt.
+4. Small corrections:
+   - Exp 037's SKILL rows are M2 @30m, M3 @30m and M3 @15m. The prose says
+     otherwise.
+   - The 1h hold caps were 48/144 h, not 12–36 h (that is the 15m variant).
+   - The ETH figures quoted as M2's "long leg" by year are all-trade figures.
+
+### What this means
+The round's verdict stands: 0 PASS, the stop rule fired, and the four signals
+are closed as a round.
+
+The only honest way to test M2 @30m further is **new data that did not exist
+when it was chosen**:
+- freeze the config exactly as evaluated;
+- let Binance data after 2026-08 accumulate;
+- judge it on that period with a criterion written down now.
+
+That needs the owner's decision. It is proposed in STATUS, not started.
+
+---
+
+## Exp 039 - Correction to Exp 038, and the SOL/BNB replication plan
+
+**Date:** 2026-10-01
+**Status:** complete. No evaluations.
+
+**Correction.** Exp 038 (and the `LESSONS.md` §8 bullet) say TRAIN chose the
+same parameters for `051_retail_crowd_fade @30m` "independently on each
+coin". On ETH only **1 of 4** grid cells had enough TRAIN trades
+(`n_eligible` = 1, `evaluations.csv`), so there was no choice to make. BTC
+chose z 1.5 / 24 h from 2 eligible cells. The two-coin SKILL stands. The
+"same parameters chosen twice" part of the argument does not.
+
+**Owner decision 2026-10-01:** replicate the unchanged file on SOLUSDT and
+BNBUSDT (PLAN.md §15). That is 2 evaluations, with both controls run whatever
+the verdict. The pass criterion was written before any run: VALID mean R > 0
+**and** SKILL, on **both** coins.

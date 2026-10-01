@@ -945,3 +945,21 @@ DRIFT, 8 of 8 NO_EDGE), 9 REJECT, 15 INCONCLUSIVE**, and the project total is no
 source this project had never read - Binance's open interest and long/short
 ratios - did not produce an edge on either coin, and the two hypotheses written
 against it turned out to be the same long trade.
+
+---
+
+## Exp 011 - Review of ETH Exp 009/010
+
+**Date:** 2026-10-01
+**Status:** complete. A review, no evaluations. The full review of both coins
+is BTC journal **Exp 038**.
+
+Records are intact: 73 → 89 rows, old rows unchanged, holdout untouched.
+
+ETH's single SKILL row, `051_retail_crowd_fade @30m`, is the second half of the
+project's first two-coin SKILL. TRAIN independently chose the same parameters
+on BTC (z 1.5, 24 h). Beta is +0.009, and both legs are positive (long +0.133,
+short +0.031). It is NO_EDGE (VALID alpha +0.072, CI [−0.112, +0.233]) and
+WATCH, so it is not an edge and not eligible for the holdout. M1's short-leg
+"rising OI" wording is corrected in BTC Exp 038: `oi_flush` shorts when OI
+**falls**, i.e. it fades a short squeeze.

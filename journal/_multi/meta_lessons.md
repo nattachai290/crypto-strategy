@@ -12,7 +12,7 @@ stays the only test that counts.
 
 - 434 evaluations of 55 ideas: {'BNBUSDT': 49, 'BTCUSDT': 247, 'ETHUSDT': 89, 'SOLUSDT': 49}
 - verdicts: {'REJECT': 237, 'WATCH': 116, 'INCONCLUSIVE': 74, 'PASS': 7}
-- baseline: {'DRIFT': 112, 'SKILL': 12} · benchmark: {'NO_EDGE': 117, 'ALPHA': 7}
+- baseline: {'DRIFT': 112, 'SKILL': 12} Â· benchmark: {'NO_EDGE': 117, 'ALPHA': 7}
 - holdouts: 5 {'FAILED': 5}
 
 ## Cost
