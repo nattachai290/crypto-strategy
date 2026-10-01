@@ -58,7 +58,7 @@ def list_keys(prefix: str) -> list[str]:
     keys: list[str] = []
     token = None
     while True:
-        url = f"{C.S3}?list-type=2&prefix={prefix}"
+        url = f"{C.S3}?list-type=2&prefix={quote(prefix, safe='/')}"  # non-ASCII symbols exist
         if token:
             # the token holds '+', '/' and '='; unencoded, page 2 is a 400
             # (never hit by the monthly listings, which fit on one page)
@@ -79,7 +79,7 @@ def list_keys(prefix: str) -> list[str]:
 
 def _verify_sha256(path: Path, key: str) -> bool:
     try:
-        raw = _get(f"{C.S3}/{key}.CHECKSUM").decode().strip()
+        raw = _get(f"{C.S3}/{quote(key, safe='/')}.CHECKSUM").decode().strip()
     except Exception:
         return True  # no checksum published; skip verification
     import hashlib
@@ -100,7 +100,7 @@ def fetch_zip(key: str, dest_dir: Path | None = None) -> Path | None:
     if dest.exists() and dest.stat().st_size > 0:
         return dest
     try:
-        blob = _get(f"{C.S3}/{key}")
+        blob = _get(f"{C.S3}/{quote(key, safe='/')}")
     except HTTPError as e:
         if e.code == 404:
             return None

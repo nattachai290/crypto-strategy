@@ -269,23 +269,27 @@ def backtest(P: dict, market: str, lookback: int, cost: float,
         def step(w_t, w_old):
             turn = w_t.sub(w_old, fill_value=0).abs().sum()
             gross = float((w_t * rets.reindex(w_t.index)).sum())
-            fcost = 0.0
+            fcost, nofund = 0.0, 0
             if fund is not None:
                 fwin = fund.loc[r: nxt - pd.Timedelta(days=1)]
                 base = pd.Index([x.split("#")[0] for x in w_t.index])
-                rate = fwin.reindex(columns=base).sum().to_numpy() if len(fwin) else np.zeros(len(w_t))
+                win = fwin.reindex(columns=base)
+                # a position with no funding row in the week pays 0; counted
+                # and reported, because it can only flatter the book (_multi Exp 000)
+                nofund = int(win.notna().sum().eq(0).sum()) if len(fwin) else len(w_t)
+                rate = win.sum().to_numpy() if len(fwin) else np.zeros(len(w_t))
                 fcost = float((w_t.to_numpy() * np.nan_to_num(rate)).sum())
             net = gross - turn * cost - fcost
             # weights at the end of the week: each position's value moved with
             # its coin (a short's notional too), equity moved by the gross return
             tot = 1 + gross
             drift = w_t * (1 + rets.reindex(w_t.index)) / tot if tot > 0 else w_t * 0
-            return net, turn, fcost, drift
+            return net, turn, fcost, drift, nofund
 
-        net, turn, fcost, w_prev = step(w, w_prev)
-        net_u, _, _, w_prev_u = step(wu, w_prev_u)
+        net, turn, fcost, w_prev, nofund = step(w, w_prev)
+        net_u, _, _, w_prev_u, _ = step(wu, w_prev_u)
         rows.append({"week": r, "n_universe": len(uni), "k": k, "net": net, "net_universe": net_u,
-                     "turnover": turn, "funding": fcost,
+                     "turnover": turn, "funding": fcost, "no_funding_positions": nofund,
                      "stat": net - net_u if market == "spot" else net,
                      "held": ",".join(w.index)})
     return pd.DataFrame(rows)
@@ -319,7 +323,8 @@ def summarize(w: pd.DataFrame) -> dict:
             "portfolio_cagr": float(eq_p[-1] ** (52 / len(eq_p)) - 1),
             "portfolio_max_dd": float(1 - (eq_p / np.maximum.accumulate(eq_p)).min()),
             "universe_cagr": float(np.prod(1 + w["net_universe"]) ** (52 / len(w)) - 1),
-            "mean_turnover": float(w["turnover"].mean()), "mean_funding": float(w["funding"].mean())}
+            "mean_turnover": float(w["turnover"].mean()), "mean_funding": float(w["funding"].mean()),
+            "weeks_with_unfunded_positions": int((w["no_funding_positions"] > 0).sum())}
 
 
 def verdict(train: dict, valid: dict, valid_stress: dict) -> tuple[str, list[str]]:

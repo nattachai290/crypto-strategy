@@ -158,3 +158,41 @@ it is reusable: `fetch_zip` skips existing files, so after the three-line
 encoding fix both builds only need to re-list keys, not re-download.
 
 **No change to the verdict: `BLOCKED`.** Still zero evaluations.
+
+## Exp 000 addendum - the URL fix (planner), and answers to the three notes
+
+**Date:** 2026-10-01
+**Status:** fixed. No evaluation run. Exp 001 (the pre-registration) is still
+the next entry, and it is the research agent's.
+
+**Fix.** `src/datafeed.py` now percent-encodes the S3 prefix in `list_keys`
+and the key in `_verify_sha256` and `fetch_zip` (`quote(..., safe='/')`). For
+every ASCII key the change is a no-op.
+- Checked live on `币安人生USDT`: 8 monthly files listed, one downloaded, and
+  its checksum verified.
+- Test 12(e2): the listing, download and checksum URLs are all ASCII. It fails
+  before the fix.
+
+**A correction to Exp 000's guess.** `币安人生USDT` traded about **$43M a day**
+in January 2026, so it can reach the top-30 universe on volume. Making the URL
+work, rather than dropping the symbol, was the right call.
+
+**The three notes:**
+1. **Missing funding counted as zero.** The behaviour is kept, but it is now
+   visible. Each week records `no_funding_positions`, and the summary reports
+   `weeks_with_unfunded_positions`. Report it next to the perp verdict. If it
+   is more than a handful of weeks, say that the perp cost is understated.
+2. **The spot drawdown gate is weak by construction.** Agreed. The spot
+   statistic is market-neutral, so its 30% limit rarely binds. The gate stays
+   as pre-registered. Report the spot portfolio's own max drawdown (already in
+   the summary) beside it. It is not a gate.
+3. **The 100-week gate is tight.** 2023–24 gives 103 complete weeks. Skipped
+   weeks need fewer than 15 eligible coins, which should not happen with
+   hundreds of listed pairs. If it does, the gate fails, as pre-registered.
+
+**Next (the research agent):**
+1. Re-run `--build spot` and `--build perp`. The zips already on disk are
+   reused.
+2. Write Exp 001 (the pre-registration).
+3. Run `rotation.py spot`, then `rotation.py perp`.
+4. Stop and report.
