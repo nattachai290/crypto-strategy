@@ -23,7 +23,9 @@
 > correction to what this coin can be used for:**
 > 1. **M1's losing leg replicates.** The short leg after an up-flush is −0.278 at
 >    15m and −0.107 at 30m here, worse than BTC in 2023 (−0.298 against −0.220).
->    Two coins, one mechanism: fading a rally on *rising* open interest loses.
+>    Two coins, one mechanism: **fading a short squeeze loses** — `oi_flush` fires
+>    short when price rises while open interest **falls** sharply. _Mechanism
+>    corrected in BTC Exp 038/039; the measured numbers are unchanged._
 > 2. **M2's long leg replicates** (+0.294 at 1h, +0.684 at 4h on 17 trades) and
 >    **the year split runs the opposite way from BTC's** — +0.050 in 2023 then
 >    +0.233 in 2024, against +0.400 then +0.082 on BTC. Both coins positive in

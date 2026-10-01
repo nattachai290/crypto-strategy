@@ -1,11 +1,55 @@
-> **Reopened for one replication (owner-approved 2026-10-01, `docs/research/PLAN.md` §15):** run `ideas/051_retail_crowd_fade_tf30.json` unchanged on this coin. First run `SYMBOL=BNBUSDT python src/datafeed.py --metrics`. Pre-register in **Exp 004**. Run baseline + benchmark whatever the verdict. No `--final`. Nothing else is run.
+> **Exp 005 — the `051_retail_crowd_fade_tf30` replication is DONE on this coin:
+> REJECT on 5 of 7 gates, and the replication FAILS. BNBUSDT now has 50
+> evaluations. No holdout used (`--final` not run, not a candidate).**
+>
+> | | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S |
+> |---|---|---|---|---|---|---|---|---|
+> | **TRAIN** | 103 | −0.070 | 0.063 | **−0.1326** | | | 20.7% | |
+> | **VALID** | **215** | −0.063 | 0.064 | **−0.1272** | [−0.2745, +0.0219] | **−13.3%** | **31.0%** | 109/106 |
+> | x1.5 cost | | | | −0.1595 | | | | |
+>
+> 2023 −0.1793 / 2024 −0.0835 · exits 38% stop / 61% time · hold 18.4 h · 0 skips
+> · **grid 4 cells, only 1 eligible, and 0% of the eligible ones positive on
+> TRAIN** · chose z 1.5 / 24 h.
+>
+> **Both controls: `baseline.py` DRIFT, `benchmark.py` NO_EDGE.**
+> - baseline: idea **−0.1272** against the random p95 of +0.0183; **73.5% of
+>   random runs beat it.**
+> - benchmark: VALID **beta −0.0024**, alpha **−0.1338/yr CI [−0.3074, +0.0281]**,
+>   Sharpe −1.102 against buy & hold's +1.272.
+>
+> **Against `PLAN.md` §15's criterion — VALID mean R > 0 AND baseline SKILL:
+> BOTH are NOT MET. This coin FAILS, and so does the replication.** The
+> pre-registration's specific worry is what happened: 1 eligible cell of 4, and
+> that single cell was negative on TRAIN, so no selection happened at all.
+>
+> **The loss is not a long/short asymmetry and not a cost artefact:** legs are
+> long −0.1409 / short −0.1131, **both negative**, and `gross_r` is −0.063 before
+> costs. `cost_r` 0.0644, in line with the other three coins.
+>
+> **The four coins together (846 pooled VALID trades, per-coin resampled): mean R
+> +0.0391, 95% CI [−0.0562, +0.1325], P(>0) = 0.79.** Leaving BNB out gives
+> +0.0958 with CI [−0.0156, +0.2136] — so the whole case rests on excluding BNB,
+> and even that interval touches zero. **Long legs +0.167 / +0.133 / +0.174
+> against short legs +0.055 / +0.031 / +0.027 on the three coins that made money,
+> with beta ≈ 0 on all four: the configuration is a way of being long in
+> 2023-24, not a way of fading a crowd.** The two-coin SKILL margins were +0.048
+> and +0.043 on BTC and ETH, **and −0.027 on SOL and −0.146 on BNB — the sign
+> flipped on both** — a two-coin coincidence, now established with 440 evaluations
+> and five failed holdouts behind it.
+>
+> Per `PLAN.md` §15: **the metrics question is closed, and no M2 variant is
+> tried.** Details: Exp 004 (pre-registration) and Exp 005 (this result).
+
+> **Reopened for one replication (owner-approved 2026-10-01, `docs/research/PLAN.md` §15):** run `ideas/051_retail_crowd_fade_tf30.json` unchanged on this coin. **Done — see Exp 005 above. The replication failed.**
 
 # BNBUSDT - status and handoff
 
-_Last updated: 2026-09-29, Exp 003 (Round B1 complete; stop rule fired). Rules:
-`AGENTS.md`. Plan: `docs/research/PLAN.md` section 12. BTCUSDT, ETHUSDT and
-SOLUSDT are all closed. BNBUSDT is the last active coin and its round is
-finished._
+_Last updated: 2026-10-01, Exp 005 (the `051_retail_crowd_fade_tf30` replication
+failed on this coin — REJECT on 5 of 7 gates — and the replication failed on both
+coins). Rules: `AGENTS.md`. Plan: `docs/research/PLAN.md` §12 and §15. BTCUSDT,
+ETHUSDT and SOLUSDT are all closed. The metrics question is closed: 32
+evaluations in §14 plus these 2 replications, 0 PASS._
 
 > **Exp 003 - ROUND B1 IS DONE. 49 evaluations, 0 PASS, 0 CONFIRMED. The BNB
 > HOLDOUT was never touched. Research on BNBUSDT stops.**

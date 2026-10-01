@@ -518,3 +518,127 @@ after 2026-08 with a criterion written in advance, which needs the owner's
 decision. **Failure on either coin reads M2's two-coin SKILL as chance, closes
 the metrics question as `PLAN.md` §14's stop rule already says, and ends M2 with
 no variant tried.**
+
+---
+
+## Exp 005 - Replication of `051_retail_crowd_fade_tf30` on BNBUSDT: REJECT, and the replication FAILS on both coins
+
+**Date:** 2026-10-01
+**Status:** complete. 1 evaluation. **HOLDOUT UNTOUCHED - `--final` not run.**
+No idea file edited. BNBUSDT now has **50 evaluations**. Both controls run
+whatever the verdict, as `PLAN.md` §15 requires.
+
+**The file, unchanged: `ideas/051_retail_crowd_fade_tf30.json`, 30m, stop 2.12%.**
+
+### The result
+
+| | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S |
+|---|---|---|---|---|---|---|---|---|
+| **TRAIN** | 103 | −0.070 | 0.063 | **−0.1326** | | | 20.7% | |
+| **VALID** | **215** | −0.063 | 0.064 | **−0.1272** | [−0.2745, +0.0219] | **−13.3%** | **31.0%** | 109/106 |
+| VALID x1.5 cost | | | | −0.1595 | | | | |
+
+- valid: win 35%, PF 0.72, avg hold 18.4 h, exits stop/tp/time 38%/0%/61%,
+  fill 100%, **size skips 0 (train 0)**
+- valid per year: **2023 −0.1793 (98), 2024 −0.0835 (117)**
+- gates: trades >=100 ✅, **train >0 ❌, valid >0 ❌, ci_lo >0 ❌, stress >0 ❌,
+  maxDD <=20% ❌**, skips ✅ -> **REJECT**, failing **five of seven**
+- **grid: 4 combos, 1 with >=100 train trades, 0% of those positive on train**
+- chosen on train: **z 1.5 / 24 h**, the same cell all three other coins chose
+
+### Both controls
+
+| control | verdict | the numbers |
+|---|---|---|
+| `baseline.py` | **DRIFT** | idea VALID **−0.1272** against the random 95th percentile of **+0.0183**; random median −0.0881; **73.5% of random runs beat the idea** |
+| `benchmark.py` | **NO_EDGE** | VALID **beta −0.0024**, alpha **−0.1338/yr, 95% CI [−0.3074, +0.0281]**, CAGR −13.3% against buy & hold +69.5%, maxDD 30.9% against 41.0%, Sharpe **−1.102 against +1.272** |
+
+### Against `PLAN.md` §15's criterion
+
+| criterion | BNBUSDT | result |
+|---|---|---|
+| 1. VALID mean R > 0 | **−0.1272** on 215 trades | **NOT MET** |
+| 2. `baseline.py` says SKILL | **DRIFT** | **NOT MET** |
+
+**BNBUSDT FAILS the criterion on both counts**, and not narrowly: it fails on
+**TRAIN as well** (mean R −0.1326, the only eligible cell negative), and
+**73.5% of random entry runs beat it on VALID**.
+
+**The pre-registration's specific worry is what happened.** It said 1 eligible
+cell of 4 was the likely outcome, 0 was a real possibility, and that a coin with
+no eligible cell counts as failed. **The run gave exactly 1 eligible cell - and
+that single cell was negative on TRAIN**, so the parameters were taken from the
+only candidate available and no selection happened at all. "0% of those positive
+on train" is the line in the report that says it.
+
+### The reported-besides-the-criterion numbers
+
+- **Parameters TRAIN chose: z 1.5 / 24 h, from 1 eligible cell of 4.** The same
+  cell as BTC, ETH and SOL - **4 of 4 coins picked the same cell**, but on **two
+  of them (ETH, BNB) only one cell was eligible, so on those two it was a frozen
+  default rather than a choice.** The pre-registration made exactly this point
+  before the run.
+- **Long and short legs on VALID: long −0.1409 (109 trades), short −0.1131
+  (106).** **BNB loses on both legs**, so this is not a long/short asymmetry and
+  not `LESSONS.md` §2 - it is a straight loss, and the only coin of the four where
+  that is true.
+- **Beta −0.0024, alpha −0.1338 with a CI reaching +0.0281.** No ALPHA, and the
+  point estimate is negative.
+- **Per year: 2023 −0.1793, 2024 −0.0835** - negative in both years, and less bad
+  in the second.
+- **Cost is not the story:** `valid_cost_r` 0.0644, in line with the other three
+  coins (0.0647 / 0.0656 / 0.0617). The loss is a gross loss, not a cost loss:
+  gross_r is **−0.063**, negative before costs.
+
+### Verdict against the criterion
+
+`REJECT`, on **five of seven gates**, and the replication question is settled:
+**the criterion required both coins to pass, neither did, so the replication
+FAILS.**
+
+Per `PLAN.md` §15's outcome text, verbatim: *"**Fails:** M2's two-coin SKILL is
+read as chance. The metrics question is closed, as PLAN §14's stop rule already
+says, and no M2 variant is tried."* **So: no M2 variant, no `--final`, and the
+metrics question is closed.** That is what this entry records, and it is the
+opposite of what BTC Exp 038 hoped for when it called this configuration the
+first SKILL-on-two-coins result in the project.
+
+### The four coins together, and why the two-coin SKILL was chance
+
+Reported as `PLAN.md` §15 asks, from the four `eval_trades/` lists:
+
+| coin | verdict | n | mean R | long | short | p95 of random | margin | baseline | by year | beta | alpha (CI) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| BTCUSDT | WATCH | 198 | +0.1057 | +0.1671 (90) | +0.0546 (108) | +0.0580 | **+0.0477** | **SKILL** | 2023 +0.054 / 2024 +0.156 | −0.0064 | +0.1052 [−0.0492, +0.2663] |
+| ETHUSDT | WATCH | 197 | +0.0797 | +0.1332 (94) | +0.0308 (103) | +0.0362 | **+0.0434** | **SKILL** | 2023 +0.005 / 2024 +0.134 | +0.0094 | +0.0717 [−0.1123, +0.2329] |
+| SOLUSDT | WATCH | 236 | +0.1010 | +0.1739 (119) | +0.0268 (117) | +0.1275 | **−0.0265** | DRIFT | 2023 +0.168 / 2024 +0.044 | +0.0128 | +0.0949 [−0.0981, +0.2741] |
+| BNBUSDT | REJECT | 215 | **−0.1272** | −0.1409 (109) | −0.1131 (106) | +0.0183 | **−0.1455** | DRIFT | 2023 −0.179 / 2024 −0.084 | −0.0024 | −0.1338 [−0.3074, +0.0281] |
+
+**Pooled VALID mean R, 846 trades, per-coin resampled, 2,000 draws: +0.0391 R,
+95% CI [−0.0562, +0.1325], P(mean R > 0) = 0.79.** Excluding BNB the pool is
++0.0958 with CI [−0.0156, +0.2136] and P(>0) = 0.96 - **so the entire case rests on
+leaving BNB out, and even the three-coin interval touches zero.** `LESSONS.md` §3
+says a VALID mean R of +0.1 should be read as "maybe +0.0 to +0.05"; +0.04 pooled
+is that number.
+
+**Three things this table settles.**
+
+1. **The long leg is the whole idea, on every coin that made money.** Long legs
+   +0.167 / +0.133 / +0.174 against short legs +0.055 / +0.031 / +0.027 - and on
+   the one coin that lost, both legs lost. **The configuration is a way of being
+   long in 2023-24, not a way of fading a crowd.** That is `LESSONS.md` §2, now
+   measured on four coins with a beta of ~0 on all four, which is the cleanest
+   possible statement: it has almost no exposure to the coin and still cannot pay
+   for itself.
+2. **Beta is ~0 and alpha's CI spans zero on all four coins** (+0.0128 to −0.0064
+   beta; every alpha interval contains 0). There is no ALPHA reading anywhere,
+   and no coin is even close to `PLAN.md` §15's "strongest evidence of entry
+   timing the project has produced".
+3. **A two-coin SKILL was a two-coin coincidence.** `LESSONS.md` §5 records that
+   a config carries its sign across coins 71-73% of the time; this one carried it
+   to SOL and not to BNB, and the margin that had been **+0.048 and +0.043 on the
+   first two coins was **−0.027 on SOL and −0.146 on BNB** - the sign flipped on
+   both.** The rule that
+   earned: **test a SKILL on the coins whose VALID data has never been seen by it,
+   not on the coins that produced it.** Two was never enough here, and the project
+   has now spent 440 evaluations and five failed holdouts to establish it.

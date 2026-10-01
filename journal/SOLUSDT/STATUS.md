@@ -1,13 +1,52 @@
-> **Reopened for one replication (owner-approved 2026-10-01, `docs/research/PLAN.md` §15):** run `ideas/051_retail_crowd_fade_tf30.json` unchanged on this coin. First run `SYMBOL=SOLUSDT python src/datafeed.py --metrics`. Pre-register in **Exp 006**. Run baseline + benchmark whatever the verdict. No `--final`. Nothing else is run.
+> **Exp 007 — the `051_retail_crowd_fade_tf30` replication is DONE on this coin
+> and the replication FAILS. SOLUSDT now has 51 evaluations. No holdout used
+> (the verdict is WATCH, not PASS, so `--final` was not a candidate).**
+>
+> | | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S |
+> |---|---|---|---|---|---|---|---|---|
+> | TRAIN | 133 | +0.078 | 0.067 | +0.0113 | | | 21.0% | |
+> | **VALID** | **236** | +0.163 | 0.062 | **+0.1010** | [−0.1134, +0.3234] | **+10.8%** | **14.7%** | 119/117 |
+> | x1.5 cost | | | | +0.0708 | | | | |
+>
+> 2023 +0.1685 / 2024 +0.0440 · exits 55% stop / 45% time · hold 15.2 h · 0 skips
+> · **grid 4 cells, 2 eligible, 100% positive on TRAIN** · **chose z 1.5 / 24 h** —
+> the same cell BTC, ETH and BNB chose.
+>
+> **Both controls: `baseline.py` DRIFT, `benchmark.py` NO_EDGE.**
+> - baseline: idea **+0.1010** against the random p95 of **+0.1275** →
+>   **margin −0.0265 R**; **7.0% of random runs beat it**; on TRAIN the gap is
+>   much wider (+0.0113 against p95 +0.1608).
+> - benchmark: VALID **beta +0.0128**, alpha **+0.0949/yr CI [−0.0981, +0.2741]**
+>   (spans 0), Sharpe +0.656 against buy & hold's +2.053.
+>
+> **Against `PLAN.md` §15's criterion — VALID mean R > 0 AND baseline SKILL:
+> the first is MET, the second is NOT. This coin FAILS the criterion.** The
+> evaluation itself is still `WATCH` (236 trades, positive on TRAIN and VALID,
+> every gate but the CI lower bound) — two different statements, both recorded.
+>
+> **Legs: long +0.1739 (119), short +0.0268 (117).** The same shape as BTC
+> (+0.167 / +0.055) and ETH (+0.133 / +0.031): **the long leg is the idea.**
+> `LESSONS.md` §2, on the third coin. `cost_r` 0.0617 — below the 0.066 R fee-only
+> estimate, so nothing here is a cost artefact.
+>
+> The other half of the replication is in `journal/BNBUSDT/experiments.md` Exp 005
+> (REJECT, −0.1272 on 215 trades). **Both coins failed, so per `PLAN.md` §15:
+> M2's two-coin SKILL is read as chance, the metrics question is closed as §14's
+> stop rule already says, and no M2 variant is tried.**
+>
+> Details: Exp 006 (pre-registration) and Exp 007 (this result).
+
+> **Reopened for one replication (owner-approved 2026-10-01, `docs/research/PLAN.md` §15):** run `ideas/051_retail_crowd_fade_tf30.json` unchanged on this coin. **Done — see Exp 007 above. The replication failed.**
 
 # SOLUSDT - status and handoff
 
 > **CLOSED (stop rule, Exp 003; review Exp 004).** Holdout used once, FAILED. Controls are still missing on 19 WATCH rows (Exp 004), which is for the research agent to complete.
 
-_Last updated: 2026-09-29, Exp 005 (the 19 missing controls are run; every
-WATCH/PASS on this coin now has both). Rules: `AGENTS.md`. Plan:
-`docs/research/PLAN.md` section 12. BTCUSDT, ETHUSDT and BNBUSDT are all closed
-and every per-coin stop rule has fired._
+_Last updated: 2026-10-01, Exp 007 (the `051_retail_crowd_fade_tf30` replication
+failed on this coin — DRIFT, not SKILL). Rules: `AGENTS.md`. Plan:
+`docs/research/PLAN.md` §12 and §15. BTCUSDT, ETHUSDT and BNBUSDT are all closed
+and every per-coin stop rule has fired. The metrics question is closed: 32
+evaluations in §14 plus these 2 replications, 0 PASS._
 
 > **Exp 005 - the 19 missing controls are now run. SOLUSDT has a control on every
 > one of its 20 WATCH/PASS configurations: 19 DRIFT + 1 SKILL, 19 NO_EDGE + 1

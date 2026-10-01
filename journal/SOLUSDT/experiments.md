@@ -856,3 +856,92 @@ a REJECT row still has a skill reading.
   question is closed as `PLAN.md` §14's stop rule already says, and **no M2
   variant is tried.**
 - **`--final` is not run by this agent under any outcome.**
+
+---
+
+## Exp 007 - Replication of `051_retail_crowd_fade_tf30` on SOLUSDT: the criterion FAILS (DRIFT, not SKILL)
+
+**Date:** 2026-10-01
+**Status:** complete. 1 evaluation. **HOLDOUT UNTOUCHED - `--final` not run, and
+not a candidate (the verdict is WATCH, not PASS).** No idea file edited. SOLUSDT
+now has **51 evaluations**. Both controls run whatever the verdict, as
+`PLAN.md` §15 requires.
+
+**The file, unchanged: `ideas/051_retail_crowd_fade_tf30.json`, 30m, stop 2.12%,
+z 1.5 / 2.5 x hold 24 / 72 h.**
+
+### The result
+
+| | trades | gross_r | cost_r | mean R | 95% CI | CAGR | maxDD | L/S |
+|---|---|---|---|---|---|---|---|---|
+| **TRAIN** | 133 | +0.078 | 0.067 | **+0.0113** | | | 21.0% | |
+| **VALID** | **236** | +0.163 | 0.062 | **+0.1010** | [−0.1134, +0.3234] | **+10.8%** | **14.7%** | **119/117** |
+| VALID x1.5 cost | | | | +0.0708 | | | | |
+
+- valid: win 38%, PF 1.14, avg hold 15.2 h, exits stop/tp/time **55%/0%/45%**,
+  fill 100%, **size skips 0 (train 0)**
+- valid per year: **2023 +0.1685 (108), 2024 +0.0440 (128)**
+- gates: trades >=100 ✅, train >0 ✅, valid >0 ✅, **ci_lo >0 ❌**, stress >0 ✅,
+  maxDD <=20% ✅, skips ✅ -> **WATCH**, failing on the CI gate alone, exactly as
+  on BTC and ETH
+- **grid: 4 combos, 2 with >=100 train trades, 100% of those positive on train**
+- **chosen on train: z 1.5 / hold 24 h** - the same cell BTC and ETH chose
+
+### Both controls
+
+| control | verdict | the numbers |
+|---|---|---|
+| `baseline.py` | **DRIFT** | idea VALID **+0.1010** against the random 95th percentile of **+0.1275** -> **margin −0.0265 R**; random median −0.0733; **7.0% of random runs beat the idea**; on TRAIN the gap is much wider, **+0.0113 against p95 +0.1608** |
+| `benchmark.py` | **NO_EDGE** | VALID **beta +0.0128**, alpha **+0.0949/yr, 95% CI [−0.0981, +0.2741]** (spans 0), CAGR +10.8% against buy & hold +335.5%, maxDD 11.6% against 44.9%, Sharpe **+0.656 against +2.053** |
+
+### Against `PLAN.md` §15's criterion
+
+> succeeds only if, on SOL and on BNB, both: 1. VALID mean R > 0, and
+> 2. `baseline.py` says **SKILL**.
+
+| criterion | SOLUSDT | result |
+|---|---|---|
+| 1. VALID mean R > 0 | +0.1010 on 236 trades | **MET** |
+| 2. `baseline.py` says SKILL | **DRIFT** | **NOT MET** |
+
+**SOLUSDT FAILS the criterion.** Not narrowly on a technicality in the other
+direction: on VALID it misses the random-entry bar by 0.0265 R, and on **TRAIN it
+misses it by 0.1495 R** - a config whose own training period is indistinguishable
+from random entry timing on this coin.
+
+### The reported-besides-the-criterion numbers
+
+- **Parameters TRAIN chose: z 1.5 / 24 h, from 2 eligible cells of 4, 100% of
+  them positive on TRAIN.** Better than the pre-registration expected, which
+  predicted 1 eligible cell or 0 - so on this coin the choice *was* a selection
+  between two cells, not a frozen default. The z 2.5 cell had 31 signals and
+  could not be eligible, as predicted.
+- **Long and short legs on VALID: long +0.1739 (119 trades), short +0.0268
+  (117).** The long leg carries the coin and the short leg is close to zero -
+  **the same shape as BTC (+0.167 / +0.055) and ETH (+0.133 / +0.031).**
+  `LESSONS.md` §2 again, on the third coin: what pays is being long.
+- **Beta +0.0128, alpha +0.0949 with a CI that spans zero.** No ALPHA anywhere.
+- **Per year: 2023 +0.1685, 2024 +0.0440** - the year *after* the first falls by
+  three quarters, which is the opposite of BTC (2023 +0.054 -> 2024 +0.156) and
+  ETH (2023 +0.005 -> 2024 +0.134). Three coins, three different year shapes, all
+  positive in both years.
+- **Cost is not the story:** `valid_cost_r` 0.0617 at a 2.12% stop, which is
+  *below* the 0.066 R fee-only estimate of 0.14% of price per round trip, and in
+  line with the other three coins (0.0647 / 0.0656 / 0.0644). Nothing about this
+  result is a cost artefact.
+- **Exits: 55% stop / 0% target / 45% time**, avg hold 15.2 h - the shortest hold
+  of the four coins, and the highest stop-exit share, on the narrowest stop.
+
+### Verdict against the criterion
+
+`REJECT` **on the replication question**, while the evaluation itself is `WATCH`.
+The two are different statements and both are recorded: **the configuration is
+still WATCH on this coin - 236 trades, positive on TRAIN and VALID, all gates but
+the CI - and the replication still fails, because the skill it needed to show is
+not there.** `baseline.py` had 200 draws per mode and 7.0% of them beat the idea.
+
+Per `PLAN.md` §15: **one coin out of two is not a replication, and this coin is
+the one that was supposed to carry it.** The other half is in BNB Exp 005, and
+`PLAN.md` §15's outcome text is explicit that a failure reads M2's two-coin SKILL
+as chance, closes the metrics question as §14's stop rule already says, and ends
+M2 **with no variant tried.** No `--final` was run and none is warranted.

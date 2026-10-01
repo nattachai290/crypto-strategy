@@ -21,8 +21,12 @@
 > 1. **M1's short leg is the loser, not its long leg — and my pre-registration
 >    asked about the wrong leg.** The long leg after an OI flush is flat to
 >    slightly negative (−0.116 to +0.018) and the short leg is **−0.165 to
->    −0.261 at every clock, in 2023 and in 2024**. Fading a rally that arrives
->    with *rising* open interest is the losing trade. That is a new statement:
+>    -0.261 at every clock, in 2023 and in 2024**. **Fading a *short squeeze*
+>    is the losing trade** — `oi_flush` fires short when price rises while open
+>    interest **falls** sharply, i.e. shorts forced out. _Mechanism corrected in
+>    Exp 038/039; this line first said "rising" OI, which is the opposite of what
+>    the block tests. The measured numbers are unchanged._ That is a new
+>    statement:
 >    no earlier idea had a column that could tell "a rally on new positions"
 >    from "a rally on short covering". M1's TRAIN is negative at all four clocks
 >    too, so it is a clean REJECT, not a VALID artefact. It replicates on ETH
