@@ -1199,3 +1199,96 @@ by design.
 - **Do not run anything else and do not change a rule.** If a rule IMPROVES,
   report it to the owner. That is not a trading recommendation yet; how to act
   on it is the owner's decision.
+
+## 17. Rotation: cross-sectional momentum across Binance coins (owner-approved 2026-10-01)
+
+**Why a different question.** The owner's goal is profitable trading. 440
+evaluations asked *when* to trade one coin, and none survived. The allocation
+test (§16) asked *whether to be in the market*: trend rules cut the bears but
+failed the drawdown criterion. Two of the project's own findings point at a
+different question:
+- cost decides everything at short holds;
+- samples were too small for the CIs to clear zero.
+
+**Which coins to hold each week** answers both:
+- weekly rebalancing keeps cost low;
+- dozens of coins over hundreds of weeks give a large sample;
+- a long/short book on perps is market-neutral, so a bull market cannot pass
+  for skill.
+
+The academic crypto-factor literature reports a 1–4 week cross-sectional
+momentum effect. It may have weakened since; that is what VALID and HOLDOUT
+are for.
+
+### Data (checked 2026-10-01)
+- data.binance.vision keeps **delisted** pairs: LUNA, FTT, UST, SRM, WAVES,
+  BCC (2018) and others. That gives 735 spot USDT pairs and 864 perp USDT
+  pairs.
+- `python src/rotation.py --build spot` / `--build perp` downloads every
+  tradable USDT pair's daily klines (and, for perps, their funding) into
+  `data/cache/_multi/`.
+- That is roughly 40,000+ small monthly zips per market, checksum-verified.
+  Expect an hour or more.
+- **Symbol reuse:** `LUNAUSDT` is old LUNA until 2022-05-13 and a new coin
+  from 2022-05-31. Any gap of more than 3 days splits a symbol into separate
+  instruments.
+- Excluded: stablecoins and fiat, wrapped duplicates (WBTC, WBETH, BETH),
+  PAXG, and leveraged tokens (xxxUP/DOWN/BULL/BEAR, but not coins such as JUP).
+
+### The test (`src/rotation.py`, Level 3, BTC Exp 042)
+- **Every Monday:**
+  - The universe is the 30 most liquid coins: average quote volume over the
+    previous 30 days, at least 60 days of history, using data up to Sunday
+    only. A week with fewer than 15 eligible coins is skipped.
+  - Coins are ranked by their past `L`-day return.
+  - Fills are at Monday's open. A coin whose data ends mid-week (delisted)
+    exits at its last close.
+- **Spot (primary):**
+  - long the top fifth (6 coins), equal weight;
+  - **statistic = weekly net return of the top fifth minus the equal-weight
+    universe** (the momentum premium, net of the market);
+  - cost 0.10% fee + 0.05% slippage per side on turnover against drifted
+    weights.
+- **Perp:**
+  - long the top fifth, short the bottom fifth, half the equity each;
+  - **statistic = the book's weekly net return**;
+  - cost 0.05% + 0.05% per side, plus each coin's own funding.
+- **Splits** (as in the rest of the project):
+  - TRAIN 2018–2022 (perp data starts 2019-09);
+  - VALID 2023–2024;
+  - HOLDOUT 2025-01 → 2026-08.
+  - A week counts in a split only if it ends inside it.
+
+### Pre-registered choices and gates
+- **The only choice is `L` ∈ {7, 14, 28} days**, picked by the highest TRAIN
+  Sharpe of the statistic. Everything else is fixed in the code: N 30, top
+  fifth, age 60, volume window 30, costs. Changing any of it is a new test
+  that needs the owner.
+- **PASS on VALID** needs all of these:
+  - TRAIN mean > 0;
+  - ≥ 100 VALID weeks;
+  - VALID mean > 0;
+  - 95% block-bootstrap CI lower bound > 0 (4-week blocks);
+  - mean > 0 at cost ×1.5;
+  - drawdown of the statistic's cumulative curve ≤ 30%.
+- **HOLDOUT** runs with `--final`, once per market, and only after PASS.
+  **CONFIRMED** means the holdout mean > 0 with its CI lower bound > 0.
+  The script keeps a lock file and refuses a second run.
+- The script also refuses to redo a TRAIN/VALID run whose results exist.
+
+### What it is not
+- Not a guarantee. The literature's effect may be gone.
+- Spot long-only results are still exposed to the crypto market. The
+  statistic removes that by subtracting the universe. The perp book removes
+  it by construction.
+
+### Run (the research agent)
+1. `python src/test_engine.py` → ALL CHECKS PASSED (test 13 covers this tool).
+2. Pre-register in `journal/_multi/experiments.md` (new file, Exp 000)
+   **before** step 4. Include the number of symbols and instruments built,
+   the universe size per year, and how many delisted coins were ever in the
+   universe.
+3. `python src/rotation.py --build spot`, then `--build perp`.
+4. `python src/rotation.py spot`, then `python src/rotation.py perp`.
+5. **Stop and report to the owner.** `--final` only with the owner's
+   approval, and only on a PASS.

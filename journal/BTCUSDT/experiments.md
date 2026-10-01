@@ -4554,3 +4554,48 @@ By segment (total return / max drawdown):
 | sma200_long_short | - | - | -32% / 88% | +63% / 20% | +109% / 43% | -13% / 49% | -32% / 88% | +201% / 55% |
 
 
+
+---
+
+## Exp 042 - Rotation tooling: cross-sectional momentum across Binance coins (Level 3, owner-approved)
+
+**Date:** 2026-10-01
+**Status:** complete. Code and tests only. No market-data run, apart from
+checking which data exists.
+
+**Why.** The owner keeps the goal: profitable trading. 440 single-coin timing
+evaluations and the allocation test (§16, all NO_IMPROVEMENT) failed. PLAN.md
+§17 asks a different question, which coins to hold each week, with weekly
+costs, a large sample and a market-neutral perp book.
+
+**Checked first.** data.binance.vision keeps delisted pairs: 735 spot and 864
+perp USDT pairs, including LUNA, FTT, UST, SRM, WAVES and BCC. `LUNAUSDT` is
+two coins: old LUNA ends 2022-05-13 at 0.00005, and a new LUNA starts
+2022-05-31 at 1.0. Joining them would be a 2,000,000% jump, so any gap of more
+than 3 days now splits a symbol into separate instruments.
+
+**What changed.** `src/rotation.py` (new):
+- builds every tradable USDT pair's daily klines and perp funding into
+  `data/cache/_multi/`;
+- chooses the universe causally each Monday (30 most liquid, 60-day age);
+- top/bottom fifth by `L`-day return;
+- fills at Monday's open, exits delisted coins at their last close;
+- costs on turnover against drifted weights, funding per coin;
+- TRAIN chooses `L` ∈ {7, 14, 28}, VALID applies 6 gates, and `--final` runs
+  the holdout once behind a lock.
+
+**Tests: `test_engine.py` test 13, all hand-computed or exact:**
+- the symbol filter: stablecoins and leveraged tokens out, JUP in;
+- the LUNA split;
+- spot weekly P&L with a turnover cost on the first week and none on an
+  unchanged second week;
+- the perp long/short book with long-pays / short-receives funding;
+- a mid-week delisting;
+- a causal universe (changing data after Sunday changes nothing);
+- the block-bootstrap CI.
+
+All earlier tests are unchanged. ALL CHECKS PASSED.
+
+**Smoke-tested** end to end on 40 synthetic coins in a temp directory:
+TRAIN, VALID and the report run through, both markets came out REJECT on
+random data, and the rerun and `--final` refusals work.
