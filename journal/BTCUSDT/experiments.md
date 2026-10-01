@@ -4888,3 +4888,45 @@ price path has some structure (gross R up to +0.03 to +0.05) but it is smaller
 than one round-trip cost. Stage 2 (an ML entry model, PLAN §18 "what happens
 next") waits for the owner's decision. Its design must include the control
 above.
+
+---
+
+## Exp 046 - ML entry model tooling (Stage 2, Level 3, owner-approved)
+
+**Date:** 2026-10-01
+**Status:** complete. Code and tests only. No market-data run.
+
+**Why.** The owner chose option "ก": continue to Stage 2, an ML entry model,
+with the BTC Exp 045 control built in. PLAN.md §19 has the design.
+
+**What changed.**
+- `src/ml_entry.py` (new):
+  - causal features;
+  - labels are the exit lab's net R for a symmetric `time_only` exit;
+  - two LightGBM models (native API, no scikit-learn), fixed
+    hyper-parameters;
+  - purged expanding walk-forward OOF on TRAIN chooses the threshold;
+  - the frozen model is applied to VALID;
+  - 6 gates, including beating random signal sets with the same long/short
+    counts;
+  - `--final` runs the holdout once, behind a lock.
+- **Test 15:**
+  - the features are causal;
+  - the purge keeps every TRAIN label inside TRAIN;
+  - the labels equal `exit_lab.simulate`;
+  - the side rule;
+  - **the whole pipeline on synthetic 1h bars**: a planted, drift-neutral
+    24h-momentum edge gives **PASS** (+0.372 R, both legs > 0, random 95th
+    percentile +0.115), and pure noise gives **REJECT** (−0.044, does not
+    beat random).
+
+**Two synthetic tests had to be redesigned while building this.** Both
+mistakes were in the planted data, not in the pipeline:
+1. A planted hour-of-day *drift* was matched by the random control, because
+   the whole market rose. That shows the control works.
+2. A planted 24-hour *cycle* was invisible to a 24-bar hold, because it
+   nets to zero.
+
+The final test plants momentum, which a 24-bar hold can see.
+
+All earlier tests are unchanged. ALL CHECKS PASSED.

@@ -1359,3 +1359,75 @@ TRAIN chose, and the result is read knowing that exits alone carry no edge.
 **Prior:** most likely every net mean is near minus the cost (−0.03 to
 −0.1 R). Any exit whose gross R is clearly positive on both TRAIN and VALID
 is worth reporting even if the net fails.
+
+## 19. ML entry model: can a trained model time entries better than chance? (owner-approved 2026-10-01)
+
+**Stage 2 of the owner's "train the timing" request.** Stage 1 (§18, BTC
+Exp 043–045) found no tradable skill in six exits. At 1h, the price path's
+structure was smaller than one round-trip cost.
+
+**The model (`src/ml_entry.py`, BTC Exp 046).**
+- **Two LightGBM regressors**, one for longs and one for shorts. Each
+  predicts the **net R** (after fees, slippage and funding) of entering at the
+  next 1h open with **one fixed, symmetric exit**: `time_only` (3-ATR stop,
+  out after 24 bars).
+  - The exit is symmetric on purpose. BTC Exp 045 showed that a
+    path-dependent exit turns market drift into profit.
+- **Features** (bar i uses bars ≤ i):
+  - returns over 1–168 bars;
+  - volatility over 24 and 168 bars and their ratio;
+  - ATR as % of price;
+  - position in the 24- and 168-bar range;
+  - candle body and wicks;
+  - volume z-score;
+  - taker buy ratio;
+  - distance to EMA 20/50/200 in ATR;
+  - hour and weekday;
+  - the last settled funding rate.
+  - The metrics columns are **not** used: they are NaN for much of TRAIN.
+- **Hyper-parameters are fixed:** 300 rounds, learning rate 0.03, 15 leaves,
+  ≥ 200 rows per leaf, bagging and feature fraction 0.8, L2 1.0, seed 7,
+  deterministic. They are not tuned anywhere.
+
+**Protocol.**
+1. TRAIN 2020–22 only. Rows whose 24-bar label window would reach past a fit
+   window are **purged** (26 bars).
+2. **The threshold** (predicted net R needed to trade, from {0, 0.05, 0.10,
+   0.20}) is chosen on **TRAIN out-of-fold predictions** from 3 expanding,
+   purged walk-forward folds: fit 2020-01 → 2021-07 / 2022-01 / 2022-07 and
+   predict the next half-year. The choice needs ≥ 300 OOF trades.
+3. The final models are refit on all of TRAIN and frozen.
+4. On VALID 2023–24, each bar takes the side with the higher prediction if it
+   clears the threshold. Each signal is one trade, simulated on its own with
+   the engine's rules.
+
+**Gates (PASS on VALID needs all):**
+- TRAIN OOF mean > 0;
+- ≥ 300 VALID trades;
+- VALID mean > 0;
+- weekly-block CI lower bound > 0;
+- mean > 0 with fees and slippage ×1.5;
+- **beats the 95th percentile of 200 random signal sets with the same long
+  and short counts.** Drift helps them exactly as much as the model, so this
+  is the BTC Exp 045 rule.
+
+`--final` runs the HOLDOUT once (lock file), and only after PASS.
+**CONFIRMED** = holdout mean > 0, CI lower bound > 0, and above the random
+median.
+
+**The pipeline is proven on synthetic data** (test 15):
+- On bars with a planted, drift-neutral momentum edge it says **PASS**: mean
+  +0.37 R, both legs positive, random 95th percentile +0.12.
+- On pure noise it says **REJECT**, and does not beat random.
+- Its features are causal, the purge holds, and its labels equal the exit
+  lab's.
+
+**Runs:**
+- `SYMBOL=BTCUSDT python src/ml_entry.py` (primary);
+- `SYMBOL=ETHUSDT python src/ml_entry.py` (replication: a PASS counts only if
+  ETH also passes).
+- One run each. No new feature, parameter or exit after seeing a result.
+
+**Prior:** low. Stage 1 says the structure at 1h is smaller than the cost.
+The model can only win where it finds bars whose expected move clears about
+0.1 R of cost.

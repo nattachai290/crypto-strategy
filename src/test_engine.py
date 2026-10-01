@@ -418,6 +418,7 @@ def main() -> None:
     test_allocation()
     test_rotation()
     test_exit_lab()
+    test_ml_entry()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1226,6 +1227,67 @@ def test_exit_lab() -> None:
     check("exit lab entries: about 1 bar in 4, half long, same seed -> same entries",
           abs((side != 0).mean() - XL.ENTRY_P) < 0.03 and abs((side > 0).sum() / (side != 0).sum() - 0.5) < 0.05
           and np.array_equal(side, XL.random_entries(bars.index)))
+
+
+# --------------------------------------------------------------------------
+# 15. ML entry model (PLAN.md section 19): causal features, purge, labels,
+#     and the whole pipeline on a planted edge and on pure noise
+# --------------------------------------------------------------------------
+def _momentum_bars(k: float, seed: int = 3) -> pd.DataFrame:
+    """1h bars 2020-01..2025-01 whose drift follows the sign of the last 24h:
+    k > 0 plants a real, drift-neutral momentum edge; k = 0 is pure noise."""
+    rng = np.random.default_rng(seed)
+    idx = pd.date_range("2020-01-01", "2025-01-10", freq="1h", tz="UTC")
+    n = len(idx)
+    e, r = rng.normal(0, 0.008, n), np.zeros(n)
+    acc = 0.0
+    for i in range(n):
+        r[i] = e[i] + k * np.sign(acc)
+        acc += r[i] - (r[i - 24] if i >= 24 else 0.0)
+    c = 30000 * np.exp(np.cumsum(r))
+    o = np.r_[c[0], c[:-1]]
+    w = np.abs(rng.normal(0, 0.003, n))
+    d = pd.DataFrame({"open": o, "high": np.maximum(o, c) * (1 + w), "low": np.minimum(o, c) * (1 - w),
+                      "close": c, "volume": rng.lognormal(5, 0.5, n)}, index=idx)
+    d["taker_buy_base"] = d["volume"] * 0.5
+    return d
+
+
+def test_ml_entry() -> None:
+    print("\n15. ML entry: causal features, purge, labels, planted edge found, noise rejected")
+    import contextlib
+    import io
+    import ml_entry as ME
+    import exit_lab as XL
+    bars = _momentum_bars(0.0)
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.random.default_rng(1).normal(0, 1e-4, len(ft))})
+    full = ME.features(bars, fund)
+    cut = 20000
+    part = ME.features(bars.iloc[:cut], fund)
+    same = np.allclose(full.iloc[:cut].to_numpy(float), part.to_numpy(float), equal_nan=True)
+    check("ml_entry features are causal (full run == truncated run on the prefix)", same)
+    m = ME._span(bars.index, "2020-01-01", "2023-01-01", purge=ME.PURGE)
+    last = bars.index[np.flatnonzero(m)[-1]]
+    check("ml_entry purge: the last TRAIN row's label window ends inside TRAIN",
+          last + pd.Timedelta(hours=ME.PURGE - 1) < pd.Timestamp("2023-01-01", tz="UTC"), str(last))
+    lab = ME.labels(bars.iloc[:3000], fund)
+    i = 1500
+    side = np.zeros(3000); side[i] = 1.0
+    one = XL.simulate(bars.iloc[:3000], side, ME.EXIT, fund)
+    check("ml_entry labels = the exit lab's simulated net R of that entry",
+          np.isclose(lab["long"].iloc[i], one["net_r"].iloc[0]), f"{lab['long'].iloc[i]} {one['net_r'].iloc[0]}")
+    check("ml_entry decide: higher side if above threshold, else flat",
+          list(ME.decide(np.array([.3, .1, -.2]), np.array([.1, .25, -.1]), 0.2)) == [1.0, -1.0, 0.0])
+    with contextlib.redirect_stdout(io.StringIO()):
+        noise = ME.evaluate(bars, fund)
+        edge = ME.evaluate(_momentum_bars(0.0008), fund)
+    check("ml_entry pipeline: a planted momentum edge is found (PASS, both legs > 0, beats random p95)",
+          edge["verdict"] == "PASS" and edge["valid"]["long_r"] > 0 and edge["valid"]["short_r"] > 0,
+          f"{edge['verdict']} mean {edge['valid']['mean_r']:+.3f} p95 {edge['random_p95']:+.3f}")
+    check("ml_entry pipeline: pure noise is not a PASS and does not beat random",
+          noise["verdict"] == "REJECT" and "beats_random_p95" in noise["gates_failed"],
+          f"{noise['verdict']} mean {noise['valid'].get('mean_r', 0):+.3f} failed {noise['gates_failed']}")
 
 
 if __name__ == "__main__":
