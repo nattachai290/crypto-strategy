@@ -5,8 +5,9 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: new data, open interest and long/short ratios, on BTCUSDT
-(primary) and ETHUSDT (replication)** (`docs/research/PLAN.md` §14). The
+**Active work: one replication, `051_retail_crowd_fade_tf30` on SOLUSDT and
+BNBUSDT** (`docs/research/PLAN.md` §15). The metrics round itself (§14) is
+done (BTC Exp 037/038). The
 TradingView ports are closed (§13, BTC Exp 033/034); a new port needs Pine
 Script source the owner pastes, never one written from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
 `$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's

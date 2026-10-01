@@ -1059,3 +1059,68 @@ WATCH/PASS. `--final` only with the owner's approval.
 **Stop rule:** if no config reaches a holdout CONFIRMED, the new-data
 question is closed for these four signals. Any other use of the metrics
 needs a new owner decision.
+
+## 15. Replication of `051_retail_crowd_fade @30m` on SOLUSDT and BNBUSDT (owner-approved 2026-10-01)
+
+**Why this, and why now.**
+- BTC Exp 038 recorded `051_retail_crowd_fade_tf30` as the first configuration
+  in the project with SKILL on two coins:
+  - BTC: +0.106 R on 198 VALID trades;
+  - ETH: +0.080 R on 197;
+  - beta ≈ 0 on both, WATCH and NO_EDGE on both.
+- It missed PASS only on the CI gate. The question is whether that is skill or
+  one lucky cell out of 438 evaluations.
+- SOL and BNB have the same Binance metrics from 2021-12-01. Their VALID data
+  has never been seen by this configuration. A replication there is new
+  evidence available now, without waiting for post-2026-08 data.
+
+**Correction, before any run (BTC Exp 039).** Exp 038 said TRAIN chose the
+same parameters "independently" on BTC and ETH. On ETH only **1 of the 4**
+grid cells had ≥ the minimum TRAIN trades (`n_eligible` = 1). So ETH's choice
+was not a selection. The agreement is weaker than stated: BTC chose z 1.5 /
+24 h from 2 eligible cells.
+
+**What is run: the same file, unchanged, on the two new coins.**
+- `ideas/051_retail_crowd_fade_tf30.json`, with no edit and no new file. TRAIN
+  picks from the same grid (z 1.5/2.5 × hold 24/72 h), exactly as it did on
+  BTC and ETH. No other idea, timeframe or variant is run.
+- `SYMBOL=SOLUSDT` and `SYMBOL=BNBUSDT`. On both coins, TRAIN with metrics is
+  13 months (2021-12 → 2022-12), the same as ETH. SOL keeps its
+  `eval_equity` of 20,000.
+- **2 evaluations.** `baseline.py` and `benchmark.py` are run on **both,
+  whatever the verdict**. The replication question is SKILL, and a REJECT or
+  INCONCLUSIVE row still has a skill reading.
+
+**Pass criterion, written before any run.** The replication **succeeds only
+if, on SOL and on BNB, both:**
+1. VALID mean R > 0, and
+2. `baseline.py` says **SKILL**.
+
+One coin out of two is **not** a replication. If TRAIN on a coin has no
+eligible cell (INCONCLUSIVE with no SKILL reading), that coin counts as
+**failed**, not as missing. Reported next to the criterion, but not part of
+it:
+- the parameters TRAIN chose, and how many cells were eligible;
+- long and short legs;
+- beta and alpha;
+- per-year results;
+- the 4-coin pooled VALID mean R with a trade-level bootstrap CI (computed in
+  the review from `eval_trades/`).
+
+**What each outcome means.**
+- **Succeeds:** the strongest evidence of entry timing the project has
+  produced.
+  - Still no holdout: the verdict is not PASS, and AGENTS.md rule 4 stands.
+  - The next step is a **forward test**: freeze the config and judge it only
+    on Binance data after 2026-08, with a criterion written before reading
+    that data. That needs the owner's decision.
+- **Fails:** M2's two-coin SKILL is read as chance. The metrics question is
+  closed, as PLAN §14's stop rule already says, and no M2 variant is tried.
+
+**Pre-registration** goes in SOL journal **Exp 006** and BNB journal **Exp
+004**, before the first run. It must include:
+- `METRICS VALIDATION` output for each coin;
+- the `acct_ls` NaN share per split;
+- the TRAIN signal count per grid cell.
+
+Everything else follows AGENTS.md. `--final` is not run.

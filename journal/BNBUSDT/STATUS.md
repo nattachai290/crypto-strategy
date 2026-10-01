@@ -1,3 +1,5 @@
+> **Reopened for one replication (owner-approved 2026-10-01, `docs/research/PLAN.md` §15):** run `ideas/051_retail_crowd_fade_tf30.json` unchanged on this coin. First run `SYMBOL=BNBUSDT python src/datafeed.py --metrics`. Pre-register in **Exp 004**. Run baseline + benchmark whatever the verdict. No `--final`. Nothing else is run.
+
 # BNBUSDT - status and handoff
 
 _Last updated: 2026-09-29, Exp 003 (Round B1 complete; stop rule fired). Rules:

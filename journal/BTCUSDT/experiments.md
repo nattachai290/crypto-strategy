@@ -4308,3 +4308,22 @@ when it was chosen**:
 - judge it on that period with a criterion written down now.
 
 That needs the owner's decision. It is proposed in STATUS, not started.
+
+---
+
+## Exp 039 - Correction to Exp 038, and the SOL/BNB replication plan
+
+**Date:** 2026-10-01
+**Status:** complete. No evaluations.
+
+**Correction.** Exp 038 (and the `LESSONS.md` §8 bullet) say TRAIN chose the
+same parameters for `051_retail_crowd_fade @30m` "independently on each
+coin". On ETH only **1 of 4** grid cells had enough TRAIN trades
+(`n_eligible` = 1, `evaluations.csv`), so there was no choice to make. BTC
+chose z 1.5 / 24 h from 2 eligible cells. The two-coin SKILL stands. The
+"same parameters chosen twice" part of the argument does not.
+
+**Owner decision 2026-10-01:** replicate the unchanged file on SOLUSDT and
+BNBUSDT (PLAN.md §15). That is 2 evaluations, with both controls run whatever
+the verdict. The pass criterion was written before any run: VALID mean R > 0
+**and** SKILL, on **both** coins.

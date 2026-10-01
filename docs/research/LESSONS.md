@@ -117,8 +117,8 @@ evaluations, 5 holdout runs, 5 FAILED, 0 CONFIRMED.
 
 - **One cell replicated timing skill on two coins, and it is still not an
   edge** (BTC Exp 038). `051_retail_crowd_fade` @30m:
-  - SKILL on BTC and on ETH, with the same parameters chosen independently by
-    TRAIN on each coin;
+  - SKILL on BTC and on ETH, with the same parameters (but on ETH only 1 of
+    the 4 grid cells was eligible, so that was no real choice: BTC Exp 039);
   - beta ≈ 0, and both legs positive on BTC;
   - VALID +0.106 R (198 trades) and +0.080 R (197), with both CIs and both
     alpha CIs including 0;
