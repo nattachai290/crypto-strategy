@@ -145,6 +145,22 @@ def trades_of(b, side, funding, fee=C.FEE_TAKER, slip=C.SLIPPAGE) -> pd.DataFram
     return XL.simulate(b, side, EXIT, funding, fee=fee, slip=slip)
 
 
+def account(b, side, funding, start, end) -> dict:
+    """Reported, not a gate: the same signals through the real engine, one
+    position at a time, on the research account (what a person could trade)."""
+    from backtest import run_backtest
+    atr = ta.atr_(b["high"], b["low"], b["close"], XL.ATR_N)
+    act = side != 0
+    sig = pd.DataFrame({"side": side, "stop_dist": np.where(act, EXIT["stop_atr"] * atr, np.nan),
+                        "tp_dist": 0.0, "max_hold": np.where(act, EXIT["max_hold"], 0.0),
+                        "atr": atr.to_numpy()}, index=b.index)
+    m = run_backtest(b, sig, funding=funding, start_time=start, end_time=end,
+                     initial_equity=C.EVAL_EQUITY).metrics
+    keys = ("trades", "avg_r", "cagr", "max_dd", "win_rate", "size_skips")
+    return {k: (float(m[k]) if isinstance(m.get(k), (int, float, np.floating, np.integer)) else m.get(k))
+            for k in keys}
+
+
 def random_control(b, side, funding, window, n=N_RANDOM, seed=19) -> np.ndarray:
     """Mean net R of n random signal sets inside `window`, each with the
     model's long and short counts."""
@@ -183,7 +199,7 @@ def run(final: bool = False) -> None:
             raise SystemExit(f"--final refused: holdout already used ({lock})")
         tr = _span(idx, *SPLITS["train"], purge=PURGE)
         ml, ms = fit(X[tr], lab["long"][tr]), fit(X[tr], lab["short"][tr])
-        w = _span(idx, *SPLITS["holdout"])
+        w = _span(idx, *SPLITS["holdout"], purge=PURGE)
         side = np.where(w, decide(ml.predict(X), ms.predict(X), res["threshold"]), 0.0)
         t = trades_of(bars, side, fund)
         h = XL.summarize(t)
@@ -223,7 +239,7 @@ def evaluate(bars: pd.DataFrame, fund, X: pd.DataFrame | None = None, lab: pd.Da
     for thr in THRESHOLDS:
         side = np.where(oof_mask, decide(oof_l.fillna(-9).to_numpy(), oof_s.fillna(-9).to_numpy(), thr), 0.0)
         r = np.where(side > 0, lab["long"], np.where(side < 0, lab["short"], np.nan))
-        r = r[side != 0]
+        r = r[(side != 0) & ~np.isnan(r)]
         thr_table[str(thr)] = {"trades": int(len(r)), "mean_r": float(np.nanmean(r)) if len(r) else None}
         print(f"OOF thr {thr:.2f}: {thr_table[str(thr)]}", flush=True)
     ok = {k: v for k, v in thr_table.items() if v["trades"] >= MIN_OOF_TRADES}
@@ -232,7 +248,8 @@ def evaluate(bars: pd.DataFrame, fund, X: pd.DataFrame | None = None, lab: pd.Da
     # 2. final model on all of TRAIN, frozen, applied to VALID
     tr = _span(idx, *SPLITS["train"], purge=PURGE)
     ml, ms = fit(X[tr], lab["long"][tr]), fit(X[tr], lab["short"][tr])
-    vw = _span(idx, *SPLITS["valid"])
+    # purged: a VALID trade must not run into HOLDOUT prices
+    vw = _span(idx, *SPLITS["valid"], purge=PURGE)
     side = np.where(vw, decide(ml.predict(X), ms.predict(X), thr), 0.0)
     t = trades_of(bars, side, fund)
     v = XL.summarize(t)
@@ -251,6 +268,9 @@ def evaluate(bars: pd.DataFrame, fund, X: pd.DataFrame | None = None, lab: pd.Da
                  key=lambda x: -x[1])[:10]
     res = {"symbol": C.SYMBOL, "tf": TF, "exit": "time_only", "threshold": thr,
            "oof": thr_table, "valid": v, "valid_stress": stress,
+           "valid_account": account(bars, side, fund, *SPLITS["valid"]),
+           "valid_last_exit": str(t["entry_time"].max() + pd.Timedelta(minutes=TF) * int(
+               t.loc[t["entry_time"].idxmax(), "bars"])) if len(t) else None,
            "random_mean": float(np.mean(rnd)), "random_p95": p95,
            "verdict": "REJECT" if failed else "PASS", "gates_failed": failed,
            "top_features": [[k, int(s)] for k, s in imp]}
@@ -269,7 +289,8 @@ def write_report(r: dict) -> None:
          f"short {v.get('short_r', float('nan')):+.3f}",
          f"- random signals with the same long/short counts: mean {r['random_mean']:+.4f}, 95th pct "
          f"{r['random_p95']:+.4f}",
-         f"- cost x1.5: mean {r['valid_stress'].get('mean_r', float('nan')):+.4f}", "",
+         f"- cost x1.5: mean {r['valid_stress'].get('mean_r', float('nan')):+.4f}",
+         f"- one position at a time through the engine (reported, not a gate): {r.get('valid_account')}", "",
          "| threshold | OOF trades | OOF mean net R |", "|---|---|---|"]
     for k, t in r["oof"].items():
         L.append(f"| {k} | {t['trades']} | {t['mean_r'] if t['mean_r'] is None else round(t['mean_r'], 4)} |")

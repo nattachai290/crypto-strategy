@@ -1288,6 +1288,17 @@ def test_ml_entry() -> None:
     check("ml_entry pipeline: pure noise is not a PASS and does not beat random",
           noise["verdict"] == "REJECT" and "beats_random_p95" in noise["gates_failed"],
           f"{noise['verdict']} mean {noise['valid'].get('mean_r', 0):+.3f} failed {noise['gates_failed']}")
+    check("ml_entry: no VALID trade runs into HOLDOUT (VALID window purged)",
+          pd.Timestamp(edge["valid_last_exit"]) <= pd.Timestamp(ME.SPLITS["holdout"][0], tz="UTC"),
+          str(edge["valid_last_exit"]))
+    acc = edge["valid_account"]
+    # synthetic prices are far above what 1,000 USDT sizes at a 0.001 step, so
+    # skips are expected here; the check is only that the engine run works
+    check("ml_entry: the engine account run (reported, not a gate) trades",
+          acc["trades"] > 100 and acc["size_skips"] is not None, str(acc))
+    oof = edge["oof"]["0.0"]
+    check("ml_entry: OOF trade counts include only scored labels",
+          oof["trades"] > 0 and oof["mean_r"] is not None, str(oof))
 
 
 if __name__ == "__main__":

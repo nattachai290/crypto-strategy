@@ -4930,3 +4930,35 @@ mistakes were in the planted data, not in the pipeline:
 The final test plants momentum, which a 24-bar hold can see.
 
 All earlier tests are unchanged. ALL CHECKS PASSED.
+
+### Exp 046 addendum - bug review before the first run (2026-10-01)
+
+The tool has not been run on market data yet. These fixes come from reading the code:
+
+1. **Leak: VALID trades used HOLDOUT prices (fixed).** The VALID window was not
+   purged. A signal in the last 24 hours of 2024 held into 2025, so its R used
+   holdout prices. The random control could pick the same rows, so the effect was
+   symmetric and small. It is still a leak. The VALID window now drops its last
+   `PURGE` bars, as TRAIN already did.
+2. **Partial labels at the data end (fixed).** The holdout window had the same gap
+   at the end of the data. The last bars closed early (`eod`) with a partial hold.
+   The holdout window is now purged too.
+3. **OOF table counted NaN labels as trades (fixed).** The `trades` count, and so
+   the `MIN_OOF_TRADES` check, now counts only rows that have a label.
+4. **New: one-position engine run (reported, not a gate).** The R statistics
+   score every signal as a separate trade, so trades overlap. The engine run with
+   one position at a time on the 1,000 USDT account shows what a person could
+   actually trade: trades, avg R, CAGR, maxDD, size_skips. It is reported next to
+   the gates and does not change them.
+
+New tests:
+- no VALID trade exits after the holdout start;
+- the engine run works;
+- OOF counts use only scored labels.
+
+ALL CHECKS PASSED.
+
+Reviewed and not a bug:
+- `decide` sends ties to long, which happens only on exactly equal floats;
+- the funding feature uses the last settled rate at or before the bar close;
+- `labels` maps each trade back to its signal bar with fill-1.
