@@ -396,3 +396,125 @@ SKILL row NO_EDGE and the ALPHA row DRIFT.
 **The stop rule agreed in the Exp 001 pre-registration has now fired on all four
 coins.** Nothing in this project is a tested strategy, and no real money should
 follow from it.
+
+---
+
+## Exp 004 - Replication of `051_retail_crowd_fade_tf30` on BNBUSDT (pre-registration)
+
+**Date:** 2026-10-01
+**Status:** pre-registration, written BEFORE the first BNBUSDT run of this file.
+Zero evaluations in this entry. **One file, unchanged, one coin: 1 evaluation.**
+
+**This is the BNBUSDT half of the replication pre-registered on SOLUSDT as Exp
+006.** The file, the grid, the judgement, the pass criterion and the prior are in
+SOL Exp 006 and `PLAN.md` §15; they are not repeated. What follows is what is
+**specific to BNBUSDT**.
+
+**Checklist.** `test_engine.py` ends with **ALL CHECKS PASSED** (tests 1b and 11
+present). BNB keeps the default `eval_equity` of **1,000**, so unlike SOL a 2.12%
+stop is comfortably sizable here.
+
+### 1. `datafeed.py` output for this coin, verbatim
+
+```
+[validate]  30m: rows=  231,192  2021-02-01 .. 2026-08-31  months=67/67  dup=0  gaps>3x=0
+VALIDATION: OK
+```
+
+**Clean: every month present, no duplicates, no gaps above 3x.** This coin has no
+data caveat of the kind SOL carries, and none is inherited from the earlier BNB
+rounds.
+
+### 2. `METRICS VALIDATION` output for this coin, verbatim
+
+```
+[metrics] rows=499,539  2021-12-01 .. 2026-08-31  days=1735/1735
+           missing 5m slots=146 (0.03%)  dup=0  oi<=0=188
+[metrics] NaN (kept, read as no signal): {'count_toptrader_long_short_ratio': 92217,
+           'sum_toptrader_long_short_ratio': 92181, 'count_long_short_ratio': 5789,
+           'sum_taker_long_short_vol_ratio': 37253}
+METRICS VALIDATION: PROBLEMS FOUND (see above)
+```
+
+**All 1,735 days present, 0 duplicate rows, 0.03% of the 5-minute slots missing.**
+The red line is the single standing cause: `sum_open_interest` equals 0 on **188
+rows (0.038%)**, recorded as a limitation with the code unchanged, the same as on
+BTC (473), ETH (208) and SOL (197).
+
+### 3. `acct_ls` NaN share per split
+
+The trigger is `crowd_fade` on `col: acct_ls` = Binance's
+`count_long_short_ratio`. The top-trader columns are not read by this file, so
+their 92,217 NaNs do not affect it.
+
+| split | window | rows | `acct_ls` NaN | share | min | median | max |
+|---|---|---|---|---|---|---|---|
+| **TRAIN** | 2021-12-01 .. 2022-12-31 | 114,041 | 5,749 | **5.041%** | 0.5050 | 2.0977 | 5.5397 |
+| **VALID** | 2023-01-01 .. 2024-12-31 | 210,397 | 21 | **0.010%** | 0.6407 | 2.2518 | 4.7624 |
+| **HOLDOUT** | 2025-01-01 .. 2026-08-31 | 175,101 | 19 | **0.011%** | 0.7648 | 2.2912 | 3.9824 |
+
+**The `acct_ls` NaN shares are identical to SOL's to three decimals (5.041 /
+0.010 / 0.011%)** - same Binance endpoint, same gap days - so the two coins are
+comparable on this column and neither is disadvantaged on coverage.
+
+**BNB's ratio is less extreme than SOL's in TRAIN** (median 2.10 against 2.88, max
+5.54 against 7.57), and **BNB's VALID median of 2.25 is higher than its TRAIN
+median of 2.10, the opposite of SOL** where it fell from 2.88 to 2.17. **That
+matters for a z-score idea:** a z threshold of 1.5 or 2.5 against the coin's own
+recent range is a different event when the range is compressed, and the widest
+account-ratio spread in the whole set is BNB's HOLDOUT (max 3.98 against a 2.29
+median). Write it down before the run: **the z-scores here are not the same
+numbers as BTC's, and the two coins' grids can be expected to select differently
+or not at all.**
+
+**On 30m bars, 31,678 of 49,728 TRAIN bars have no `acct_ls` (63.7%)** - metrics
+start 2021-12-01 inside a 32-month calendar TRAIN for this coin, plus the 5% NaN.
+**BNB's usable TRAIN is therefore 13 months, the same as ETH's and SOL's, and a
+third of BTC's 28.**
+
+### 4. TRAIN signal count per grid cell, and how many cells are likely eligible
+
+`recipe()` on this coin's TRAIN, 30m bars, per grid cell of the unchanged file:
+
+| cell | long | short | total |
+|---|---|---|---|
+| **z 1.5 / 24 h** | 70 | 59 | **129** |
+| z 1.5 / 72 h | 70 | 59 | 129 |
+| z 2.5 / 24 h | 27 | 12 | 39 |
+| z 2.5 / 72 h | 27 | 12 | 39 |
+
+**This is the thinnest of the two replication coins: 129 signals in the loose cell
+against SOL's 162.** Eligibility is on backtest trades with
+`EVAL_MIN_TRAIN_TRADES` = 100, and one position at a time with a 12-bar cooldown
+costs roughly a fifth of the signals, so **the z 1.5 cell will land near 100-115
+trades and is marginal, and the z 2.5 cell at 39 signals cannot be eligible.**
+
+**So the likeliest outcome is 1 eligible cell out of 4, with 0 a real
+possibility** - in which case `PLAN.md` §15 is explicit that **this coin counts as
+failed, not as missing.** Written down before the run so it cannot be read
+generously afterwards. The same weakness BTC Exp 039 found in ETH's half
+(`n_eligible` = 1, "so ETH's choice was not a selection") applies here with less
+margin, not more.
+
+**Both replication coins are therefore thin in the same way and for the same
+reason: 13 months of TRAIN with metrics.** The replication's real weight comes
+from the VALID halves, which are full two-year bull years on both coins - and
+that is where the 100-trade gate and the SKILL reading are judged.
+
+### 5. The pass criterion and the prior
+
+Unchanged from SOL Exp 006 §5 and `PLAN.md` §15: **succeeds only if, on SOL and on
+BNB, both, VALID mean R > 0 and `baseline.py` says SKILL. One coin out of two is
+not a replication.** `baseline.py` and `benchmark.py` are run **whatever the
+verdict**. `--final` is not run. The prior is `LESSONS.md` §2 and §3 (a VALID mean
+R of +0.1 means "maybe +0.0 to +0.05"; the project's positive results have been
+long positions) and §5 (a config carries its sign across coins 71-73% of the time,
+so a disagreement is informative).
+
+### 6. What happens either way
+
+Success on both coins still means no holdout, and the next step is a forward test
+after 2026-08 with a criterion written in advance, which needs the owner's
+decision. **Failure on either coin reads M2's two-coin SKILL as chance, closes
+the metrics question as `PLAN.md` §14's stop rule already says, and ends M2 with
+no variant tried.**

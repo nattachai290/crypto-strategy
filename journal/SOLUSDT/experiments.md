@@ -705,3 +705,154 @@ No change. **SOLUSDT: 49 evaluations, 1 PASS, 0 CONFIRMED, the holdout spent
 once and FAILED.** Research on SOLUSDT stops, per the stop rule in the Exp 001
 pre-registration. The gap in process that Exp 004 identified is closed: every
 WATCH and PASS configuration on this coin now has both controls.
+
+---
+
+## Exp 006 - Replication of `051_retail_crowd_fade_tf30` on SOLUSDT (pre-registration)
+
+**Date:** 2026-10-01
+**Status:** pre-registration, written BEFORE the first SOLUSDT run of this file.
+Zero evaluations in this entry. **One file, unchanged, one coin: 1 evaluation.**
+
+**What this is.** BTC Exp 038 recorded `051_retail_crowd_fade_tf30` as the first
+configuration in this project with **SKILL on two coins** - BTC +0.106 R on 198
+VALID trades, ETH +0.080 R on 197, beta ~0 on both, WATCH and NO_EDGE on both. It
+missed PASS only on the CI gate. `PLAN.md` §15's question is whether that is skill
+or one lucky cell out of 438 evaluations, and SOLUSDT's VALID data has never been
+seen by this configuration. **No new idea, no new file, no new timeframe, no
+variant.** `--final` is not run.
+
+**Session checklist.** `test_engine.py` ends with **ALL CHECKS PASSED** with tests
+**1b** (funding, notional x rate) and **11** (metrics: zip reading, causal
+alignment to the bars, blocks against loops). SOL keeps its `eval_equity` of
+**20,000**, because its qty step is a whole SOL.
+
+### 1. `datafeed.py` output for this coin, verbatim
+
+```
+[validate]   1m: rows=3,104,640  2020-10-01 .. 2026-08-31  months=71/71  dup=0  gaps>3x=2
+[validate]  30m: rows=  103,488  2020-10-01 .. 2026-08-31  months=71/71  dup=0  gaps>3x=2
+VALIDATION: PROBLEMS FOUND (see above)
+```
+
+**This is the known, already-approved SOLUSDT data gap, not a new defect** (SOL
+Exp 001b, owner-approved, restated in Exp 005 item 6): two gaps inside TRAIN, on
+**2022-02-25 (73 h)** and **2022-03-31 (49 h)**. All 71 months are present, 0
+duplicates, on every timeframe. **The upper bound on this file's exposure is the
+same one already recorded for the coin: 32 of 1,430 signals = 2.2%, split 19 long
+/ 13 short, and VALID and HOLDOUT are clean** - so it cannot manufacture a
+positive VALID result. For this particular file the exposure is smaller still,
+because its TRAIN usable window is 2021-12 to 2022-12 and both gaps sit inside it,
+and the split is against shorts while Exp 005 measured the SOL holdout loss on the
+**long** side.
+
+### 2. `METRICS VALIDATION` output for this coin, verbatim
+
+```
+[metrics] rows=499,522  2021-12-01 .. 2026-08-31  days=1735/1735
+           missing 5m slots=160 (0.03%)  dup=0  oi<=0=197
+[metrics] NaN (kept, read as no signal): {'count_toptrader_long_short_ratio': 92217,
+           'sum_toptrader_long_short_ratio': 92181, 'count_long_short_ratio': 5790,
+           'sum_taker_long_short_vol_ratio': 37250}
+METRICS VALIDATION: PROBLEMS FOUND (see above)
+```
+
+**All 1,735 days present, 0 duplicate rows, 0.03% of the 5-minute slots missing.**
+The red line has the same single cause as on BTC and ETH - `sum_open_interest`
+equals 0 on **197 rows (0.039%)** - and the same standing decision: **recorded as
+a limitation, code unchanged** (BTC Exp 036/037, ETH Exp 009/010).
+
+### 3. `acct_ls` NaN share per split - the column this file actually reads
+
+The trigger is `crowd_fade` on `col: acct_ls`, which maps to Binance's
+`count_long_short_ratio`. **The top-trader columns are not used by this file at
+all**, so their 92,217 NaNs are irrelevant here - which is the whole point of
+running M2 rather than M3 on these two coins.
+
+| split | window | rows | `acct_ls` NaN | share | min | median | max |
+|---|---|---|---|---|---|---|---|
+| **TRAIN** | 2021-12-01 .. 2022-12-31 | 114,041 | 5,749 | **5.041%** | 0.6544 | 2.8848 | 7.5694 |
+| **VALID** | 2023-01-01 .. 2024-12-31 | 210,380 | 21 | **0.010%** | 0.5313 | 2.1710 | 5.9226 |
+| **HOLDOUT** | 2025-01-01 .. 2026-08-31 | 175,101 | 20 | **0.011%** | 0.9208 | 2.7116 | 6.1108 |
+
+**The column is essentially complete in VALID (0.010%) and 5% absent in TRAIN.**
+Note also that **SOL's median account ratio in TRAIN is 2.88 against 2.17 in
+VALID**: retail was more one-sided long in the 2022 bear market than in the
+2023-24 bull market, which is the regime the hypothesis was written for and a
+reason the z-scores may not mean the same thing in the two periods.
+
+**On 30m bars, 21,406 of 39,216 TRAIN bars have no `acct_ls` at all (54.6%)** -
+that is the metrics starting on 2021-12-01, inside a 26-month calendar TRAIN, plus
+the 5% NaN. So this file's usable TRAIN is **13 months**, the same as ETH's and
+a third of BTC's 28.
+
+### 4. TRAIN signal count per grid cell, and how many cells are likely eligible
+
+`recipe()` on this coin's TRAIN, 30m bars, per grid cell of the unchanged file
+(z 1.5 / 2.5 x hold 24 / 72 h):
+
+| cell | long | short | total |
+|---|---|---|---|
+| **z 1.5 / 24 h** | 90 | 72 | **162** |
+| z 1.5 / 72 h | 90 | 72 | 162 |
+| z 2.5 / 24 h | 28 | **3** | 31 |
+| z 2.5 / 72 h | 28 | 3 | 31 |
+
+(`max_hold_hours` does not change the signal count, only the exit, so the four
+cells collapse to two signal counts.)
+
+**Eligibility is judged on backtest trades, not signals, and the bar is
+`EVAL_MIN_TRAIN_TRADES` = 100.** One position at a time with a 12-bar cooldown
+turns 162 signals into fewer trades, so the z 1.5 cell will land somewhere near
+120-145 and is **marginal**. The z 2.5 cell at 31 signals **cannot be eligible**.
+**So this run most likely has 1 eligible cell out of 4, or 0.**
+
+**That is the same weakness BTC Exp 039 already found in ETH's half** - "on ETH
+only 1 of the 4 grid cells had ≥ the minimum TRAIN trades (`n_eligible` = 1), so
+ETH's choice was not a selection" - and it is a little worse here, because SOL's
+TRAIN is the same 13 months with a third of BTC's usable data. **Write it down
+before the run: on this coin the parameters are very likely to be taken from a
+single eligible cell, which is a frozen default rather than a selection, and
+`PLAN.md` §15's "if TRAIN has no eligible cell the coin counts as failed" is a
+live possibility rather than a formality.**
+
+**A second thing to write down before the run: the z 2.5 cell is 28 long and 3
+short.** On this coin the stricter threshold is not just rarer, it is
+**long-only in practice**, and on BTC the 2.5 cell was the ineligible one. So if
+z 2.5 were ever selected here the result would be a long-leg result, and
+`LESSONS.md` §2 would apply to it directly.
+
+### 5. The pass criterion, copied from `PLAN.md` §15
+
+> The replication **succeeds only if, on SOL and on BNB, both:**
+> 1. VALID mean R > 0, and
+> 2. `baseline.py` says **SKILL**.
+>
+> **One coin out of two is not a replication.** If TRAIN on a coin has no
+> eligible cell (INCONCLUSIVE with no SKILL reading), that coin counts as
+> **failed**, not as missing.
+
+Reported next to the criterion but **not** part of it: the parameters TRAIN chose
+and how many cells were eligible; the long and short legs; beta and alpha; per-year
+results; the 4-coin pooled VALID mean R with a trade-level bootstrap CI (computed
+in the review from `eval_trades/`).
+
+**The prior, written down before the run.** `LESSONS.md` §2 and §3 are the prior:
+a VALID mean R of +0.1 is "maybe +0.0 to +0.05", and the positive results in this
+project have been long positions. §5 is the reason this coin is a real test rather
+than a formality - a config carries its sign from coin to coin 71-73% of the time,
+so a negative SOL result is informative rather than automatic, and a positive one
+is the strongest entry-timing evidence the project has produced. `baseline.py` and
+`benchmark.py` are run **whatever the verdict**, because the question is SKILL and
+a REJECT row still has a skill reading.
+
+### 6. What happens either way
+
+- **Succeeds on both coins:** still no holdout - the verdict will not be PASS, and
+  AGENTS.md rule 4 stands. The next step is a **forward test** on data after
+  2026-08, with a criterion written before reading it, which needs the owner's
+  decision.
+- **Fails on either coin:** M2's two-coin SKILL is read as chance, the metrics
+  question is closed as `PLAN.md` §14's stop rule already says, and **no M2
+  variant is tried.**
+- **`--final` is not run by this agent under any outcome.**
