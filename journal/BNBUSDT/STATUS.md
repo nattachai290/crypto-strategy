@@ -1,3 +1,5 @@
+> **Next (owner-approved 2026-10-01): the allocation test, `docs/research/PLAN.md` §16.** Run `SYMBOL=BNBUSDT python src/allocation.py` once. Do trend rules (200-day average, golden cross, 20-week breakout) cut buy-and-hold's drawdowns on daily spot (from 2017) and perp bars? Secondary coin.
+
 > **Exp 005 — the `051_retail_crowd_fade_tf30` replication is DONE on this coin:
 > REJECT on 5 of 7 gates, and the replication FAILS. BNBUSDT now has 50
 > evaluations. No holdout used (`--final` not run, not a candidate).**

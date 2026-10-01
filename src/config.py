@@ -144,6 +144,9 @@ FEE_TAKER = 0.0005            # 0.05%
 # Slippage applied against us on every fill. Market orders on BTCUSDT
 # futures during liquid hours are ~0.01-0.02%; use 0.02% baseline.
 SLIPPAGE = 0.0002             # 0.02% per fill, charged on notional
+# Spot (VIP0, no BNB discount), used only by src/allocation.py (PLAN.md
+# section 16). A real fee schedule, added for that test; not a futures cost.
+SPOT_FEE_TAKER = 0.0010       # 0.10%
 
 # Conservative intrabar assumption: if a candle's range touches both the
 # stop and the target, we fill the STOP first (pessimistic).

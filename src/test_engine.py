@@ -415,6 +415,7 @@ def main() -> None:
     test_short_side()
     test_random_null_model()
     test_metrics()
+    test_allocation()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1035,6 +1036,63 @@ def test_metrics() -> None:
     except ValueError:
         refused = True
     check("a metrics block on bars without metrics refuses loudly", refused)
+
+
+# --------------------------------------------------------------------------
+# 12. Allocation test (PLAN.md section 16): daily P&L, shorts, funding, rules
+# --------------------------------------------------------------------------
+def test_allocation() -> None:
+    print("\n12. allocation: hand-computed daily P&L, short, funding, causal rules")
+    import allocation as AL
+
+    # (a) long one day then flat, 1% cost per side. Target at close t -> position
+    # at open t+1. d1: buy with all equity, pay 1% -> 0.99; d2: +10% -> 1.089;
+    # d3: price back to 110 -> 0.99, sell and pay 1% of 0.99 -> 0.9801.
+    eq, pos, n = AL.simulate(np.array([100., 110, 121, 110, 100]), np.array([1., 1, 0, 0, 0]), 0.01)
+    check("allocation: long, next-open fills, cost on each change (hand-computed)",
+          np.allclose(eq, [1, .99, 1.089, .9801, .9801]) and list(pos) == [0, 1, 1, 0, 0] and n == 2,
+          str(np.round(eq, 6)))
+    # (b) a real short: units held, not rebalanced. Short 1x at 100, price
+    # halves -> +50%; price doubles instead -> equity 0.
+    eq, _, _ = AL.simulate(np.array([100., 100, 50, 50]), np.array([-1., -1, 0, 0]), 0.0)
+    eq2, _, _ = AL.simulate(np.array([100., 100, 200, 200]), np.array([-1., -1, 0, 0]), 0.0)
+    check("allocation: short gains 50% when price halves, loses 100% when it doubles",
+          np.allclose(eq, [1, 1, 1.5, 1.5]) and np.allclose(eq2, [1, 1, 0, 0]), f"{eq} {eq2}")
+    # (c) funding: notional x rate, long pays a positive rate, short receives it
+    o, t, f = np.array([100., 100, 100]), np.array([1., 1, 1]), np.array([0, 0, 0.001])
+    eql, _, _ = AL.simulate(o, t, 0.0, f)
+    eqs, _, _ = AL.simulate(o, -t, 0.0, f)
+    check("allocation: funding = notional x rate, long pays, short receives",
+          np.isclose(eql[-1], 0.999) and np.isclose(eqs[-1], 1.001), f"{eql[-1]} {eqs[-1]}")
+    # (d) every rule is causal: the full run equals a truncated run on the prefix
+    rng = np.random.default_rng(16)
+    c = pd.Series(100 * np.exp(np.cumsum(rng.normal(0.0005, 0.03, 900))),
+                  index=pd.date_range("2018-01-01", periods=900, freq="D", tz="UTC"))
+    bad = [n for n, (fn, _) in AL.RULES.items()
+           if not np.array_equal(fn(c).to_numpy()[:600], fn(c.iloc[:600]).to_numpy())]
+    moved = {n: int((fn(c).diff().fillna(0) != 0).sum()) for n, (fn, _) in AL.RULES.items()}
+    check("allocation rules are causal and change position at least once",
+          not bad and all(v > 0 for v in moved.values()), f"bad {bad} switches {moved}")
+    # (e) Binance spot files moved open_time from ms to microseconds in 2025
+    t = AL.to_utc_ms(pd.Series([1735689600000, 1735689600000000]))
+    check("spot open_time: ms and microseconds both give 2025-01-01 00:00 UTC",
+          list(t) == [pd.Timestamp("2025-01-01", tz="UTC")] * 2, str(list(t)))
+    # (f) spot and futures daily zips share names; each market keeps its own file
+    import tempfile
+    import datafeed as DF
+    saved = DF._get, DF._verify_sha256
+    DF._get = lambda url, **k: b"spot" if "/spot/" in url else b"perp"
+    DF._verify_sha256 = lambda path, key: True
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            name = "BTCUSDT-1d-2020-01.zip"
+            ps = DF.fetch_zip(f"data/spot/monthly/klines/BTCUSDT/1d/{name}", Path(d) / "spot_1d")
+            pp = DF.fetch_zip(f"data/futures/um/monthly/klines/BTCUSDT/1d/{name}", Path(d) / "perp_1d")
+            same = (ps.read_bytes(), pp.read_bytes())
+    finally:
+        DF._get, DF._verify_sha256 = saved
+    check("daily zips: spot and perp files with the same name do not overwrite each other",
+          same == (b"spot", b"perp"), str(same))
 
 
 if __name__ == "__main__":

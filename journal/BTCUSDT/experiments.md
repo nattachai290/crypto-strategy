@@ -4327,3 +4327,48 @@ chose z 1.5 / 24 h from 2 eligible cells. The two-coin SKILL stands. The
 BNBUSDT (PLAN.md §15). That is 2 evaluations, with both controls run whatever
 the verdict. The pass criterion was written before any run: VALID mean R > 0
 **and** SKILL, on **both** coins.
+
+---
+
+## Exp 040 - Allocation test tooling (Level 3, owner-approved): trend rules vs holding
+
+**Date:** 2026-10-01
+**Status:** complete. Code and tests only. No market-data run.
+
+**Why.** The owner's point: profit came from up-markets, buying a top means
+waiting a year, and some traders profit in down-markets. The project never
+fairly tested "hold in uptrends, step aside in downtrends" as a holding.
+Ideas 023–026 were judged on bull-only VALID data, at 1% risk sizing, and
+without 2018. PLAN.md §16 has the full design and the pre-registered verdict.
+
+**What changed:**
+- `src/allocation.py` (new):
+  - daily 1× allocation backtest, next-open fills;
+  - units held between changes, so shorts are real shorts;
+  - fee + slippage on traded notional, and funding on perps;
+  - four fixed rules (`sma200`, `golden_cross`, `breakout_20w`,
+    `sma200_long_short`);
+  - segment metrics and the IMPROVES / NO_IMPROVEMENT verdict;
+  - it refuses to overwrite its own results.
+- `config.py`: `SPOT_FEE_TAKER` = 0.10% (Binance spot VIP0, no BNB), new and
+  used only by this test. No futures cost, split or gate changed.
+- `test_engine.py` test 12, hand-computed:
+  - long with costs: [1, .99, 1.089, .9801, .9801];
+  - a real short: +50% when the price halves, −100% when it doubles;
+  - funding: long pays and short receives notional × rate;
+  - every rule is causal;
+  - spot timestamps: 2025+ files use microseconds, and both units give the
+    same day.
+- Every earlier test is unchanged. ALL CHECKS PASSED.
+
+**Smoke-tested** end to end on synthetic daily data in a temp directory:
+download path skipped, simulate, segments, verdict, report, and the refusal to
+rerun. The run caught one bug, a read-only array, now fixed. It also checked
+that identical 2018 numbers across rules came from the synthetic path (all
+rules long all year), not from a bug.
+
+Addendum, same day, before any run: a review found that spot and futures daily
+zips share file names (`BTCUSDT-1d-2020-01.zip`). `fetch_zip` skips files it
+already has, so the second market would have read the first market's prices.
+`datafeed.fetch_zip` now takes a `dest_dir`, and `allocation.py` keeps
+`data/raw/<SYMBOL>/spot_1d/` and `perp_1d/` apart. Test 12(f) checks it.

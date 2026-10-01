@@ -1124,3 +1124,78 @@ it:
 - the TRAIN signal count per grid cell.
 
 Everything else follows AGENTS.md. `--final` is not run.
+
+## 16. Allocation test: hold in uptrends, step aside in downtrends (owner-approved 2026-10-01)
+
+**The owner's question.** Most profit came from up-markets. But buying near a
+top means waiting a year or more to get back to break-even, and some traders
+profit in down-markets too.
+
+The project has answered "does an entry beat holding?" 440 times: no.
+It has never fairly answered **"does a slow trend rule keep most of holding's
+upside with much less of its downside?"** The regime ideas 023–026 tried, but
+three things made that test unfair:
+- they were judged on VALID 2023–24, a bull market with no bear to avoid;
+- they were sized at 1% risk per trade, not as a holding;
+- futures data starts in 2020, so it misses the 2018 bear.
+
+### The test (`src/allocation.py`, Level 3, BTC Exp 040)
+- **Daily bars.** Exposure is 1× equity or nothing (−1× for the short rule
+  on perps). The position is decided at day t's close and traded at day t+1's
+  open. Units are held between changes, so a short is a real short.
+- **Two markets:**
+  - **spot:** Binance spot daily klines from the first published month
+    (BTC/ETH 2017-08, BNB 2017-11, SOL 2020-08). Cost is 0.10% VIP0 taker +
+    0.02% slippage per side. No funding, no short. This is the main market,
+    because it is the only one that covers the 2018 bear.
+  - **perp:** Binance USDT-M daily klines from 2020-01. Cost is 0.05% +
+    0.02% per side, plus funding on the notional (long pays a positive rate).
+- **Every run starts on day 200** of its data, with buy-and-hold starting the
+  same day. Results are reported for the full run and per segment: 2018 bear,
+  2019, 2020–21 bull, 2022 bear, 2023–24, 2025–26, and the halves before and
+  after 2022.
+
+### The four rules, pre-registered, textbook parameters, nothing fitted
+| rule | position |
+|---|---|
+| `sma200` | long while the close is above its 200-day average, else flat |
+| `golden_cross` | long while the 50-day average is above the 200-day, else flat |
+| `breakout_20w` | long on a close above the prior 140-day high, flat on a close below the prior 70-day low |
+| `sma200_long_short` | long above the 200-day average, short below (perp only) |
+
+**Nothing is fitted, so no period is a training period, and every period
+including 2025–26 is reported in one run.** The holdout lock of the
+evaluate.py workflow guards selected configurations. These rules were not
+selected on any data, and they cannot be changed or added to after the run.
+The script refuses to overwrite its results (`--rerun` only after a code fix,
+recorded in the journal).
+
+### Verdict, written before any run (in the code: `allocation.verdict`)
+**IMPROVES** only if:
+- on the full run, **and on each half separately** (before and after
+  2022-01-01),
+- the rule's Sharpe ≥ buy-and-hold's,
+- **and** its max drawdown ≤ 0.6 × buy-and-hold's.
+
+Anything else is **NO_IMPROVEMENT**. Reported next to the verdict, but not
+part of it: CAGR, longest time under water, exposure, number of switches,
+and every segment.
+
+**What to expect, stated now.** In bull runs the rules should earn **less**
+than holding, because they enter late and get whipsawed. Their value, if
+any, is in the bears (2018, 2022). A rule that only works in one half fails
+by design.
+
+### Run (the research agent, not the planner)
+- Coins: **BTCUSDT and ETHUSDT primary**; SOLUSDT and BNBUSDT secondary (SOL
+  spot starts 2020-08, so it has no 2018).
+- Command, per coin: `SYMBOL=<coin> python src/allocation.py`. The first run
+  downloads the daily files and needs the existing funding cache (`python
+  src/datafeed.py`).
+- Output: `results/<SYMBOL>/allocation/summary.json` and the generated
+  `journal/<SYMBOL>/allocation.md`.
+- Record it in each coin's `experiments.md`: the full table, the verdict per
+  rule and market, and the 2018 and 2022 segments.
+- **Do not run anything else and do not change a rule.** If a rule IMPROVES,
+  report it to the owner. That is not a trading recommendation yet; how to act
+  on it is the owner's decision.

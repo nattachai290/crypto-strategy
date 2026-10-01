@@ -5,9 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: one replication, `051_retail_crowd_fade_tf30` on SOLUSDT and
-BNBUSDT** (`docs/research/PLAN.md` §15). The metrics round itself (§14) is
-done (BTC Exp 037/038). The
+**Active work: the allocation test, `src/allocation.py`: do slow trend rules
+cut buy-and-hold's drawdowns?** (`docs/research/PLAN.md` §16). Run it on
+BTCUSDT and ETHUSDT first, then SOLUSDT and BNBUSDT. The metrics round (§14)
+and its SOL/BNB replication (§15) are done, and both failed. The
 TradingView ports are closed (§13, BTC Exp 033/034); a new port needs Pine
 Script source the owner pastes, never one written from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
 `$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's
@@ -317,6 +318,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `test_engine.py` | engine and block tests; must pass |
 | `ml_filter.py`, `run_ml.py`, `definitive.py`, `sweep.py`, `cost_lab.py`, `round*.py`, `diagnose.py` | older experiments (Exp 003–010); they write to `results/<SYMBOL>/legacy/` (`C.LEGACY`) |
 | `ledger*.py`, `report_data.py`, `make_report.py` | reporting for the older experiments |
+| `allocation.py` | PLAN.md §16: four fixed trend rules on daily spot/perp bars against buy-and-hold (1x exposure, next-open fills, fees, funding). Writes `results/<SYMBOL>/allocation/` and the generated `journal/<SYMBOL>/allocation.md`; runs once (`--rerun` only after a code fix) |
 | `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:
