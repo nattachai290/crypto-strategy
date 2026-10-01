@@ -417,6 +417,7 @@ def main() -> None:
     test_metrics()
     test_allocation()
     test_rotation()
+    test_exit_lab()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1183,6 +1184,48 @@ def test_rotation() -> None:
     lo, hi = RT.block_ci(np.r_[np.full(50, 0.01), np.full(50, 0.03)])
     check("rotation: block bootstrap CI brackets the mean and is reproducible",
           lo < 0.02 < hi and (lo, hi) == RT.block_ci(np.r_[np.full(50, 0.01), np.full(50, 0.03)]), f"{lo} {hi}")
+
+
+# --------------------------------------------------------------------------
+# 14. Exit lab (PLAN.md section 18): the per-trade simulator == the engine
+# --------------------------------------------------------------------------
+def test_exit_lab() -> None:
+    print("\n14. exit lab: every exit, trade for trade against run_backtest")
+    import exit_lab as XL
+    import indicators as ta
+    bars, _, funding = _random_case(31, n=2500)
+    funding = funding.assign(last_funding_rate=funding["last_funding_rate"] * 20)  # make it matter
+    atr = ta.atr_(bars["high"], bars["low"], bars["close"], XL.ATR_N)
+    rng = np.random.default_rng(5)
+    picks = rng.choice(np.arange(50, len(bars) - 400), 25, replace=False)
+    worst, n_cmp, reasons = 0.0, 0, set()
+    for name, ex in XL.EXITS.items():
+        for i in picks:
+            s = 1.0 if rng.random() < 0.5 else -1.0
+            side = np.zeros(len(bars)); side[i] = s
+            got = XL.simulate(bars, side, ex, funding)
+            d = ex["stop_atr"] * atr.iloc[i]
+            sig = pd.DataFrame({"side": side, "stop_dist": np.where(side != 0, d, np.nan),
+                                "tp_dist": np.where(side != 0, ex["tp_r"] * d, 0.0),
+                                "max_hold": np.where(side != 0, ex["max_hold"], 0.0),
+                                "atr": atr.to_numpy(), "be_at": np.where(side != 0, ex["be_r"], 0.0),
+                                "trail_at": np.where(side != 0, ex["trail_at_r"], 0.0),
+                                "trail_atr": np.where(side != 0, ex["trail_atr"], 0.0)}, index=bars.index)
+            res = run_backtest(bars, sig, funding=funding, initial_equity=1e12, max_leverage=1e9,
+                               qty_step=1e-12, min_notional=0.0, flat_at_session_end=False)
+            if len(res.trades) != 1 or len(got) != 1:
+                worst = np.inf
+                continue
+            worst = max(worst, abs(res.trades[0].r_multiple - got["net_r"].iloc[0]))
+            reasons.add(got["reason"].iloc[0])
+            n_cmp += 1
+    check("exit lab simulator == engine R on every exit (stop, target, time, break-even, trailing, funding)",
+          worst < 1e-6 and n_cmp == 6 * 25 and {"stop", "target", "time"} <= reasons,
+          f"{n_cmp} trades, max |dR| {worst:.2e}, exits seen {sorted(reasons)}")
+    side = XL.random_entries(bars.index)
+    check("exit lab entries: about 1 bar in 4, half long, same seed -> same entries",
+          abs((side != 0).mean() - XL.ENTRY_P) < 0.03 and abs((side > 0).sum() / (side != 0).sum() - 0.5) < 0.05
+          and np.array_equal(side, XL.random_entries(bars.index)))
 
 
 if __name__ == "__main__":
