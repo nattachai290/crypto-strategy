@@ -196,3 +196,188 @@ work, rather than dropping the symbol, was the right call.
 2. Write Exp 001 (the pre-registration).
 3. Run `rotation.py spot`, then `rotation.py perp`.
 4. Stop and report.
+
+---
+
+## Exp 001 - Rotation (cross-sectional momentum), pre-registration (PLAN.md section 17)
+
+**Date:** 2026-10-01
+**Status:** pre-registration, written BEFORE `rotation.py spot` and before
+`rotation.py perp`. **Zero evaluations, zero weeks, no TRAIN, no VALID, no
+HOLDOUT.** Nothing in `src/rotation.py` is changed by this round and no
+parameter is chosen here - the design was fixed in `PLAN.md` §17 and in the code
+before any data existed.
+
+**Session state.** `test_engine.py` -> **ALL CHECKS PASSED**, with test **12**
+(now including the `12(e2)` URL-encoding check added after Exp 000) and test
+**13** (rotation: symbol filter, delisting splits, hand-computed weekly P&L,
+causal universe). Both builds completed: `spot_1d.parquet` 775,418 rows,
+`perp_1d.parquet` 10.8 MB, `perp_funding.parquet` 601,877 rows. 47,143 klines
+zips and 20,251 funding zips on disk, 0 `.part` leftovers.
+
+**The question.** 440 per-coin evaluations asked *when* to trade one coin and
+none survived. This asks **which coins to hold this week**: weekly rebalancing
+keeps cost low, hundreds of coins give a large sample, and a perp long/short
+book is market-neutral so a bull market cannot pass for skill.
+
+---
+
+### 1. Symbols and instruments built
+
+| | spot | perp |
+|---|---|---|
+| tradable USDT pairs listed | 658 | 861 |
+| pairs that returned data | **657** | **861** |
+| **raw symbols** | **657** | **861** |
+| **instruments after the `>3d` gap split** | **672** | **913** |
+| splits created by symbol reuse | **+15** | **+52** |
+| still trading (a close within 45 d of 2026-08-31) | 475 | 830 |
+| delisted | 197 | 83 |
+| panel | 2017-08-17 .. 2026-08-31 (3,302 days) | 2020-01-01 .. 2026-08-31 (2,435 days) |
+
+**The symbol-reuse rule works and it was not cosmetic.** Spot split 15 symbols
+and perp split 52, and the list is full of cases that would otherwise show a
+fake 2,000,000% jump: `LUNAUSDT#1` (old LUNA until 2022-05-13, new LUNA from
+2022-05-31), `BCCUSDT#1`, `BNXUSDT#1`, `BTCSTUSDT#1`, `COCOSUSDT#1`,
+`CVCUSDT#1`, `DREPUSDT#1`, `FTTUSDT#1`, `KEYUSDT#1`, `NBTUSDT#1`,
+`QUICKUSDT#1`, `STRAXUSDT#1` in spot; and in perp `BNXUSDT#1` **and
+`BNXUSDT#2`**, `FILUSDT#1`, `FLMUSDT#1`, `FLOWUSDT#1`, `FTMUSDT#1`,
+`GRTUSDT#1`, `GTCUSDT#1`, `HBARUSDT#1`, `HOTUSDT#1`, `ICPUSDT#1`, `IMXUSDT#1`
+and 40 more. **`BNXUSDT` was reused three times.** A momentum rank on a joined
+series would have ranked that instrument top on its relisting day for the wrong
+reason.
+
+**Perp funding coverage: 601,877 rows, 861 of 861 symbols have funding data, and
+one symbol had as few as 2 months.** Nothing is missing. (An earlier check of
+mine reported "52 instruments with no funding at all" - that was **my own
+artefact**, from comparing split names like `BNXUSDT#1` against base symbols.
+`rotation.py:275` matches funding on `x.split("#")[0]`, so the split instruments
+are matched correctly. Recorded here so the number is not rediscovered as a
+false alarm.)
+
+### 2. Universe size per year
+
+Top 30 by 30-day average quote volume, at least 60 days of history, using data up
+to Sunday only. Counted on Sundays, lookback 7 d (`MIN_UNIVERSE` = 15, so a
+smaller universe is **skipped**, not shrunk).
+
+**spot**
+
+| year | Sundays | skipped | mean | min | max |
+|---|---|---|---|---|---|
+| 2018 | 52 | **31** | 17.1 | 16 | 18 |
+| 2019 | 52 | 0 | 26.7 | 17 | 30 |
+| 2020 | 52 | 0 | 30.0 | 30 | 30 |
+| 2021 | 52 | 0 | 30.0 | 30 | 30 |
+| 2022 | 52 | 0 | 30.0 | 30 | 30 |
+| 2023 | 53 | 0 | 30.0 | 30 | 30 |
+| 2024 | 52 | 0 | 30.0 | 30 | 30 |
+| 2025 | 52 | 0 | 30.0 | 30 | 30 |
+
+**perp**
+
+| year | Sundays | skipped | mean | min | max |
+|---|---|---|---|---|---|
+| 2020 | 52 | **13** | 26.7 | 15 | 30 |
+| 2021 | 52 | 0 | 30.0 | 30 | 30 |
+| 2022 | 52 | 0 | 30.0 | 30 | 30 |
+| 2023 | 53 | 0 | 30.0 | 30 | 30 |
+| 2024 | 52 | 0 | 30.0 | 30 | 30 |
+| 2025 | 52 | 0 | 30.0 | 30 | 30 |
+
+**Write this down before the run, because it was not expected: the universe only
+fills up in 2020.** In 2018 the spot market simply did not have 15 pairs with 60
+days of history and real volume, so **31 of 52 Sundays are skipped and the
+surviving mean universe is 17.1 coins, not 30** - a 30-coin book is impossible
+then, and `k = max(3, round(17 x 0.2)) = 3` names long and 3 short, not 6 and 6.
+Perp skips 13 Sundays in 2020 for the same reason.
+
+**Consequences, stated now:**
+- **TRAIN is smaller than the calendar suggests.** Spot TRAIN 2018-2022 keeps
+  about 21 + 52 + 52 + 52 + 52 = **229 Sundays**; perp TRAIN keeps about
+  39 + 52 + 52 = **143**, and perp has no data at all before 2020-01-01. Both
+  are far more than the 100 weeks VALID needs, so the sample-size gate is not the
+  binding constraint - but **TRAIN's early years are a different, thinner market
+  than its late years, and a lookback chosen there may not be the right one for
+  2023-24.**
+- **VALID 2023-24 is not at risk from skipping.** 53 + 52 = 105 Sundays with
+  **zero skipped in both markets**, so the `valid_weeks >= 100` gate should be
+  met with 103-104 complete weeks. The planner's estimate of 103 holds.
+
+### 3. Delisted coins that were ever in the universe - the survivorship test
+
+**This is the number that decides whether the test is honest.** A momentum study
+run only on coins that still exist in 2026 would flatter itself, because every
+delisting is a loss the study would not see.
+
+| | spot | perp |
+|---|---|---|
+| distinct instruments ever in the universe | **304** | **338** |
+| **of which delisted** | **75 (25%)** | **48 (14%)** |
+| slots they took, 2021 (the worst year) | 29 of 96 | 35 of 78 |
+| slots they took, 2023-24 (VALID) | 29 of 111 + 10 of 86 | 7 of 99 + 3 of 99 |
+
+Spot delisted names that were in the universe include **LUNAUSDT, FTTUSDT,
+SRMUSDT, WAVESUSDT, EOSUSDT, XMRUSDT, MATICUSDT, TONUSDT, XEMUSDT, YFIIUSDT,
+NULSUSDT, BCHABCUSDT, BCHSVUSDT, TOMOUSDT, STMXUSDT, LRCUSDT, SXPUSDT**. Perp:
+**LUNAUSDT, SRMUSDT, WAVESUSDT, EOSUSDT, IOTAUSDT, FILUSDT, LRCUSDT, SXPUSDT,
+YFIIUSDT, YFIUSDT, ZECUSDT, ZILUSDT, MATICUSDT, LUNAUSDT**, and 34 more.
+
+**So the survivorship rule demonstrably works, and it bites hardest in exactly
+the period where a momentum study is most likely to look good.** 2021 spot had
+**29 of 96 universe slots held by coins that are now delisted**; 2022 had 25 of
+88. A test run on today's survivors would have dropped the LUNA collapse, the
+FTM collapse, the WAVES collapse, the MATIC/RNDR relisting drama and the 2022
+LUNA death, and would have reported a much cleaner Sharpe.
+
+**The counter-argument to check afterwards, not now:** delisted coins are also
+*upward*-biased, because a coin that was liquid enough to be in the top 30 and
+then got delisted was usually delisted **after** a pump (Binance removes listings
+that are inactive, and often merges winners). A delisting is not automatically a
+loss. So the number above is a statement about **sample composition**, not proof
+that the results are dragged down by dead coins. What it does prove is that the
+universe is not survivorship-filtered.
+
+### 4. The pre-registered choice and the gates, restated
+
+- **The only choice is `L` in {7, 14, 28} days**, picked by the highest TRAIN
+  Sharpe of the statistic. Everything else is fixed in the code: N 30, top
+  (and bottom) fifth, min age 60 d, volume window 30 d, `MIN_UNIVERSE` 15,
+  `MAX_GAP_DAYS` 3, spot cost 0.10% + 0.05% per side, perp cost 0.05% + 0.05%
+  per side plus each coin's own funding. Changing any of it is a new test that
+  needs the owner.
+- **PASS on VALID** needs all six: TRAIN mean > 0; >= 100 VALID weeks; VALID
+  mean > 0; 95% **block**-bootstrap (4-week blocks) CI lower bound > 0; mean > 0
+  at cost x1.5; drawdown of the statistic's cumulative curve <= 30%.
+- **`--final` is not run by this agent.** Only after PASS and only with the
+  owner's approval. The script keeps a lock file and refuses a second run, and
+  it refuses to redo a TRAIN/VALID run whose results exist.
+
+### 5. The prior, written before any result
+
+`LESSONS.md` §2 and §3 are the prior: the positive results in this project have
+all been long positions in a bull market, and a VALID mean of +0.1 R should be
+read as "maybe +0.0 to +0.05". §1 is why a weekly rebalance is a fair shot at
+all - it is the longest hold in the project. §6 says no entry family with 3+
+ideas is positive on TRAIN and VALID, but this is a **cross-sectional** question
+and a genuinely new one, so a REJECT here would be a statement about momentum,
+not the eighth confirmation of §2.
+
+**What each market's number would and would not mean, stated in advance:**
+- **spot** the statistic is `top fifth minus the equal-weight universe`, a
+  market-neutral quantity. That is the right statistic and it is also why the
+  **drawdown gate is nearly vacuous for spot** (Exp 000 note 2, agreed and kept
+  as pre-registered): a market-neutral curve will not breach 30%. **So report
+  the spot portfolio's own max drawdown next to it - it is not a gate.**
+- **perp** the statistic is the book's own return, and the book is long the top
+  fifth and short the bottom fifth, **so the drawdown gate is meaningful** and a
+  PASS there is a real statement about a market-neutral book.
+- **Report `weeks_with_unfunded_positions` next to the perp verdict.** Every
+  symbol has funding data (861/861), but a position held in a week with no
+  funding row for that symbol pays zero funding, which would understate perp
+  cost and flatter the test. If it is more than a handful of weeks, say so.
+
+### Verdict
+
+Pre-registration only. **No result, no claim, nothing run.** The next entry
+records `rotation.py spot` and `rotation.py perp`, and this agent stops there.
