@@ -381,3 +381,189 @@ not the eighth confirmation of §2.
 
 Pre-registration only. **No result, no claim, nothing run.** The next entry
 records `rotation.py spot` and `rotation.py perp`, and this agent stops there.
+
+---
+
+## Exp 002 - Rotation (cross-sectional momentum): both markets REJECT; no holdout used
+
+**Date:** 2026-10-01
+**Status:** complete. **2 runs (spot, perp). 0 PASS, so `--final` was not a
+candidate and was not run. Neither market has a holdout lock file.** Nothing in
+`src/rotation.py` was changed and no parameter was re-chosen after seeing a
+result. Outputs: `results/_multi/rotation/{spot,perp}.json`,
+`{spot,perp}_weeks.csv.gz`, and the generated `journal/_multi/rotation.md`.
+
+**The headline, stated first because it is the most useful thing in the round:
+in both markets the top-fifth-by-momentum book lost to simply holding the whole
+universe equally weighted.**
+
+| VALID 2023-24 | book | equal-weight universe | difference |
+|---|---|---|---|
+| **spot** portfolio CAGR | **+20.2%** | **+26.3%** | **−6.1%/yr** |
+| **perp** book CAGR | **+11.7%** | **+30.6%** | **−18.9%/yr** |
+
+Both books are long-only in exposure terms (the perp book is long the top fifth
+and short the bottom fifth, so its own return is market-neutral and the universe
+column is only a reference). **Neither market produced a positive, significant
+weekly statistic, and the drawdown gate bound in both - which is not what the
+pre-registration expected.**
+
+### 1. The pre-registered choice: lookback
+
+`L` in {7, 14, 28} by highest TRAIN Sharpe of the statistic. **Both markets chose
+L = 7**, the shortest lookback, on TRAIN.
+
+**spot TRAIN** (228 weeks kept of 261 Sundays; 2018 loses 31 to the
+`MIN_UNIVERSE` rule)
+
+| L | mean stat/wk | 95% block CI | Sharpe | turnover/wk |
+|---|---|---|---|---|
+| **7** | **+0.00598** | [−0.00400, +0.01766] | **0.45** | 1.53 |
+| 14 | +0.00056 | [−0.00967, +0.01283] | 0.04 | 1.13 |
+| 28 | +0.00170 | [−0.01058, +0.01505] | 0.12 | 0.82 |
+
+**perp TRAIN** (142 weeks)
+
+| L | mean stat/wk | 95% block CI | Sharpe | turnover/wk |
+|---|---|---|---|---|
+| **7** | +0.00730 | [−0.00031, +0.01534] | **0.99** | 1.60 |
+| 14 | +0.00611 | [−0.00359, +0.01532] | 0.73 | 1.23 |
+| 28 | **+0.00803** | **[+0.00014, +0.01777]** | 0.94 | 0.95 |
+
+**One painful detail, recorded because it is the rule working as pre-registered
+and the rule is not the problem: perp's L = 28 is the only cell in the whole round
+whose TRAIN CI lower bound is above zero, and it was not chosen**, because the
+pre-registered rule is the highest TRAIN *Sharpe* and L = 7's 0.99 beats L = 28's
+0.94. The rule was fixed before any data existed, so it stands and no
+re-selection is done. It is worth knowing that the configuration with the cleanest
+TRAIN evidence is not the one that got tested on VALID.
+
+### 2. VALID, the verdict, and which gates failed
+
+| | **spot** | **perp** |
+|---|---|---|
+| weeks | **104** | **104** |
+| mean weekly statistic | **+0.00075** | **+0.00297** |
+| **95% block CI (4-week blocks)** | **[−0.01021, +0.00974]** | **[−0.00666, +0.01187]** |
+| Sharpe of the statistic | 0.10 | 0.52 |
+| statistic maxDD | **58.3%** | **38.1%** |
+| portfolio CAGR / maxDD | +20.2% / **76.6%** | +11.7% / 38.1% |
+| universe CAGR | +26.3% | +30.6% |
+| turnover per week | 1.56 | 1.62 |
+| cost x1.5, mean stat | **−0.00024** (turns negative) | +0.00216 |
+| **verdict** | **REJECT** | **REJECT** |
+| **gates failed** | `valid_ci_lo>0`, `stress_mean>0`, `stat_max_dd<=30%` | `valid_ci_lo>0`, `stat_max_dd<=30%` |
+
+Both had 104 VALID weeks, so the sample-size gate was met with room. **Both
+failed on the CI, and spot also failed on the cost stress** - its statistic is
+positive at the pre-registered cost and negative at 1.5x, which is the definition
+of an edge that is smaller than its execution uncertainty.
+
+### 3. The three post-run checks the pre-registration asked for
+
+**(a) `weeks_with_unfunded_positions`, perp. It is 0 on VALID**, and the funding
+term is what Exp 000 flagged as possibly flattering the test:
+
+- **Every week of VALID had full funding data**, so perp cost is **not**
+  understated on the period that decided the verdict. On TRAIN 19-22 weeks per
+  lookback did have an unfunded position, which is recorded, and TRAIN is not the
+  deciding period.
+- **The book was paid to hold: funding income +0.00219 per week (+11.4%/yr),
+  total +0.2277 over the 104 weeks.** Shorts on the bottom quintile receive
+  funding whenever funding is positive, which is most of the time.
+- **This is the single most important number in the round.** The perp statistic
+  decomposes as:
+
+  | component, mean per week | spot | perp |
+  |---|---|---|
+  | gross of costs (top-fifth premium / book price return) | +0.00309 (+16.0%/yr) | **+0.00240 (+12.5%/yr)** |
+  | funding received | 0 | **+0.00219 (+11.4%/yr)** |
+  | transaction cost | −0.00234 (−12.2%/yr) | −0.00162 (−8.4%/yr) |
+  | **net statistic** | **+0.00075 (+3.9%/yr)** | **+0.00297 (+15.4%/yr)** |
+
+  **91% of the perp book's gross return was funding income, not price momentum.**
+  The market-neutral part - long the strongest, short the weakest - contributed
+  +12.5%/yr gross, of which trading costs ate 68%. **The one cleanest idea in
+  §17, a market-neutral book that a bull market cannot flatter, is mostly a bet
+  that funding stays positive**, and that is a different proposition from
+  cross-sectional momentum and not what the test set out to measure.
+
+**(b) The delisted coins Exp 001 said to check afterwards. They matter.**
+
+| | spot | perp |
+|---|---|---|
+| VALID weeks holding >= 1 delisted coin | **52 of 104** | **42 of 104** |
+| mean delisted slots per week (of 6 / 12 held) | 0.69 | 0.59 |
+| mean statistic on those weeks | **−0.01054** | **−0.00271** |
+| mean statistic on clean weeks | **+0.01204** | **+0.00681** |
+| their contribution to the VALID mean | **−0.00527 of +0.00075** | **−0.00109 of +0.00297** |
+
+**Delisted holdings are worth about minus the whole spot VALID mean.** Without
+them spot would be +0.0060 and perp +0.0041 - still far from the CI gate, so
+**removing the dead coins does not rescue either result.** But the direction is
+the one the pre-registration flagged as possible: the survivorship rule cost
+real money here rather than flattering the study. The counterweight stands too -
+delisted coins are also upward-biased, because Binance removes inactive listings
+and merges winners - so this is evidence about **composition**, and the honest
+one-line reading is that **a universe built from live coins today would have
+shown a positive statistic, and that number would have been a lie.**
+
+**(c) The year split, in both markets and in the same direction.**
+
+| statistic mean/week | 2023 | 2024 |
+|---|---|---|
+| spot | **−0.01059** | +0.01208 |
+| perp | **−0.00113** | +0.00707 |
+
+52 weeks each, both markets, **negative in 2023 and positive in 2024** - and the
+pre-registration's `LESSONS.md` §3 prior ("a VALID mean of +0.1 R means maybe
++0.0 to +0.05") applies with room to spare. Neither market's VALID mean survives
+its own year split.
+
+### 4. A correction to the pre-registration, and to Exp 000
+
+**Exp 000 note 2 and Exp 001 §5 both said the spot drawdown gate was "nearly
+vacuous" because the spot statistic is market-neutral by construction. That was
+wrong, and the gate bound hard in both markets: 58.3% spot, 38.1% perp, against
+a 30% limit.** A market-neutral *statistic* still compounds weekly with
+volatility, and a 104-week compounded curve can halve even when its mean is
+barely positive. **The gate was the pre-registered gate and it did real work**;
+what was wrong was the reasoning about it, not the rule. Recorded rather than
+quietly dropped, because the same wrong reasoning is still in Exp 000 and Exp
+001 and would mislead the next agent.
+
+Note also that for perp `stat_max_dd` and `portfolio_max_dd` are identical
+(38.1%) in every row, which is the design working as intended: the perp
+statistic *is* the book's return.
+
+### 5. What this says about cross-sectional momentum here
+
+- **The effect is visible before costs in both markets and is gone after them.**
+  Gross +16.0%/yr of top-fifth premium on spot against −12.2%/yr of cost;
+  +12.5%/yr gross on the perp book against −8.4%/yr of cost. `LESSONS.md` §1
+  again, in its sharpest form yet: **at 1.5x weekly turnover the cost is the same
+  size as the effect.** Turnover of 1.56-1.62 per week is high because a
+  7-day rank on 30 coins reshuffles constantly, and 7 days was the lookback the
+  pre-registered rule chose because it had the best TRAIN Sharpe - which is
+  precisely the trap: **the lookback that looked best on TRAIN is the one that
+  trades most, and trading most is what eats the edge.**
+- **`LESSONS.md` §2 does not apply here, and that is what makes this round worth
+  having run.** The perp book is long-short and market-neutral, spot's statistic
+  is a difference against the universe, and neither can be a long position in a
+  bull market. **A REJECT here is a statement about momentum, not the eighth
+  confirmation of §2.**
+- **The sample size worked.** 104 VALID weeks, 142-228 TRAIN weeks, against
+  100-400 trades in the per-coin rounds. The CIs are ±0.9-1.0%/week, so a real
+  effect of the size the literature reports would have shown. There is nothing
+  small about this test.
+
+### Verdict
+
+`REJECT` on both markets, and `PLAN.md` §17's run list ends here:
+**no PASS, so no holdout was used and none is warranted. `--final` was not run
+and is not a candidate.** The three gates each market failed are in the tables
+above. The most useful things this round produced are the funding decomposition
+(the perp edge is 91% carry) and the delisted-coin decomposition (the spot result
+is a survivorship artefact of the surviving coins) - both of which are things the
+pre-registration asked to be measured rather than assumed, and both of which
+point the same way: **the apparent edge is not a momentum edge.**

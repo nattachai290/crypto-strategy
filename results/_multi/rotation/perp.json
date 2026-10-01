@@ -1,0 +1,82 @@
+{
+ "market": "perp",
+ "cost_per_side": 0.001,
+ "chosen_lookback": 7,
+ "train": {
+  "7": {
+   "weeks": 142,
+   "mean_stat": 0.00729773031985896,
+   "ci_lo": -0.0003137099399699087,
+   "ci_hi": 0.015344115699210821,
+   "sharpe_stat": 0.986788637555194,
+   "stat_max_dd": 0.38518747622595306,
+   "portfolio_cagr": 0.35752338073449796,
+   "portfolio_max_dd": 0.38518747622595306,
+   "universe_cagr": 0.2631387474643274,
+   "mean_turnover": 1.6000169109537137,
+   "mean_funding": -0.0006209275792253521,
+   "weeks_with_unfunded_positions": 21
+  },
+  "14": {
+   "weeks": 142,
+   "mean_stat": 0.006111190389320937,
+   "ci_lo": -0.003591876180028284,
+   "ci_hi": 0.015232563190626084,
+   "sharpe_stat": 0.734335280812197,
+   "stat_max_dd": 0.41799339290777093,
+   "portfolio_cagr": 0.24727435718726642,
+   "portfolio_max_dd": 0.41799339290777093,
+   "universe_cagr": 0.2631387474643274,
+   "mean_turnover": 1.2305886951854341,
+   "mean_funding": -0.000571010188967136,
+   "weeks_with_unfunded_positions": 19
+  },
+  "28": {
+   "weeks": 142,
+   "mean_stat": 0.008028413935718603,
+   "ci_lo": 0.00014282460089195964,
+   "ci_hi": 0.017773461656909805,
+   "sharpe_stat": 0.9425089867894929,
+   "stat_max_dd": 0.3167316196904363,
+   "portfolio_cagr": 0.37472966996206436,
+   "portfolio_max_dd": 0.3167316196904363,
+   "universe_cagr": 0.2631387474643274,
+   "mean_turnover": 0.9539487443018908,
+   "mean_funding": -0.0006759435381455398,
+   "weeks_with_unfunded_positions": 22
+  }
+ },
+ "valid": {
+  "weeks": 104,
+  "mean_stat": 0.0029690216166599476,
+  "ci_lo": -0.006663989070582406,
+  "ci_hi": 0.011865448766291406,
+  "sharpe_stat": 0.5203874000924705,
+  "stat_max_dd": 0.3806593530684512,
+  "portfolio_cagr": 0.11734813211812489,
+  "portfolio_max_dd": 0.3806593530684512,
+  "universe_cagr": 0.30646976748661947,
+  "mean_turnover": 1.6204176400389256,
+  "mean_funding": -0.002189097780448718,
+  "weeks_with_unfunded_positions": 0
+ },
+ "valid_stress": {
+  "weeks": 104,
+  "mean_stat": 0.002158812796640484,
+  "ci_lo": -0.0074974147665151205,
+  "ci_hi": 0.011068531896151668,
+  "sharpe_stat": 0.3784001794371977,
+  "stat_max_dd": 0.42225003693183527,
+  "portfolio_cagr": 0.07129688050848593,
+  "portfolio_max_dd": 0.42225003693183527,
+  "universe_cagr": 0.29789196974843835,
+  "mean_turnover": 1.6204176400389256,
+  "mean_funding": -0.002189097780448718,
+  "weeks_with_unfunded_positions": 0
+ },
+ "verdict": "REJECT",
+ "gates_failed": [
+  "valid_ci_lo>0",
+  "stat_max_dd<=30%"
+ ]
+}
