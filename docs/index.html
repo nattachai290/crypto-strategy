@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ผลวิจัยกลยุทธ์คริปโต</title>
+<meta name="description" content="สรุปผลการทดสอบกลยุทธ์เทรด Binance USDT-M แบบเข้าใจง่าย">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1c2230; --muted:#5d6678; --line:#e3e6ec;
+  --good:#16a34a; --good-bg:#e8f6ee; --bad:#dc2626; --bad-bg:#fdecec;
+  --warn:#b45309; --warn-bg:#fdf3e2; --wait:#2563eb; --wait-bg:#e8effd; --accent:#0f766e;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1218; --card:#171b23; --text:#e7eaf0; --muted:#9aa3b5; --line:#2a303c;
+    --good:#4ade80; --good-bg:#12291c; --bad:#f87171; --bad-bg:#2e1616;
+    --warn:#fbbf24; --warn-bg:#2d2312; --wait:#60a5fa; --wait-bg:#142038; --accent:#2dd4bf;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1218; --card:#171b23; --text:#e7eaf0; --muted:#9aa3b5; --line:#2a303c;
+  --good:#4ade80; --good-bg:#12291c; --bad:#f87171; --bad-bg:#2e1616;
+  --warn:#fbbf24; --warn-bg:#2d2312; --wait:#60a5fa; --wait-bg:#142038; --accent:#2dd4bf;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.65;font-size:16px}
+main{max-width:860px;margin:0 auto;padding:28px 16px 64px}
+h1{font-size:1.75rem;line-height:1.3;margin:0 0 6px}
+h2{font-size:1.3rem;margin:44px 0 12px}
+h3{font-size:1.05rem;margin:0 0 6px}
+p{margin:0 0 12px}
+.sub{color:var(--muted);margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px;margin:0 0 14px}
+.hero{border-left:6px solid var(--bad)}
+.hero .big{font-size:1.25rem;font-weight:700;margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:16px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat .n{font-size:1.9rem;font-weight:700;line-height:1.1}
+.stat .l{color:var(--muted);font-size:.9rem}
+.tag{display:inline-block;font-size:.8rem;font-weight:600;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.t-bad{background:var(--bad-bg);color:var(--bad)}
+.t-good{background:var(--good-bg);color:var(--good)}
+.t-warn{background:var(--warn-bg);color:var(--warn)}
+.t-wait{background:var(--wait-bg);color:var(--wait)}
+.exam{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.exam .card{margin:0}
+.exam .yr{color:var(--muted);font-size:.9rem}
+.round{display:flex;gap:14px;align-items:flex-start}
+.round .ico{flex:0 0 40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:1.3rem;background:var(--bg)}
+.round .body{flex:1;min-width:0}
+.round .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.tbl{width:100%;border-collapse:collapse;font-size:.95rem}
+.tbl th,.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{color:var(--muted);font-weight:500;font-size:.85rem}
+.tbl td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+.pair{margin:14px 0}
+.pair .name{font-weight:600;margin-bottom:4px}
+.barrow{display:grid;grid-template-columns:78px 1fr 64px;gap:8px;align-items:center;font-size:.85rem;margin:3px 0}
+.track{position:relative;height:14px;background:var(--bg);border-radius:4px}
+.track .zero{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--muted);opacity:.5}
+.fill{position:absolute;top:0;bottom:0;border-radius:3px}
+.fill.pos{left:50%;background:var(--good)}
+.fill.neg{right:50%;background:var(--bad)}
+.lesson{display:flex;gap:12px}
+.lesson .k{flex:0 0 30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700}
+.hold .barrow{grid-template-columns:96px 1fr 48px}
+.hold .fill{left:0;background:var(--accent)}
+footer{margin-top:48px;color:var(--muted);font-size:.85rem}
+code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ผลวิจัยกลยุทธ์เทรดคริปโต</h1>
+<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 1 ต.ค. 2026</p>
+
+<div class="card hero">
+  <div class="big">สรุปสั้นๆ: ยังไม่เจอวิธีไหนที่ทำกำไรได้จริง</div>
+  <p>ทดสอบไปแล้ว 440 รายการ บน 4 เหรียญ และอีก 3 แนวทางแยก ได้แก่ ถือตามเทรนด์รายวัน หมุนเหรียญ และทดลองจุดออกไม้ มี 5 กลยุทธ์ที่ดูดีพอจนได้เข้า "สอบจริง" ทั้ง 5 ตัวสอบตก ผลที่ดูดีตอนแรกมาจากโชค หรือจากตลาดช่วงขาขึ้นเอง ไม่ได้มาจากฝีมือของกลยุทธ์</p>
+  <p class="muted small" style="margin:0">ผลลบแบบนี้ก็มีค่า เพราะทำให้รู้ว่าทางไหนไม่ต้องเสียเงินไปลองจริง</p>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="n">440</div><div class="l">รายการที่ทดสอบ (BTC, ETH, SOL, BNB)</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">กลยุทธ์ที่ได้เข้าสอบจริง</div></div>
+  <div class="stat"><div class="n" style="color:var(--bad)">0</div><div class="l">ที่สอบจริงผ่าน</div></div>
+  <div class="stat"><div class="n" style="color:var(--wait)">2</div><div class="l">งานที่กำลังรอผล (ML)</div></div>
+</div>
+
+<h2>วิธีตัดสินว่า "ใช้ได้จริง" (เหมือนสอบ 3 รอบ)</h2>
+<div class="exam">
+  <div class="card"><h3>1. ซ้อม</h3><div class="yr">TRAIN · 2020–2022</div><p>ให้กลยุทธ์ลองตั้งค่าต่างๆ แล้วเลือกค่าที่ดีที่สุด เลือกค่าได้เฉพาะในช่วงนี้เท่านั้น</p></div>
+  <div class="card"><h3>2. สอบย่อย</h3><div class="yr">VALID · 2023–2024</div><p>ล็อกค่าไว้แล้วรันกับข้อมูลที่ไม่เคยเห็น ต้องได้กำไรหลังหักค่าธรรมเนียม และต้องชนะการเข้าแบบสุ่ม</p></div>
+  <div class="card"><h3>3. สอบจริง</h3><div class="yr">HOLDOUT · 2025 – ส.ค. 2026</div><p>ข้อมูลที่ถูกล็อกไว้ ใช้ได้ครั้งเดียวต่อกลยุทธ์ สอบตกแล้วสอบซ่อมไม่ได้</p></div>
+</div>
+<div class="card small">
+  <b>"R" คืออะไร</b>: หน่วยกำไร/ขาดทุนเทียบกับจำนวนเงินที่ยอมเสียต่อไม้ (ระยะ stop loss) เช่น เสี่ยงไม้ละ 10 USDT ถ้าได้ +0.1 R = กำไรเฉลี่ยไม้ละ 1 USDT ถ้าได้ −0.2 R = ขาดทุนเฉลี่ยไม้ละ 2 USDT<br>
+  <b>"ชนะการเข้าแบบสุ่ม"</b>: เอาจุดออกไม้แบบเดิมมาใช้ แต่สุ่มจังหวะเข้า 200 รอบ ถ้ากลยุทธ์ไม่ได้ดีกว่าการสุ่มอย่างชัดเจน แปลว่ากำไรมาจากตลาด ไม่ได้มาจากการเลือกจังหวะเข้า
+</div>
+
+<h2>ผลสอบจริง 5 ตัว: สอบย่อยดูดี แต่สอบจริงร่วง</h2>
+<p class="muted">แท่งสีเขียวคือกำไร สีแดงคือขาดทุน (R เฉลี่ยต่อไม้ หลังหักค่าธรรมเนียม)</p>
+<div class="card" id="holdout"></div>
+<p class="small muted">ตัวที่ 5 (<code>example_trend_breakout</code> บน BTC 15m) ถูกใช้ตอนทดสอบระบบล็อก ได้ −0.23 R จาก 212 ไม้ · ที่มา: <code>results/BTCUSDT/holdout_log.csv</code>, <code>results/SOLUSDT/holdout_log.csv</code></p>
+
+<h2>แต่ละรอบลองอะไรไปบ้าง</h2>
+<div id="rounds"></div>
+
+<h2>ทำไมถึงยังไม่เจอ: บทเรียน 4 ข้อ</h2>
+
+<div class="card lesson"><div class="k">1</div><div>
+  <h3>ค่าธรรมเนียมกินกำไรไปเกือบหมด ยิ่งเทรดถี่ยิ่งแพ้</h3>
+  <p>ไปกลับหนึ่งรอบเสียราว 0.14% ของมูลค่า (VIP0 + market order) ถ้าตั้ง stop แคบ ค่าธรรมเนียมจะกินส่วนใหญ่ของเงินที่เสี่ยงในแต่ละไม้ กลยุทธ์ที่ถือไม่ถึง 4 ชั่วโมงไม่มีตัวไหนเป็นบวกเลยสักตัว</p>
+  <div class="hold" id="hold"></div>
+  <p class="small muted" style="margin-top:8px">% ของรายการที่ได้กำไรในช่วงสอบย่อย แยกตามระยะเวลาถือ · ที่มา: <code>docs/research/LESSONS.md</code> §1</p>
+</div></div>
+
+<div class="card lesson"><div class="k">2</div><div>
+  <h3>ที่ดูเหมือนกำไร ส่วนใหญ่คือการถือ long ในตลาดขาขึ้น</h3>
+  <p>ปี 2023–24 ตลาดขึ้นแรง กลยุทธ์ไหนเปิด long ก็ได้กำไร ไม่ว่าจะเข้าจังหวะไหน ส่วนฝั่ง short ขาดทุนเกือบทุกเหรียญ จาก 108 ตัวที่ผ่านสอบย่อยหรืออยู่ในข่ายน่าสนใจ มี 102 ตัวที่ไม่ได้ดีกว่าการเข้าแบบสุ่ม</p>
+  <div class="scroll"><table class="tbl">
+    <tr><th>เหรียญ</th><th style="text-align:right">ฝั่ง long (R เฉลี่ย)</th><th style="text-align:right">ฝั่ง short (R เฉลี่ย)</th></tr>
+    <tr><td>BTC</td><td class="num">−0.010</td><td class="num" style="color:var(--bad)">−0.114</td></tr>
+    <tr><td>ETH</td><td class="num" style="color:var(--good)">+0.093</td><td class="num">−0.007</td></tr>
+    <tr><td>SOL</td><td class="num" style="color:var(--good)">+0.202</td><td class="num" style="color:var(--bad)">−0.133</td></tr>
+    <tr><td>BNB</td><td class="num" style="color:var(--good)">+0.062</td><td class="num" style="color:var(--bad)">−0.119</td></tr>
+  </table></div>
+  <p class="small muted" style="margin-top:8px">ช่วงสอบย่อย 2023–24 · ที่มา: <code>LESSONS.md</code> §2</p>
+</div></div>
+
+<div class="card lesson"><div class="k">3</div><div>
+  <h3>ลองหลายร้อยแบบ ก็ต้องมีบางตัวดูดีเพราะโชค</h3>
+  <p>ถ้าไม่มีกลยุทธ์ไหนดีจริงเลย จากการทดสอบ 354 รายการก็ยังควรมีราว 9 ตัวที่ "ผ่านทางสถิติ" เพราะบังเอิญ ซึ่งใกล้กับที่เจอจริง (15 ตัว) ถ้าเห็นตัวเลข +0.2 R ในช่วงสอบย่อย ให้คาดว่าของจริงอยู่แถว 0 ถึง +0.05 R การสอบจริงจึงต้องใช้ได้ครั้งเดียว</p>
+</div></div>
+
+<div class="card lesson"><div class="k">4</div><div>
+  <h3>ถือ futures ยาวๆ แบบไม่มีกลยุทธ์ โดนค่า funding กิน</h3>
+  <p>ถือ BTC หรือ ETH perp 1 เท่าไว้เฉยๆ ตั้งแต่ 2020 พอร์ตหมดตัว (−100%) เพราะค่า funding ช่วงปี 2021 รวมกันราว 30% ของมูลค่าสัญญาในปีเดียว ถ้าจะถือยาวควรใช้ spot</p>
+  <p class="small muted" style="margin:0">ที่มา: <code>journal/BTCUSDT/allocation.md</code>, <code>journal/ETHUSDT/allocation.md</code></p>
+</div></div>
+
+<h2>ตอนนี้กำลังทำอะไร</h2>
+<div class="card" style="border-left:6px solid var(--wait)">
+  <h3>ให้ AI (LightGBM) หัดเลือกจังหวะเข้า <span class="tag t-wait">รอผล</span></h3>
+  <p>โมเดลดูข้อมูล 27 อย่าง เช่น ราคาย้อนหลัง ความผันผวน รูปแท่งเทียน volume และ funding แล้วทำนายว่าถ้าเข้าตอนนี้ หลังหักค่าธรรมเนียมจะได้กี่ R ถ้าทำนายว่าคุ้มค่อยเข้า</p>
+  <ul style="margin:0 0 8px;padding-left:20px">
+    <li><b>รอบที่ 1:</b> เทรนแยกทีละเหรียญ BTC และ ETH (<code>src/ml_entry.py</code>)</li>
+    <li><b>รอบที่ 2:</b> เทรนรวม 20 เหรียญ ได้ข้อมูลมากขึ้นราว 20 เท่า และต้องผ่านอย่างน้อยครึ่งหนึ่งของเหรียญ (<code>src/ml_pool.py</code>)</li>
+  </ul>
+  <p class="small muted" style="margin:0">ทั้งสองรอบต้องชนะ "สัญญาณชุดเดียวกันที่ถูกเลื่อนเวลาแบบสุ่ม" ด้วย ซึ่งเป็นเกณฑ์ที่เข้มที่สุดที่โปรเจกต์นี้เคยใช้ ความหวังยังต่ำ เพราะทุกรอบที่ผ่านมาพบว่ารูปแบบในกราฟ 1 ชั่วโมงมีขนาดเล็กกว่าค่าธรรมเนียม</p>
+</div>
+
+<footer>
+  หน้านี้สรุปจากไฟล์ผลในโฟลเดอร์ <code>results/</code> และ <code>journal/</code> ของ repo ไม่มีตัวเลขไหนที่แต่งขึ้นเอง · นี่เป็นงานวิจัย ไม่ใช่คำแนะนำการลงทุน
+</footer>
+</main>
+
+<script>
+// data copied from the results files named on the page
+const holdout = [
+  {name:"022_exit_risk_side · BTC 30m", valid:0.228, hold:-0.010, n:211},
+  {name:"038_opening_range_both_sides · BTC 4h", valid:0.175, hold:-0.112, n:135},
+  {name:"039_breakout_flow_confirm · BTC 5m", valid:0.222, hold:0.013, n:95},
+  {name:"041_impulse_not_crowded · SOL 5m", valid:0.266, hold:0.054, n:93},
+];
+const rounds = [
+  {ico:"📈", t:"ไอเดียจากราคาและ volume", tag:["bad","ไม่ผ่าน"], d:"ราว 45 ไอเดีย เช่น breakout, ย่อแล้วเข้า, ตามเทรนด์, แท่งเทียน · 4 เหรียญ · 15m–4h", r:"ผ่านสอบย่อยแค่ไม่กี่ตัว และทั้งหมดสอบจริงตก"},
+  {ico:"📺", t:"กลยุทธ์จาก TradingView 6 ตัว", tag:["bad","ไม่ผ่าน"], d:"RSI+BB, SMC, MACD+SMA200, Super Scalper, Liquidity Sweep (Pine script ที่ส่งมา)", r:"0 ตัวผ่าน จาก 48 การทดสอบ ตัว scalper ในกราฟ 15m แพ้ค่าธรรมเนียมขาดลอย"},
+  {ico:"🐋", t:"Open Interest และสัดส่วน long/short", tag:["bad","ไม่ผ่าน"], d:"สวนรายย่อย ตามเงินใหญ่ ไล่ล้าง OI · ข้อมูลจาก Binance ทุก 5 นาที", r:"มีตัวหนึ่งที่ดูดีบน BTC/ETH แต่เอาไปทดสอบซ้ำบน SOL/BNB แล้วไม่ผ่าน"},
+  {ico:"🧭", t:"ถือตอนขาขึ้น หลบตอนขาลง (รายวัน)", tag:["bad","ไม่ดีกว่าถือเฉยๆ"], d:"SMA200, golden cross, breakout 20 สัปดาห์ · BTC/ETH/BNB · spot และ perp", r:"ลด drawdown ได้บ้าง แต่ไม่มีกฎไหนดีกว่าการถือเฉยๆ อย่างชัดเจนทุกช่วงเวลา"},
+  {ico:"🔄", t:"หมุนเหรียญตามโมเมนตัมรายสัปดาห์", tag:["bad","ไม่ผ่าน"], d:"ซื้อเหรียญที่แรงที่สุด 20% จากเหรียญที่มีสภาพคล่องสูงสุด 30 ตัว (รวมเหรียญที่ถูกถอดออกไปแล้ว)", r:"แบบ spot แพ้การถือทุกเหรียญเท่าๆ กัน ส่วนแบบ futures กำไรราว 3/4 มาจากการกิน funding ซึ่งไม่ใช่สิ่งที่เราต้องการ"},
+  {ico:"🚪", t:"จุดออกไม้ (TP/SL/BE/trailing)", tag:["bad","ไม่มีฝีมือ"], d:"สุ่มจุดเข้า แล้วลองวิธีออก 6 แบบ · BTC/ETH", r:"กราฟ 1h ขาดทุนทุกแบบ ส่วนกราฟ 4h ที่ดูดีมาจาก trailing stop ที่บังเอิญได้ประโยชน์จากตลาดขาขึ้น"},
+  {ico:"🤖", t:"ML เลือกจังหวะเข้า", tag:["wait","รอผล"], d:"LightGBM บน BTC, ETH และเทรนรวม 20 เหรียญ", r:"เตรียมเครื่องมือและทดสอบกับข้อมูลจำลองเสร็จแล้ว รอ AI อีกตัวรันกับข้อมูลจริง"},
+];
+
+const max = 0.3, pct = v => Math.min(Math.abs(v) / max, 1) * 50;
+const bar = (label, v) => `<div class="barrow"><span class="muted">${label}</span>
+  <div class="track"><div class="zero"></div><div class="fill ${v >= 0 ? "pos" : "neg"}" style="width:${pct(v)}%"></div></div>
+  <span style="text-align:right;font-variant-numeric:tabular-nums">${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(3)}</span></div>`;
+document.getElementById("holdout").innerHTML = holdout.map(h =>
+  `<div class="pair"><div class="name">${h.name} <span class="tag t-bad">สอบตก</span></div>
+   ${bar("สอบย่อย", h.valid)}${bar("สอบจริง", h.hold)}
+   <div class="small muted">สอบจริง ${h.n} ไม้ · ช่วงความเชื่อมั่นครอบคลุม 0 (แยกจากโชคไม่ได้)</div></div>`).join("");
+
+document.getElementById("rounds").innerHTML = rounds.map(r =>
+  `<div class="card round"><div class="ico">${r.ico}</div><div class="body">
+   <div class="head"><h3 style="margin:0">${r.t}</h3><span class="tag t-${r.tag[0]}">${r.tag[1]}</span></div>
+   <p class="muted small" style="margin:0 0 4px">${r.d}</p><p style="margin:0">${r.r}</p></div></div>`).join("");
+
+const hold = [["< 4 ชม.", 0], ["4–24 ชม.", 40], ["1–3 วัน", 52], ["> 3 วัน", 68]];
+document.getElementById("hold").innerHTML = hold.map(([l, v]) =>
+  `<div class="barrow"><span class="muted">${l}</span><div class="track"><div class="fill" style="width:${v}%"></div></div>
+   <span style="text-align:right">${v}%</span></div>`).join("");
+</script>
+</body>
+</html>
