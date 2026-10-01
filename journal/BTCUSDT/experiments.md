@@ -4848,3 +4848,43 @@ visible only after the fact: **its gates are satisfiable by drift, because a
 50/50 long-short book on a rising market has a positive mean no matter what the
 exit does.** The 1h primary and the ETH replication are the results that count,
 and they are both `REJECT` - six exits, twelve rows, every net mean negative.
+
+---
+
+## Exp 045 - Review of the exit lab (Exp 043 results / 044, ETH Exp 009): a design flaw in PLAN §18, and the verdicts
+
+**Date:** 2026-10-01
+**Status:** complete. A review, no evaluations. Earlier entries are not
+edited.
+
+**Checked and correct:**
+- `src/exit_lab.py` is unchanged.
+- One run per cell. No holdout lock exists, and no `--final` was run.
+- 1h is REJECT on both coins; every net mean is negative on both periods.
+- The 4h PASS is correctly called "the market".
+- Per PLAN §18, 4h was descriptive only, and a PASS counts only if BTC 1h and
+  ETH 1h pass. **No holdout is warranted.**
+
+**The design flaw is the planner's (PLAN §18, Exp 043).** §18 claimed that
+50/50 random entries make market drift cancel. That holds only for exits that
+treat both sides the same way over time. A trailing stop is path-dependent:
+in a rising market a long rides the trend while a short is stopped out
+quickly, so drift becomes profit.
+- `trail_2atr` @4h: long +0.160 / short −0.054 on TRAIN; **+0.814 / −0.133 on
+  VALID** (BTC rose about 460%).
+- The 4h gates were therefore satisfiable by drift alone.
+- The 1h cells were not affected in practice: every exit is negative there.
+- **Rule for any future random-entry or market-neutral test:** gate on the
+  excess over a benchmark, or on **both legs separately**, or add a detrended
+  control. `LESSONS.md` §10 is corrected. Its first version said the mean
+  cancels and only the gates do not, but the +0.345 R mean shows it does not.
+
+**Small record issue.** The research agent's 1h results entry reused
+"Exp 043", the planner's tooling entry. Read the results entry as Exp 043b.
+Numbering continues from 045.
+
+**What Stage 1 says.** There is no tradable skill in the six exits. At 1h the
+price path has some structure (gross R up to +0.03 to +0.05) but it is smaller
+than one round-trip cost. Stage 2 (an ML entry model, PLAN §18 "what happens
+next") waits for the owner's decision. Its design must include the control
+above.
