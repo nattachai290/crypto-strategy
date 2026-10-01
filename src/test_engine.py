@@ -416,6 +416,7 @@ def main() -> None:
     test_random_null_model()
     test_metrics()
     test_allocation()
+    test_rotation()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1099,6 +1100,75 @@ def test_allocation() -> None:
         DF._get, DF._verify_sha256 = saved
     check("daily zips: spot and perp files with the same name do not overwrite each other",
           same == (b"spot", b"perp"), str(same))
+
+
+# --------------------------------------------------------------------------
+# 13. Rotation (PLAN.md section 17): universe, instruments, weekly P&L
+# --------------------------------------------------------------------------
+def test_rotation() -> None:
+    print("\n13. rotation: symbol filter, delisting splits, hand-computed weekly P&L, causal universe")
+    import rotation as RT
+    allsyms = {"BTCUSDT", "SUSHIUSDT", "SUSHIUPUSDT", "JUPUSDT", "BTCDOWNUSDT", "USDCUSDT", "BNBBULLUSDT"}
+    got = {x: RT.tradable(x, allsyms) for x in sorted(allsyms)}
+    check("rotation: stablecoins and leveraged tokens out, JUP (a coin) in",
+          got == {"BNBBULLUSDT": False, "BTCDOWNUSDT": False, "BTCUSDT": True, "JUPUSDT": True,
+                  "SUSHIUPUSDT": False, "SUSHIUSDT": True, "USDCUSDT": False}, str(got))
+    d = pd.DataFrame({"symbol": "LUNAUSDT", "date": pd.to_datetime(
+        ["2022-05-11", "2022-05-12", "2022-05-13", "2022-05-31", "2022-06-01"], utc=True)})
+    check("rotation: a >3-day hole starts a new instrument (old LUNA vs new LUNA)",
+          list(RT.split_instruments(d)["inst"]) == ["LUNAUSDT"] * 3 + ["LUNAUSDT#1"] * 2)
+
+    # hand-computed weekly P&L: 5 coins growing +2%, +1%, 0, -1%, -2% a day,
+    # opens equal the previous close. Small constants so 5 coins qualify.
+    saved = {k: getattr(RT, k) for k in ("UNIVERSE_N", "MIN_UNIVERSE", "MIN_AGE_DAYS", "VOLUME_DAYS",
+                                         "TOP_FRACTION", "MIN_K")}
+    RT.UNIVERSE_N, RT.MIN_UNIVERSE, RT.MIN_AGE_DAYS, RT.VOLUME_DAYS, RT.TOP_FRACTION, RT.MIN_K = 5, 3, 10, 5, 0.2, 1
+    try:
+        idx = pd.date_range("2024-01-01", periods=60, freq="D", tz="UTC")  # 2024-01-01 is a Monday
+        g = {"A": .02, "B": .01, "C": 0.0, "D": -.01, "E": -.02}
+        close = pd.DataFrame({k: 100 * (1 + v) ** np.arange(1, 61) for k, v in g.items()}, index=idx)
+        opn = close.shift(1).fillna(100.0)
+        P = {"open": opn, "close": close, "quote_volume": close * 0 + 1e6}
+        w = RT.backtest(P, "spot", 7, 0.01, None, "2024-01-15", "2024-01-30")
+        rA = 1.02 ** 7 - 1
+        ru = np.mean([(1 + v) ** 7 - 1 for v in g.values()])
+        # week 1 (01-15): buy A with all equity -> turnover 1, cost 0.01;
+        # week 2 (01-22): A again, weights unchanged after drift -> no cost
+        ok = (len(w) == 2 and list(w["held"]) == ["A", "A"]
+              and np.isclose(w["net"].iloc[0], rA - 0.01) and np.isclose(w["net"].iloc[1], rA)
+              and np.isclose(w["net_universe"].iloc[0], ru - 0.01)
+              and np.isclose(w["stat"].iloc[0], (rA - 0.01) - (ru - 0.01)))
+        check("rotation: weekly top-k return, turnover cost on drifted weights (hand-computed)",
+              ok, w[["held", "net", "net_universe", "turnover"]].round(6).to_string())
+        # perp: long A, short E, half the equity each; funding 0.1%/day on A
+        # (long pays 0.5 x 0.7%) and 0.2%/day on E (short receives 0.5 x 1.4%)
+        fund = pd.DataFrame([{"symbol": c, "date": d, "last_funding_rate": r}
+                             for d in idx for c, r in (("A", .001), ("E", .002))])
+        wp = RT.backtest(P, "perp", 7, 0.0, fund, "2024-01-15", "2024-01-23")
+        rE = 0.98 ** 7 - 1
+        check("rotation: perp long/short book with funding (hand-computed)",
+              len(wp) == 1 and np.isclose(wp["net"].iloc[0], 0.5 * rA - 0.5 * rE - 0.5 * .007 + 0.5 * .014)
+              and wp["held"].iloc[0] == "A,E", wp[["held", "net", "funding"]].to_string())
+        # delisting: A's data ends on Wednesday 01-17 -> exit at that close
+        P2 = {k: v.copy() for k, v in P.items()}
+        for k in P2:
+            P2[k].loc["2024-01-18":, "A"] = np.nan
+        r_del = RT.week_return(P2, "A", pd.Timestamp("2024-01-15", tz="UTC"), pd.Timestamp("2024-01-22", tz="UTC"))
+        check("rotation: a coin delisted mid-week exits at its last close",
+              np.isclose(r_del, close.loc["2024-01-17", "A"] / opn.loc["2024-01-15", "A"] - 1), f"{r_del}")
+        # causal universe: changing everything after the signal day changes nothing
+        s = pd.Timestamp("2024-01-14", tz="UTC")
+        P3 = {k: v.copy() for k, v in P.items()}
+        P3["quote_volume"].loc["2024-01-15":, "E"] = 1e12
+        P3["close"].loc["2024-01-15":, "C"] = 1e6
+        check("rotation: the universe on Sunday uses data up to Sunday only",
+              list(RT.universe(P, s, 7)) == list(RT.universe(P3, s, 7)))
+    finally:
+        for k, v in saved.items():
+            setattr(RT, k, v)
+    lo, hi = RT.block_ci(np.r_[np.full(50, 0.01), np.full(50, 0.03)])
+    check("rotation: block bootstrap CI brackets the mean and is reproducible",
+          lo < 0.02 < hi and (lo, hi) == RT.block_ci(np.r_[np.full(50, 0.01), np.full(50, 0.03)]), f"{lo} {hi}")
 
 
 if __name__ == "__main__":
