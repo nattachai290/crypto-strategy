@@ -567,3 +567,45 @@ above. The most useful things this round produced are the funding decomposition
 is a survivorship artefact of the surviving coins) - both of which are things the
 pre-registration asked to be measured rather than assumed, and both of which
 point the same way: **the apparent edge is not a momentum edge.**
+
+---
+
+## Exp 003 - Review of Exp 001/002 (planner)
+
+**Date:** 2026-10-01
+**Status:** complete. A review, no evaluations. Earlier entries are not
+edited.
+
+**Checked and correct:**
+- `src/rotation.py` is unchanged since the URL fix.
+- Both runs used the pre-registered rule (L = 7 by the highest TRAIN Sharpe),
+  and no holdout lock exists.
+- 104 VALID weeks each, the universe never below 30, and 0 VALID weeks with
+  unfunded positions.
+- The verdicts follow from the gates: spot fails the CI, the cost ×1.5 stress
+  and the statistic drawdown; perp fails the CI and the statistic drawdown.
+
+**Corrections:**
+1. **"91% of the perp book's gross return was funding" is wrong.** Recomputed
+   from `perp_weeks.csv.gz` (mean per week):
+   - price gross +0.00240;
+   - funding received +0.00219;
+   - turnover cost −0.00162;
+   - net +0.00297.
+
+   Funding is **48%** of gross (price + funding) and **74%** of net. **Without
+   funding, the net is +0.00078/week (≈ +4%/yr)**, statistically nothing. The
+   conclusion stands (the book is mostly carry) but the number was wrong.
+   `LESSONS.md` §9 is corrected.
+2. **"Both books lost to the equal-weight universe" holds for spot only.** The
+   perp book is long the top fifth and short the bottom fifth: market-neutral.
+   Its +11.7% CAGR against the long-only universe's +30.6% is not a
+   like-for-like comparison. The test is its own statistic: CI
+   [−0.0067, +0.0119].
+3. `LESSONS.md` said "52/52 weeks negative in 2023". It is the 2023 **mean**
+   that is negative (52 weeks), not every week. Corrected.
+
+**Reading for the owner.** The one positive piece of the perp book is funding
+carry: shorting the weakest coins gets paid while funding is positive. The
+owner excluded funding carry as a goal (2026-09). Without it the momentum part
+is about zero after costs, so the rotation round adds no tradable edge.
