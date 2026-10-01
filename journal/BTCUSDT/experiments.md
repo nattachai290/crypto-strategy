@@ -4848,3 +4848,132 @@ visible only after the fact: **its gates are satisfiable by drift, because a
 50/50 long-short book on a rising market has a positive mean no matter what the
 exit does.** The 1h primary and the ETH replication are the results that count,
 and they are both `REJECT` - six exits, twelve rows, every net mean negative.
+
+---
+
+## Exp 045 - Review of the exit lab (Exp 043 results / 044, ETH Exp 009): a design flaw in PLAN §18, and the verdicts
+
+**Date:** 2026-10-01
+**Status:** complete. A review, no evaluations. Earlier entries are not
+edited.
+
+**Checked and correct:**
+- `src/exit_lab.py` is unchanged.
+- One run per cell. No holdout lock exists, and no `--final` was run.
+- 1h is REJECT on both coins; every net mean is negative on both periods.
+- The 4h PASS is correctly called "the market".
+- Per PLAN §18, 4h was descriptive only, and a PASS counts only if BTC 1h and
+  ETH 1h pass. **No holdout is warranted.**
+
+**The design flaw is the planner's (PLAN §18, Exp 043).** §18 claimed that
+50/50 random entries make market drift cancel. That holds only for exits that
+treat both sides the same way over time. A trailing stop is path-dependent:
+in a rising market a long rides the trend while a short is stopped out
+quickly, so drift becomes profit.
+- `trail_2atr` @4h: long +0.160 / short −0.054 on TRAIN; **+0.814 / −0.133 on
+  VALID** (BTC rose about 460%).
+- The 4h gates were therefore satisfiable by drift alone.
+- The 1h cells were not affected in practice: every exit is negative there.
+- **Rule for any future random-entry or market-neutral test:** gate on the
+  excess over a benchmark, or on **both legs separately**, or add a detrended
+  control. `LESSONS.md` §10 is corrected. Its first version said the mean
+  cancels and only the gates do not, but the +0.345 R mean shows it does not.
+
+**Small record issue.** The research agent's 1h results entry reused
+"Exp 043", the planner's tooling entry. Read the results entry as Exp 043b.
+Numbering continues from 045.
+
+**What Stage 1 says.** There is no tradable skill in the six exits. At 1h the
+price path has some structure (gross R up to +0.03 to +0.05) but it is smaller
+than one round-trip cost. Stage 2 (an ML entry model, PLAN §18 "what happens
+next") waits for the owner's decision. Its design must include the control
+above.
+
+---
+
+## Exp 046 - ML entry model tooling (Stage 2, Level 3, owner-approved)
+
+**Date:** 2026-10-01
+**Status:** complete. Code and tests only. No market-data run.
+
+**Why.** The owner chose option "ก": continue to Stage 2, an ML entry model,
+with the BTC Exp 045 control built in. PLAN.md §19 has the design.
+
+**What changed.**
+- `src/ml_entry.py` (new):
+  - causal features;
+  - labels are the exit lab's net R for a symmetric `time_only` exit;
+  - two LightGBM models (native API, no scikit-learn), fixed
+    hyper-parameters;
+  - purged expanding walk-forward OOF on TRAIN chooses the threshold;
+  - the frozen model is applied to VALID;
+  - 6 gates, including beating random signal sets with the same long/short
+    counts;
+  - `--final` runs the holdout once, behind a lock.
+- **Test 15:**
+  - the features are causal;
+  - the purge keeps every TRAIN label inside TRAIN;
+  - the labels equal `exit_lab.simulate`;
+  - the side rule;
+  - **the whole pipeline on synthetic 1h bars**: a planted, drift-neutral
+    24h-momentum edge gives **PASS** (+0.372 R, both legs > 0, random 95th
+    percentile +0.115), and pure noise gives **REJECT** (−0.044, does not
+    beat random).
+
+**Two synthetic tests had to be redesigned while building this.** Both
+mistakes were in the planted data, not in the pipeline:
+1. A planted hour-of-day *drift* was matched by the random control, because
+   the whole market rose. That shows the control works.
+2. A planted 24-hour *cycle* was invisible to a 24-bar hold, because it
+   nets to zero.
+
+The final test plants momentum, which a 24-bar hold can see.
+
+All earlier tests are unchanged. ALL CHECKS PASSED.
+
+### Exp 046 addendum - bug review before the first run (2026-10-01)
+
+The tool has not been run on market data yet. These fixes come from reading the code:
+
+1. **Leak: VALID trades used HOLDOUT prices (fixed).** The VALID window was not
+   purged. A signal in the last 24 hours of 2024 held into 2025, so its R used
+   holdout prices. The random control could pick the same rows, so the effect was
+   symmetric and small. It is still a leak. The VALID window now drops its last
+   `PURGE` bars, as TRAIN already did.
+2. **Partial labels at the data end (fixed).** The holdout window had the same gap
+   at the end of the data. The last bars closed early (`eod`) with a partial hold.
+   The holdout window is now purged too.
+3. **OOF table counted NaN labels as trades (fixed).** The `trades` count, and so
+   the `MIN_OOF_TRADES` check, now counts only rows that have a label.
+4. **New: one-position engine run (reported, not a gate).** The R statistics
+   score every signal as a separate trade, so trades overlap. The engine run with
+   one position at a time on the 1,000 USDT account shows what a person could
+   actually trade: trades, avg R, CAGR, maxDD, size_skips. It is reported next to
+   the gates and does not change them.
+
+New tests:
+- no VALID trade exits after the holdout start;
+- the engine run works;
+- OOF counts use only scored labels.
+
+ALL CHECKS PASSED.
+
+Reviewed and not a bug:
+- `decide` sends ties to long, which happens only on exactly equal floats;
+- the funding feature uses the last settled rate at or before the bar close;
+- `labels` maps each trade back to its signal bar with fill-1.
+
+### Exp 046 addendum 2 - random control changed before the first run (2026-10-01)
+
+The random control in `ml_entry.py` used to pick scattered random bars with
+the model's long and short counts. Test 16 (pooled model, `journal/_multi/`
+Exp 004) showed why that is unsafe: a pure-noise coin beat that control's 95th
+percentile. The model's signals come in runs of overlapping 24-bar trades, so
+their mean varies far more than the mean of scattered bars.
+
+The control is now 200 random circular time-shifts of the model's own signal
+sequence inside the window, each at least 168 bars away from the real timing.
+This keeps the counts and the clustering and breaks only the alignment with
+prices. `--final` uses the same control.
+
+Tests 15 and 16 pass. No market data has been run.

@@ -609,3 +609,43 @@ edited.
 carry: shorting the weakest coins gets paid while funding is positive. The
 owner excluded funding carry as a goal (2026-09). Without it the momentum part
 is about zero after costs, so the rotation round adds no tradable edge.
+
+---
+
+## Exp 004 - Pooled ML entry model, pre-registration (PLAN.md section 20)
+
+**Date:** 2026-10-01
+**Status:** tooling ready, not run (the research agent runs it)
+
+**Why.** The owner asked whether more data could help the model. One coin
+gives about 26,000 TRAIN rows at 1h. Stock charts were rejected: they trade
+other hours and have other participants. Twenty crypto perps give twenty
+times more rows of the same market. `src/ml_pool.py` fits one long model and
+one short model on all of them. The coin is not a feature.
+
+**Fixed before any section 19 or 20 result was seen:**
+- universe;
+- costs (0.05% slippage for alts);
+- gates, including breadth: at least half of the coins must beat their own
+  control.
+
+**Control change (applies to section 19 too).** While writing test 16, a pure
+noise coin beat its random 95th percentile. The model's signals come in runs
+of overlapping trades, while the old control picked scattered bars and had
+far too little spread. Both tools now use random circular time-shifts of the
+model's own signal sequence (`ml_entry.shifted_means`).
+
+**Tests (16).**
+- The universe uses TRAIN data only:
+  - volume after 2022 cannot change the choice;
+  - a coin delisted in VALID stays in;
+  - late listings, coins that died inside TRAIN, and relisted symbols are out.
+- On a planted edge on 3 coins it says PASS.
+- On noise it says REJECT (fails breadth and the control).
+- With an edge on 1 coin of 3 it says REJECT on breadth.
+- No VALID trade reaches the holdout.
+
+The download parser was checked on two real SOL files in a scratch
+directory. No research data was run.
+
+**Runs:** see PLAN.md section 20.

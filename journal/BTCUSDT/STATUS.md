@@ -1,3 +1,5 @@
+> **Exit lab done (§18): no exit skill. Next (owner-approved 2026-10-01): ML entry model, `docs/research/PLAN.md` §19.** Run `SYMBOL=BTCUSDT python src/ml_entry.py` once (primary).
+
 > **Exit lab done (PLAN.md §18, Exp 043/044): 1h REJECT on both coins, and the
 > 4h cell PASSED and is a bull market. `--final` not run.**
 > **There is no skill in how a trade is closed.** Six fixed exits on random

@@ -1,3 +1,5 @@
+> **Exit lab done (§18): no exit skill. Next (owner-approved 2026-10-01): ML entry model, `docs/research/PLAN.md` §19.** Run `SYMBOL=ETHUSDT python src/ml_entry.py` once (replication).
+
 > **Exit lab done (PLAN.md §18, Exp 009): REJECT — 6 fixed exits on 1h, all six
 > lose money. `--final` not run.** The replication fails with the same signature
 > as the BTC primary, which is the strongest form the answer can take.

@@ -5,10 +5,13 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: the exit lab, `src/exit_lab.py`: is there skill in how a trade
-is closed, measured with random entries?** (`docs/research/PLAN.md` §18). Run
-it on BTCUSDT 1h first, then ETHUSDT 1h. Rotation (§17) and allocation (§16)
-are done, and both were REJECT / NO_IMPROVEMENT. The
+**Active work: the ML entry model, `src/ml_entry.py`: can LightGBM time
+entries better than random signals with the same long/short mix?**
+(`docs/research/PLAN.md` §19). Run it on BTCUSDT 1h, then ETHUSDT 1h, then
+the pooled model on 20 coins, `src/ml_pool.py` (§20: `--build`, then one
+run). The exit
+lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
+(§16) were REJECT / NO_IMPROVEMENT. The
 TradingView ports are closed (§13, BTC Exp 033/034); a new port needs Pine
 Script source the owner pastes, never one written from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
 `$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's
@@ -321,6 +324,8 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `allocation.py` | PLAN.md §16: four fixed trend rules on daily spot/perp bars against buy-and-hold (1x exposure, next-open fills, fees, funding). Writes `results/<SYMBOL>/allocation/` and the generated `journal/<SYMBOL>/allocation.md`; runs once (`--rerun` only after a code fix) |
 | `rotation.py` | PLAN.md §17: weekly cross-sectional momentum over every USDT pair (spot long-only vs the universe; perp long/short with funding). `--build spot|perp` downloads to `data/*/_multi/`. TRAIN chooses the lookback, VALID gives PASS/REJECT, `--final` runs the holdout once. Writes `results/_multi/rotation/` and the generated `journal/_multi/rotation.md` |
 | `exit_lab.py` | PLAN.md §18: six fixed exits on random entries (p 0.25, seed 18), each trade simulated on its own with the engine's exact rules (test 14). TRAIN chooses the exit, VALID gives PASS/REJECT, `--final` runs the holdout once. Writes `results/<SYMBOL>/exit_lab/` and the generated `journal/<SYMBOL>/exit_lab.md` |
+| `ml_entry.py` | PLAN.md §19: LightGBM long/short models predict the net R of a fixed symmetric exit; the threshold comes from purged TRAIN walk-forward OOF; VALID gates include beating random signals with the same long/short counts; `--final` runs the holdout once. Writes `results/<SYMBOL>/ml_entry/` and the generated `journal/<SYMBOL>/ml_entry.md` |
+| `ml_pool.py` | PLAN.md §20: the §19 model fitted once on 20 coins together (universe chosen on TRAIN volume, survivorship-free). `--build` downloads 1h perp klines + funding to `data/*/_multi/pool_1h`; gates add breadth (half the coins beat their own control). Writes `results/_multi/ml_pool/` and the generated `journal/_multi/ml_pool.md` |
 | `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:

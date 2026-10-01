@@ -1359,3 +1359,155 @@ TRAIN chose, and the result is read knowing that exits alone carry no edge.
 **Prior:** most likely every net mean is near minus the cost (−0.03 to
 −0.1 R). Any exit whose gross R is clearly positive on both TRAIN and VALID
 is worth reporting even if the net fails.
+
+## 19. ML entry model: can a trained model time entries better than chance? (owner-approved 2026-10-01)
+
+**Stage 2 of the owner's "train the timing" request.** Stage 1 (§18, BTC
+Exp 043–045) found no tradable skill in six exits. At 1h, the price path's
+structure was smaller than one round-trip cost.
+
+**The model (`src/ml_entry.py`, BTC Exp 046).**
+- **Two LightGBM regressors**, one for longs and one for shorts. Each
+  predicts the **net R** (after fees, slippage and funding) of entering at the
+  next 1h open with **one fixed, symmetric exit**: `time_only` (3-ATR stop,
+  out after 24 bars).
+  - The exit is symmetric on purpose. BTC Exp 045 showed that a
+    path-dependent exit turns market drift into profit.
+- **Features** (bar i uses bars ≤ i):
+  - returns over 1–168 bars;
+  - volatility over 24 and 168 bars and their ratio;
+  - ATR as % of price;
+  - position in the 24- and 168-bar range;
+  - candle body and wicks;
+  - volume z-score;
+  - taker buy ratio;
+  - distance to EMA 20/50/200 in ATR;
+  - hour and weekday;
+  - the last settled funding rate.
+  - The metrics columns are **not** used: they are NaN for much of TRAIN.
+- **Hyper-parameters are fixed:** 300 rounds, learning rate 0.03, 15 leaves,
+  ≥ 200 rows per leaf, bagging and feature fraction 0.8, L2 1.0, seed 7,
+  deterministic. They are not tuned anywhere.
+
+**Protocol.**
+1. TRAIN 2020–22 only. Rows whose 24-bar label window would reach past a fit
+   window are **purged** (26 bars).
+2. **The threshold** (predicted net R needed to trade, from {0, 0.05, 0.10,
+   0.20}) is chosen on **TRAIN out-of-fold predictions** from 3 expanding,
+   purged walk-forward folds: fit 2020-01 → 2021-07 / 2022-01 / 2022-07 and
+   predict the next half-year. The choice needs ≥ 300 OOF trades.
+3. The final models are refit on all of TRAIN and frozen.
+4. On VALID 2023–24, each bar takes the side with the higher prediction if it
+   clears the threshold. Each signal is one trade, simulated on its own with
+   the engine's rules.
+
+**Gates (PASS on VALID needs all):**
+- TRAIN OOF mean > 0;
+- ≥ 300 VALID trades;
+- VALID mean > 0;
+- weekly-block CI lower bound > 0;
+- mean > 0 with fees and slippage ×1.5;
+- **beats the 95th percentile of 200 random signal sets with the same long
+  and short counts.** Drift helps them exactly as much as the model, so this
+  is the BTC Exp 045 rule.
+
+`--final` runs the HOLDOUT once (lock file), and only after PASS.
+**CONFIRMED** = holdout mean > 0, CI lower bound > 0, and above the random
+median.
+
+**The pipeline is proven on synthetic data** (test 15):
+- On bars with a planted, drift-neutral momentum edge it says **PASS**: mean
+  +0.37 R, both legs positive, random 95th percentile +0.12.
+- On pure noise it says **REJECT**, and does not beat random.
+- Its features are causal, the purge holds, and its labels equal the exit
+  lab's.
+
+**Runs:**
+- `SYMBOL=BTCUSDT python src/ml_entry.py` (primary);
+- `SYMBOL=ETHUSDT python src/ml_entry.py` (replication: a PASS counts only if
+  ETH also passes).
+- One run each. No new feature, parameter or exit after seeing a result.
+
+**Prior:** low. Stage 1 says the structure at 1h is smaller than the cost.
+The model can only win where it finds bars whose expected move clears about
+0.1 R of cost.
+
+**Change before the first run (2026-10-01, test 16).** The random control
+used to pick scattered random bars. Model signals come in runs: neighbouring
+bars give the same side, and their 24-bar trades overlap. A set of scattered
+bars therefore has much less spread than the model's set. The model could
+then beat the 95th percentile on pure noise. The control is now **200 random
+circular time-shifts of the model's own signal sequence** inside the window,
+each at least 168 bars away from the real timing. A shift keeps the long and
+short counts and the clustering. It breaks only the alignment with the
+market. `--final` uses the same control.
+
+## 20. Pooled ML entry model: one model on many coins (owner-approved 2026-10-01)
+
+**Stage 3 of "train the timing".** One coin gives the model about 26,000
+TRAIN rows. The owner asked for more data. Stock charts were rejected: they
+trade different hours and have different participants. Instead,
+`src/ml_pool.py` (`journal/_multi/` Exp 004) fits **one long model and one
+short model on the rows of 20 coins together**.
+
+- The coin is **not** a feature. A pattern must hold across coins to be
+  learned, and the features are already scale-free.
+- Model, features, labels, exit, folds, thresholds and hyper-parameters are
+  **exactly** those of §19.
+- This was written before any §19 result was seen. It runs whatever §19
+  says.
+
+**Universe (TRAIN data only).** Taken from rotation's daily perp table:
+- perp instruments listed by 2021-01-01 and still trading on 2022-12-31;
+- ranked by mean daily quote volume over 2021-07 → 2022-12;
+- the top 20 are taken.
+
+Rules for edge cases:
+- A coin delisted later **stays in**. Its data ends where it ends, so the
+  universe is survivorship-free from the selection date.
+- A symbol relisted after a gap of more than 3 days counts as a different
+  instrument (LUNA).
+- The list is fixed in `results/_multi/ml_pool/universe.json` at build time.
+
+**Costs.**
+- BTC and ETH: the normal slippage, 0.02%.
+- Every other coin: **0.05%**, the same as rotation, because alt books are
+  thinner.
+- Stress test: fee and slippage ×1.5.
+
+**Gates (PASS needs all):**
+- pooled TRAIN OOF mean > 0;
+- ≥ 3,000 VALID trades;
+- pooled VALID mean > 0, and weekly-block CI lower bound > 0;
+- mean > 0 at cost ×1.5;
+- pooled mean above the 95th percentile of the time-shift control (per coin,
+  trade-weighted);
+- **breadth:**
+  - at least 10 coins have ≥ 100 VALID trades;
+  - at least half of those beat **their own** shift-control 95th percentile
+    with a positive mean.
+
+  An edge carried by one or two coins is not a pooled edge. Test 16 checks
+  this: a single planted coin out of three is REJECT.
+
+**`--final`** runs the holdout once (lock file), and only after PASS.
+**CONFIRMED** needs all of:
+- pooled mean > 0;
+- CI lower bound > 0;
+- above the pooled shift-control median;
+- at least half of the coins above their own shift-control median.
+
+**Runs, in order.** Stop at the first crash or a number that looks wrong.
+1. `SYMBOL=BTCUSDT python src/ml_entry.py`
+2. `SYMBOL=ETHUSDT python src/ml_entry.py`
+3. If `data/cache/_multi/perp_1d.parquet` is missing:
+   `python src/rotation.py --build perp`.
+4. `python src/ml_pool.py --build`
+5. `python src/ml_pool.py`
+
+Each runs once. No `--final` without a PASS. No new feature, parameter, coin
+or exit after a result.
+
+**Prior:** low. More rows make the model's estimates less noisy. They cannot
+make a pattern bigger than it is, and every round so far found the 1h pattern
+smaller than one round-trip cost.

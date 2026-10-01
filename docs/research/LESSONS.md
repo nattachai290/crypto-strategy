@@ -300,13 +300,18 @@ the engine's exact rules — **test 14 checks all six trade-for-trade against
   the exit does, and here the exit is losing money on half its trades.** The
   identical exit on the same coin one clock down, same seed, same entries, is
   **−0.0983 R**: the exit did not change, the drift did.
-- **And the generalisable warning: a 50/50 long-short book does not cancel drift
-  from the *gates*, only from the mean.** These gates are satisfiable by a rising
-  market. **A cross-sectional or market-neutral test must gate on the excess over
-  a benchmark, not on the raw mean** — which is exactly what rotation's spot
-  statistic did (top fifth minus the universe) and what this lab did not do. The
-  lab's own design cancels drift in the mean; the CI gate and the drawdown gate
-  do not know that. Compare §9's spot drawdown gate, which *did* bound.
+- **And the generalisable warning (corrected in BTC Exp 045; the design flaw
+  is the planner's).** A 50/50 random long/short book cancels drift **only for
+  exits that treat both sides the same way over time** (a fixed hold, or
+  symmetric targets). **A path-dependent exit converts drift into profit.**
+  Under a trailing stop in a rising market, longs ride the trend while shorts
+  are cut quickly. The mean is then positive from drift alone, and every gate
+  can pass. So any future random-entry or market-neutral test must:
+  - gate on the excess over a benchmark (as rotation's spot statistic did), or
+    require **both legs positive separately**;
+  - or run a control on a detrended path (subtract the period's drift).
+  The first version of this bullet said the mean cancels and only the gates do
+  not. The 4h mean, +0.345 R, shows the mean does not cancel either.
 
 ## What to do with this
 
