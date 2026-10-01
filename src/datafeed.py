@@ -41,7 +41,10 @@ def _get(url: str, tries: int = 4, timeout: int = 90) -> bytes:
         try:
             with urlopen(url, timeout=timeout) as r:
                 return r.read()
-        except (HTTPError, URLError, TimeoutError) as e:  # pragma: no cover
+        # OSError covers a connection closed mid-transfer (RemoteDisconnected,
+        # ConnectionResetError), which used to escape without a retry and
+        # dropped whole files (BTC Exp 036: 3 missing metrics days)
+        except (HTTPError, URLError, TimeoutError, OSError) as e:  # pragma: no cover
             last = e
             code = getattr(e, "code", None)
             if code == 404:

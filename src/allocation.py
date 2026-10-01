@@ -103,6 +103,9 @@ RULES = {  # name: (function, markets)
     "sma200_long_short": (r_sma200_long_short, ("perp",)),
 }
 WARMUP_DAYS = 200  # every rule is defined from day 200 on; all runs start there
+# More missing daily bars than this and the run is refused. SOLUSDT's perp
+# file lacks 2022-02-25 and 2022-03-31 (Binance; known since SOL Exp 001).
+MAX_MISSING_DAYS = 3
 
 
 # --------------------------------------------------------------------------
@@ -133,10 +136,17 @@ def load_daily(market: str) -> pd.DataFrame:
         df[["open_time", "open", "high", "low", "close", "volume"]].to_parquet(out, index=False)
         print(f"[{market}] {len(keys)} monthly files -> {out.name}")
     df = pd.read_parquet(out).set_index("open_time").sort_index()
-    gaps = int((df.index.to_series().diff().dt.days > 1).sum())
-    if gaps:
-        raise SystemExit(f"[{market}] {gaps} missing days in the daily klines")
-    return df[["open", "close"]].astype(float)
+    full = pd.date_range(df.index[0], df.index[-1], freq="D")
+    missing = [str(d.date()) for d in full.difference(df.index)]
+    if len(missing) > MAX_MISSING_DAYS:
+        raise SystemExit(f"[{market}] {len(missing)} missing days in the daily klines: {missing[:10]}")
+    if missing:
+        # Units are held between changes, so a missing day only merges two
+        # daily returns into one; a signal cannot fire on the missing close.
+        print(f"[{market}] {len(missing)} missing day(s), recorded: {missing}")
+    bars = df[["open", "close"]].astype(float)
+    bars.attrs["missing_days"] = missing
+    return bars
 
 
 def daily_funding(index: pd.DatetimeIndex) -> np.ndarray:
@@ -169,6 +179,16 @@ def simulate(o: np.ndarray, target: np.ndarray, cost: float,
     cash, units, cur, trades = 1.0, 0.0, 0.0, 0
     for d in range(n):
         equity = cash + units * o[d]
+        if equity <= 0:
+            # Liquidated: a real exchange closes the position before equity
+            # goes negative (earlier, at the maintenance margin, so this
+            # floor at 0 is if anything kind to the run). Nothing recovers
+            # after it. Before this, a perp long whose funding exceeded its
+            # equity kept trading with negative equity (BTC Exp 041).
+            eq[d:] = 0.0
+            pos[d:] = 0.0
+            return eq, pos, trades
+
         want = target[d - 1] if d > 0 else 0.0
         if want != cur:
             notional = abs(want - cur) * equity
@@ -180,7 +200,7 @@ def simulate(o: np.ndarray, target: np.ndarray, cost: float,
             trades += 1
         if funding is not None and units != 0:
             cash -= units * o[d] * funding[d]
-        eq[d] = cash + units * o[d]
+        eq[d] = max(cash + units * o[d], 0.0)
         pos[d] = cur
     return eq, pos, trades
 
@@ -226,7 +246,8 @@ def run_market(market: str) -> dict:
             t[: WARMUP_DAYS - 1] = 0.0  # every run starts on the same day
             runs[name] = t
     res = {"market": market, "cost_per_side": cost, "start": str(start.date()),
-           "end": str(bars.index[-1].date()), "rules": {}}
+           "end": str(bars.index[-1].date()), "missing_days": bars.attrs.get("missing_days", []),
+           "rules": {}}
     for name, t in runs.items():
         eq, pos, trades = simulate(o, t, cost, fund)
         eq = pd.Series(eq, index=bars.index).loc[start:]
@@ -271,6 +292,8 @@ def write_report(all_res: dict) -> None:
         hold = res["rules"]["buy_hold"]
         L += [f"## {market} ({res['start']} .. {res['end']}, cost {res['cost_per_side']:.2%} per side"
               + (", plus funding" if market == "perp" else "") + ")", "",
+              *([f"Missing daily bars (Binance), recorded: {', '.join(res['missing_days'])}", ""]
+                if res.get("missing_days") else []),
               "| rule | verdict | CAGR | max DD | Sharpe | longest underwater (days) | exposure | switches |",
               "|---|---|---|---|---|---|---|---|"]
         for name, r in res["rules"].items():
