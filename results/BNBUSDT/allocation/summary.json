@@ -4,6 +4,7 @@
   "cost_per_side": 0.0012000000000000001,
   "start": "2018-05-25",
   "end": "2026-08-31",
+  "missing_days": [],
   "rules": {
    "buy_hold": {
     "trades": 1,
@@ -446,6 +447,7 @@
   "cost_per_side": 0.0007,
   "start": "2020-09-17",
   "end": "2026-08-31",
+  "missing_days": [],
   "rules": {
    "buy_hold": {
     "trades": 1,

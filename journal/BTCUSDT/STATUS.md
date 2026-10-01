@@ -493,3 +493,5 @@ also backed by Round 6:
 rule has fired.
 
 > **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 041; `journal/BTCUSDT/allocation.md`). 
+
+> **Allocation test rerun (PLAN.md section 16, 2026-10-01):** after the liquidation fix every rule is still NO_IMPROVEMENT; spot identical to the first run, perp changed only for buy_hold (Exp 042).

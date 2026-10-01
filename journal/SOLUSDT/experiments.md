@@ -955,3 +955,13 @@ M2 **with no variant tried.** No `--final` was run and none is warranted.
 **Status:** refused by the script. No result.
 
 `SYMBOL=SOLUSDT python src/allocation.py` downloaded the spot and perp daily files, then stopped with `[perp] 2 missing days in the daily klines` (`allocation.py` line 138 refuses any gap above 1 day). These are the two known SOL data gaps (2022-02-25, 2022-03-31; see Exp 001 and STATUS). No `results/SOLUSDT/allocation/` and no `allocation.md` were written. The task forbids changing the script, adding rules or using `--rerun`, so SOL was not forced. Options for the owner: waive the gap check for SOL (a Level 3 code change) or leave SOL out (SOL spot has no 2018 anyway).
+
+
+---
+
+## Exp 009 - Allocation test on SOLUSDT, first run after the fixes: STILL NOT RUN
+
+**Date:** 2026-10-01
+**Status:** refused by the script. No result.
+
+`SYMBOL=SOLUSDT python src/allocation.py` stopped with `[perp] 5 missing days in the daily klines: ['2022-02-26', '2022-02-27', '2022-02-28', '2022-04-01', '2022-04-02']`. The fix tolerates at most 3 missing days; the planner expected 2 (the two 2022 intraday gaps, Exp 001), but the daily file is missing 5 days. No `results/SOLUSDT/allocation/` or `allocation.md` was written. The script and its limit were not changed. Options for the owner: raise the tolerance for SOL (a code change) or leave SOL out (SOL spot starts 2020-08, so it has no 2018 anyway).

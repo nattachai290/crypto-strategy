@@ -181,3 +181,5 @@ Three things for the owner, none of which is the agent's to decide:
   36 months and 3.
 
 > **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 006; `journal/BNBUSDT/allocation.md`). 
+
+> **Allocation test rerun (PLAN.md section 16, 2026-10-01):** after the liquidation fix every rule is still NO_IMPROVEMENT; spot identical to the first run, perp changed only for buy_hold (Exp 007).

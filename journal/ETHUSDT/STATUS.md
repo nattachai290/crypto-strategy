@@ -248,3 +248,5 @@ Two things to raise with the owner (neither is mine to decide):
   so one coin's VALID cannot be used to choose for the other.
 
 > **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 012; `journal/ETHUSDT/allocation.md`). 
+
+> **Allocation test rerun (PLAN.md section 16, 2026-10-01):** after the liquidation fix every rule is still NO_IMPROVEMENT; spot identical to the first run, perp changed only for buy_hold (Exp 013).
