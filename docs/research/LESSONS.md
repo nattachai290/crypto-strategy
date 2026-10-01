@@ -115,23 +115,32 @@ Round M1–M4 (BTC Exp 036/037, ETH Exp 009/010) ran 4 ideas × 4 timeframes ×
 8 of 8 NO_EDGE), 9 REJECT, 15 INCONCLUSIVE.** The project total is 438
 evaluations, 5 holdout runs, 5 FAILED, 0 CONFIRMED.
 
-- **"Fade the crowd" and "follow the smart money" are the same trade.** M2
+- **One cell replicated timing skill on two coins, and it is still not an
+  edge** (BTC Exp 038). `051_retail_crowd_fade` @30m:
+  - SKILL on BTC and on ETH, with the same parameters chosen independently by
+    TRAIN on each coin;
+  - beta ≈ 0, and both legs positive on BTC;
+  - VALID +0.106 R (198 trades) and +0.080 R (197), with both CIs and both
+    alpha CIs including 0;
+  - WATCH and NO_EDGE, so it is not eligible for the holdout.
+  It is the closest the project has come. Only data newer than 2026-08 can
+  test it honestly.
+- **"Fade the crowd" and "follow the smart money" are mostly the same trade.** M2
   (all-account long/short ratio) and M3 (top-trader divergence) are two different
   columns and two different stories about who is smarter, and on BTC they agreed
   at every timeframe **by both being long**: M2's long leg +0.167 to +0.609
   against a short leg of −0.049 to +0.055, M3's long leg +0.251 to +0.805 against
   −0.089 to −0.263. The framing was not what was measured. That is §2 in a data
   source the project had never read.
-- **Fading a rally on *rising* open interest is a losing trade, on both coins.**
-  M1's short leg is −0.165 to −0.261 on BTC at every clock and −0.278 to −0.010
-  on ETH, in 2023 and in 2024, while its long leg is flat. The mechanism is the
-  interesting part: an up-flush with OI rising is new longs, and this is the only
-  column any idea here has had that could separate "a rally on new positions"
-  from "a rally on short covering".
+- **Fading a short squeeze is a losing trade.** M1's short fires when price
+  rises while open interest **falls** sharply (shorts forced out). Its short
+  leg is −0.165 to −0.261 on BTC at every clock and −0.010 on ETH at 1h,
+  while its long leg is flat. _Corrected in BTC Exp 038: this bullet first
+  said "rising" OI, which is the opposite of what `oi_flush` tests._
 - **Cost was never the problem and the pre-registration was right to look.** With
   1.5–6% stops the whole round sat at or barely above its fee-only floor
   (BTC VALID `cost_r` 0.035–0.108, median 0.063, floor 0.023–0.093): **funding
-  added about 0.002 R**, because the 12–36 h caps are not reached. Compare the
+  added about 0.002 R**, because the caps (48/144 h at 1h) are not reached. Compare the
   port round, whose invented 120 h cap was reached and pushed one config to
   0.151 R. So a wide stop plus a short cap is cheap here, and a wide stop plus a
   long cap is not.
