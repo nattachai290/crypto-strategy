@@ -1,3 +1,5 @@
+> **Next (owner-approved 2026-10-01): the allocation test, `docs/research/PLAN.md` §16.** Run `SYMBOL=ETHUSDT python src/allocation.py` once. Do trend rules (200-day average, golden cross, 20-week breakout) cut buy-and-hold's drawdowns on daily spot (from 2017) and perp bars? Primary coin.
+
 > **Exp 011 (full review in BTC Exp 038), review of the metrics round (2026-10-01):** the verdict stands: 0 PASS, the stop rule fired, and no holdout was used. Correction: M1's losing short leg fades a short squeeze (OI falling), not a rally on rising OI. **Noted: `051_retail_crowd_fade @30m` is the project's first configuration with SKILL on two coins.** TRAIN chose the same parameters on both, beta is ~0, it is WATCH + NO_EDGE, and the CI includes 0. **Proposed, waiting for the owner:** freeze it and judge it only on Binance data after 2026-08, with a pass criterion written down before that data is read.
 
 > **Exp 010 — the new-data round M1-M4 is DONE on this coin: 16 evaluations,
@@ -244,3 +246,5 @@ Two things to raise with the owner (neither is mine to decide):
   means anything. On ETH, 32 of 32 were DRIFT and 31 of 32 NO_EDGE.
 - ETH moves with BTC (correlation ~0.8), but the *results* correlate only +0.5,
   so one coin's VALID cannot be used to choose for the other.
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 012; `journal/ETHUSDT/allocation.md`). 

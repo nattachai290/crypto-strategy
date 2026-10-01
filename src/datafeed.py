@@ -86,9 +86,14 @@ def _verify_sha256(path: Path, key: str) -> bool:
     return want == h
 
 
-def fetch_zip(key: str) -> Path | None:
-    """Download one monthly zip into data/raw (skipping existing)."""
-    dest = C.RAW / Path(key).name
+def fetch_zip(key: str, dest_dir: Path | None = None) -> Path | None:
+    """Download one monthly zip into data/raw, or dest_dir (skipping existing).
+
+    Spot and futures daily klines share file names (BTCUSDT-1d-2020-01.zip),
+    so allocation.py passes a per-market dest_dir; otherwise the second market
+    would silently reuse the first market's file."""
+    dest = (dest_dir or C.RAW) / Path(key).name
+    dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists() and dest.stat().st_size > 0:
         return dest
     try:

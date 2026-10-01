@@ -1,0 +1,886 @@
+{
+ "spot": {
+  "market": "spot",
+  "cost_per_side": 0.0012000000000000001,
+  "start": "2018-03-05",
+  "end": "2026-08-31",
+  "rules": {
+   "buy_hold": {
+    "trades": 1,
+    "segments": {
+     "full": {
+      "start": "2018-03-05",
+      "end": "2026-08-31",
+      "total": 5.746157186278767,
+      "cagr": 0.2519391863915337,
+      "max_dd": 0.7662925085545056,
+      "sharpe": 0.6766360579134852,
+      "longest_underwater_days": 846,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2018 bear": {
+      "start": "2018-03-05",
+      "end": "2018-12-31",
+      "total": -0.6697247069040382,
+      "cagr": -0.7390379746171651,
+      "max_dd": 0.721084672166739,
+      "sharpe": -1.562317728322446,
+      "longest_underwater_days": 301,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2019": {
+      "start": "2019-01-01",
+      "end": "2019-12-31",
+      "total": 0.9577275662414928,
+      "cagr": 0.9613440090744316,
+      "max_dd": 0.4943008219337047,
+      "sharpe": 1.3206276020914114,
+      "longest_underwater_days": 187,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2020-21 bull": {
+      "start": "2020-01-01",
+      "end": "2021-12-31",
+      "total": 5.548896214719732,
+      "cagr": 1.5590811270297258,
+      "max_dd": 0.5359780595416246,
+      "sharpe": 1.6079700129980519,
+      "longest_underwater_days": 188,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": -0.6406624152664402,
+      "cagr": -0.641671379336193,
+      "max_dd": 0.6693124398346614,
+      "sharpe": -1.283420862042415,
+      "longest_underwater_days": 363,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 4.609559920129466,
+      "cagr": 1.3684509537099276,
+      "max_dd": 0.26151364947640965,
+      "sharpe": 2.010371533769946,
+      "longest_underwater_days": 237,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.16985124390869455,
+      "cagr": -0.10589812864644266,
+      "max_dd": 0.5297176591351063,
+      "sharpe": -0.037924760323436696,
+      "longest_underwater_days": 328,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "first half": {
+      "start": "2018-03-05",
+      "end": "2021-12-31",
+      "total": 3.092130264871906,
+      "cagr": 0.44506232311311833,
+      "max_dd": 0.721084672166739,
+      "sharpe": 0.8756514339263416,
+      "longest_underwater_days": 485,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 0.6808126372738303,
+      "cagr": 0.11772515275183215,
+      "max_dd": 0.6693124398346614,
+      "sharpe": 0.4730566953421504,
+      "longest_underwater_days": 769,
+      "exposure": 1.0,
+      "switches": 0
+     }
+    }
+   },
+   "sma200": {
+    "trades": 65,
+    "segments": {
+     "full": {
+      "start": "2018-03-05",
+      "end": "2026-08-31",
+      "total": 6.182482521802326,
+      "cagr": 0.2612085730337863,
+      "max_dd": 0.6420847065714235,
+      "sharpe": 0.7550716204019986,
+      "longest_underwater_days": 1050,
+      "exposure": 0.5180528691166989,
+      "switches": 64
+     },
+     "2018 bear": {
+      "start": "2018-03-05",
+      "end": "2018-12-31",
+      "total": -0.34853252498428855,
+      "cagr": -0.40526738076459723,
+      "max_dd": 0.34853252498428855,
+      "sharpe": -2.6507225336157334,
+      "longest_underwater_days": 301,
+      "exposure": 0.029801324503311258,
+      "switches": 3
+     },
+     "2019": {
+      "start": "2019-01-01",
+      "end": "2019-12-31",
+      "total": 0.5704899211385377,
+      "cagr": 0.5724386558580765,
+      "max_dd": 0.41692539540446194,
+      "sharpe": 1.0933780177172754,
+      "longest_underwater_days": 187,
+      "exposure": 0.5205479452054794,
+      "switches": 4
+     },
+     "2020-21 bull": {
+      "start": "2020-01-01",
+      "end": "2021-12-31",
+      "total": 1.1560904612600607,
+      "cagr": 0.4683631911962587,
+      "max_dd": 0.6416546922020658,
+      "sharpe": 0.9430904905567994,
+      "longest_underwater_days": 261,
+      "exposure": 0.7414500683994528,
+      "switches": 24
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": 0.0,
+      "cagr": 0.0,
+      "max_dd": -0.0,
+      "sharpe": 0.0,
+      "longest_underwater_days": 0,
+      "exposure": 0.0,
+      "switches": 0
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 2.489045626091692,
+      "cagr": 0.867898719441633,
+      "max_dd": 0.25899697007313294,
+      "sharpe": 1.625959197339985,
+      "longest_underwater_days": 244,
+      "exposure": 0.801641586867305,
+      "switches": 15
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.07462161356360353,
+      "cagr": -0.045563100245436194,
+      "max_dd": 0.3187247277128725,
+      "sharpe": -0.03588222626097051,
+      "longest_underwater_days": 586,
+      "exposure": 0.4605263157894737,
+      "switches": 18
+     },
+     "first half": {
+      "start": "2018-03-05",
+      "end": "2021-12-31",
+      "total": 1.2059459640686625,
+      "cagr": 0.22962436650015894,
+      "max_dd": 0.641654692202066,
+      "sharpe": 0.6571547653108977,
+      "longest_underwater_days": 512,
+      "exposure": 0.5300429184549357,
+      "switches": 31
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 2.25596485081389,
+      "cagr": 0.2878979165133633,
+      "max_dd": 0.3187247277128725,
+      "sharpe": 0.9236812948046916,
+      "longest_underwater_days": 586,
+      "exposure": 0.5082159624413145,
+      "switches": 33
+     }
+    },
+    "verdict": {
+     "full": false,
+     "first half": false,
+     "second half": true,
+     "verdict": "NO_IMPROVEMENT"
+    }
+   },
+   "golden_cross": {
+    "trades": 18,
+    "segments": {
+     "full": {
+      "start": "2018-03-05",
+      "end": "2026-08-31",
+      "total": 3.3325699905874995,
+      "cagr": 0.18835851186558683,
+      "max_dd": 0.6680403168666669,
+      "sharpe": 0.6061498891292953,
+      "longest_underwater_days": 1054,
+      "exposure": 0.5170857511283043,
+      "switches": 17
+     },
+     "2018 bear": {
+      "start": "2018-03-05",
+      "end": "2018-12-31",
+      "total": -0.3995923925314808,
+      "cagr": -0.46131063861888744,
+      "max_dd": 0.4059713417281806,
+      "sharpe": -2.0636589130294216,
+      "longest_underwater_days": 301,
+      "exposure": 0.08940397350993377,
+      "switches": 1
+     },
+     "2019": {
+      "start": "2019-01-01",
+      "end": "2019-12-31",
+      "total": 0.700436064856879,
+      "cagr": 0.7029179169570627,
+      "max_dd": 0.43409719369876265,
+      "sharpe": 1.2018351922561556,
+      "longest_underwater_days": 187,
+      "exposure": 0.5068493150684932,
+      "switches": 2
+     },
+     "2020-21 bull": {
+      "start": "2020-01-01",
+      "end": "2021-12-31",
+      "total": 1.5021861595420796,
+      "cagr": 0.5818300033638506,
+      "max_dd": 0.528676017557969,
+      "sharpe": 1.0225011597504563,
+      "longest_underwater_days": 261,
+      "exposure": 0.7346101231190151,
+      "switches": 5
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": -0.06942568344543865,
+      "cagr": -0.06960961562002788,
+      "max_dd": 0.12899909602691895,
+      "sharpe": -0.762627927323229,
+      "longest_underwater_days": 363,
+      "exposure": 0.038356164383561646,
+      "switches": 1
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 1.5902201664998015,
+      "cagr": 0.6094160948927414,
+      "max_dd": 0.2607493390117197,
+      "sharpe": 1.286999686691229,
+      "longest_underwater_days": 242,
+      "exposure": 0.774281805745554,
+      "switches": 5
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.2886385521745213,
+      "cagr": -0.1851845478819778,
+      "max_dd": 0.3728663727976155,
+      "sharpe": -0.5985419850304485,
+      "longest_underwater_days": 586,
+      "exposure": 0.45230263157894735,
+      "switches": 3
+     },
+     "first half": {
+      "start": "2018-03-05",
+      "end": "2021-12-31",
+      "total": 1.5546188433520878,
+      "cagr": 0.2776849732766562,
+      "max_dd": 0.6680403168666669,
+      "sharpe": 0.7186888732664718,
+      "longest_underwater_days": 522,
+      "exposure": 0.5357653791130186,
+      "switches": 8
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 0.729146439406563,
+      "cagr": 0.12453746013899525,
+      "max_dd": 0.3728663727976156,
+      "sharpe": 0.5144378984261642,
+      "longest_underwater_days": 586,
+      "exposure": 0.5017605633802817,
+      "switches": 9
+     }
+    },
+    "verdict": {
+     "full": false,
+     "first half": false,
+     "second half": true,
+     "verdict": "NO_IMPROVEMENT"
+    }
+   },
+   "breakout_20w": {
+    "trades": 18,
+    "segments": {
+     "full": {
+      "start": "2018-03-05",
+      "end": "2026-08-31",
+      "total": 4.9880648703007235,
+      "cagr": 0.2344960473123392,
+      "max_dd": 0.7197245358013602,
+      "sharpe": 0.7299252096196152,
+      "longest_underwater_days": 1049,
+      "exposure": 0.4136041263700838,
+      "switches": 18
+     },
+     "2018 bear": {
+      "start": "2018-03-05",
+      "end": "2018-12-31",
+      "total": 0.0,
+      "cagr": 0.0,
+      "max_dd": -0.0,
+      "sharpe": 0.0,
+      "longest_underwater_days": 0,
+      "exposure": 0.0,
+      "switches": 0
+     },
+     "2019": {
+      "start": "2019-01-01",
+      "end": "2019-12-31",
+      "total": 0.6182804829874884,
+      "cagr": 0.6204219596884519,
+      "max_dd": 0.35203033199525446,
+      "sharpe": 1.1578361754701505,
+      "longest_underwater_days": 187,
+      "exposure": 0.46301369863013697,
+      "switches": 2
+     },
+     "2020-21 bull": {
+      "start": "2020-01-01",
+      "end": "2021-12-31",
+      "total": 0.6961087097357872,
+      "cagr": 0.3023473844315836,
+      "max_dd": 0.5750010327966055,
+      "sharpe": 0.7668663200354181,
+      "longest_underwater_days": 314,
+      "exposure": 0.5321477428180574,
+      "switches": 6
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": 0.0,
+      "cagr": 0.0,
+      "max_dd": -0.0,
+      "sharpe": 0.0,
+      "longest_underwater_days": 0,
+      "exposure": 0.0,
+      "switches": 0
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 1.1834386756726234,
+      "cagr": 0.47764632969889775,
+      "max_dd": 0.28750372148249026,
+      "sharpe": 1.1495701765711348,
+      "longest_underwater_days": 268,
+      "exposure": 0.7099863201094391,
+      "switches": 7
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.009203851832325194,
+      "cagr": -0.005544639264394524,
+      "max_dd": 0.1839114824034659,
+      "sharpe": 0.07512040781160094,
+      "longest_underwater_days": 328,
+      "exposure": 0.33881578947368424,
+      "switches": 3
+     },
+     "first half": {
+      "start": "2018-03-05",
+      "end": "2021-12-31",
+      "total": 1.7447796219905154,
+      "cagr": 0.30187915453128733,
+      "max_dd": 0.7197245358013602,
+      "sharpe": 0.7879262111155332,
+      "longest_underwater_days": 559,
+      "exposure": 0.39914163090128757,
+      "switches": 8
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 1.1816195450905367,
+      "cagr": 0.18197886973104405,
+      "max_dd": 0.28750372148249026,
+      "sharpe": 0.7103376022400063,
+      "longest_underwater_days": 328,
+      "exposure": 0.4254694835680751,
+      "switches": 10
+     }
+    },
+    "verdict": {
+     "full": false,
+     "first half": false,
+     "second half": true,
+     "verdict": "NO_IMPROVEMENT"
+    }
+   }
+  }
+ },
+ "perp": {
+  "market": "perp",
+  "cost_per_side": 0.0007,
+  "start": "2020-07-19",
+  "end": "2026-08-31",
+  "rules": {
+   "buy_hold": {
+    "trades": 1,
+    "segments": {
+     "full": {
+      "start": "2020-07-19",
+      "end": "2026-08-31",
+      "total": 3.6217403630089713,
+      "cagr": 0.28415850338108073,
+      "max_dd": 1.0401134753246986,
+      "sharpe": 0.010086356059324925,
+      "longest_underwater_days": 1337,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2020-21 bull": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 2.3129164084784355,
+      "cagr": 1.2816979873080196,
+      "max_dd": 0.6798553593114796,
+      "sharpe": 1.3402269891757623,
+      "longest_underwater_days": 292,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": -1.047568485459997,
+      "cagr": NaN,
+      "max_dd": 1.06935383686815,
+      "sharpe": 0.31590525611377673,
+      "longest_underwater_days": 363,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": -44.64543209429696,
+      "cagr": NaN,
+      "max_dd": 53.94058648684064,
+      "sharpe": -0.2907096762944332,
+      "longest_underwater_days": 730,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.3469578218141549,
+      "cagr": -0.22603585879185617,
+      "max_dd": 0.7365415295246831,
+      "sharpe": 0.03890064788084627,
+      "longest_underwater_days": 328,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "first half": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 2.3129164084784355,
+      "cagr": 1.2816979873080196,
+      "max_dd": 0.6798553593114796,
+      "sharpe": 1.3402269891757623,
+      "longest_underwater_days": 292,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 0.43758038213216444,
+      "cagr": 0.08089853127652802,
+      "max_dd": 1.06935383686815,
+      "sharpe": -0.060108795845617735,
+      "longest_underwater_days": 775,
+      "exposure": 1.0,
+      "switches": 0
+     }
+    }
+   },
+   "sma200": {
+    "trades": 53,
+    "segments": {
+     "full": {
+      "start": "2020-07-19",
+      "end": "2026-08-31",
+      "total": 2.952844084332705,
+      "cagr": 0.2517728573489515,
+      "max_dd": 0.7404996307491318,
+      "sharpe": 0.7183375302972206,
+      "longest_underwater_days": 1996,
+      "exposure": 0.5776286353467561,
+      "switches": 52
+     },
+     "2020-21 bull": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 0.5238920207954445,
+      "cagr": 0.33658553578108474,
+      "max_dd": 0.7389443369942722,
+      "sharpe": 0.7647770708480198,
+      "longest_underwater_days": 292,
+      "exposure": 0.800376647834275,
+      "switches": 19
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": 0.0,
+      "cagr": 0.0,
+      "max_dd": -0.0,
+      "sharpe": 0.0,
+      "longest_underwater_days": 0,
+      "exposure": 0.0,
+      "switches": 0
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 1.9029479235831857,
+      "cagr": 0.7038039569102972,
+      "max_dd": 0.30339650262608986,
+      "sharpe": 1.3884370825441585,
+      "longest_underwater_days": 252,
+      "exposure": 0.801641586867305,
+      "switches": 15
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.11394349643969925,
+      "cagr": -0.07016132280938447,
+      "max_dd": 0.32761717184764827,
+      "sharpe": -0.12335669128235585,
+      "longest_underwater_days": 586,
+      "exposure": 0.4605263157894737,
+      "switches": 18
+     },
+     "first half": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 0.5238920207954445,
+      "cagr": 0.33658553578108474,
+      "max_dd": 0.7389443369942722,
+      "sharpe": 0.7647770708480198,
+      "longest_underwater_days": 292,
+      "exposure": 0.800376647834275,
+      "switches": 19
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 1.5939134993760193,
+      "cagr": 0.2266540869810696,
+      "max_dd": 0.3328711667082894,
+      "sharpe": 0.7650384933407842,
+      "longest_underwater_days": 621,
+      "exposure": 0.5082159624413145,
+      "switches": 33
+     }
+    },
+    "verdict": {
+     "full": false,
+     "first half": false,
+     "second half": true,
+     "verdict": "NO_IMPROVEMENT"
+    }
+   },
+   "golden_cross": {
+    "trades": 12,
+    "segments": {
+     "full": {
+      "start": "2020-07-19",
+      "end": "2026-08-31",
+      "total": 2.0207328227497348,
+      "cagr": 0.19796105975235245,
+      "max_dd": 0.6983663089463488,
+      "sharpe": 0.6095391197710135,
+      "longest_underwater_days": 1996,
+      "exposure": 0.5807606263982102,
+      "switches": 11
+     },
+     "2020-21 bull": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 1.264372064168012,
+      "cagr": 0.7556792444664133,
+      "max_dd": 0.6412493398586072,
+      "sharpe": 1.0977966457236752,
+      "longest_underwater_days": 292,
+      "exposure": 0.8342749529190208,
+      "switches": 2
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": -0.07706649784819875,
+      "cagr": -0.07726982024645124,
+      "max_dd": 0.13997212270232906,
+      "sharpe": -0.7798393019781373,
+      "longest_underwater_days": 363,
+      "exposure": 0.038356164383561646,
+      "switches": 1
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 1.1716763283532203,
+      "cagr": 0.47366085934085267,
+      "max_dd": 0.31511201091592456,
+      "sharpe": 1.0633256136803821,
+      "longest_underwater_days": 244,
+      "exposure": 0.774281805745554,
+      "switches": 5
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.3262055249403879,
+      "cagr": -0.21133880251359605,
+      "max_dd": 0.4050960682691661,
+      "sharpe": -0.687122537571692,
+      "longest_underwater_days": 586,
+      "exposure": 0.45230263157894735,
+      "switches": 3
+     },
+     "first half": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 1.264372064168012,
+      "cagr": 0.7556792444664133,
+      "max_dd": 0.6412493398586072,
+      "sharpe": 1.0977966457236752,
+      "longest_underwater_days": 292,
+      "exposure": 0.8342749529190208,
+      "switches": 2
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 0.36187329859803063,
+      "cagr": 0.06843770478094258,
+      "max_dd": 0.409732354341634,
+      "sharpe": 0.3626441109491529,
+      "longest_underwater_days": 621,
+      "exposure": 0.5017605633802817,
+      "switches": 9
+     }
+    },
+    "verdict": {
+     "full": false,
+     "first half": false,
+     "second half": true,
+     "verdict": "NO_IMPROVEMENT"
+    }
+   },
+   "breakout_20w": {
+    "trades": 14,
+    "segments": {
+     "full": {
+      "start": "2020-07-19",
+      "end": "2026-08-31",
+      "total": 3.4052576655892883,
+      "cagr": 0.27413266808776404,
+      "max_dd": 0.5476195154030552,
+      "sharpe": 0.7920648596790532,
+      "longest_underwater_days": 1348,
+      "exposure": 0.4841163310961969,
+      "switches": 14
+     },
+     "2020-21 bull": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 1.5012874392496212,
+      "cagr": 0.88021281795634,
+      "max_dd": 0.48380569411684005,
+      "sharpe": 1.2996809273108738,
+      "longest_underwater_days": 292,
+      "exposure": 0.672316384180791,
+      "switches": 4
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": 0.0,
+      "cagr": 0.0,
+      "max_dd": -0.0,
+      "sharpe": 0.0,
+      "longest_underwater_days": 0,
+      "exposure": 0.0,
+      "switches": 0
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 0.8290120009986037,
+      "cagr": 0.3524097016062122,
+      "max_dd": 0.3054447809476848,
+      "sharpe": 0.9181824318165479,
+      "longest_underwater_days": 303,
+      "exposure": 0.7099863201094391,
+      "switches": 7
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.04512305577038833,
+      "cagr": -0.02738264221251019,
+      "max_dd": 0.1954904485910608,
+      "sharpe": -0.02885229217260173,
+      "longest_underwater_days": 586,
+      "exposure": 0.33881578947368424,
+      "switches": 3
+     },
+     "first half": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": 1.5012874392496212,
+      "cagr": 0.88021281795634,
+      "max_dd": 0.48380569411684005,
+      "sharpe": 1.2996809273108738,
+      "longest_underwater_days": 292,
+      "exposure": 0.672316384180791,
+      "switches": 4
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 0.7611960930451291,
+      "cagr": 0.12897257272670593,
+      "max_dd": 0.3054447809476848,
+      "sharpe": 0.5480722068270709,
+      "longest_underwater_days": 621,
+      "exposure": 0.4254694835680751,
+      "switches": 10
+     }
+    },
+    "verdict": {
+     "full": true,
+     "first half": false,
+     "second half": true,
+     "verdict": "NO_IMPROVEMENT"
+    }
+   },
+   "sma200_long_short": {
+    "trades": 53,
+    "segments": {
+     "full": {
+      "start": "2020-07-19",
+      "end": "2026-08-31",
+      "total": 1.0931983468101527,
+      "cagr": 0.12827588078824625,
+      "max_dd": 0.8845154103319948,
+      "sharpe": 0.4933759376778203,
+      "longest_underwater_days": 1996,
+      "exposure": 1.0,
+      "switches": 52
+     },
+     "2020-21 bull": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": -0.3176031269074743,
+      "cagr": -0.2313922737719275,
+      "max_dd": 0.884193185767375,
+      "sharpe": 0.07415350475782544,
+      "longest_underwater_days": 292,
+      "exposure": 1.0,
+      "switches": 19
+     },
+     "2022 bear": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "total": 0.6317096638106874,
+      "cagr": 0.6339060068524023,
+      "max_dd": 0.20006043832128118,
+      "sharpe": 1.6649366466737887,
+      "longest_underwater_days": 104,
+      "exposure": 1.0,
+      "switches": 0
+     },
+     "2023-24": {
+      "start": "2023-01-01",
+      "end": "2024-12-31",
+      "total": 1.0936709850328552,
+      "cagr": 0.44695230917706996,
+      "max_dd": 0.42763123243304324,
+      "sharpe": 0.9922624078847633,
+      "longest_underwater_days": 292,
+      "exposure": 1.0,
+      "switches": 15
+     },
+     "2025-26": {
+      "start": "2025-01-01",
+      "end": "2026-08-31",
+      "total": -0.12673351527725796,
+      "cagr": -0.078255596188605,
+      "max_dd": 0.4939182544685814,
+      "sharpe": -0.04906350593468254,
+      "longest_underwater_days": 586,
+      "exposure": 1.0,
+      "switches": 18
+     },
+     "first half": {
+      "start": "2020-07-19",
+      "end": "2021-12-31",
+      "total": -0.3176031269074743,
+      "cagr": -0.2313922737719275,
+      "max_dd": 0.884193185767375,
+      "sharpe": 0.07415350475782544,
+      "longest_underwater_days": 292,
+      "exposure": 1.0,
+      "switches": 19
+     },
+     "second half": {
+      "start": "2022-01-01",
+      "end": "2026-08-31",
+      "total": 2.011051947678094,
+      "cagr": 0.2664923198657032,
+      "max_dd": 0.548490063172749,
+      "sharpe": 0.774664446010348,
+      "longest_underwater_days": 900,
+      "exposure": 1.0,
+      "switches": 33
+     }
+    },
+    "verdict": {
+     "full": false,
+     "first half": false,
+     "second half": true,
+     "verdict": "NO_IMPROVEMENT"
+    }
+   }
+  }
+ }
+}

@@ -1,3 +1,5 @@
+> **Next (owner-approved 2026-10-01): the allocation test, `docs/research/PLAN.md` §16.** Run `SYMBOL=SOLUSDT python src/allocation.py` once. Do trend rules (200-day average, golden cross, 20-week breakout) cut buy-and-hold's drawdowns on daily spot (from 2017) and perp bars? Secondary coin.
+
 > **Exp 007 — the `051_retail_crowd_fade_tf30` replication is DONE on this coin
 > and the replication FAILS. SOLUSDT now has 51 evaluations. No holdout used
 > (the verdict is WATCH, not PASS, so `--final` was not a candidate).**
@@ -247,3 +249,5 @@ Two things for the owner, neither of which is mine to decide:
   (+0.2504 against +0.2656) and reads DRIFT.
 - **A thin CI is a thin pass.** 041@5m cleared the gate at +0.0195 against a
   requirement of > 0, and the holdout came in at +0.0544 with 93 trades.
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** NOT RUN on SOL: the script refused 2 missing daily perp klines (SOL Exp 008). 

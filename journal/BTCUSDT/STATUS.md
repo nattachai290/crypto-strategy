@@ -1,3 +1,5 @@
+> **Next (owner-approved 2026-10-01): the allocation test, `docs/research/PLAN.md` §16.** Run `SYMBOL=BTCUSDT python src/allocation.py` once. Do trend rules (200-day average, golden cross, 20-week breakout) cut buy-and-hold's drawdowns on daily spot (from 2017) and perp bars? Primary coin.
+
 > **Exp 038, review of the metrics round (2026-10-01):** the verdict stands: 0 PASS, the stop rule fired, and no holdout was used. Correction: M1's losing short leg fades a short squeeze (OI falling), not a rally on rising OI. **Noted: `051_retail_crowd_fade @30m` is the project's first configuration with SKILL on two coins.** TRAIN chose the same parameters on both, beta is ~0, it is WATCH + NO_EDGE, and the CI includes 0. **Proposed, waiting for the owner:** freeze it and judge it only on Binance data after 2026-08, with a pass criterion written down before that data is read.
 
 > **Exp 037 — the new-data round M1-M4 is DONE on this coin: 16 evaluations,
@@ -489,3 +491,5 @@ also backed by Round 6:
 
 **No further round on BTCUSDT.** The plan's six rounds are done and the stop
 rule has fired.
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 041; `journal/BTCUSDT/allocation.md`). 

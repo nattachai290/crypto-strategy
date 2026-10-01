@@ -945,3 +945,13 @@ the one that was supposed to carry it.** The other half is in BNB Exp 005, and
 `PLAN.md` §15's outcome text is explicit that a failure reads M2's two-coin SKILL
 as chance, closes the metrics question as §14's stop rule already says, and ends
 M2 **with no variant tried.** No `--final` was run and none is warranted.
+
+
+---
+
+## Exp 008 - Allocation test on SOLUSDT (PLAN.md section 16): NOT RUN
+
+**Date:** 2026-10-01
+**Status:** refused by the script. No result.
+
+`SYMBOL=SOLUSDT python src/allocation.py` downloaded the spot and perp daily files, then stopped with `[perp] 2 missing days in the daily klines` (`allocation.py` line 138 refuses any gap above 1 day). These are the two known SOL data gaps (2022-02-25, 2022-03-31; see Exp 001 and STATUS). No `results/SOLUSDT/allocation/` and no `allocation.md` were written. The task forbids changing the script, adding rules or using `--rerun`, so SOL was not forced. Options for the owner: waive the gap check for SOL (a Level 3 code change) or leave SOL out (SOL spot has no 2018 anyway).
