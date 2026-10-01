@@ -4630,3 +4630,221 @@ markets.
 **Smoke test on a synthetic random walk** (58,000 1h bars). Gross R was
 −0.032 to +0.005 on every exit, and net was about minus the cost (−0.04 to
 −0.09). The tool finds no edge where none exists. Each exit takes about 1 s.
+
+---
+
+## Exp 043 - Exit lab on BTCUSDT 1h: REJECT. Six exits, all six lose money, and the plan's prior held exactly
+
+**Date:** 2026-10-01
+**Status:** complete. **1 run (1h, primary). REJECT. HOLDOUT UNTOUCHED -
+`--final` not run and not a candidate.** `src/exit_lab.py` is unchanged; no
+parameter was re-chosen after seeing a result. BTCUSDT gains no `evaluations.csv`
+row (this tool does not use `evaluate.py`); the record is `results/BTCUSDT/exit_lab/tf60.json`
+and the generated `journal/BTCUSDT/exit_lab.md`.
+
+**Session state.** `test_engine.py` -> **ALL CHECKS PASSED**, including **test
+14** (`exit lab: every exit, trade for trade against run_backtest`), which checks
+all six exits against `run_backtest` over 150 trades with max |dR| 3e-14. **The
+simulator is exact, so every number below is the engine's number and none of it
+is a re-implementation artifact.**
+
+**The design, restated from `PLAN.md` §18.** Random entries - every 1h bar entered
+with probability 0.25, side 50/50, fixed seed 18 - so about 6,639 entries in
+TRAIN and 4,486 in VALID, each simulated on its own with the engine's exact fill,
+stop-first, break-even/trailing-on-previous-close, time-exit, fee, slippage and
+funding rules. **A random entry carries no information, so any net edge can only
+come from structure in the price path that the exit harvests, and long and short
+are equally likely so market drift cancels.**
+
+### The six exits, in full
+
+| exit | stop | target | other | max hold |
+|---|---|---|---|---|
+| `time_only` | 3 ATR | - | - | 24 bars |
+| `tp_1r` | 2 ATR | 1 R | - | 72 |
+| `tp_2r` | 2 ATR | 2 R | - | 72 |
+| `tp_4r` | 2 ATR | 4 R | - | 72 |
+| `be_then_3r` | 2 ATR | 3 R | break-even at 1 R | 72 |
+| `trail_2atr` | 2 ATR | - | trail 2 ATR from 1 R | 120 |
+
+**TRAIN 2020-2022** - 6,639 trades for every exit (same entries by construction)
+
+| exit | mean net R | gross R | long leg | short leg |
+|---|---|---|---|---|
+| **`time_only`** | **−0.0214** | **+0.0344** | −0.003 | −0.040 |
+| `tp_1r` | −0.0870 | −0.0035 | −0.104 | −0.070 |
+| `tp_2r` | −0.0968 | −0.0128 | −0.093 | −0.100 |
+| `tp_4r` | −0.0873 | −0.0019 | −0.075 | −0.100 |
+| `be_then_3r` | −0.0905 | −0.0062 | −0.094 | −0.087 |
+| `trail_2atr` | −0.0696 | **+0.0155** | −0.059 | −0.081 |
+
+**VALID 2023-2024** - 4,486 trades for every exit
+
+| exit | mean net R | 95% CI (whole weeks) | gross R | long | short | avg bars | exit mix |
+|---|---|---|---|---|---|---|---|
+| **`time_only`** *(TRAIN's choice)* | **−0.0792** | **[−0.1179, −0.0406]** | +0.0038 | −0.012 | **−0.147** | 19.6 | time 65% / stop 35% |
+| `tp_1r` | −0.1380 | [−0.1661, −0.1095] | −0.0138 | −0.078 | −0.198 | 14.0 | stop 51% / target 48% / time 1% |
+| `tp_2r` | −0.1495 | [−0.2009, −0.0972] | −0.0253 | −0.064 | −0.236 | 22.0 | stop 65% / target 29% / time 6% |
+| `tp_4r` | −0.1027 | [−0.1890, −0.0159] | +0.0222 | +0.028 | −0.234 | 29.0 | stop 71% / time 16% / target 13% |
+| `be_then_3r` | −0.1223 | [−0.1856, −0.0574] | +0.0022 | −0.027 | −0.218 | 23.3 | stop 76% / target 17% / time 7% |
+| `trail_2atr` | −0.0983 | [−0.1843, −0.0079] | +0.0263 | +0.048 | −0.245 | 24.0 | **stop 99.5%** / time 0.5% |
+
+**cost x1.5 on the chosen exit: VALID mean R −0.1206** (from −0.0792).
+
+### Verdict
+
+**REJECT. TRAIN chose `time_only`; four of the five gates failed:
+`train_mean>0`, `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`.** Only
+`valid_trades>=1000` passed, at 4,486 trades. **No holdout was used and none is
+warranted.**
+
+### What the numbers say, in the order that matters
+
+**1. `PLAN.md` §18's prior was right to the decimal: every net mean is negative,
+between −0.07 and −0.15 R on VALID, against a predicted −0.03 to −0.1.** Not one
+of the six exits has a positive mean on either period, on either the 1h or the
+4h clock.
+
+**2. The short leg is the loser, and it is the clearest signal in the whole
+table.** Every VALID short leg is between −0.10 and −0.25 R, and it is negative
+for all six exits. The long legs are much better: −0.012 to +0.048. **The exits
+are not bad at exiting - the market rose 466% over VALID and the same exit that
+loses 0.147 R on shorts loses 0.012 R on longs.** This is `LESSONS.md` §2 exactly,
+and the lab was designed to cancel it by construction (sides 50/50) - and it does
+cancel it in the mean, which is why every mean is a small negative rather than a
+large one.
+
+**3. Gross R is positive on TRAIN for three exits, which the plan said was worth
+reporting, and it still does not become a net edge.** `time_only` gross
+**+0.0344**, `trail_2atr` **+0.0155**, and on VALID `time_only` **+0.0038**,
+`tp_4r` **+0.0222**, `trail_2atr` **+0.0263**. So a random-entry exit **can**
+harvest a little structure before costs - the plan's mechanism is real - **but
+the cost of two taker fees plus slippage plus funding on a 1h-to-24h hold is
+0.05-0.09 R, which is larger than every one of those gross numbers.** The edge
+exists and is not tradable. `LESSONS.md` §1 in its cleanest possible form: the
+question was never whether price has structure, it is whether the structure
+survives the cost of harvesting it.
+
+**4. Near targets are the worst exits, and the exit mix says why.** `tp_1r` and
+`tp_2r` are the two worst on VALID (−0.1380 and −0.1495) and they are the two
+whose stops and targets fill about half the time each (51/48 and 65/29). **A 1h
+random entry hits a 1 R target about as often as it hits a 2 ATR stop, which is
+a coin flip paying 1 R against 1 R with two taker fees on top.** `tp_4r` and
+`be_then_3r` improve on them (fewer target fills, more time exits) but stay
+negative. **On random entries the target is a cost, not a strategy.**
+
+**5. The trailing stop is the most interesting failure, and it is a cost failure,
+not a logic failure.** `trail_2atr` has the **best gross R of the round on both
+periods** (+0.0155 TRAIN, +0.0263 VALID), the best long leg on VALID (+0.048), and
+a net of −0.0983. Its exit mix is **99.5% stop, 0.5% time** - it is working
+exactly as designed, moving the stop to 2 ATR once 1 R is banked and riding it.
+**It just cannot afford to be ridden: turnover is 1.4x per trade, the holds are 24
+bars, and the cost per round trip is 0.05-0.09 R.** Of the six exits it has the
+lowest turnover, which is why it is the least bad, and it still loses by 0.098 R.
+**If a trailing stop on 1h BTC cannot pay for itself on random entries, neither can
+anything else on 1h BTC.**
+
+**6. `time_only` won on TRAIN and lost on VALID - and the way it lost is
+instructive.** It had the **smallest loss on TRAIN** (−0.0214, far ahead of
+everything else) and TRAIN's rule correctly picked it. On VALID it was −0.0792
+with a CI of **[−0.1179, −0.0406], whose upper bound is still negative.** So the
+selection was not the failure; **the whole family is negative and the CI on the
+best member excludes zero on the wrong side.** A tight, clearly negative CI is
+useful information and this is it: the losses are not noise.
+
+### Verdict and what it rules out
+
+`REJECT`, and the honest statement is narrow and firm: **on 1h BTCUSDT, with
+random entries, there is no skill in any of these six exits.** Stage 2's premise -
+that a good exit is worth having before training an entry - **has no support at
+1h.** The mechanism the plan proposed does exist (positive gross R) and is not
+large enough to pay for a 1h-to-24h hold.
+
+---
+
+## Exp 044 - Exit lab: BTCUSDT 4h says PASS and it is the market talking
+
+**Date:** 2026-10-01
+**Status:** complete, and recorded here because it would otherwise be the most
+misleading number in this project. **The 4h run PASSED all five gates. It is
+descriptive only per `PLAN.md` §18, it was not replicated on ETH 4h, and
+`--final` was not run and is not a candidate.** `src/exit_lab.py` unchanged.
+
+### The 4h table, in full
+
+BTCUSDT 4h, ATR 14, random entries p 0.25 seed 18. **TRAIN 1,684 trades, VALID
+1,087 trades.**
+
+**TRAIN 2020-2022**
+
+| exit | mean net R | gross R | long | short |
+|---|---|---|---|---|
+| `time_only` | +0.0208 | +0.0487 | +0.068 | −0.023 |
+| `tp_1r` | −0.0172 | +0.0190 | −0.024 | −0.011 |
+| `tp_2r` | −0.0366 | +0.0015 | +0.022 | −0.092 |
+| `tp_4r` | −0.0512 | −0.0056 | +0.031 | −0.129 |
+| `be_then_3r` | −0.0602 | −0.0186 | +0.020 | −0.136 |
+| **`trail_2atr`** | **+0.0500** | **+0.0968** | **+0.160** | −0.054 |
+
+**VALID 2023-2024**
+
+| exit | mean net R | 95% CI (weeks) | gross R | long | short | avg bars | exit mix |
+|---|---|---|---|---|---|---|---|
+| `time_only` | +0.1207 | [−0.0064, +0.2661] | +0.1587 | **+0.228** | +0.011 | 19.7 | time 67% / stop 33% |
+| `tp_1r` | −0.0203 | [−0.0745, +0.0373] | +0.0346 | +0.061 | −0.103 | 12.1 | target 51% / stop 49% |
+| `tp_2r` | +0.0271 | [−0.0767, +0.1280] | +0.0829 | +0.186 | −0.135 | 21.0 | stop 62% / target 33% / time 6% |
+| `tp_4r` | +0.0312 | [−0.1566, +0.2206] | +0.0889 | +0.211 | −0.152 | 29.1 | stop 70% / time 16% / target 15% |
+| `be_then_3r` | +0.0337 | [−0.0972, +0.1650] | +0.0908 | +0.182 | −0.118 | 21.5 | stop 76% / target 20% / time 4% |
+| **`trail_2atr`** | **+0.3451** | **[+0.0265, +0.7471]** | **+0.4108** | **+0.814** | **−0.133** | 22.9 | stop 99.6% / time 0.4% |
+
+**cost x1.5 on `trail_2atr`: VALID mean R +0.3139** - it survives the cost stress,
+which no 1h exit did.
+
+**TRAIN chose `trail_2atr`; all five gates passed**: train mean > 0, VALID mean
+> 0, VALID `ci_lo` > 0, stress mean > 0, 1,087 VALID trades >= 1,000. **A PASS.**
+
+### Why this is the market, not skill, and the arithmetic is short
+
+**BTC rose 129% in TRAIN and 466% in VALID.** The lab's own design says long and
+short are equally likely so drift cancels - and it does, in the *mean*. Look at
+the legs:
+
+| exit | VALID long | VALID short | mean | the long-short gap is ... of the mean |
+|---|---|---|---|---|
+| `time_only` | +0.2284 | +0.0107 | +0.1207 | **90%** |
+| `trail_2atr` | +0.8140 | −0.1333 | +0.3451 | **137%** |
+| `tp_4r` | +0.2110 | −0.1523 | +0.0312 | **582%** |
+
+**A book that is long 50% of its entries cannot have a mean that exceeds the
+average of its own two legs, and on every row here the long leg alone is most or
+all of the mean.** `trail_2atr`'s +0.3451 comes from +0.814 on longs and
+**−0.133 on shorts** - the exit is *losing* money on half its trades. In a market
+that rose 466%, holding anything long is worth +0.8 R per random entry and the
+trailing stop's job is mostly to not give it back. **A 4h BTC long position in
+2023-24 is the single most profitable random trade available, and the exit's
+contribution cannot be separated from it by this design.**
+
+**Three further reasons the PASS is not evidence, all visible in the numbers:**
+
+1. **1,087 VALID trades is the smallest sample in the project** and the CI is
+   [0.0265, 0.7471] - **a lower bound of +0.027 against a mean of +0.345 means
+   the interval almost touches zero.** At 1h the same exit on 4,486 trades gave
+   [−0.1843, −0.0079]. The gate is met by 8% of the mean.
+2. **The 4h result is not replicated.** `PLAN.md` §18 requires BTC 1h as primary
+   and ETH 1h as replication, and both **REJECTED**. This 4h PASS sits beside two
+   rejections of the same six exits on the same coin, and the 4h cell was not
+   replicated on ETH 4h because the plan calls it descriptive only. **One
+   descriptive PASS cannot outweigh two primary REJECTs of the same family.**
+3. **The identical exit on the same coin one clock down, with the same random
+   seed and the same entries, is −0.0983 R on VALID.** `trail_2atr` goes from
+   −0.0983 at 1h to +0.3451 at 4h. **The exit did not change; the drift did.**
+
+### Verdict
+
+**Recorded as a PASS because that is what the pre-registered gates say, and
+reported as what it is: a bull market on a 4h clock, not a skill in exiting.**
+`PLAN.md` §18 was right to make this cell descriptive only, and the reason is
+visible only after the fact: **its gates are satisfiable by drift, because a
+50/50 long-short book on a rising market has a positive mean no matter what the
+exit does.** The 1h primary and the ETH replication are the results that count,
+and they are both `REJECT` - six exits, twelve rows, every net mean negative.

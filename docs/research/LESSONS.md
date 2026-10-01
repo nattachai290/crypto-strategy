@@ -263,6 +263,51 @@ included. **spot REJECT, perp REJECT, 0 PASS, no holdout used.** Project total
   had to be handled: 15 spot and **52 perp** instruments are relistings of a
   reused ticker, including `BNXUSDT` used three times.
 
+## 10. There is no skill in exits, and the structure is real but too small to trade (18 runs)
+
+Exit lab (PLAN.md §18, BTC Exp 043/044, ETH Exp 009): **six fixed exits on random
+entries** (p 0.25, side 50/50, seed 18), each entry simulated on its own with
+the engine's exact rules — **test 14 checks all six trade-for-trade against
+`run_backtest`, max |ΔR| 3e-14**. **1h REJECT on both coins; no holdout used.**
+
+- **Every net mean is negative, on both coins, on both periods, for all six
+  exits.** BTC VALID −0.079 to −0.150 R, ETH VALID −0.074 to −0.133 R, against a
+  predicted −0.03 to −0.1. The best VALID CI excludes zero on the **wrong side**
+  ([−0.1179, −0.0406] for the TRAIN-chosen `time_only` on BTC): the losses are
+  not noise.
+- **The mechanism is real and not tradable — this is the finding.** Gross R is
+  positive for three of six exits on BTC's TRAIN and two on VALID, best
+  **+0.0344 R** (BTC) and **+0.0543 R** (ETH), against a **0.05–0.09 R** round
+  trip on a 13–28 bar hold. **Price has structure an exit can harvest; it does
+  not survive the cost of harvesting it at 1h.** §1 in its cleanest form: the
+  question was never whether price has structure.
+- **A trailing stop is a cost failure, not a logic failure.** `trail_2atr` has
+  the best gross R of the round on both periods, exits via the moved stop on
+  **99.5%** of trades, and has the lowest turnover of the six — **and still loses
+  0.098 R.** If a trailing stop cannot pay for itself on random 1h entries,
+  nothing can.
+- **Near targets are the worst exits, and the exit mix says why.** `tp_1r` and
+  `tp_2r` fill target and stop about half the time each (51/48, 65/29) — **a
+  coin flip paying 1 R against 1 R with two taker fees on top.** On random entries
+  a target is a cost, not a strategy.
+- **TRAIN chose a different exit on each coin** (`time_only` on BTC,
+  `trail_2atr` on ETH) **and it changed nothing** — both are negative on VALID on
+  both coins. The selection is not where the failure is.
+- **THE 4H CELL PASSED ALL FIVE GATES AND IT IS A BULL MARKET** (BTC Exp 044).
+  `trail_2atr` @4h: mean R **+0.3451**, CI [+0.0265, +0.7471], cost x1.5
+  +0.3139 — **long leg +0.8140, short leg −0.1333**, while BTC rose **466%** over
+  VALID. **A 50/50 long-short book on a rising market has a positive mean whatever
+  the exit does, and here the exit is losing money on half its trades.** The
+  identical exit on the same coin one clock down, same seed, same entries, is
+  **−0.0983 R**: the exit did not change, the drift did.
+- **And the generalisable warning: a 50/50 long-short book does not cancel drift
+  from the *gates*, only from the mean.** These gates are satisfiable by a rising
+  market. **A cross-sectional or market-neutral test must gate on the excess over
+  a benchmark, not on the raw mean** — which is exactly what rotation's spot
+  statistic did (top fifth minus the universe) and what this lab did not do. The
+  lab's own design cancels drift in the mean; the CI gate and the drawdown gate
+  do not know that. Compare §9's spot drawdown gate, which *did* bound.
+
 ## What to do with this
 
 1. **Filter out, don't fit.** Skip ideas with expected `cost_r` > 0.1 R and

@@ -1,4 +1,41 @@
-> **Rotation done (§17): REJECT. Next (owner-approved 2026-10-01): exit lab, `docs/research/PLAN.md` §18.** Run `SYMBOL=ETHUSDT python src/exit_lab.py` once (replication).
+> **Exit lab done (PLAN.md §18, Exp 009): REJECT — 6 fixed exits on 1h, all six
+> lose money. `--final` not run.** The replication fails with the same signature
+> as the BTC primary, which is the strongest form the answer can take.
+>
+> | exit | TRAIN mean R | gross R | VALID trades | VALID mean R | 95% CI (weeks) | gross R | long / short | exits |
+> |---|---|---|---|---|---|---|---|---|
+> | `time_only` | −0.0153 | +0.0259 | 4,486 | −0.0872 | [−0.1274, −0.0461] | −0.0180 | −0.061 / −0.114 | time 64% / stop 36% |
+> | `tp_1r` | −0.0549 | +0.0052 | 4,486 | −0.1254 | [−0.1541, −0.0967] | −0.0220 | −0.127 / −0.124 | stop 52% / target 48% |
+> | `tp_2r` | −0.0401 | +0.0213 | 4,486 | −0.1329 | [−0.1786, −0.0874] | −0.0297 | −0.115 / −0.151 | stop 65% / target 29% |
+> | **`tp_4r`** | −0.0202 | **+0.0439** | 4,486 | **−0.0738** | [−0.1544, +0.0108] | +0.0303 | −0.044 / −0.104 | stop 71% / time 15% / target 14% |
+> | `be_then_3r` | −0.0273 | +0.0353 | 4,486 | −0.1200 | [−0.1825, −0.0553] | −0.0165 | −0.089 / −0.151 | stop 78% / target 17% |
+> | **`trail_2atr`** *(TRAIN's choice)* | **−0.0089** | **+0.0543** | 4,486 | −0.0890 | [−0.1899, +0.0333] | +0.0142 | −0.114 / −0.063 | **stop 99.5%** |
+>
+> TRAIN chose `trail_2atr`; **the same four gates failed as on BTC** (`train_mean>0`,
+> `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`). Only `valid_trades>=1000`
+> passed, at 4,486. **cost x1.5: −0.1381.**
+>
+> **Three things this coin settles.**
+> 1. **The structure `PLAN.md` §18 proposed is real and not tradable.** Gross R is
+>    positive for five of six exits on TRAIN, best **+0.0543 R** — against a
+>    0.05–0.09 R round trip on a 13–28 bar hold. The mechanism exists; it does
+>    not survive cost. `LESSONS.md` §1, unchanged by the coin.
+> 2. **The short leg loses here too, and less than on BTC** (VALID shorts −0.063
+>    to −0.151, longs −0.115 to +0.028). ETH rose less than BTC over VALID, so
+>    its long legs are *negative* where BTC's are near zero — **the 50/50 design
+>    cancels the drift, and what is left is the exit, and the exit loses.**
+> 3. **TRAIN chose a different exit on each coin** (`time_only` on BTC,
+>    `trail_2atr` here) **and it made no difference — both are negative on VALID
+>    on both coins.** The selection is not where the failure is.
+>
+> Note for accuracy: ETH's two best VALID CIs have upper bounds above zero
+> (+0.0108, +0.0333), so those two are *indistinguishable from zero* rather than
+> clearly negative as on BTC. The mean is negative on all six and the cost stress
+> is negative on all six. **Not evidence of skill.**
+>
+> **Stage 2's premise — that a good exit is worth finding before training an
+> entry — has no support at 1h on either coin.** Details: Exp 009.
+> Rotation (§17) is done and REJECT; allocation (§16) is NO_IMPROVEMENT.
 
 > **Allocation test done (§16): every rule NO_IMPROVEMENT. Next (owner-approved 2026-10-01): rotation across all Binance coins, `docs/research/PLAN.md` §17, `src/rotation.py`.** The record lives in `journal/_multi/`.
 

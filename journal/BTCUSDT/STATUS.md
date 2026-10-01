@@ -1,4 +1,62 @@
-> **Rotation done (§17): REJECT. Next (owner-approved 2026-10-01): exit lab, `docs/research/PLAN.md` §18.** Run `SYMBOL=BTCUSDT python src/exit_lab.py` once (primary); then `--tf 240` (descriptive).
+> **Exit lab done (PLAN.md §18, Exp 043/044): 1h REJECT on both coins, and the
+> 4h cell PASSED and is a bull market. `--final` not run.**
+> **There is no skill in how a trade is closed.** Six fixed exits on random
+> entries (p 0.25, seed 18), each trade simulated on its own with the engine's
+> exact rules — **test 14 checks all six trade-for-trade against `run_backtest`,
+> max |ΔR| 3e-14**, so these are the engine's numbers.
+>
+> **1h primary (Exp 043), 6,639 TRAIN / 4,486 VALID trades per exit — REJECT,
+> four gates failed** (`train_mean>0`, `valid_mean>0`, `valid_ci_lo>0`,
+> `stress_mean>0`):
+>
+> | exit | TRAIN mean R | gross R | VALID mean R | 95% CI | gross R | long / short | exits |
+> |---|---|---|---|---|---|---|---|
+> | **`time_only`** *(TRAIN's choice)* | **−0.0214** | +0.0344 | **−0.0792** | **[−0.1179, −0.0406]** | +0.0038 | −0.012 / **−0.147** | time 65% / stop 35% |
+> | `tp_1r` | −0.0870 | −0.0035 | −0.1380 | [−0.1661, −0.1095] | −0.0138 | −0.078 / −0.198 | stop 51% / target 48% |
+> | `tp_2r` | −0.0968 | −0.0128 | −0.1495 | [−0.2009, −0.0972] | −0.0253 | −0.064 / −0.236 | stop 65% / target 29% |
+> | `tp_4r` | −0.0873 | −0.0019 | −0.1027 | [−0.1890, −0.0159] | +0.0222 | +0.028 / −0.234 | stop 71% / time 16% |
+> | `be_then_3r` | −0.0905 | −0.0062 | −0.1223 | [−0.1856, −0.0574] | +0.0022 | −0.027 / −0.218 | stop 76% / target 17% |
+> | `trail_2atr` | −0.0696 | **+0.0155** | −0.0983 | [−0.1843, −0.0079] | +0.0263 | +0.048 / −0.245 | **stop 99.5%** |
+>
+> cost x1.5 on the chosen exit: **−0.1206**.
+>
+> **The 4h cell PASSED all five gates and it is not skill (Exp 044).**
+> `trail_2atr` @4h: 1,684 TRAIN / 1,087 VALID trades, mean R **+0.3451**,
+> CI **[+0.0265, +0.7471]**, gross +0.4108, cost x1.5 +0.3139 — **long leg
+> +0.8140, short leg −0.1333.** BTC rose **466%** over VALID. A 50/50 long-short
+> book on a rising market has a positive mean whatever the exit does, and here
+> **the exit is losing money on half its trades.** Three further reasons it is not
+> evidence: the CI's lower bound is +0.027 against a mean of +0.345 (8% of the
+> mean, on the smallest sample in the project); it was never replicated, because
+> the plan makes 4h descriptive only; and **the identical exit on the same coin
+> one clock down, same seed, same entries, is −0.0983 R.** The exit did not
+> change; the drift did.
+>
+> **What the lab settles, in the order that matters.**
+> 1. **The mechanism `PLAN.md` §18 proposed is real and not tradable.** Gross R is
+>    positive for three exits on BTC's TRAIN and two on VALID, best **+0.0344 R** —
+>    against a 0.05–0.09 R round trip. **Structure exists in the price path; it
+>    does not survive the cost of harvesting it at a 1h-to-24h hold.** `LESSONS.md`
+>    §1 in its cleanest form: the question was never whether price has structure.
+> 2. **A trailing stop is a cost failure, not a logic failure.** `trail_2atr` has
+>    the best gross R of the round on both periods, works exactly as designed
+>    (**99.5% of exits are the moved stop**), has the lowest turnover of the six —
+>    and still loses 0.098 R. **If a trailing stop cannot pay for itself on random
+>    1h entries, nothing can.**
+> 3. **Near targets are the worst exits and the mix says why.** `tp_1r` and `tp_2r`
+>    fill target and stop about half the time each (51/48, 65/29) — **a coin flip
+>    paying 1 R against 1 R with two taker fees on top.** On random entries a
+>    target is a cost, not a strategy.
+> 4. **The short leg is the loser on every row of both coins** (BTC VALID shorts
+>    −0.147 to −0.245) — the 50/50 design cancels drift in the mean, and what is
+>    left is the exit.
+> 5. **TRAIN picked a different exit on each coin** (`time_only` on BTC,
+>    `trail_2atr` on ETH) **and it changed nothing.** The selection is not where
+>    the failure is.
+>
+> **Stage 2's premise — a good exit is worth finding before training an entry —
+> has no support at 1h on either coin.** Details: Exp 043 (1h), Exp 044 (4h).
+> ETH half: ETH Exp 009. Rotation (§17) REJECT; allocation (§16) NO_IMPROVEMENT.
 
 > **Allocation test done (§16): every rule NO_IMPROVEMENT. Next (owner-approved 2026-10-01): rotation across all Binance coins, `docs/research/PLAN.md` §17, `src/rotation.py`.** The record lives in `journal/_multi/`.
 

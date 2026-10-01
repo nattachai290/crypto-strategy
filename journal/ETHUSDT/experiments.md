@@ -1093,3 +1093,111 @@ By segment (total return / max drawdown):
 | sma200_long_short | - | - | +505% / 75% | +42% / 27% | +70% / 35% | +30% / 47% | +505% / 75% | +212% / 47% |
 
 
+
+---
+
+## Exp 009 - Exit lab on ETHUSDT 1h: REJECT. The replication fails with the same signature
+
+**Date:** 2026-10-01
+**Status:** complete. **1 run (1h, replication). REJECT. HOLDOUT UNTOUCHED -
+`--final` not run and not a candidate.** `src/exit_lab.py` unchanged; the same
+file, same seed, same six exits as BTC Exp 043.
+
+**Session state.** `test_engine.py` -> **ALL CHECKS PASSED** with test **14**
+(`exit lab: every exit, trade for trade against run_backtest`) - the simulator is
+the engine, so the replication is exact.
+
+**The six exits, in full (ATR 14 on 1h; stop and trail in ATR; target and
+break-even in R).**
+
+**TRAIN 2020-2022** - 6,639 trades for every exit (same entries by construction)
+
+| exit | mean net R | gross R | long | short |
+|---|---|---|---|---|
+| `time_only` | −0.0153 | +0.0259 | +0.028 | −0.059 |
+| `tp_1r` | −0.0549 | +0.0052 | −0.030 | −0.080 |
+| `tp_2r` | −0.0401 | +0.0213 | −0.004 | −0.076 |
+| `tp_4r` | −0.0202 | **+0.0439** | +0.051 | −0.091 |
+| `be_then_3r` | −0.0273 | +0.0353 | +0.025 | −0.080 |
+| **`trail_2atr`** | **−0.0089** | **+0.0543** | +0.050 | −0.068 |
+
+**VALID 2023-2024** - 4,486 trades for every exit
+
+| exit | mean net R | 95% CI (whole weeks) | gross R | long | short | avg bars | exit mix |
+|---|---|---|---|---|---|---|---|
+| `time_only` | −0.0872 | [−0.1274, −0.0461] | −0.0180 | −0.061 | −0.114 | 19.5 | time 64% / stop 36% |
+| `tp_1r` | −0.1254 | [−0.1541, −0.0967] | −0.0220 | −0.127 | −0.124 | 12.8 | stop 52% / target 48% / time 1% |
+| `tp_2r` | −0.1329 | [−0.1786, −0.0874] | −0.0297 | −0.115 | −0.151 | 20.9 | stop 65% / target 29% / time 5% |
+| `tp_4r` | **−0.0738** | **[−0.1544, +0.0108]** | +0.0303 | −0.044 | −0.104 | 28.2 | stop 71% / time 15% / target 14% |
+| `be_then_3r` | −0.1200 | [−0.1825, −0.0553] | −0.0165 | −0.089 | −0.151 | 22.0 | stop 78% / target 17% / time 6% |
+| **`trail_2atr`** *(TRAIN's choice)* | −0.0890 | [−0.1899, +0.0333] | +0.0142 | −0.114 | −0.063 | 22.1 | **stop 99.5%** / time 0.5% |
+
+**cost x1.5 on the chosen exit: VALID mean R −0.1381** (from −0.0890).
+
+### Verdict
+
+**REJECT. TRAIN chose `trail_2atr`; the same four gates failed as on BTC:
+`train_mean>0`, `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`.** Only
+`valid_trades>=1000` passed, at 4,486 trades. **No holdout used.**
+
+### The replication
+
+| | BTC 1h (primary) | ETH 1h (replication) |
+|---|---|---|
+| TRAIN's choice | `time_only` | `trail_2atr` |
+| best TRAIN mean R | −0.0214 | −0.0089 |
+| best VALID mean R | −0.0792 (`time_only`) | −0.0738 (`tp_4r`) |
+| worst VALID mean R | −0.1495 | −0.1329 |
+| gates failed | 4 of 5 | **4 of 5** |
+| verdict | **REJECT** | **REJECT** |
+
+**Both coins reject the same six exits on the same 1h chart with the same seed,
+and the range of outcomes is nearly identical** (BTC −0.079 to −0.150, ETH
+−0.074 to −0.133 on VALID). **`PLAN.md` §18's replication rule - "a PASS counts
+only if ETH also passes with the same exit" - has no PASS to apply to, and
+`LESSONS.md` §5's cross-coin agreement is holding again: the sign carries, and it
+carries negative.**
+
+### What the numbers say
+
+**1. The same finding as BTC, one coin over: structure exists before costs and
+cannot pay for them.** Gross R is positive for five of six exits on TRAIN
+(`trail_2atr` **+0.0543**, `tp_4r` **+0.0439**, `be_then_3r` +0.0353,
+`time_only` +0.0259, `tp_2r` +0.0213) and for two on VALID (`tp_4r` +0.0303,
+`trail_2atr` +0.0142). **The best gross number in the whole lab is +0.0543 R,
+against a round-trip cost of 0.05-0.09 R on a 13-28 bar hold.** The mechanism
+`PLAN.md` §18 proposed is real on both coins and is not tradable on either.
+`LESSONS.md` §1, unchanged by the coin.
+
+**2. The short leg loses here too, and less than on BTC.** Every VALID short leg
+is −0.063 to −0.151 against long legs of −0.115 to +0.028. **ETH rose less than
+BTC over VALID, so the long legs are negative on ETH and only near zero on BTC -
+which is the design working: with sides at 50/50 the drift cancels, and what is
+left is the exit, and the exit loses.**
+
+**3. `tp_4r` is the best VALID exit on both coins, and it is still negative.**
+BTC −0.1027, ETH −0.0738, and both CIs come closest to zero ([−0.1890, −0.0159]
+and [−0.1544, +0.0108]). **A wider target with a 71% stop rate is the least bad
+way to hold a random position for a month, on both coins.** That is a statement
+about random entries, not a recommendation.
+
+**4. `trail_2atr` was TRAIN's choice on ETH and its exit mix is 99.5% stop - the
+same as BTC's.** The trailing stop again does exactly what it says and again
+cannot pay for itself: **+0.0543 gross on TRAIN is the best gross in the lab and
+−0.0890 net on VALID.** Note TRAIN chose a *different* exit on each coin
+(`time_only` on BTC, `trail_2atr` on ETH) and it made no difference: both are
+negative on VALID on both coins. **The selection is not where the failure is.**
+
+**5. ETH's `tp_4r` and `trail_2atr` VALID CIs have upper bounds above zero
+(+0.0108 and +0.0333) while BTC's equivalents are fully negative.** Worth one
+line for accuracy: ETH's best exits are **statistically indistinguishable from
+zero**, which is weaker than BTC's "clearly negative" and is *not* evidence of
+skill. The mean is negative on all six and the cost stress is negative on all six.
+
+### Verdict
+
+`REJECT`. **The replication fails with the same signature as the primary, which is
+the strongest form the answer can take: six fixed exits, two coins, twelve rows,
+every net mean negative, and the plan's own prior of "−0.03 to −0.1 R" correct on
+both.** Stage 2's premise - that a good exit is worth finding before training an
+entry - has no support at 1h on either coin.
