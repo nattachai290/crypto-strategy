@@ -491,3 +491,5 @@ also backed by Round 6:
 
 **No further round on BTCUSDT.** The plan's six rounds are done and the stop
 rule has fired.
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 041; `journal/BTCUSDT/allocation.md`). 

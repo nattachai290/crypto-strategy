@@ -179,3 +179,5 @@ Three things for the owner, none of which is the agent's to decide:
 - **Signal count, not parameter choice, is what limits a short-history coin.**
   BNB's 34 months and SOL's 27 produced 6 INCONCLUSIVE rows each, against BTC's
   36 months and 3.
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 006; `journal/BNBUSDT/allocation.md`). 

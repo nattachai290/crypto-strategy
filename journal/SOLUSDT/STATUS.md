@@ -249,3 +249,5 @@ Two things for the owner, neither of which is mine to decide:
   (+0.2504 against +0.2656) and reads DRIFT.
 - **A thin CI is a thin pass.** 041@5m cleared the gate at +0.0195 against a
   requirement of > 0, and the holdout came in at +0.0544 with 93 trades.
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** NOT RUN on SOL: the script refused 2 missing daily perp klines (SOL Exp 008). 

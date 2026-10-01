@@ -246,3 +246,5 @@ Two things to raise with the owner (neither is mine to decide):
   means anything. On ETH, 32 of 32 were DRIFT and 31 of 32 NO_EDGE.
 - ETH moves with BTC (correlation ~0.8), but the *results* correlate only +0.5,
   so one coin's VALID cannot be used to choose for the other.
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** all rules, spot and perp, NO_IMPROVEMENT vs buy-and-hold (Exp 012; `journal/ETHUSDT/allocation.md`). 
