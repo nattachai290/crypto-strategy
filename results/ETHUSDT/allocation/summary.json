@@ -4,6 +4,7 @@
   "cost_per_side": 0.0012000000000000001,
   "start": "2018-03-05",
   "end": "2026-08-31",
+  "missing_days": [],
   "rules": {
    "buy_hold": {
     "trades": 1,
@@ -446,6 +447,7 @@
   "cost_per_side": 0.0007,
   "start": "2020-07-19",
   "end": "2026-08-31",
+  "missing_days": [],
   "rules": {
    "buy_hold": {
     "trades": 1,
@@ -453,13 +455,13 @@
      "full": {
       "start": "2020-07-19",
       "end": "2026-08-31",
-      "total": 2.0305561154735203,
-      "cagr": 0.19859669381429734,
-      "max_dd": 1.029571391601289,
-      "sharpe": 0.3795656428181335,
+      "total": -1.0,
+      "cagr": -1.0,
+      "max_dd": 1.0,
+      "sharpe": 0.6777968731531369,
       "longest_underwater_days": 1756,
-      "exposure": 1.0,
-      "switches": 0
+      "exposure": 0.7713646532438478,
+      "switches": 1
      },
      "2020-21 bull": {
       "start": "2020-07-19",
@@ -497,13 +499,13 @@
      "2025-26": {
       "start": "2025-01-01",
       "end": "2026-08-31",
-      "total": -0.6073762340472916,
-      "cagr": -0.4300315332862251,
-      "max_dd": 1.0380703524045927,
-      "sharpe": 0.5075065003659257,
-      "longest_underwater_days": 373,
-      "exposure": 1.0,
-      "switches": 0
+      "total": -1.0,
+      "cagr": -1.0,
+      "max_dd": 1.0,
+      "sharpe": -3.3350989553194283,
+      "longest_underwater_days": 601,
+      "exposure": 0.15953947368421054,
+      "switches": 1
      },
      "first half": {
       "start": "2020-07-19",
@@ -519,13 +521,13 @@
      "second half": {
       "start": "2022-01-01",
       "end": "2026-08-31",
-      "total": -0.7421548017761501,
-      "cagr": -0.25210959086213913,
-      "max_dd": 1.0366629470808115,
-      "sharpe": 0.39073448260130084,
-      "longest_underwater_days": 1317,
-      "exposure": 1.0,
-      "switches": 0
+      "total": -1.0,
+      "cagr": -1.0,
+      "max_dd": 1.0,
+      "sharpe": 0.45597377630639574,
+      "longest_underwater_days": 1701,
+      "exposure": 0.7001173708920188,
+      "switches": 1
      }
     }
    },

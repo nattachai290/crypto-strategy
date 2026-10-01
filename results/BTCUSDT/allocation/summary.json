@@ -4,6 +4,7 @@
   "cost_per_side": 0.0012000000000000001,
   "start": "2018-03-05",
   "end": "2026-08-31",
+  "missing_days": [],
   "rules": {
    "buy_hold": {
     "trades": 1,
@@ -446,6 +447,7 @@
   "cost_per_side": 0.0007,
   "start": "2020-07-19",
   "end": "2026-08-31",
+  "missing_days": [],
   "rules": {
    "buy_hold": {
     "trades": 1,
@@ -453,13 +455,13 @@
      "full": {
       "start": "2020-07-19",
       "end": "2026-08-31",
-      "total": 3.6217403630089713,
-      "cagr": 0.28415850338108073,
-      "max_dd": 1.0401134753246986,
-      "sharpe": 0.010086356059324925,
-      "longest_underwater_days": 1337,
-      "exposure": 1.0,
-      "switches": 0
+      "total": -1.0,
+      "cagr": -1.0,
+      "max_dd": 1.0,
+      "sharpe": 0.48422411427884504,
+      "longest_underwater_days": 1996,
+      "exposure": 0.37762863534675617,
+      "switches": 1
      },
      "2020-21 bull": {
       "start": "2020-07-19",
@@ -475,36 +477,16 @@
      "2022 bear": {
       "start": "2022-01-01",
       "end": "2022-12-31",
-      "total": -1.047568485459997,
-      "cagr": NaN,
-      "max_dd": 1.06935383686815,
-      "sharpe": 0.31590525611377673,
+      "total": -1.0,
+      "cagr": -1.0,
+      "max_dd": 1.0,
+      "sharpe": 0.309377852249622,
       "longest_underwater_days": 363,
-      "exposure": 1.0,
-      "switches": 0
+      "exposure": 0.8575342465753425,
+      "switches": 1
      },
-     "2023-24": {
-      "start": "2023-01-01",
-      "end": "2024-12-31",
-      "total": -44.64543209429696,
-      "cagr": NaN,
-      "max_dd": 53.94058648684064,
-      "sharpe": -0.2907096762944332,
-      "longest_underwater_days": 730,
-      "exposure": 1.0,
-      "switches": 0
-     },
-     "2025-26": {
-      "start": "2025-01-01",
-      "end": "2026-08-31",
-      "total": -0.3469578218141549,
-      "cagr": -0.22603585879185617,
-      "max_dd": 0.7365415295246831,
-      "sharpe": 0.03890064788084627,
-      "longest_underwater_days": 328,
-      "exposure": 1.0,
-      "switches": 0
-     },
+     "2023-24": {},
+     "2025-26": {},
      "first half": {
       "start": "2020-07-19",
       "end": "2021-12-31",
@@ -519,13 +501,13 @@
      "second half": {
       "start": "2022-01-01",
       "end": "2026-08-31",
-      "total": 0.43758038213216444,
-      "cagr": 0.08089853127652802,
-      "max_dd": 1.06935383686815,
-      "sharpe": -0.060108795845617735,
-      "longest_underwater_days": 775,
-      "exposure": 1.0,
-      "switches": 0
+      "total": -1.0,
+      "cagr": -1.0,
+      "max_dd": 1.0,
+      "sharpe": 0.309377852249622,
+      "longest_underwater_days": 1702,
+      "exposure": 0.18368544600938966,
+      "switches": 1
      }
     }
    },

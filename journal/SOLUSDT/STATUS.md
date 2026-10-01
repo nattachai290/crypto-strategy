@@ -251,3 +251,5 @@ Two things for the owner, neither of which is mine to decide:
   requirement of > 0, and the holdout came in at +0.0544 with 93 trades.
 
 > **Allocation test (PLAN.md section 16, 2026-10-01):** NOT RUN on SOL: the script refused 2 missing daily perp klines (SOL Exp 008). 
+
+> **Allocation test (PLAN.md section 16, 2026-10-01):** still NOT RUN on SOL. The perp daily file is missing 5 days, above the script's limit of 3 (SOL Exp 009).
