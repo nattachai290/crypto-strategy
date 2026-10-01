@@ -1431,3 +1431,83 @@ median.
 **Prior:** low. Stage 1 says the structure at 1h is smaller than the cost.
 The model can only win where it finds bars whose expected move clears about
 0.1 R of cost.
+
+**Change before the first run (2026-10-01, test 16).** The random control
+used to pick scattered random bars. Model signals come in runs: neighbouring
+bars give the same side, and their 24-bar trades overlap. A set of scattered
+bars therefore has much less spread than the model's set. The model could
+then beat the 95th percentile on pure noise. The control is now **200 random
+circular time-shifts of the model's own signal sequence** inside the window,
+each at least 168 bars away from the real timing. A shift keeps the long and
+short counts and the clustering. It breaks only the alignment with the
+market. `--final` uses the same control.
+
+## 20. Pooled ML entry model: one model on many coins (owner-approved 2026-10-01)
+
+**Stage 3 of "train the timing".** One coin gives the model about 26,000
+TRAIN rows. The owner asked for more data. Stock charts were rejected: they
+trade different hours and have different participants. Instead,
+`src/ml_pool.py` (`journal/_multi/` Exp 004) fits **one long model and one
+short model on the rows of 20 coins together**.
+
+- The coin is **not** a feature. A pattern must hold across coins to be
+  learned, and the features are already scale-free.
+- Model, features, labels, exit, folds, thresholds and hyper-parameters are
+  **exactly** those of §19.
+- This was written before any §19 result was seen. It runs whatever §19
+  says.
+
+**Universe (TRAIN data only).** Taken from rotation's daily perp table:
+- perp instruments listed by 2021-01-01 and still trading on 2022-12-31;
+- ranked by mean daily quote volume over 2021-07 → 2022-12;
+- the top 20 are taken.
+
+Rules for edge cases:
+- A coin delisted later **stays in**. Its data ends where it ends, so the
+  universe is survivorship-free from the selection date.
+- A symbol relisted after a gap of more than 3 days counts as a different
+  instrument (LUNA).
+- The list is fixed in `results/_multi/ml_pool/universe.json` at build time.
+
+**Costs.**
+- BTC and ETH: the normal slippage, 0.02%.
+- Every other coin: **0.05%**, the same as rotation, because alt books are
+  thinner.
+- Stress test: fee and slippage ×1.5.
+
+**Gates (PASS needs all):**
+- pooled TRAIN OOF mean > 0;
+- ≥ 3,000 VALID trades;
+- pooled VALID mean > 0, and weekly-block CI lower bound > 0;
+- mean > 0 at cost ×1.5;
+- pooled mean above the 95th percentile of the time-shift control (per coin,
+  trade-weighted);
+- **breadth:**
+  - at least 10 coins have ≥ 100 VALID trades;
+  - at least half of those beat **their own** shift-control 95th percentile
+    with a positive mean.
+
+  An edge carried by one or two coins is not a pooled edge. Test 16 checks
+  this: a single planted coin out of three is REJECT.
+
+**`--final`** runs the holdout once (lock file), and only after PASS.
+**CONFIRMED** needs all of:
+- pooled mean > 0;
+- CI lower bound > 0;
+- above the pooled shift-control median;
+- at least half of the coins above their own shift-control median.
+
+**Runs, in order.** Stop at the first crash or a number that looks wrong.
+1. `SYMBOL=BTCUSDT python src/ml_entry.py`
+2. `SYMBOL=ETHUSDT python src/ml_entry.py`
+3. If `data/cache/_multi/perp_1d.parquet` is missing:
+   `python src/rotation.py --build perp`.
+4. `python src/ml_pool.py --build`
+5. `python src/ml_pool.py`
+
+Each runs once. No `--final` without a PASS. No new feature, parameter, coin
+or exit after a result.
+
+**Prior:** low. More rows make the model's estimates less noisy. They cannot
+make a pattern bigger than it is, and every round so far found the 1h pattern
+smaller than one round-trip cost.

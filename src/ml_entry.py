@@ -20,9 +20,10 @@ Protocol, all pre-registered:
     TRAIN with fixed hyper-parameters (LGB_PARAMS). Nothing is tuned on VALID.
   * VALID: at each bar take the side whose prediction is higher, if it is
     above the threshold. Each signal is one trade, simulated on its own.
-  * Controls: 200 random-time signal sets with the SAME long and short counts
-    (so drift helps them exactly as much as the model); the model's mean must
-    beat their 95th percentile (SKILL). Plus the usual gates.
+  * Controls: 200 random circular time-shifts of the model's own signals
+    (the SAME long and short counts and the same clustering, so drift helps
+    them exactly as much as the model); the model's mean must beat their 95th
+    percentile (SKILL). Plus the usual gates.
 Writes results/<SYMBOL>/ml_entry/ and the generated journal/<SYMBOL>/ml_entry.md.
 """
 from __future__ import annotations
@@ -161,19 +162,35 @@ def account(b, side, funding, start, end) -> dict:
             for k in keys}
 
 
-def random_control(b, side, funding, window, n=N_RANDOM, seed=19) -> np.ndarray:
-    """Mean net R of n random signal sets inside `window`, each with the
-    model's long and short counts."""
-    idx = np.flatnonzero(window[:-1])
-    nl, ns = int((side > 0).sum()), int((side < 0).sum())
+MIN_SHIFT = 168  # bars: a shifted copy must be at least a week away from the real timing
+
+
+def shifted_means(side_w: np.ndarray, long_w: np.ndarray, short_w: np.ndarray,
+                  n: int = N_RANDOM, seed: int = 19) -> np.ndarray:
+    """Mean net R of n random circular time-shifts of the model's own signal
+    sequence inside a window. A shift keeps everything about the signals
+    (long and short counts, how they cluster in runs) except their alignment
+    with the market. Picking scattered random bars instead (the first design)
+    gives a control with far less spread than clustered, overlapping model
+    trades, so noise beat its 95th percentile too often (found by test 16)."""
+    m = len(side_w)
+    if not (side_w != 0).any() or m <= 2 * MIN_SHIFT:
+        return np.full(n, np.nan)
     rng = np.random.default_rng(seed)
+    out = np.empty(n)
+    for j in range(n):
+        s = np.roll(side_w, int(rng.integers(MIN_SHIFT, m - MIN_SHIFT)))
+        r = np.where(s > 0, long_w, np.where(s < 0, short_w, np.nan))
+        out[j] = np.nanmean(r[s != 0]) if np.isfinite(r[s != 0]).any() else np.nan
+    return out
+
+
+def random_control(b, side, funding, window, n=N_RANDOM, seed=19) -> np.ndarray:
+    """Mean net R of n time-shifted copies of the model's signals inside `window`."""
+    idx = np.flatnonzero(window[:-1])
     lab = labels_cache["lab"]
-    means = []
-    for _ in range(n):
-        pick = rng.choice(idx, nl + ns, replace=False)
-        r = np.r_[lab["long"].to_numpy()[pick[:nl]], lab["short"].to_numpy()[pick[nl:]]]
-        means.append(np.nanmean(r))
-    return np.array(means)
+    return shifted_means(np.asarray(side)[idx], lab["long"].to_numpy()[idx],
+                         lab["short"].to_numpy()[idx], n=n, seed=seed)
 
 
 labels_cache: dict = {}
@@ -204,7 +221,7 @@ def run(final: bool = False) -> None:
         t = trades_of(bars, side, fund)
         h = XL.summarize(t)
         rnd = random_control(bars, side, fund, w)
-        h["random_median"] = float(np.median(rnd))
+        h["random_median"] = float(np.nanmedian(rnd)) if np.isfinite(rnd).any() else float("inf")
         h["verdict"] = ("CONFIRMED" if h.get("mean_r", -1) > 0 and (h.get("ci_lo") or -1) > 0
                         and h["mean_r"] > h["random_median"] else "FAILED")
         lock.write_text(json.dumps(h, indent=1))
@@ -255,7 +272,7 @@ def evaluate(bars: pd.DataFrame, fund, X: pd.DataFrame | None = None, lab: pd.Da
     v = XL.summarize(t)
     stress = XL.summarize(trades_of(bars, side, fund, fee=C.FEE_TAKER * 1.5, slip=C.SLIPPAGE * 1.5))
     rnd = random_control(bars, side, fund, vw)
-    p95 = float(np.percentile(rnd, 95)) if len(rnd) else np.nan
+    p95 = float(np.nanpercentile(rnd, 95)) if np.isfinite(rnd).any() else np.inf
     oof_mean = ok.get(str(thr), {}).get("mean_r") if ok else None
     gates = {"oof_mean>0": (oof_mean or -1) > 0,
              f"valid_trades>={MIN_VALID_TRADES}": v.get("trades", 0) >= MIN_VALID_TRADES,
@@ -271,7 +288,7 @@ def evaluate(bars: pd.DataFrame, fund, X: pd.DataFrame | None = None, lab: pd.Da
            "valid_account": account(bars, side, fund, *SPLITS["valid"]),
            "valid_last_exit": str(t["entry_time"].max() + pd.Timedelta(minutes=TF) * int(
                t.loc[t["entry_time"].idxmax(), "bars"])) if len(t) else None,
-           "random_mean": float(np.mean(rnd)), "random_p95": p95,
+           "random_mean": float(np.nanmean(rnd)) if np.isfinite(rnd).any() else None, "random_p95": p95,
            "verdict": "REJECT" if failed else "PASS", "gates_failed": failed,
            "top_features": [[k, int(s)] for k, s in imp]}
     return res
@@ -287,7 +304,8 @@ def write_report(r: dict) -> None:
          f"95% weekly-block CI [{v.get('ci_lo', float('nan')):+.4f}, {v.get('ci_hi', float('nan')):+.4f}], "
          f"gross {v.get('gross_r', float('nan')):+.4f}, long {v.get('long_r', float('nan')):+.3f} / "
          f"short {v.get('short_r', float('nan')):+.3f}",
-         f"- random signals with the same long/short counts: mean {r['random_mean']:+.4f}, 95th pct "
+         f"- the model's signals shifted in time (same long/short counts and clustering): mean "
+         f"{r['random_mean'] if r['random_mean'] is None else round(r['random_mean'], 4)}, 95th pct "
          f"{r['random_p95']:+.4f}",
          f"- cost x1.5: mean {r['valid_stress'].get('mean_r', float('nan')):+.4f}",
          f"- one position at a time through the engine (reported, not a gate): {r.get('valid_account')}", "",

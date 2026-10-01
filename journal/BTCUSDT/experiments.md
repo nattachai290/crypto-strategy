@@ -4962,3 +4962,18 @@ Reviewed and not a bug:
 - `decide` sends ties to long, which happens only on exactly equal floats;
 - the funding feature uses the last settled rate at or before the bar close;
 - `labels` maps each trade back to its signal bar with fill-1.
+
+### Exp 046 addendum 2 - random control changed before the first run (2026-10-01)
+
+The random control in `ml_entry.py` used to pick scattered random bars with
+the model's long and short counts. Test 16 (pooled model, `journal/_multi/`
+Exp 004) showed why that is unsafe: a pure-noise coin beat that control's 95th
+percentile. The model's signals come in runs of overlapping 24-bar trades, so
+their mean varies far more than the mean of scattered bars.
+
+The control is now 200 random circular time-shifts of the model's own signal
+sequence inside the window, each at least 168 bars away from the real timing.
+This keeps the counts and the clustering and breaks only the alignment with
+prices. `--final` uses the same control.
+
+Tests 15 and 16 pass. No market data has been run.

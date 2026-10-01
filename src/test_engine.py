@@ -419,6 +419,7 @@ def main() -> None:
     test_rotation()
     test_exit_lab()
     test_ml_entry()
+    test_ml_pool()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1299,6 +1300,61 @@ def test_ml_entry() -> None:
     oof = edge["oof"]["0.0"]
     check("ml_entry: OOF trade counts include only scored labels",
           oof["trades"] > 0 and oof["mean_r"] is not None, str(oof))
+
+
+def test_ml_pool() -> None:
+    print("\n16. Pooled ML entry: universe from TRAIN only, planted edge found on every coin, noise rejected")
+    import contextlib
+    import io
+    import ml_pool as MP
+    # universe: daily rows of five coins
+    days = pd.date_range("2020-01-01", "2026-08-31", freq="D", tz="UTC")
+    rows = []
+    def coin(sym, start, end, vol, gap=None):
+        for d in days[(days >= pd.Timestamp(start, tz="UTC")) & (days <= pd.Timestamp(end, tz="UTC"))]:
+            if gap and pd.Timestamp(gap[0], tz="UTC") <= d < pd.Timestamp(gap[1], tz="UTC"):
+                continue
+            rows.append((sym, d, 1.0, 1.0, vol))
+    coin("AAAUSDT", "2020-01-01", "2026-08-31", 100.0)
+    coin("BBBUSDT", "2020-06-01", "2023-06-30", 90.0)     # delisted in VALID: kept
+    coin("CCCUSDT", "2021-06-01", "2026-08-31", 500.0)    # listed too late: out
+    coin("DDDUSDT", "2020-01-01", "2022-05-31", 900.0)    # died inside TRAIN: out
+    coin("EEEUSDT", "2020-01-01", "2026-08-31", 80.0, gap=("2022-05-20", "2022-09-01"))  # relisted: out
+    daily = pd.DataFrame(rows, columns=["symbol", "date", "open", "close", "quote_volume"])
+    u = MP.select_universe(daily, n=10)
+    names = [x["inst"] for x in u]
+    check("ml_pool universe: listed by 2021, trading at TRAIN end, ranked by TRAIN volume; delisted-later kept",
+          names == ["AAAUSDT", "BBBUSDT"] and u[1]["end"] == "2023-06-30", str(names))
+    later = daily.copy()
+    later.loc[later["date"] >= pd.Timestamp("2023-01-01", tz="UTC"), "quote_volume"] = 1e9
+    check("ml_pool universe: volume after TRAIN does not change the choice",
+          [x["inst"] for x in MP.select_universe(later, n=10)] == names)
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    with contextlib.redirect_stdout(io.StringIO()):
+        edge = MP.evaluate(MP.prepare({f"C{i}USDT": (_momentum_bars(0.0008, seed=10 + i), fund)
+                                       for i in range(3)}), min_coins=3)
+        noise = MP.evaluate(MP.prepare({f"N{i}USDT": (_momentum_bars(0.0, seed=20 + i), fund)
+                                        for i in range(3)}), min_coins=3)
+    check("ml_pool pipeline: a planted edge is found (PASS, all 3 coins beat their random p95)",
+          edge["verdict"] == "PASS" and edge["breadth"]["share"] == 1.0,
+          f"{edge['verdict']} mean {edge['valid'].get('mean_r', 0):+.3f} failed {edge['gates_failed']}")
+    check("ml_pool pipeline: pure noise is not a PASS, fails breadth and random",
+          noise["verdict"] == "REJECT" and "beats_random_p95" in noise["gates_failed"]
+          and any(g.startswith("breadth") for g in noise["gates_failed"]),
+          f"{noise['verdict']} mean {noise['valid'].get('mean_r', 0):+.3f} failed {noise['gates_failed']}")
+    with contextlib.redirect_stdout(io.StringIO()):
+        one = MP.evaluate(MP.prepare({"E0USDT": (_momentum_bars(0.0008, seed=10), fund),
+                                      "N0USDT": (_momentum_bars(0.0, seed=20), fund),
+                                      "N1USDT": (_momentum_bars(0.0, seed=21), fund)}), min_coins=3)
+    check("ml_pool breadth: an edge on one coin of three is not a PASS",
+          one["verdict"] == "REJECT" and any(g.startswith("breadth") for g in one["gates_failed"]),
+          f"{one['verdict']} beat {one['breadth']['beat']} failed {one['gates_failed']}")
+    check("ml_pool: no VALID trade runs into HOLDOUT",
+          pd.Timestamp(edge["valid_last_exit"]) <= pd.Timestamp(MP.SPLITS["holdout"][0], tz="UTC"),
+          str(edge["valid_last_exit"]))
+    check("ml_pool: alt slippage for alts, the normal one for BTC/ETH",
+          MP.slippage("BTCUSDT") == C.SLIPPAGE and MP.slippage("C0USDT") == MP.ALT_SLIPPAGE)
 
 
 if __name__ == "__main__":
