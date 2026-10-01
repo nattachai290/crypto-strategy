@@ -4599,3 +4599,34 @@ All earlier tests are unchanged. ALL CHECKS PASSED.
 **Smoke-tested** end to end on 40 synthetic coins in a temp directory:
 TRAIN, VALID and the report run through, both markets came out REJECT on
 random data, and the rerun and `--final` refusals work.
+
+---
+
+## Exp 043 - Exit lab tooling: skill in exits, measured with random entries (Level 3, owner-approved)
+
+**Date:** 2026-10-01
+**Status:** complete. Code and tests only. No market-data run.
+
+**Why.** The owner wants entry and exit timing trained. Exits have never been
+measured apart from an entry. PLAN.md §18 has the design and the
+pre-registered gates. Rotation (`_multi` Exp 002/003) was REJECT on both
+markets.
+
+**What changed.**
+- `src/exit_lab.py` (new):
+  - random entries (p 0.25, side 50/50, seed 18);
+  - six fixed exits, each entry simulated on its own with the engine's rules;
+  - a weekly-block bootstrap CI;
+  - TRAIN chooses the exit, VALID applies 5 gates;
+  - `--final` runs the holdout once, behind a lock.
+- **Test 14:** the simulator against `run_backtest`, trade for trade, on 150
+  trades across all six exits with 20× funding. Max |ΔR| is **3.06e-14**, and
+  stop, target and time exits all occur. Turning break-even off changes 5 of
+  the 25 checked trades and turning trailing off changes 9, so both rules are
+  exercised. A second check: the entry rate is 0.25, half are long, and the
+  same seed gives the same entries.
+- All earlier tests are unchanged. ALL CHECKS PASSED.
+
+**Smoke test on a synthetic random walk** (58,000 1h bars). Gross R was
+−0.032 to +0.005 on every exit, and net was about minus the cost (−0.04 to
+−0.09). The tool finds no edge where none exists. Each exit takes about 1 s.

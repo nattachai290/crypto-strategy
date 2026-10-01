@@ -1292,3 +1292,70 @@ are for.
 4. `python src/rotation.py spot`, then `python src/rotation.py perp`.
 5. **Stop and report to the owner.** `--final` only with the owner's
    approval, and only on a PASS.
+
+## 18. Exit lab: is there skill in how a trade is closed? (owner-approved 2026-10-01)
+
+**The owner's direction:** train entry and exit timing. Stage 1 is exits,
+because they have never been measured on their own. Every exit tested so far
+rode on an entry, so an exit's effect could not be separated from the entry's.
+
+**The method (`src/exit_lab.py`, BTC Exp 043).**
+- **Random entries:** each 1h bar is entered with probability 0.25, side
+  50/50, fixed seed 18. That is roughly 13,000 entries over 2020–2026.
+  - A random entry carries no information. On a pure random walk every exit's
+    gross R is about zero and its net is minus the cost; the smoke test on
+    synthetic random-walk data confirms it.
+  - **So a positive net R can only come from structure in the price path that
+    the exit harvests.** Persistent moves favour a trailing stop; reverting
+    moves favour a near target.
+  - Longs and shorts are equally likely, so market drift cancels.
+- **Each entry is simulated on its own** (positions overlap), with the
+  engine's exact rules:
+  - next-open fill plus slippage;
+  - stop first inside a bar;
+  - break-even and trailing moved on the previous close;
+  - time exit at the close;
+  - taker fee and slippage on both sides;
+  - funding on the notional.
+  - Test 14 checks it trade for trade against `run_backtest`: 150 trades over
+    all six exits, max |ΔR| 3e-14.
+- **The six exits, fixed** (ATR 14 on 1h; stop and trail in ATR; target and
+  break-even in R):
+
+  | exit | stop | target | other | max hold |
+  |---|---|---|---|---|
+  | `time_only` | 3 ATR | – | – | 24 bars |
+  | `tp_1r` | 2 ATR | 1 R | – | 72 |
+  | `tp_2r` | 2 ATR | 2 R | – | 72 |
+  | `tp_4r` | 2 ATR | 4 R | – | 72 |
+  | `be_then_3r` | 2 ATR | 3 R | break-even at 1 R | 72 |
+  | `trail_2atr` | 2 ATR | – | trail 2 ATR from 1 R | 120 |
+
+- **Splits:** TRAIN 2020–22, VALID 2023–24, HOLDOUT 2025-01 → 2026-08. Each
+  trade belongs to the split of its entry time.
+
+**Pre-registered choice and gates.** TRAIN chooses the exit with the highest
+mean net R. **PASS** on VALID needs all of:
+- TRAIN mean > 0;
+- VALID mean > 0;
+- the 95% CI lower bound > 0 (resampling whole weeks, because the entries
+  overlap);
+- mean > 0 with fees and slippage ×1.5;
+- at least 1,000 VALID trades.
+
+`--final` runs the holdout once (lock file), and only after PASS.
+**CONFIRMED** = holdout mean > 0 with CI lower bound > 0.
+
+**Runs:**
+- BTCUSDT 1h is primary.
+- ETHUSDT 1h is replication: a PASS counts only if ETH also passes with the
+  same exit.
+- BTCUSDT `--tf 240` is descriptive only.
+- `SYMBOL=<coin> python src/exit_lab.py [--tf 240]`. Each run happens once.
+
+**What happens next.** If an exit passes on both coins, Stage 2 (an ML entry
+model) uses it as its exit. If none passes, Stage 2 still runs, with the exit
+TRAIN chose, and the result is read knowing that exits alone carry no edge.
+**Prior:** most likely every net mean is near minus the cost (−0.03 to
+−0.1 R). Any exit whose gross R is clearly positive on both TRAIN and VALID
+is worth reporting even if the net fails.

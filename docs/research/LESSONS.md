@@ -208,10 +208,13 @@ rebalance of the 30 most liquid USDT pairs, ranked by past return, delisted coin
 included. **spot REJECT, perp REJECT, 0 PASS, no holdout used.** Project total
 **442** runs, 5 holdout runs, 5 FAILED, 0 CONFIRMED.
 
-- **The top-fifth book lost to holding everything equally.** Spot portfolio CAGR
-  **+20.2% against the universe's +26.3%**; perp book **+11.7% against +30.6%**.
-  Both VALID statistics had CIs spanning zero (spot [−0.0102, +0.0097], perp
-  [−0.0067, +0.0119] per week) and 52/52 weeks negative in 2023, positive in 2024.
+- **The spot top-fifth book lost to holding everything equally**: CAGR
+  **+20.2% against the universe's +26.3%**. The perp book is market-neutral, so
+  its +11.7% is not comparable with the long-only universe's +30.6%. Its own
+  test is the statistic. Both VALID statistics had CIs spanning zero (spot
+  [−0.0102, +0.0097], perp [−0.0067, +0.0119] per week), and both had a
+  negative 2023 mean and a positive 2024 mean (52 weeks each). _Wording
+  corrected in `_multi` Exp 003._
 - **The effect is real before costs and gone after them.** Gross top-fifth
   premium **+16.0%/yr** on spot against **−12.2%/yr** of cost; **+12.5%/yr** gross
   on the perp book against **−8.4%/yr** of cost. **§1 again, in its sharpest
@@ -219,8 +222,11 @@ included. **spot REJECT, perp REJECT, 0 PASS, no holdout used.** Project total
   the pre-registered rule picked L = 7 partly *because* it had the best TRAIN
   Sharpe — **the lookback that looked best trades most, and trading most is
   what eats the edge.**
-- **The perp book's edge was 91% funding, not momentum.** Decomposition, mean per
-  week: book price return **+0.00240 (+12.5%/yr)**, funding received **+0.00219
+- **The perp book's edge was mostly funding, not momentum.** Funding was **48%**
+  of the book's gross (price + funding) and **74%** of its net. Without funding,
+  the net is +0.00078 a week (about +4%/yr), indistinguishable from zero.
+  _The first version of this bullet said 91%. Corrected in `_multi` Exp 003._
+  Decomposition, mean per week: book price return **+0.00240 (+12.5%/yr)**, funding received **+0.00219
   (+11.4%/yr)**, transaction cost −0.00162, net +0.00297. **Shorts on the bottom
   quintile get paid while funding is positive, which is most of the time.** A
   market-neutral long/short book is largely a bet on carry, not on cross-

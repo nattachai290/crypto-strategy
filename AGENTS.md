@@ -5,10 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: rotation, `src/rotation.py`: hold this week's strongest coins
-across every Binance USDT pair (delisted ones included)**
-(`docs/research/PLAN.md` §17). The allocation test (§16) is done: every rule
-was NO_IMPROVEMENT. The metrics round (§14) and its replication (§15) failed. The
+**Active work: the exit lab, `src/exit_lab.py`: is there skill in how a trade
+is closed, measured with random entries?** (`docs/research/PLAN.md` §18). Run
+it on BTCUSDT 1h first, then ETHUSDT 1h. Rotation (§17) and allocation (§16)
+are done, and both were REJECT / NO_IMPROVEMENT. The
 TradingView ports are closed (§13, BTC Exp 033/034); a new port needs Pine
 Script source the owner pastes, never one written from memory. Run every command with the coin in `SYMBOL` (on Windows PowerShell:
 `$env:SYMBOL="ETHUSDT"`; unset = BTCUSDT), and read that coin's
@@ -320,6 +320,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `ledger*.py`, `report_data.py`, `make_report.py` | reporting for the older experiments |
 | `allocation.py` | PLAN.md §16: four fixed trend rules on daily spot/perp bars against buy-and-hold (1x exposure, next-open fills, fees, funding). Writes `results/<SYMBOL>/allocation/` and the generated `journal/<SYMBOL>/allocation.md`; runs once (`--rerun` only after a code fix) |
 | `rotation.py` | PLAN.md §17: weekly cross-sectional momentum over every USDT pair (spot long-only vs the universe; perp long/short with funding). `--build spot|perp` downloads to `data/*/_multi/`. TRAIN chooses the lookback, VALID gives PASS/REJECT, `--final` runs the holdout once. Writes `results/_multi/rotation/` and the generated `journal/_multi/rotation.md` |
+| `exit_lab.py` | PLAN.md §18: six fixed exits on random entries (p 0.25, seed 18), each trade simulated on its own with the engine's exact rules (test 14). TRAIN chooses the exit, VALID gives PASS/REJECT, `--final` runs the holdout once. Writes `results/<SYMBOL>/exit_lab/` and the generated `journal/<SYMBOL>/exit_lab.md` |
 | `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:

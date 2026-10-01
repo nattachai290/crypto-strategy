@@ -1,3 +1,5 @@
+> **Rotation done (§17): REJECT. Next (owner-approved 2026-10-01): exit lab, `docs/research/PLAN.md` §18.** Run `SYMBOL=BTCUSDT python src/exit_lab.py` once (primary); then `--tf 240` (descriptive).
+
 > **Allocation test done (§16): every rule NO_IMPROVEMENT. Next (owner-approved 2026-10-01): rotation across all Binance coins, `docs/research/PLAN.md` §17, `src/rotation.py`.** The record lives in `journal/_multi/`.
 
 > **Next (owner-approved 2026-10-01): the allocation test, `docs/research/PLAN.md` §16.** Run `SYMBOL=BTCUSDT python src/allocation.py` once. Do trend rules (200-day average, golden cross, 20-week breakout) cut buy-and-hold's drawdowns on daily spot (from 2017) and perp bars? Primary coin.
