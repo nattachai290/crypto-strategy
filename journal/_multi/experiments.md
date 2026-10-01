@@ -129,3 +129,32 @@ authorised it, so it has not been made.** `PLAN.md` §17's remaining steps:
 `BLOCKED`, not a result. Nothing about cross-sectional momentum has been tested.
 The honest statement is that the project has one unfixed data-layer bug between
 itself and its first look at the question.
+
+---
+
+## Exp 000 (addendum) - both builds confirmed crashed; no new information
+
+**Date:** 2026-10-01, later the same day.
+
+`--build spot` **crashed with the same defect** as `--build perp`, at
+`datafeed.py:66` in `list_keys`, `UnicodeEncodeError: 'ascii' codec can't encode
+characters in position 69-72` - the same call, one character position earlier
+because the spot prefix is shorter than the perp one. This confirms the entry
+above rather than adding to it, and the three prediction lines in it all held:
+
+- **crashed at its last symbol**, after **25,880** files (predicted: at the end,
+  since `ex.map` walks symbols in sorted order and the Chinese-named one sorts
+  last);
+- **`data/cache/_multi/` is still empty** - no `spot_1d.parquet`, no
+  `perp_1d.parquet`, no `perp_funding.parquet`;
+- **`perp_funding.parquet` was never attempted**, because `build_funding` is
+  called at the end of `build("perp")` and perp never got there. So the funding
+  download has not started at all, and on this run it would have been the
+  longest single step.
+
+Final on-disk state: **spot 25,880 zips, perp 21,263 zips, 47,143 files, 0
+`.part` leftovers** (no truncated downloads), no python processes running. All of
+it is reusable: `fetch_zip` skips existing files, so after the three-line
+encoding fix both builds only need to re-list keys, not re-download.
+
+**No change to the verdict: `BLOCKED`.** Still zero evaluations.
