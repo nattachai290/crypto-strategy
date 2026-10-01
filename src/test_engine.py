@@ -1084,6 +1084,20 @@ def test_allocation() -> None:
     t = AL.to_utc_ms(pd.Series([1735689600000, 1735689600000000]))
     check("spot open_time: ms and microseconds both give 2025-01-01 00:00 UTC",
           list(t) == [pd.Timestamp("2025-01-01", tz="UTC")] * 2, str(list(t)))
+    # (e2) non-ASCII symbols (Binance lists 币安人生USDT and others) are
+    # percent-encoded in every URL; urlopen refuses raw non-ASCII (_multi Exp 000)
+    import datafeed as DF
+    urls, saved_get = [], DF._get
+    DF._get = lambda url, **k: (urls.append(url), b"<ListBucketResult xmlns='http://s3.amazonaws.com/doc/2006-03-01/'></ListBucketResult>" if "list-type" in url else b"x")[1]
+    try:
+        import tempfile
+        DF.list_keys("data/spot/monthly/klines/币安人生USDT/1d/")
+        with tempfile.TemporaryDirectory() as d:
+            DF.fetch_zip("data/spot/monthly/klines/币安人生USDT/1d/币安人生USDT-1d-2026-01.zip", Path(d))
+    finally:
+        DF._get = saved_get
+    check("datafeed: listing, download and checksum URLs are ASCII (percent-encoded symbols)",
+          len(urls) == 3 and all(u.isascii() for u in urls) and "%E5%B8%81" in urls[0], str(urls[:1]))
     # (f) spot and futures daily zips share names; each market keeps its own file
     import tempfile
     import datafeed as DF
