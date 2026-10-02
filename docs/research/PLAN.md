@@ -1704,3 +1704,86 @@ entries (`LESSONS.md` §2), and widening the stop to 8 ATR in ML round 2 left
 gross at ~0. This is a diagnosis, not a strategy. A SHAKEN_OUT result would
 point to a new pre-registered idea about stop placement. It would not be a
 reason to rerun old ideas on VALID.
+
+## 24. Limit orders resting at support/resistance (owner request, 2026-10-02)
+
+**Why.** The owner asked whether we had tried placing the order *in advance*
+at support or resistance and letting price come to it.
+- Every earlier level idea waited for confirmation:
+  - §22 candle at a level: 0 of 16;
+  - the T6 liquidity sweep;
+  - the engine's `post_only` mode, which rests one bar near the close and
+    never at a level.
+- None of them rested a limit at the level itself.
+- A resting limit enters at the best price, pays the maker fee and no
+  slippage, and lets the stop sit just beyond the level. It attacks entry and
+  cost together.
+- The price: every move that slices through the level fills too (adverse
+  selection), and moves that turn just before the level never fill.
+
+**Tool.** `src/level_limit.py`, a standalone simulator like `exit_lab.py`. The
+engine is not changed.
+
+**Levels**, known at bar i's close:
+- `prev_day`: the previous completed UTC day's low (support) and high
+  (resistance).
+- `swing`: live pivots, 10 bars each side, until price closes through them or
+  500 bars pass.
+
+**Orders:**
+- At each close, the nearest level on each side within 3 ATR gets one order,
+  and each level gets only one order ever.
+- The order rests for 24 bars.
+- Fill: at the limit, or at the open on a gap.
+
+**Exits:**
+- Stop: limit ∓ stop_atr × ATR.
+- On the fill bar, a touch of the stop means the trade is stopped.
+  - A gap fill beyond the stop exits at the fill.
+  - The target is not allowed on the fill bar.
+- Target: tp_r × R, as a resting maker order.
+- Stop and time exits pay taker fee + slippage.
+- Funding is charged as everywhere.
+- Out after 48 bars.
+- Trades are simulated independently.
+- A trade counts in a split only if it is both filled and closed inside it.
+
+**Grid.** TRAIN chooses 1 of 8 cells: level {prev_day, swing} × stop_atr
+{1, 2} × tp_r {2, 3}.
+
+**Gates.** PASS needs all of these:
+- TRAIN mean > 0.
+- At least 100 VALID fills.
+- VALID mean > 0, with CI lower bound > 0.
+- Mean > 0 with fees and slippage ×1.5.
+- **Above the 95th percentile of 200 control sets on TRAIN and on VALID.**
+  A control set places the same number of orders, with the same side mix, at
+  the same distances from the close (in ATR), at random bars, with the same
+  exits. So "the level" must beat "any price at that distance".
+
+**Holdout.** `--final` runs the holdout once, and only after PASS. CONFIRMED
+needs all of:
+- mean > 0;
+- CI lower bound > 0;
+- above the control median.
+
+**Test 20.**
+- Hand-computed cases:
+  - fill at the level, with a maker target;
+  - gap fill at the open;
+  - filled and stopped on the same bar;
+  - gap below the stop;
+  - expiry with no fill.
+- Causal orders for both level kinds.
+- A planted "levels hold" market gives PASS, and noise gives REJECT.
+
+**Runs.** One run each, in this order:
+1. `SYMBOL=BTCUSDT python src/level_limit.py --tf 60`
+2. `--tf 240`
+3. `SYMBOL=ETHUSDT`, both timeframes.
+
+A PASS on one coin is not a candidate unless the other coin at the same
+timeframe also passes (`LESSONS.md` §5, §8). No change after a result.
+
+**Prior:** low. §22 used the same levels and they did not hold more often than
+random. The new parts are the entry price, the maker fee and the tight stop.

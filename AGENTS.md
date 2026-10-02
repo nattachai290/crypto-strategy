@@ -5,10 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**No active work.** The stop diagnosis (§23, BTC Exp 052/053) found the
-entries about a coin flip (BTC slightly worse than random), not
-right-and-shaken-out. The candle round (§22) and the ML line (§19–21) are
-closed. Ask the owner before starting anything new.
+**Active work: limit orders resting at support/resistance,
+`src/level_limit.py` (`docs/research/PLAN.md` §24): BTCUSDT then ETHUSDT, 1h
+and 4h, one run each.** The stop diagnosis (§23) found the entries about a
+coin flip, the candle round (§22) and the ML line (§19–21) are closed.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
@@ -328,6 +328,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `ml_pool.py` | PLAN.md §20: the §19 model fitted once on 20 coins together (universe chosen on TRAIN volume, survivorship-free). `--build` downloads 1h perp klines + funding to `data/*/_multi/pool_1h`; gates add breadth (half the coins beat their own control). Writes `results/_multi/ml_pool/` and the generated `journal/_multi/ml_pool.md` |
 | `ml_pool2.py` | PLAN.md §21: round 2 of the pooled model on the same 20 coins: 4-day hold decided every 4 h, cross-coin/BTC features, LightGBM settings tuned on TRAIN OOF, control on GROSS R, both legs must be net positive. Writes `results/_multi/ml_pool2/` and the generated `journal/_multi/ml_pool2.md` |
 | `stop_diag.py` | PLAN.md §23: from the VALID trade files, asks whether entries were on the wrong side or right and then stopped out, against random fills with the same side, stop fraction and hold. Read-only; writes `results/<SYMBOL>/stop_diag/` and the generated `journal/<SYMBOL>/stop_diag.md` |
+| `level_limit.py` | PLAN.md §24: limit orders resting AT support/resistance (previous-day extremes or live swing pivots), maker entry, stop just beyond the level; each order simulated on its own; TRAIN picks 1 of 8 cells; gates include beating control orders at the same distance from price at random bars, on TRAIN and VALID. Writes `results/<SYMBOL>/level_limit/` and the generated `journal/<SYMBOL>/level_limit.md` |
 | `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:

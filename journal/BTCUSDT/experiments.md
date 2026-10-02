@@ -5512,3 +5512,34 @@ idea. So `per_evaluation.csv` was resampled again by **idea family** (the
 Their direction calls are about as good as random, and on BTC slightly worse.
 The stops make things slightly worse again. Both effects are much smaller than
 the cost of trading. `LESSONS.md` §13 is added.
+
+---
+
+## Exp 054 - Limit orders resting at support/resistance, pre-registration (PLAN.md section 24)
+
+**Date:** 2026-10-02
+**Status:** tooling ready, not run. The research agent runs it.
+
+**Owner's question.** Have we tried placing the order in advance at the level
+and waiting for price to come to it? **No.** Every level idea so far waited
+for confirmation, including the engine's `post_only` mode, which rests for
+only 1 bar near the close.
+
+**Tool.** `src/level_limit.py`, a standalone simulator; the engine is
+unchanged.
+- **Orders:** one resting limit per level (yesterday's low/high, or a live
+  swing pivot). It is placed when the level is within 3 ATR of the close and
+  rests for 24 bars.
+- **Fills and costs:** maker fill at the limit, or at the open on a gap.
+- **Exits:** stop just beyond the level. On the fill bar, a stop touch counts
+  as stopped (pessimistic). Target as a maker order; out after 48 bars.
+- **Control:** the same number of orders at the same distances from price,
+  placed at random bars. It must be beaten on TRAIN and on VALID.
+
+**Test 20:**
+- 5 hand-computed cases;
+- causal orders;
+- a planted "levels hold" market gives PASS;
+- noise gives REJECT.
+
+**Prior:** low. The same levels did not hold in §22.
