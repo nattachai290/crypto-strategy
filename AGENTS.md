@@ -78,6 +78,20 @@ free number. Copy the format from `ideas/example_trend_breakout.json` and
 read `ideas/README.md`. Usually you need **no Python**: combine triggers,
 filters and exits in the `recipe` format.
 
+**Step 3b — Exits: no time exit (owner's rule, 2026-10-02, `_multi` Exp 014).**
+Every new idea exits on **price or a signal only**, never on the clock:
+- Set `"max_hold_hours": 100000` (no time limit; the engine caps a hold at
+  100,000 bars and closes at the end of each period, reason `eod`). Never put
+  `max_hold_hours` in the grid.
+- The idea must have at least one exit that can fire on its own, besides the
+  initial stop: a trailing stop (`trail_at` > 0 and `trail_atr` > 0),
+  `exit_on: "opposite"`, or a `tp`. A fixed stop alone is not allowed (it can
+  hold for years).
+- A position open for months blocks new entries (one position at a time). That
+  is the accepted cost of this rule; report the average hold.
+- This applies to **new** ideas only. Never re-run an old idea with its time
+  exit removed: that is retrying a tested idea until it passes (§3 rule 3).
+
 **Step 4 — Keep the grid small.** At most 4 grid keys and at most 64
 combinations (enforced). Sweep the things the hypothesis is actually about.
 Fix everything else at a sensible value.
