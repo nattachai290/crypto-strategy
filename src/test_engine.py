@@ -425,6 +425,7 @@ def main() -> None:
     test_stop_diag()
     test_level_limit()
     test_premium()
+    test_premium_confirm()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1615,6 +1616,49 @@ def test_premium() -> None:
     except ValueError:
         refused = True
     check("premium blocks refuse bars without the premium column", refused)
+
+
+def test_premium_confirm() -> None:
+    print("\n22. premium_confirm: pre-registered bars on synthetic records (30m counts, 4h pooled CI)")
+    import json as _json
+    import tempfile
+    import premium_confirm as PC
+    import config as C
+
+    def make(root, coin, m30, base30, m4, n4=40, seed=0, verdict30="REJECT"):
+        d = root / "results" / coin
+        (d / "eval_trades").mkdir(parents=True, exist_ok=True)
+        (d / "baseline").mkdir(parents=True, exist_ok=True)
+        rng = np.random.default_rng(seed)
+        rows = []
+        for tf, m, v in ((30, m30, verdict30), (240, m4, "WATCH")):
+            eid = f"{coin}{tf}"
+            rows.append({"eval_id": eid, "name": PC.NAMES[tf], "tf": tf, "verdict": v, "valid_trades": n4,
+                         "valid_mean_r": m, "valid_ci_lo": m - 0.2, "valid_ci_hi": m + 0.2})
+            et = pd.date_range("2023-01-02", periods=n4, freq="5D", tz="UTC")
+            pd.DataFrame({"entry_time": et, "side": np.where(np.arange(n4) % 2, 1, -1),
+                          "r_multiple": m + rng.normal(0, 0.3, n4)}).to_csv(d / "eval_trades" / f"{eid}_valid.csv.gz",
+                                                                             index=False)
+        (d / "baseline" / f"{coin}30.json").write_text(_json.dumps({"verdict": base30}))
+        pd.DataFrame(rows).to_csv(d / "evaluations.csv", index=False)
+
+    good = Path(tempfile.mkdtemp())
+    for i, c in enumerate(PC.CONFIRM):
+        make(good, c, 0.05, "SKILL" if i < 6 else "DRIFT", 0.3, seed=i)
+    rg = PC.evaluate(good)
+    check("premium_confirm: 10/10 positive, 6 SKILL, 4h pooled +0.3 -> LEAD_CONFIRMED on both clocks",
+          rg["verdict"] == "LEAD_CONFIRMED" and rg["m30"]["confirmed"] and rg["h4"]["confirmed"]
+          and rg["h4"]["pooled_trades"] == 400, str({k: rg[k] for k in ("m30", "h4")}))
+    bad = Path(tempfile.mkdtemp())
+    for i, c in enumerate(PC.CONFIRM):
+        make(bad, c, 0.05 if i < 6 else -0.05, "SKILL", -0.02 if i % 2 else 0.02, seed=i,
+             verdict30="UNSIZABLE" if i == 0 else "REJECT")
+    rb = PC.evaluate(bad)
+    check("premium_confirm: 5 usable positive (one UNSIZABLE) and a ~0 pooled 4h -> NOT_CONFIRMED",
+          rb["verdict"] == "NOT_CONFIRMED" and rb["m30"]["positive"] == 5 and not rb["h4"]["confirmed"],
+          str({k: rb[k] for k in ("m30", "h4")}))
+    check("premium_confirm: the CONFIRM coins are configured and exclude BTC/ETH (already seen)",
+          all(c in C.SYMBOL_SPECS for c in PC.CONFIRM) and not {"BTCUSDT", "ETHUSDT"} & set(PC.CONFIRM))
 
 
 if __name__ == "__main__":

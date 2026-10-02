@@ -1859,3 +1859,59 @@ coins (`LESSONS.md` §5).
 **Prior:** low to medium-low. It is the only new information source the
 project has tested. Published accounts of the Coinbase premium describe it
 over days, not hours, so the 4h variants matter most.
+
+## 26. Confirming the Coinbase premium on coins it has never seen (owner-approved 2026-10-02)
+
+**Why.** §25 produced the best lead in the project: 30m was SKILL on BTC and
+ETH, and 4h gross was far above cost. But BTC and ETH premiums move together,
+and `051` already showed this "two-coin SKILL" shape failing on new coins
+(`LESSONS.md` §8). The only honest next step is to run **the same frozen idea
+on coins whose data it has never seen.** Tuning it further on BTC/ETH is not
+honest.
+
+**Coins (Level 3, owner-approved).** They were chosen by a fixed rule before
+any run:
+- Coinbase `{BASE}-USD` history starts by 2021-07, with no gap longer than
+  30 days;
+- a Binance USDT-M perp was listed by 2020-09.
+
+| | coins |
+|---|---|
+| Full TRAIN history | LTC, LINK, BCH, ETC, ALGO, ATOM |
+| Coinbase only from mid-2021 | SOL (already configured), DOGE, ADA, DOT |
+| Excluded by the rule | XRP: Coinbase had no trading 2021-01 → 2023-06<br>AVAX: Coinbase from 2021-10<br>BNB: not on Coinbase |
+
+- The new specs are in `src/config.py`.
+- `data_start` is the first full month of the perp.
+- `datafeed.py --tfs 15,30,60,240` skips the 1–5 minute files.
+- `validate_premium` measures coverage from the coin's first Coinbase hour.
+
+**Runs (research agent), per coin:**
+1. `SYMBOL=<C> python src/datafeed.py --tfs 15,30,60,240`
+2. `SYMBOL=<C> python src/datafeed.py --premium`
+3. `evaluate.py` on the four `057_coinbase_premium_follow*` files, unchanged.
+4. `baseline.py` on the **30m and 4h** rows (all of them, not only WATCH/PASS).
+
+Then run `python src/premium_confirm.py` once. It reads only the recorded
+results.
+
+**Bars, fixed now (`premium_confirm.py`, test 22):**
+- **30m:** VALID mean > 0 on ≥ 7 of 10 coins **and** baseline SKILL on ≥ 5 of
+  10. An UNSIZABLE, INCONCLUSIVE or missing row counts as a failure.
+- **4h:** pool the VALID trades of every sizable coin. Pass needs all of:
+  - ≥ 100 trades;
+  - pooled mean > 0;
+  - weekly-block 95% CI lower bound > 0. Weeks are resampled across all coins
+    together, so correlated coins do not count twice;
+  - ≥ 7 coins with a positive mean.
+- **LEAD_CONFIRMED** on a clock means that clock's bar is met.
+
+**After the verdict:**
+- **LEAD_CONFIRMED:** write a new pre-registered plan for a single **pooled
+  holdout** test on that clock (2025-01 → 2026-08, across the 10 coins plus
+  BTC/ETH). Nothing is changed in between.
+- **NOT_CONFIRMED:** the premium lead is closed like `051`.
+- Either way, no 057 variant is tried on these coins.
+
+**Prior:** low to medium-low. This is the first idea with a positive TRAIN
+mean in every cell, but altcoin premiums are noisier than BTC's.

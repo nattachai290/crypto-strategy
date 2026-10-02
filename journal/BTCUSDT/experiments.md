@@ -5948,3 +5948,67 @@ beats it on TRAIN (DRIFT), and against buy-and-hold the alpha CI crosses zero
 (NO_EDGE) - most of what survives is being long in a bull market. The faster
 clocks are the classic cost wall: 15m gross +0.1107 against cost 0.1254. ETH's
 half is in ETH Exp 021.**
+
+---
+
+## Exp 059 - Review of Exp 058 / ETH Exp 021 (Coinbase premium, planner): the best lead in the project, and why it is not evidence yet
+
+**Date:** 2026-10-02
+**Status:** complete.
+
+**Integrity.**
+- The commit adds only `results/*` (rows appended, eval_trades, baseline,
+  benchmark) and journals. No `src/` change, no holdout use.
+- The runner rebuilt every VALID fill from the signal (1,754 of 1,754 matched).
+  That is a useful look-ahead check, and it agrees with tests 7 and 21.
+
+**What is genuinely new:**
+1. **TRAIN is positive almost everywhere.** All 12 rows have a positive TRAIN
+   mean (+0.06 to +0.32 R). In earlier rounds most TRAIN cells were negative.
+2. **30m is SKILL on both coins with the same frozen file.** BTC: +0.060
+   against a random p95 of +0.026. ETH: +0.124, also SKILL. Both are NO_EDGE
+   against buy-and-hold, and both VALID CIs cross 0.
+3. **4h has gross well above cost on both coins.** BTC: +0.46 gross against
+   0.037 cost, net +0.42, CI [+0.04, +0.82], on 72 trades. ETH: +0.43 gross,
+   net +0.39, on 86 trades.
+
+**Why none of this is a candidate yet:**
+- **We have seen this shape before.** `051_retail_crowd_fade` @30m was SKILL
+  on BTC and ETH with the same file, then failed on SOL and BNB (`LESSONS.md`
+  §8: "two coins were never enough"). BTC's and ETH's premiums are almost the
+  same series (US flow moves both), so they are not two independent tests.
+- **BTC 4h is DRIFT.** 6.5% of random entry sets beat it on TRAIN, and its
+  long leg (+0.70) carries it in a bull VALID.
+- **The 4h row has 72 trades**, under the 100 floor.
+- **ETH 4h and 1h are UNSIZABLE** because of 1 TRAIN skip each. ETH's
+  min_notional is 20 USDT, so a stop wider than about half the price cannot be
+  sized from 10 USDT of risk. The most likely cause is the March 2020 crash,
+  when 3 × ATR(4h) was a large share of a ~110 USDT price. This is a sizing
+  artefact, not a property of the rule, but under the rules those rows are not
+  evidence.
+- **This is 12 evaluations in one round**, so one or two good-looking rows are
+  expected by chance.
+
+**Corrections:**
+- "No v2 because the owner forbade editing idea files" is not quite right. A
+  v2 is a **new** file, which AGENTS.md §1 step 6 allows after a WATCH or an
+  UNSIZABLE, with a diagnosis. Not making one here was still the right call:
+  the next step should be confirmation, not refinement.
+- "First round where gross beats cost on the cheap clock" overstates it. §22's
+  ETH 4h also had gross +0.224 against 0.038 cost. That row was unsizable and
+  had too few trades.
+
+**What would make it evidence (proposed as PLAN §26, needs the owner):**
+1. **Confirm on coins whose data this idea has never seen.**
+   - Run `057` unchanged on SOLUSDT, which is already configured.
+   - Add Coinbase-listed perps such as XRP, DOGE, ADA, LINK, AVAX and LTC.
+     Adding a coin is Level 3, so this needs the owner's approval.
+   - Pre-register the bar: same sign on most coins and SKILL on most coins at
+     30m, with 4h pooled across coins to clear 100 trades.
+2. **Fix ETH's sizing artefact the allowed way.** Make one new file with the
+   stop capped (e.g. max 15% of price). It is a mechanical change made for a
+   stated reason, not a tuned number.
+3. **Use the holdout only after (1) passes.**
+
+**Verdict.** No PASS, no holdout. This is the strongest lead in 470
+evaluations, so it gets a confirmation test rather than a rerun.

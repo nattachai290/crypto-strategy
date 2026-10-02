@@ -1163,3 +1163,24 @@ run. The tables match `summary.json`.
 holdout was never used by any ML run. This is the end of the "train it
 smarter on the same data" question: it was pre-registered, run once, and
 failed. Further attempts on VALID 2023–24 would be fitting the exam.
+
+---
+
+## Exp 010 - Coinbase premium confirmation on 10 unseen coins, pre-registration (PLAN.md section 26)
+
+**Date:** 2026-10-02
+**Status:** tooling ready, not run.
+
+**Coins.** Chosen by rule: SOL, LTC, LINK, BCH, ETC, ALGO, ATOM, DOGE, ADA,
+DOT. XRP, AVAX and BNB are excluded by data availability.
+
+**Plan.** Run idea 057 unchanged on every coin at 4 timeframes, with baseline
+on 30m and 4h. `premium_confirm.py` then applies these bars:
+- **30m:** positive on ≥ 7 coins and SKILL on ≥ 5.
+- **4h:** pooled ≥ 100 trades, mean > 0, weekly-block CI lower bound > 0, and
+  ≥ 7 coins positive.
+
+**Tooling.**
+- Test 22 checks the bars on synthetic records.
+- `datafeed --tfs` builds only the timeframes this round needs.
+- Premium coverage is now measured from each coin's first Coinbase hour.

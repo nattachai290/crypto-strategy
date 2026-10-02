@@ -222,7 +222,7 @@ def build(dataset: str) -> Path:
     return out
 
 
-def validate() -> bool:
+def validate(tfs: list[int] | None = None) -> bool:
     """Coverage, duplicates and gap report for every native timeframe cache.
 
     Returns True only if every timeframe is complete. This is the gate: a
@@ -230,7 +230,7 @@ def validate() -> bool:
     in the first place.
     """
     ok = True
-    for tf in NATIVE_TFS:
+    for tf in (tfs or NATIVE_TFS):
         name = tf_name(tf)
         p = C.CACHE / f"{C.SYMBOL}_klines_{name}.parquet"
         if not p.exists():
@@ -437,12 +437,15 @@ def validate_premium(min_cover: float = 0.97, max_abs_median: float = 0.005) -> 
         print("[premium] no cache")
         return False
     df = pd.read_parquet(p)
+    first = df["time"].min()
+    print(f"  first hour {first} (coins listed on Coinbase later than data_start start there)")
     ok = True
+    end_all = pd.Period(C.DATA_END, "M").end_time.tz_localize("UTC")
     for y, g in df.groupby(df["time"].dt.year):
-        hours = 8784 if y % 4 == 0 else 8760
-        if y == int(C.DATA_END[:4]):
-            hours = int((pd.Period(C.DATA_END, "M").end_time - pd.Timestamp(f"{y}-01-01")).total_seconds() // 3600) + 1
-        cover = len(g) / hours
+        y0 = max(pd.Timestamp(f"{y}-01-01", tz="UTC"), first)
+        y1 = min(pd.Timestamp(f"{y + 1}-01-01", tz="UTC"), end_all)
+        hours = max(1, int((y1 - y0).total_seconds() // 3600))
+        cover = min(1.0, len(g) / hours)
         med = float(g["premium"].abs().median())
         flag = cover >= min_cover and med <= max_abs_median
         ok &= flag
@@ -468,7 +471,12 @@ def main() -> None:
         ok = validate_metrics()
         print("METRICS VALIDATION:", "OK" if ok else "PROBLEMS FOUND (see above)")
         sys.exit(0 if ok else 1)
-    for tf in NATIVE_TFS:
+    # --tfs 15,30,60,240: only these timeframes (PLAN.md section 26 coins, which
+    # are tested on 15m-4h only and do not need the 1m-5m files)
+    tfs = NATIVE_TFS
+    if "--tfs" in sys.argv[1:]:
+        tfs = [int(x) for x in sys.argv[sys.argv.index("--tfs") + 1].split(",")]
+    for tf in tfs:
         try:
             build(f"klines{tf}")
         except Exception as e:  # noqa: BLE001
@@ -478,8 +486,9 @@ def main() -> None:
     except Exception as e:  # noqa: BLE001
         print(f"[funding] FAILED: {e}", file=sys.stderr)
     print()
-    print("VALIDATION:", "OK" if validate() else "PROBLEMS FOUND (see above)")
-    if not validate():
+    ok = validate(tfs)
+    print("VALIDATION:", "OK" if ok else "PROBLEMS FOUND (see above)")
+    if not ok:
         sys.exit(1)
 
 

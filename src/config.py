@@ -72,6 +72,95 @@ SYMBOL_SPECS: dict[str, dict] = {
         holdout_start="2025-01",
         metrics_start="2021-12-01",
     ),
+    # PLAN.md section 26 (owner-approved 2026-10-02): coins added ONLY to
+    # confirm the Coinbase premium idea (057) on data it has never seen.
+    # Chosen by a fixed rule before any result: Coinbase {BASE}-USD history
+    # starting by 2021-07 with no gap > 30 days, and a Binance USDT-M perp
+    # listed by 2020-09. data_start = the first FULL month of the perp file.
+    # qty_step / min_notional are Binance USDT-M published values as known on
+    # 2026-10-02 (the API is geo-blocked from the build machine); a skip they
+    # cause shows up as size_skips and makes the row UNSIZABLE, never silent.
+    "LTCUSDT": dict(
+        qty_step=0.001,
+        min_notional=5.0,
+        data_start="2020-02",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "LINKUSDT": dict(
+        qty_step=0.01,
+        min_notional=5.0,
+        data_start="2020-02",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "BCHUSDT": dict(
+        qty_step=0.001,
+        min_notional=5.0,
+        data_start="2020-02",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "ETCUSDT": dict(
+        qty_step=0.01,
+        min_notional=5.0,
+        data_start="2020-02",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "ALGOUSDT": dict(
+        qty_step=0.1,
+        min_notional=5.0,
+        data_start="2020-07",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "ATOMUSDT": dict(
+        qty_step=0.01,
+        min_notional=5.0,
+        data_start="2020-03",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "DOGEUSDT": dict(
+        qty_step=1.0,
+        min_notional=5.0,
+        data_start="2020-08",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "ADAUSDT": dict(
+        qty_step=1.0,
+        min_notional=5.0,
+        data_start="2020-02",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
+    "DOTUSDT": dict(
+        qty_step=0.1,
+        min_notional=5.0,
+        data_start="2020-09",
+        data_end="2026-08",
+        valid_start="2023-01",
+        holdout_start="2025-01",
+        metrics_start="2021-12-01",
+    ),
 }
 SYMBOL = os.environ.get("SYMBOL", "BTCUSDT").upper()
 if SYMBOL not in SYMBOL_SPECS:
