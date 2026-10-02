@@ -85,7 +85,7 @@ code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
 <nav class="nav" aria-label="เมนู"><a href="./" aria-current="page">📋 สรุปผล</a><a href="equity.html">📈 กราฟเงินทุน</a></nav>
 
 <h1>ผลวิจัยกลยุทธ์เทรดคริปโต</h1>
-<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 2 ต.ค. 2026</p>
+<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 2 ต.ค. 2026 (ML รอบ 2)</p>
 
 <div class="card hero">
   <div class="big">สรุปสั้นๆ: ยังไม่เจอวิธีไหนที่ทำกำไรได้จริง</div>
@@ -155,19 +155,21 @@ code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
 
 <h2>ผล AI (LightGBM) เลือกจังหวะเข้า</h2>
 <div class="card" style="border-left:6px solid var(--bad)">
-  <h3>ไม่ผ่านทั้ง 3 แบบ <span class="tag t-bad">ไม่ผ่าน</span></h3>
+  <h3>ไม่ผ่านทั้ง 4 แบบ <span class="tag t-bad">ไม่ผ่าน</span></h3>
   <p>โมเดลดูข้อมูล 27 อย่าง แล้วทำนายว่าถ้าเข้าตอนนี้ หลังหักค่าธรรมเนียมจะได้กี่ R ถ้าทำนายว่าคุ้มค่อยเข้า</p>
   <div class="scroll"><table class="tbl">
     <tr><th>แบบ</th><th style="text-align:right">จำนวนไม้</th><th style="text-align:right">R เฉลี่ย</th><th style="text-align:right">ช่วงที่น่าจะเป็นจริง (95%)</th></tr>
     <tr><td>BTC อย่างเดียว</td><td class="num">12,994</td><td class="num" style="color:var(--bad)">−0.030</td><td class="num">−0.101 ถึง +0.039</td></tr>
     <tr><td>ETH อย่างเดียว</td><td class="num">13,266</td><td class="num">+0.011</td><td class="num">−0.056 ถึง +0.084</td></tr>
-    <tr><td>เทรนรวม 20 เหรียญ</td><td class="num">34,467</td><td class="num" style="color:var(--good)">+0.060</td><td class="num">−0.037 ถึง +0.170</td></tr>
+    <tr><td>เทรนรวม 20 เหรียญ (รอบ 1)</td><td class="num">34,467</td><td class="num" style="color:var(--good)">+0.060</td><td class="num">−0.037 ถึง +0.170</td></tr>
+    <tr><td>เทรนรวม 20 เหรียญ รอบ 2 (ถือ 4 วัน + ข้อมูลทั้งตลาด + จูน)</td><td class="num">17,962</td><td class="num" style="color:var(--bad)">−0.025</td><td class="num">−0.168 ถึง +0.129</td></tr>
   </table></div>
   <ul style="margin:12px 0 8px;padding-left:20px">
     <li><b>เทรนแยกเหรียญ:</b> ยิ่งโมเดลมั่นใจ ยิ่งขาดทุนหนัก ถ้าถือทีละไม้จริงบน BTC ขาดทุนปีละ 15% และพอร์ตเคยลงสูงสุด 44%</li>
     <li><b>เทรนรวม 20 เหรียญ:</b> ใกล้ผ่านที่สุดเท่าที่เคยมีมา แต่ช่วงที่น่าจะเป็นจริงยังครอบคลุม 0 แปลว่ายังแยกไม่ออกว่าเป็นฝีมือหรือโชค และกำไรที่เห็นอาจมาจากการ "เลือกเทรดตอนตลาดผันผวน ซึ่งค่าธรรมเนียมคิดเป็น R ได้ถูกกว่า" ไม่ใช่การทายทิศทางถูก</li>
+    <li><b>รอบ 2 (ฉลาดขึ้น):</b> แย่ลงกว่าเดิม ก่อนหักค่าธรรมเนียมได้แค่ +0.005 R ซึ่งพอๆ กับการเลื่อนสัญญาณไปมั่วๆ (+0.003 R) ไม่มีเหรียญไหนเลยใน 20 เหรียญที่ชนะตัวสุ่ม และโมเดลที่ซับซ้อนกว่ายิ่งแย่ลง เป็นสัญญาณว่ามันไปจำ noise</li>
   </ul>
-  <p class="small muted" style="margin:0">ห้ามปรับแต่งแล้วรันซ้ำบนข้อมูลชุดเดิม เพราะจะกลายเป็นการจูนให้เข้ากับข้อสอบ · ที่มา: <code>journal/*/ml_entry.md</code>, <code>journal/_multi/ml_pool.md</code></p>
+  <p class="small muted" style="margin:0">ห้ามปรับแต่งแล้วรันซ้ำบนข้อมูลชุดเดิม เพราะจะกลายเป็นการจูนให้เข้ากับข้อสอบ · ที่มา: <code>journal/*/ml_entry.md</code>, <code>journal/_multi/ml_pool.md</code>, <code>journal/_multi/ml_pool2.md</code></p>
 </div>
 
 <h2>ต่อจากนี้</h2>
@@ -199,7 +201,7 @@ const rounds = [
   {ico:"🧭", t:"ถือตอนขาขึ้น หลบตอนขาลง (รายวัน)", tag:["bad","ไม่ดีกว่าถือเฉยๆ"], d:"SMA200, golden cross, breakout 20 สัปดาห์ · BTC/ETH/BNB · spot และ perp", r:"ลด drawdown ได้บ้าง แต่ไม่มีกฎไหนดีกว่าการถือเฉยๆ อย่างชัดเจนทุกช่วงเวลา"},
   {ico:"🔄", t:"หมุนเหรียญตามโมเมนตัมรายสัปดาห์", tag:["bad","ไม่ผ่าน"], d:"ซื้อเหรียญที่แรงที่สุด 20% จากเหรียญที่มีสภาพคล่องสูงสุด 30 ตัว (รวมเหรียญที่ถูกถอดออกไปแล้ว)", r:"แบบ spot แพ้การถือทุกเหรียญเท่าๆ กัน ส่วนแบบ futures กำไรราว 3/4 มาจากการกิน funding ซึ่งไม่ใช่สิ่งที่เราต้องการ"},
   {ico:"🚪", t:"จุดออกไม้ (TP/SL/BE/trailing)", tag:["bad","ไม่มีฝีมือ"], d:"สุ่มจุดเข้า แล้วลองวิธีออก 6 แบบ · BTC/ETH", r:"กราฟ 1h ขาดทุนทุกแบบ ส่วนกราฟ 4h ที่ดูดีมาจาก trailing stop ที่บังเอิญได้ประโยชน์จากตลาดขาขึ้น"},
-  {ico:"🤖", t:"ML เลือกจังหวะเข้า", tag:["bad","ไม่ผ่าน"], d:"LightGBM บน BTC, ETH และเทรนรวม 20 เหรียญ", r:"ไม่ผ่านทั้ง 3 แบบ ตัวรวม 20 เหรียญได้ +0.06 R แต่ยังแยกจากโชคไม่ได้ (ดูด้านล่าง)"},
+  {ico:"🤖", t:"ML เลือกจังหวะเข้า", tag:["bad","ไม่ผ่าน"], d:"LightGBM บน BTC, ETH และเทรนรวม 20 เหรียญ", r:"ไม่ผ่านทั้ง 4 แบบ รวมรอบ 2 ที่ทำให้ฉลาดขึ้นแล้วกลับแย่ลง (ดูด้านล่าง)"},
 ];
 
 const max = 0.3, pct = v => Math.min(Math.abs(v) / max, 1) * 50;

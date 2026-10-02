@@ -335,6 +335,30 @@ the engine's exact rules — **test 14 checks all six trade-for-trade against
   can be beaten by volatility selection alone. Gate on gross R, or shift the
   copies only within similar-volatility bars.
 
+### 11b. Round 2 (smarter on the same data) was worse (`_multi` Exp 008/009)
+
+Round 2 changed four things:
+- a 4-day hold;
+- cross-coin and BTC features;
+- 8 LightGBM settings tuned on TRAIN out-of-fold;
+- a control on **gross** R.
+
+**Result:** 17,962 trades, net −0.025, CI [−0.168, +0.129], gross +0.005.
+The shifted copies' gross median is +0.003 and their 95th percentile is +0.139.
+**0 of 20 coins** beat their own control.
+
+- Only 1 of 32 TRAIN cells was positive out-of-fold (+0.010). More leaves and
+  more rounds were worse in every pair: capacity fitted noise.
+- The new features were used, BTC and market volatility and long returns
+  most of all. They describe the market's state, not a coin's next move.
+- **This does not prove round 1's edge was volatility selection.** Round 2 is
+  a different model and a different exit. Round 1's gross was never compared
+  with a gross control, so that question stays open, and closed for further
+  work.
+- **Rule:** "train a smarter model on the same data" has now been tried as a
+  pre-registered test and failed. Three ML runs and one tuned rerun found no
+  timing skill at 1h–4 days on 20 coins after VIP0 costs.
+
 ## What to do with this
 
 1. **Filter out, don't fit.** Skip ideas with expected `cost_r` > 0.1 R and
