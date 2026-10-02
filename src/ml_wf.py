@@ -91,6 +91,8 @@ MIN_COIN_TRADES = 10
 MIN_COINS = 10
 BREADTH_SHARE = 0.5
 N_RANDOM = 200
+UNIVERSE_FILE = "universe_v2.json"   # v1 (universe.json, Exp 020) counted zero-volume days as trading
+AFRAC_MIN = 1e-4                     # ATR14 / close below 0.01%: no market, no label, no entry (Exp 020)
 
 
 def cache_dir(tf: int) -> Path:
@@ -107,12 +109,14 @@ def build() -> None:
     if not p.exists():
         raise SystemExit(f"no {p}: run  python src/rotation.py --build perp  first")
     OUT.mkdir(parents=True, exist_ok=True)
-    uni_path = OUT / "universe.json"
+    uni_path = OUT / UNIVERSE_FILE
     if uni_path.exists():
         uni = json.loads(uni_path.read_text())
         print(f"universe fixed earlier: {uni_path}")
     else:
-        uni = MP.select_universe(pd.read_parquet(p), n=UNIVERSE_N)
+        daily = pd.read_parquet(p)
+        daily = daily[daily["quote_volume"] > 0]        # a zero-volume day is not trading (Exp 020)
+        uni = MP.select_universe(daily, n=UNIVERSE_N)
         uni_path.write_text(json.dumps(uni, indent=1))
     months = set(C.month_range(*MP.MONTHS))
     for tf in TFS:
@@ -153,7 +157,7 @@ def load_all() -> dict[int, dict]:
 
 
 def load(tf: int) -> dict[str, tuple[pd.DataFrame, pd.DataFrame]]:
-    uni_path = OUT / "universe.json"
+    uni_path = OUT / UNIVERSE_FILE
     if not uni_path.exists():
         raise SystemExit("no universe: run  python src/ml_wf.py --build")
     coins = {}
@@ -211,7 +215,8 @@ def cross_features(coins: dict, tf: int) -> dict[str, pd.DataFrame]:
     lo = min(b.index[0] for b, _ in coins.values())
     hi = max(b.index[-1] for b, _ in coins.values())
     full = pd.date_range(lo, hi, freq=f"{tf}min")
-    close = pd.DataFrame({c: b["close"].reindex(full) for c, (b, _) in coins.items()})
+    close = pd.DataFrame({c: b["close"].where(b["volume"] > 0).reindex(full)      # dead bars are not prices
+                          for c, (b, _) in coins.items()})
     lr = {k: np.log(close / close.shift(k)) for k in CROSS_K}
     mkt = {k: lr[k].mean(axis=1, skipna=True) for k in CROSS_K}
     n = lr[CROSS_K[0]].notna().sum(axis=1)
@@ -237,22 +242,39 @@ def prepare(by_tf: dict, tf: int) -> dict:
     cross = cross_features(coins, tf)
     P = {}
     for c, (bars, fund) in coins.items():
-        parts = [features_tf(bars, fund, tf), cross[c]]
+        live = bars["volume"].to_numpy(float) > 0
+        if not live.any():
+            continue
+        bars = bars.iloc[:int(np.flatnonzero(live)[-1]) + 1]     # cut the dead tail after the last trade
+        live = live[:len(bars)]
+        parts = [features_tf(bars, fund, tf), cross[c].iloc[:len(bars)]]
         for tf2, coins2 in by_tf.items():
             if tf2 != tf and c in coins2:
                 parts.append(mtf_features(bars, tf, coins2[c][0], tf2))
         X = pd.concat(parts, axis=1)
         atr = ta.atr_(bars["high"], bars["low"], bars["close"], MH.ATR_N)
         afrac = (atr / bars["close"]).to_numpy(float)
+        # Exp 020: frozen zero-volume bars (halted / delisted contracts) have zero true
+        # range; ATR then reaches 0 and every ATR-scaled number diverges. A bar is
+        # tradable only if it traded and its ATR fraction is at least AFRAC_MIN.
+        good = live & np.isfinite(afrac) & (afrac >= AFRAC_MIN)
+        afrac = np.where(good, afrac, np.nan)
         o = bars["open"].to_numpy(float)
         n = len(o)
+        dead = np.r_[0, np.cumsum(~live)]                       # dead bars in [i, j) = dead[j] - dead[i]
+        i = np.arange(n)
+        hi = np.minimum(i + 2 + H_BARS, n)
+        clean = (i + 1 + H_BARS < n) & (dead[hi] - dead[np.minimum(i + 1, n)] == 0)   # label bars all traded
         nxt = np.r_[o[1:], np.nan]
         fut = np.r_[o[1 + H_BARS:], np.full(min(1 + H_BARS, n), np.nan)][:n]
-        y = np.log(fut / nxt) / afrac
-        rn = np.r_[np.log(o[1:] / o[:-1]), np.nan] / np.r_[np.nan, afrac[:-1]]
-        P[c] = {"bars": bars, "fund": fund, "slip": MP.slippage(c.split("#")[0]), "atr": atr.to_numpy(float),
+        with np.errstate(divide="ignore", invalid="ignore"):
+            y = np.where(clean, np.log(fut / nxt) / afrac, np.nan)
+            rn = np.r_[np.log(o[1:] / o[:-1]), np.nan] / np.r_[np.nan, afrac[:-1]]
+        rn = np.where(np.r_[live[1:], False] & live, rn, np.nan)
+        P[c] = {"bars": bars, "fund": fund, "slip": MP.slippage(c.split("#")[0]),
+                "atr": np.where(good, atr.to_numpy(float), np.nan),          # no entry on a non-tradable bar
                 "X": X.iloc[:-1], "y": pd.Series(y[:-1], index=bars.index[:-1]),
-                "pos": np.arange(n - 1), "rn": rn}
+                "pos": np.arange(n - 1), "rn": rn, "tradable": good[:-1]}
         print(f"  prepared {c} ({TF_NAME.get(tf, tf)}): {n - 1:,} rows", flush=True)
     return P
 
@@ -292,7 +314,7 @@ def walk_forward(P: dict, tf: int, cfg: dict, a: str, b: str, step: int = 1, log
                                                         for c in P if (P[c]["X"].index + lag < m0).any()) + lag)})
         for c in P:
             idx = P[c]["X"].index
-            w = (idx >= m0) & (idx < m1)
+            w = (idx >= m0) & (idx < m1) & P[c].get("tradable", np.ones(len(idx), bool))
             if w.any():
                 pred[c][w] = model.predict(P[c]["X"].reindex(columns=cols)[w])
     return pred

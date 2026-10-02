@@ -1809,6 +1809,29 @@ def test_ml_wf() -> None:
         ok_why = len(e) > 0.9 * len(tr) and good_side and above and n_why and sig["exit_why"].notna().mean() > 0.9
     check("ml_wf WHY: every opening decision is explained (forecast on the trade's side, past the entry bar, 3 features); signal exits too",
           ok_why)
+    # Exp 020: frozen zero-volume bars (a halted, then delisted contract) must not reach a label,
+    # a forecast or an entry, and must not blow up the R of a trade
+    bz = _momentum_bars(0.0008, seed=99).copy()
+    k0, k1, kend = 20000, 21500, len(bz) - 3000
+    for lo_, hi_ in ((k0, k1), (kend, len(bz))):
+        px = bz["close"].iloc[lo_ - 1]
+        bz.iloc[lo_:hi_, [bz.columns.get_loc(x) for x in ("open", "high", "low", "close")]] = px
+        bz.iloc[lo_:hi_, bz.columns.get_loc("volume")] = 0.0
+        bz.iloc[lo_:hi_, bz.columns.get_loc("taker_buy_base")] = 0.0
+    with contextlib.redirect_stdout(io.StringIO()):
+        Pz = WF.prepare({60: {"ZUSDT": (bz, fund), "C0USDT": (_momentum_bars(0.0008, seed=90), fund)}}, 60)
+        tz = WF.evaluate(Pz, 60, grid=WF.GRID[:1], min_coins=1, step=3, keep=True)["_trades"]
+    z = Pz["ZUSDT"]
+    yz = z["y"].to_numpy()
+    dead_rows = np.zeros(len(yz), bool); dead_rows[k0 - WF.H_BARS - 2:k1] = True
+    zt = tz[tz["coin"] == "ZUSDT"]
+    check("ml_wf zero-volume bars (Exp 020): dead tail cut, no label touches a dead bar, all labels finite, "
+          "no entry on a dead bar, every trade's R bounded",
+          len(z["bars"]) == kend and np.isnan(yz[k0 - 1:k1]).all() and np.isfinite(yz[np.isfinite(yz)]).all()
+          and not z["tradable"][k0:k1].any()
+          and not ((zt["entry_time"] >= bz.index[k0]) & (zt["entry_time"] <= bz.index[k1 - 1])).any()
+          and tz["net_r"].abs().max() < 50,
+          f"bars {len(z['bars'])} vs {kend}, max |R| {tz['net_r'].abs().max():.2f}, ZUSDT trades {len(zt)}")
     check("ml_wf: no VALID trade runs into HOLDOUT, no clock exit, one holdout timeframe by the TRAIN rule",
           pd.Timestamp(edge["valid"]["last_exit"]) < pd.Timestamp(WF.WINDOWS["holdout"][0], tz="UTC")
           and "time" not in (edge["valid"].get("exit_mix") or {})
