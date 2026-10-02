@@ -940,3 +940,194 @@ is now judged on gross R against each coin's own shifted copies.
 - VALID trades end before the holdout.
 
 No market data was run.
+
+---
+
+## Exp 008 - Pooled ML round 2: REJECT, and the fair gross control shows round 1's control was flattering the model
+
+**Date:** 2026-10-02
+**Status:** complete. **1 run, 20 coins, 4-day hold. REJECT. HOLDOUT UNTOUCHED -
+`--final` not run and not a candidate.** `src/ml_pool2.py` unchanged; no
+setting, coin, feature or gate changed after the result. No `summary.json` was
+deleted to re-run. The record is `results/_multi/ml_pool2/summary.json` and the
+generated `journal/_multi/ml_pool2.md`.
+
+**Session state.** `git pull` -> already up to date. `pip install -r
+requirements.txt` -> no errors, all dependencies present. `test_engine.py` ->
+**ALL CHECKS PASSED**, including **test 17** (`Pooled ML round 2: cross features
+causal, 4-day labels, gross control, planted edge found, noise rejected`: a
+planted edge on 3 coins gives **PASS** with gross +0.342 above a shifted p95 of
++0.224, and pure noise gives **REJECT** whose **gross +0.024 does not beat a
+shifted p95 of +0.055**). **`data/cache/_multi/pool_1h/` and
+`results/_multi/ml_pool/universe.json` were both present, so step 1 was skipped and
+no download was needed.** The same 20 coins and the same 0.05% alt / 0.02%
+BTC-ETH slippage as round 1.
+
+**What changed from round 1** (`PLAN.md` §21, pre-registered in Exp 007): a
+decision every 4 h instead of every hour, a symmetric **8 x 1h-ATR stop held for
+96 bars (4 days)** instead of 3-ATR/24 bars, cross-coin features (equal-weight
+market return 24/72/168 h, the coin's return relative to it, market breadth, BTC's
+returns and BTC's 168 h volatility), **8 LightGBM settings x 4 thresholds tuned on
+TRAIN out-of-fold**, and a **control on GROSS R** instead of net R.
+
+### The chosen setting and threshold
+
+- **setting: `num_leaves` 7, `min_data_in_leaf` 300, `rounds` 150** (setting 0)
+- **threshold: 0.20**
+- exit: 8 x 1h-ATR stop, 96 bars; decision step 4 h; purge 25 decision rows
+
+### The OOF table - all 32 cells, TRAIN only, before VALID
+
+Best threshold per setting (0.20 is the best threshold in 8 of 8 settings):
+
+| set | leaves | min leaf | rounds | thr | OOF trades | OOF net mean R |
+|---|---|---|---|---|---|---|
+| **0** | **7** | **300** | **150** | **0.20** | **14,947** | **+0.0098** |
+| 2 | 7 | 3000 | 150 | 0.20 | 18,332 | −0.0068 |
+| 1 | 7 | 300 | 500 | 0.20 | 24,363 | −0.0184 |
+| 0 | 7 | 300 | 150 | 0.10 | 34,017 | −0.0238 |
+| 0 | 7 | 300 | 150 | 0.05 | 47,019 | −0.0320 |
+| 1 | 7 | 300 | 500 | 0.00 | 58,355 | −0.0360 |
+| 0 | 7 | 300 | 150 | 0.00 | 58,690 | −0.0374 |
+| 1 | 7 | 300 | 500 | 0.05 | 50,208 | −0.0378 |
+| 6 | 31 | 3000 | 150 | 0.20 | 23,895 | −0.0446 |
+| 4 | 31 | 300 | 150 | 0.20 | 27,268 | −0.0517 |
+| 2 | 7 | 3000 | 150 | 0.10 | 37,994 | −0.0509 |
+| 5 | 31 | 300 | 500 | 0.20 | 32,827 | −0.0656 |
+| 7 | 31 | 3000 | 500 | 0.20 | 31,929 | −0.0670 |
+| 3 | 7 | 3000 | 500 | 0.20 | 28,040 | −0.0601 |
+
+**Only 1 of the 32 cells has a positive out-of-fold net mean, and it is +0.0098
+R on 14,947 trades.** The tuner therefore had almost nothing to choose from, and
+the cell it picked is the smallest, simplest model in the grid. **More rounds and
+more leaves are monotonically worse out-of-fold** (rounds 500 is worse than 150 in
+every leaves/min-leaf pair; 31 leaves is worse than 7 in five of the four pairs
+at threshold 0.20). **The trainer's own evidence is that capacity hurt.**
+
+### VALID, and the verdict
+
+| | value |
+|---|---|
+| trades | **17,962** |
+| **net R** | **−0.0245** |
+| **gross R** | **+0.0047** |
+| 95% CI (weekly blocks) | **[−0.1678, +0.1287]** |
+| long leg | **+0.0797** |
+| short leg | **−0.0831** |
+| avg hold | 82.7 bars (3.4 days, as designed) |
+| exit mix | time 71.4% / stop 28.6% |
+| cost x1.5 | **−0.0396**, CI [−0.1833, +0.1134] |
+| **shifted GROSS control** | median **+0.0028**, p95 **+0.1386** |
+| last exit | 2024-12-27 00:00 UTC |
+
+**verdict REJECT. Six of nine gates failed: `valid_mean>0`, `valid_ci_lo>0`,
+`stress_mean>0`, `gross_beats_shift_p95`, `breadth>=0.5`, `both_legs>0`.** Only
+`oof_mean>0` (+0.0098), `valid_trades>=2000` (17,962) and `coins>=10` (20)
+passed.
+
+### Breadth, and the per-coin table
+
+**eligible 20 of 20** (smallest is MATICUSDT at 718 trades, far above the 50 floor)
+· **beat their own gross p95 with a positive net mean: 0 of 20, share 0.00**
+· 6 coins positive net (median +0.0396), 14 negative (median −0.0385)
+
+| coin | trades | net R | gross R | ctrl gross median | ctrl gross p95 |
+|---|---|---|---|---|---|
+| BTCUSDT | 1,118 | +0.0878 | +0.1305 | +0.0380 | +0.2303 |
+| RUNEUSDT | 870 | +0.0753 | +0.0936 | −0.0127 | +0.1701 |
+| MATICUSDT | 718 | +0.0663 | +0.0917 | +0.0470 | +0.2021 |
+| BNBUSDT | 1,264 | +0.0130 | +0.0613 | +0.0115 | +0.1830 |
+| EOSUSDT | 856 | +0.0116 | +0.0357 | +0.0073 | +0.1539 |
+| CRVUSDT | 819 | +0.0114 | +0.0275 | −0.0035 | +0.1671 |
+| BCHUSDT | 821 | −0.0031 | +0.0268 | −0.0063 | +0.1597 |
+| ETHUSDT | 1,115 | −0.0059 | +0.0296 | +0.0224 | +0.1616 |
+| DOGEUSDT | 956 | −0.0271 | +0.0047 | +0.0104 | +0.1713 |
+| ADAUSDT | 887 | −0.0294 | −0.0012 | −0.0081 | +0.1974 |
+| XTZUSDT | 853 | −0.0313 | −0.0066 | −0.0105 | +0.1506 |
+| ALGOUSDT | 785 | −0.0318 | −0.0099 | −0.0030 | +0.1503 |
+| LINKUSDT | 861 | −0.0375 | −0.0145 | −0.0173 | +0.1400 |
+| DOTUSDT | 930 | −0.0395 | −0.0064 | +0.0095 | +0.1600 |
+| AVAXUSDT | 844 | −0.0497 | −0.0235 | +0.0186 | +0.1921 |
+| THETAUSDT | 858 | −0.0741 | −0.0522 | −0.0391 | +0.1353 |
+| AXSUSDT | 831 | −0.0864 | −0.0573 | +0.0013 | +0.1547 |
+| AAVEUSDT | 818 | −0.1129 | −0.0897 | −0.0360 | +0.1097 |
+| ATOMUSDT | 845 | −0.1177 | −0.0872 | +0.0138 | +0.1656 |
+| ETCUSDT | 913 | −0.1482 | −0.1166 | +0.0016 | +0.1323 |
+
+**Not one coin's gross beats its own shifted p95, and the model's pooled gross
+(+0.0047) is barely above the shifted copies' median (+0.0028) and far below their
+p95 (+0.1386).**
+
+### Top features (gain)
+
+| rank | feature | gain |
+|---|---|---|
+| 1 | **`btc_vol_168`** | **73,786** |
+| 2 | **`mkt_ret_168`** | **34,912** |
+| 3 | **`btc_ret_168`** | **27,585** |
+| 4 | `btc_ret_72` | 16,323 |
+| 5 | `weekday` | 8,142 |
+| 6 | `vol_168` | 7,610 |
+| 7 | `taker_ratio_24` | 6,725 |
+| 8 | `btc_ret_24` | 6,503 |
+| 9 | `mkt_ret_72` | 5,474 |
+| 10 | `ema_dist_200` | 4,475 |
+| 11 | `funding_last` | 4,084 |
+| 12 | `vol_ratio` | 3,894 |
+
+**The cross-coin features took the top four slots, and they are all BTC's and the
+market's own volatility and long-window returns.** So the model did learn the new
+features - it learned that the state of the whole market predicts crypto, which is
+true, and it is not an edge: `btc_vol_168` and `mkt_ret_168` are the same
+information as `vol_168` and `ret_168` measured on BTC, and every coin is
+correlated with BTC anyway.
+
+### Round 1 against round 2, on the same 20 coins
+
+| | **round 1** (1h, 24-bar hold) | **round 2** (4h, 96-bar hold) |
+|---|---|---|
+| threshold chosen | 0.2 | 0.2 |
+| VALID trades | 34,467 | 17,962 |
+| **VALID net R** | **+0.0601** | **−0.0245** |
+| **VALID gross R** | **+0.1475** | **+0.0047** |
+| long / short R | +0.1173 / +0.0420 | +0.0797 / **−0.0831** |
+| CI lower bound | −0.0373 | −0.1678 |
+| cost x1.5 net | **+0.0155** | −0.0396 |
+| control | net p95 **−0.0106** | gross median **+0.0028**, p95 **+0.1386** |
+| breadth share | 0.50 (10 of 20) | **0.00 (0 of 20)** |
+| verdict | REJECT, 1 gate failed | REJECT, **6 gates failed** |
+
+**This is the most important table in the entry, and it says two things.**
+
+**1. The fairer control is what kills it, and it was pre-registered for exactly
+this.** Round 1's model beat a random net-R p95 of −0.0106 by 0.07 R. The Exp 006
+review found the flaw: *a time shift keeps counts and clustering but not
+volatility, and a model that only learned "trade when volatility is high" pays
+less cost per R than its shifted copies.* **Round 2 compares gross R, and the
+model's gross of +0.0047 is indistinguishable from the shifted copies' median of
++0.0028 and nowhere near their p95 of +0.1386.** So round 1's apparent edge was
+mostly **the cost arithmetic of high-volatility bars, not a price forecast.** That
+is a single, clean, falsifiable statement and the fair control produced it.
+
+**2. The longer hold did not help, and the cross-coin features did not help.**
+Round 2's changes were chosen from lessons that hold on TRAIN - longer holds pay
+less cost per unit of move, and a market-aware model should generalise - and both
+made the result **worse**: net +0.0601 -> −0.0245, gross +0.1475 -> +0.0047, and
+the number of failed gates 1 -> 6. **A 4-day hold on 20 coins with a market-aware
+model found less than a 1-day hold on 20 coins with only the coin's own chart.**
+The plausible reason is in the leg table: with a 4-day hold the trades are more
+clustered, so each coin's own bars overlap more, and **the short leg turned from
++0.0420 to −0.0831** - which is exactly what the `both_legs>0` gate was added to
+catch, and it caught it.
+
+### Verdict
+
+`REJECT`, on **six of nine gates**. And the honest summary of the round is not the
+verdict but this: **on the same 20 coins, with the same costs and the same
+pre-registered procedure, the smarter model is measurably worse, and the control
+that was corrected to be fair removes the entire apparent edge.** The one
+positive out-of-fold cell (+0.0098 R on 14,947 trades) is not an edge; it is the
+noise floor of a 32-cell search.
+
+**`--final` is not run. No holdout is used and none is warranted.** No setting,
+coin, feature or gate is tried after a result.

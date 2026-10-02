@@ -1,0 +1,554 @@
+{
+ "coins_n": 20,
+ "step_hours": 4,
+ "exit": {
+  "stop_atr": 8.0,
+  "tp_r": 0.0,
+  "be_r": 0.0,
+  "trail_at_r": 0.0,
+  "trail_atr": 0.0,
+  "max_hold": 96
+ },
+ "setting": {
+  "num_leaves": 7,
+  "min_data_in_leaf": 300,
+  "rounds": 150
+ },
+ "threshold": 0.2,
+ "oof_best": {
+  "setting": 0,
+  "num_leaves": 7,
+  "min_data_in_leaf": 300,
+  "rounds": 150,
+  "threshold": 0.2,
+  "trades": 14947,
+  "mean_r": 0.009755330455675863
+ },
+ "oof_table": [
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.0,
+   "trades": 58690,
+   "mean_r": -0.03740898849391514
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.05,
+   "trades": 47019,
+   "mean_r": -0.03203996314943169
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.1,
+   "trades": 34017,
+   "mean_r": -0.023795301687339097
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.2,
+   "trades": 14947,
+   "mean_r": 0.009755330455675863
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.0,
+   "trades": 58355,
+   "mean_r": -0.03600599916236567
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.05,
+   "trades": 50208,
+   "mean_r": -0.03782080494069493
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.1,
+   "trades": 40876,
+   "mean_r": -0.04034499811782296
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.2,
+   "trades": 24363,
+   "mean_r": -0.01844169825694897
+  },
+  {
+   "setting": 2,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.0,
+   "trades": 59459,
+   "mean_r": -0.056264194301611635
+  },
+  {
+   "setting": 2,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.05,
+   "trades": 49721,
+   "mean_r": -0.060491488317142246
+  },
+  {
+   "setting": 2,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.1,
+   "trades": 37994,
+   "mean_r": -0.050867434432654235
+  },
+  {
+   "setting": 2,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.2,
+   "trades": 18332,
+   "mean_r": -0.006782744175887025
+  },
+  {
+   "setting": 3,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.0,
+   "trades": 59536,
+   "mean_r": -0.05076756848330739
+  },
+  {
+   "setting": 3,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.05,
+   "trades": 52458,
+   "mean_r": -0.057716897409559195
+  },
+  {
+   "setting": 3,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.1,
+   "trades": 43736,
+   "mean_r": -0.06118661304791719
+  },
+  {
+   "setting": 3,
+   "num_leaves": 7,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.2,
+   "trades": 28040,
+   "mean_r": -0.06005103399660939
+  },
+  {
+   "setting": 4,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.0,
+   "trades": 57999,
+   "mean_r": -0.047596695433630945
+  },
+  {
+   "setting": 4,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.05,
+   "trades": 51106,
+   "mean_r": -0.049241883243231345
+  },
+  {
+   "setting": 4,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.1,
+   "trades": 42886,
+   "mean_r": -0.0558138192664744
+  },
+  {
+   "setting": 4,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 150,
+   "threshold": 0.2,
+   "trades": 27268,
+   "mean_r": -0.05169314890702678
+  },
+  {
+   "setting": 5,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.0,
+   "trades": 57533,
+   "mean_r": -0.04688237833144869
+  },
+  {
+   "setting": 5,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.05,
+   "trades": 51927,
+   "mean_r": -0.05310362961578715
+  },
+  {
+   "setting": 5,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.1,
+   "trades": 45545,
+   "mean_r": -0.05825601869405004
+  },
+  {
+   "setting": 5,
+   "num_leaves": 31,
+   "min_data_in_leaf": 300,
+   "rounds": 500,
+   "threshold": 0.2,
+   "trades": 32827,
+   "mean_r": -0.06557562141914397
+  },
+  {
+   "setting": 6,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.0,
+   "trades": 59558,
+   "mean_r": -0.049290797221422
+  },
+  {
+   "setting": 6,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.05,
+   "trades": 51607,
+   "mean_r": -0.051710496687282566
+  },
+  {
+   "setting": 6,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.1,
+   "trades": 42169,
+   "mean_r": -0.053711342281390115
+  },
+  {
+   "setting": 6,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 150,
+   "threshold": 0.2,
+   "trades": 23895,
+   "mean_r": -0.044588801298603646
+  },
+  {
+   "setting": 7,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.0,
+   "trades": 59515,
+   "mean_r": -0.04950744585456177
+  },
+  {
+   "setting": 7,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.05,
+   "trades": 53786,
+   "mean_r": -0.05291273983073176
+  },
+  {
+   "setting": 7,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.1,
+   "trades": 46642,
+   "mean_r": -0.05840162273187853
+  },
+  {
+   "setting": 7,
+   "num_leaves": 31,
+   "min_data_in_leaf": 3000,
+   "rounds": 500,
+   "threshold": 0.2,
+   "trades": 31929,
+   "mean_r": -0.0670263179753328
+  }
+ ],
+ "valid": {
+  "trades": 17962,
+  "mean_r": -0.02446833586799429,
+  "ci_lo": -0.16783213206976672,
+  "ci_hi": 0.12874554642685487,
+  "gross_r": 0.004709155698003213,
+  "long_r": 0.07966483402472103,
+  "short_r": -0.08305286911690164,
+  "exit_mix": {
+   "time": 0.714,
+   "stop": 0.286
+  },
+  "avg_bars": 82.71779311880637
+ },
+ "valid_stress": {
+  "trades": 17962,
+  "mean_r": -0.03961390608552434,
+  "ci_lo": -0.18332343975450258,
+  "ci_hi": 0.11339655317069847,
+  "gross_r": 0.004906146122280296,
+  "long_r": 0.060813252125063055,
+  "short_r": -0.09611346521104576,
+  "exit_mix": {
+   "time": 0.712,
+   "stop": 0.288
+  },
+  "avg_bars": 82.6439149315221
+ },
+ "shift_gross_mean": 0.0028287555141112927,
+ "shift_gross_p95": 0.13859562937147313,
+ "per_coin": {
+  "BTCUSDT": {
+   "trades": 1118,
+   "mean_r": 0.08777747016659453,
+   "gross_r": 0.1304707724987981,
+   "ctrl_gross_median": 0.037952377613371405,
+   "ctrl_gross_p95": 0.23027949135148926
+  },
+  "ETHUSDT": {
+   "trades": 1115,
+   "mean_r": -0.00590446129210294,
+   "gross_r": 0.029593692567648607,
+   "ctrl_gross_median": 0.022372166525664178,
+   "ctrl_gross_p95": 0.1615625793842935
+  },
+  "DOGEUSDT": {
+   "trades": 956,
+   "mean_r": -0.027111595045589243,
+   "gross_r": 0.004667227581928024,
+   "ctrl_gross_median": 0.010377482006877593,
+   "ctrl_gross_p95": 0.17133460094325748
+  },
+  "ADAUSDT": {
+   "trades": 887,
+   "mean_r": -0.02944288405386513,
+   "gross_r": -0.0012305547440793017,
+   "ctrl_gross_median": -0.00813285650584484,
+   "ctrl_gross_p95": 0.1974178811357869
+  },
+  "BNBUSDT": {
+   "trades": 1264,
+   "mean_r": 0.012960662397190542,
+   "gross_r": 0.0613198656452936,
+   "ctrl_gross_median": 0.011451654326616125,
+   "ctrl_gross_p95": 0.18304783135298008
+  },
+  "AVAXUSDT": {
+   "trades": 844,
+   "mean_r": -0.04972345561580177,
+   "gross_r": -0.023466778575915344,
+   "ctrl_gross_median": 0.0185756019959259,
+   "ctrl_gross_p95": 0.19212679191394252
+  },
+  "MATICUSDT": {
+   "trades": 718,
+   "mean_r": 0.06627604861362456,
+   "gross_r": 0.09173834612107105,
+   "ctrl_gross_median": 0.04704660567612559,
+   "ctrl_gross_p95": 0.2020808918381993
+  },
+  "AXSUSDT": {
+   "trades": 831,
+   "mean_r": -0.0863600144369629,
+   "gross_r": -0.05733601742908482,
+   "ctrl_gross_median": 0.0013025767744448405,
+   "ctrl_gross_p95": 0.1547108226435127
+  },
+  "ETCUSDT": {
+   "trades": 913,
+   "mean_r": -0.14824574808699173,
+   "gross_r": -0.1165590527572457,
+   "ctrl_gross_median": 0.0015612917788630915,
+   "ctrl_gross_p95": 0.1323056412315188
+  },
+  "DOTUSDT": {
+   "trades": 930,
+   "mean_r": -0.03953492066586807,
+   "gross_r": -0.006375167500196817,
+   "ctrl_gross_median": 0.009459028795655472,
+   "ctrl_gross_p95": 0.1599812925136395
+  },
+  "LINKUSDT": {
+   "trades": 861,
+   "mean_r": -0.037516299705575865,
+   "gross_r": -0.014492338522171659,
+   "ctrl_gross_median": -0.01727435110891976,
+   "ctrl_gross_p95": 0.1399692909432457
+  },
+  "ATOMUSDT": {
+   "trades": 845,
+   "mean_r": -0.11768977564300097,
+   "gross_r": -0.08719601615366047,
+   "ctrl_gross_median": 0.013795961975941344,
+   "ctrl_gross_p95": 0.16557184425675825
+  },
+  "EOSUSDT": {
+   "trades": 856,
+   "mean_r": 0.011562901180871001,
+   "gross_r": 0.03572850856982723,
+   "ctrl_gross_median": 0.00733512099296072,
+   "ctrl_gross_p95": 0.15386843099883948
+  },
+  "CRVUSDT": {
+   "trades": 819,
+   "mean_r": 0.011431075275365363,
+   "gross_r": 0.02748476620383733,
+   "ctrl_gross_median": -0.003540530753397471,
+   "ctrl_gross_p95": 0.16710567690720082
+  },
+  "BCHUSDT": {
+   "trades": 821,
+   "mean_r": -0.0030818638396110103,
+   "gross_r": 0.02682842750264769,
+   "ctrl_gross_median": -0.006256835006146565,
+   "ctrl_gross_p95": 0.1597068046138369
+  },
+  "AAVEUSDT": {
+   "trades": 818,
+   "mean_r": -0.1129272399969027,
+   "gross_r": -0.08968316169847487,
+   "ctrl_gross_median": -0.03603768795425,
+   "ctrl_gross_p95": 0.10969771758565455
+  },
+  "ALGOUSDT": {
+   "trades": 785,
+   "mean_r": -0.03182281136462949,
+   "gross_r": -0.009939750589569259,
+   "ctrl_gross_median": -0.0030016980864220454,
+   "ctrl_gross_p95": 0.1503093031173378
+  },
+  "RUNEUSDT": {
+   "trades": 870,
+   "mean_r": 0.07532543698948038,
+   "gross_r": 0.09363788842162395,
+   "ctrl_gross_median": -0.012729737961727418,
+   "ctrl_gross_p95": 0.17008710159426785
+  },
+  "XTZUSDT": {
+   "trades": 853,
+   "mean_r": -0.0313488286920092,
+   "gross_r": -0.006633857617593919,
+   "ctrl_gross_median": -0.010466190406337499,
+   "ctrl_gross_p95": 0.15057800235507796
+  },
+  "THETAUSDT": {
+   "trades": 858,
+   "mean_r": -0.07407437064599456,
+   "gross_r": -0.05224791898783435,
+   "ctrl_gross_median": -0.03914992401640724,
+   "ctrl_gross_p95": 0.13527023838609437
+  }
+ },
+ "breadth": {
+  "eligible": 20,
+  "beat": [],
+  "share": 0.0
+ },
+ "valid_last_exit": "2024-12-27 00:00:00+00:00",
+ "verdict": "REJECT",
+ "gates_failed": [
+  "valid_mean>0",
+  "valid_ci_lo>0",
+  "stress_mean>0",
+  "gross_beats_shift_p95",
+  "breadth>=0.5",
+  "both_legs>0"
+ ],
+ "top_features_gain": [
+  [
+   "btc_vol_168",
+   73785.9
+  ],
+  [
+   "mkt_ret_168",
+   34912.2
+  ],
+  [
+   "btc_ret_168",
+   27585.1
+  ],
+  [
+   "btc_ret_72",
+   16323.2
+  ],
+  [
+   "weekday",
+   8142.2
+  ],
+  [
+   "vol_168",
+   7609.7
+  ],
+  [
+   "taker_ratio_24",
+   6724.9
+  ],
+  [
+   "btc_ret_24",
+   6502.5
+  ],
+  [
+   "mkt_ret_72",
+   5473.8
+  ],
+  [
+   "ema_dist_200",
+   4475.9
+  ],
+  [
+   "funding_last",
+   4083.9
+  ],
+  [
+   "vol_ratio",
+   3893.8
+  ]
+ ]
+}
