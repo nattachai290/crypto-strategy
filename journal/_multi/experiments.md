@@ -1720,3 +1720,23 @@ holdout stays untouched.**
 **Results page.** `docs/trade.html` now also shows the 20 coins' VALID ML
 trades on 1h candles. They are in their own group, marked as not passed, and
 each coin's account is computed on its own.
+
+---
+
+## Exp 018 - Owner decisions: no pairs trading; ML retraining on more coins not pursued
+
+**Date:** 2026-10-02
+**Status:** complete
+
+- **Pairs / spread trading (long one coin, short another) is out of scope.**
+  The owner declined it after it was explained (market-neutral, two legs,
+  double cost). Do not propose it again unless the owner asks.
+- **Retraining the ML model on more coins was discussed and not pursued.**
+  The VALID period has already judged five ML attempts. Exp 016's timing,
+  +0.009 R gross against 0.022 R cost, is limited by its size, not by the
+  amount of data. A frozen model never learns from new coins; any retrain is
+  a new model and would need data it has not seen.
+- Options still on the table, owner to choose:
+  - test the frozen §27 model on unseen coins (information only);
+  - a cost what-if on recorded trades (no holdout);
+  - pause.
