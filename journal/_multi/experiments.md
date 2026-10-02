@@ -1459,3 +1459,40 @@ price or signal exit fires.** No time cap, not even a safety cap.
 
 ### Verdict
 KEEP (rule recorded). No evaluation run.
+
+---
+
+## Exp 015 - Pre-registration: ML decides entry and exit, no time limit (PLAN.md section 27)
+
+**Date:** 2026-10-02
+**Status:** pre-registered, not run
+
+### Why
+The owner asked for a model that decides, at every bar it holds, whether to
+keep or close the position, with no time limit (consistent with Exp 014's rule).
+Every earlier ML round closed trades on a clock.
+
+### What is fixed (src/ml_hold.py, PLAN.md section 27, test 23)
+- **Data and model.** The same 20 coins and the same §21 features. One pooled
+  LightGBM regression forecasts the next 24 h move in ATRs, every 4 h.
+- **Policy (hysteresis).**
+  - Enter past a rolling q_in quantile of the coin's own |forecast|.
+  - Exit when the forecast falls under 0 ("flip") or under half the entry bar
+    ("half").
+  - Reverse past the opposite entry bar.
+  - Exits are the signal, an 8-ATR protective stop, and the period end. There
+    is no clock.
+- **Tuning.** The TRAIN out-of-fold run chooses 1 of 24 cells (4 LightGBM
+  settings × 3 q_in × 2 exit modes) by net mean R per trade (≥ 300 trades).
+- **Control.** 200 circular time-shifts per coin of the desired-position path.
+  The statistic is the held return per hour in ATRs, before stops and costs.
+- **Gates.** As in PLAN.md section 27: OOF > 0, ≥ 300 trades, mean and CI > 0,
+  cost ×1.5 > 0, timing > shifted p95, breadth ≥ half of ≥ 10 coins, both
+  legs > 0.
+- **Simulator.** The simulator matches `run_backtest` trade-for-trade
+  (signals, reversals, stops, funding). Synthetic tests:
+  - a planted momentum edge → PASS;
+  - pure noise → REJECT, with the timing gate failing.
+
+### Verdict
+Pending the research agent's single run.
