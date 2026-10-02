@@ -1936,9 +1936,10 @@ universe, and `src/ml_wf.py` is unchanged.**
 - **Correction.** "49, not 50: one coin had no usable cache" is wrong. Only 49
   coins met the selection rule, so `universe.json` lists 49 and all 49 built.
 - **Second defect, found in review.** The universe rule counted a frozen
-  zero-volume day as "trading on the last TRAIN day". Some already-dead
-  contracts (for example CVC, REN, BLZ and BAL, whose files run flat to
-  2026-08) could therefore enter the universe.
+  zero-volume day as "trading on the last TRAIN day". Already-dead contracts could
+  therefore enter the universe. Exp 020 found long frozen stretches in CVC,
+  REN, BLZ, SRM, BAL and HNT. Their `end` dates in `universe.json` come from
+  the same daily files.
 
 ### Fix (src/ml_wf.py; test 24 extended; PLAN.md §28 addendum)
 - **Tradable bars.** A bar is tradable only if its volume is > 0 and
