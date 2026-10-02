@@ -1749,7 +1749,9 @@ each coin's account is computed on its own.
 **Status:** pre-registered, not run
 
 ### Why
-The owner asked for three things:
+This supersedes Exp 018's second bullet. After Exp 018, the owner asked for
+this different design: monthly refits, new data at each refit, judged under the
+same holdout lock. The owner asked for three things:
 - walk-forward training on many coins;
 - the timeframes 1h, 4h and 1d only;
 - a model that looks across timeframes.
