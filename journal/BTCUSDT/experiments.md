@@ -5462,3 +5462,84 @@ offset being on the wrong side. And the no-stop move is +0.020 R against random
 (CI touching 0), which is the same small real drift this project has measured
 everywhere else - the structure exists and it is smaller than the cost. ETHUSDT
 does not reproduce the effect (CI straddles 0), so it is a BTC finding.**
+
+---
+
+## Exp 053 - Review of Exp 052 / ETH Exp 017 (stop diagnosis, planner): the verdict holds, and the size matters more than the label
+
+**Date:** 2026-10-02
+**Status:** complete.
+
+**Integrity.**
+- The commit adds only `results/*/stop_diag/` and journals.
+- No `src/`, idea, `evaluations.csv` or holdout file changed.
+- The numbers match `summary.json`.
+
+**Robustness check (planner).** The CI in `stop_diag.py` resamples single
+evaluations, but many of them are versions or timeframe variants of the same
+idea. So `per_evaluation.csv` was resampled again by **idea family** (the
+3-digit prefix), 4,000 draws:
+
+| coin | evaluations | families | direction skill | CI by evaluation | CI by family |
+|---|---|---|---|---|---|
+| BTC | 138 | 53 | −1.54 pts | [−2.48, −0.62] | **[−2.69, −0.45]** |
+| ETH | 58 | 18 | −0.48 pts | [−1.47, +0.47] | [−1.74, +0.77] |
+
+- **BTC `WRONG_DIRECTION` survives the clustering.**
+- Without the 15m rows, BTC's skill is **−0.44 pts**, so most of the effect is
+  at 15m.
+- The 6 short-named evaluations are −8.67 pts on 1,923 trades. They pull the
+  pooled figure down by about 0.4 pts.
+
+**How to read it (corrections to the entry's tone, not its numbers):**
+1. **The effect is tiny.** The real entries are right 49.0% of the time; random
+   fills are right 50.5%. Practically, that is a coin flip that leans slightly
+   the wrong way. The statistical label is correct, but "systematically the
+   wrong side" overstates it outside the 15m short-breakout cluster.
+2. **Flipping the entries is not a strategy.** It would add about 1.5 points of
+   hit rate. That is worth far less than the 0.1–0.2 R of cost per trade at
+   these clocks.
+3. **Do not build a "fade the 15m breakdown" idea from the worst cluster.**
+   That cluster was chosen after looking at VALID, which `AGENTS.md` §3 rule 3
+   forbids. 15m also costs ~0.2 R per trade.
+4. **The shakeout effect is real but small.** Of the trades that were stopped,
+   real entries were right +2.5 pts more often than random ones (CI above 0 on
+   BTC; ETH's CI includes 0). The stops do cost a little, but there is no edge
+   underneath for them to protect. The no-stop move adds +0.02 R, and its CI
+   touches 0.
+
+**Answer to the owner's question.** The entries are **not right-and-shaken-out**.
+Their direction calls are about as good as random, and on BTC slightly worse.
+The stops make things slightly worse again. Both effects are much smaller than
+the cost of trading. `LESSONS.md` §13 is added.
+
+---
+
+## Exp 054 - Limit orders resting at support/resistance, pre-registration (PLAN.md section 24)
+
+**Date:** 2026-10-02
+**Status:** tooling ready, not run. The research agent runs it.
+
+**Owner's question.** Have we tried placing the order in advance at the level
+and waiting for price to come to it? **No.** Every level idea so far waited
+for confirmation, including the engine's `post_only` mode, which rests for
+only 1 bar near the close.
+
+**Tool.** `src/level_limit.py`, a standalone simulator; the engine is
+unchanged.
+- **Orders:** one resting limit per level (yesterday's low/high, or a live
+  swing pivot). It is placed when the level is within 3 ATR of the close and
+  rests for 24 bars.
+- **Fills and costs:** maker fill at the limit, or at the open on a gap.
+- **Exits:** stop just beyond the level. On the fill bar, a stop touch counts
+  as stopped (pessimistic). Target as a maker order; out after 48 bars.
+- **Control:** the same number of orders at the same distances from price,
+  placed at random bars. It must be beaten on TRAIN and on VALID.
+
+**Test 20:**
+- 5 hand-computed cases;
+- causal orders;
+- a planted "levels hold" market gives PASS;
+- noise gives REJECT.
+
+**Prior:** low. The same levels did not hold in §22.

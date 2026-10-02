@@ -1554,3 +1554,12 @@ therefore does not reproduce on ETH: same sign, four times smaller, and the
 one number worth the owner's attention is that ETH's strategies are stopped
 45.98% of the time against BTC's 24.27% - the stop is doing twice the damage on
 ETH, and this diagnosis says it is the wrong side rather than a fake move.**
+
+---
+
+## Exp 018 - Review of Exp 017 (stop diagnosis on ETH, planner)
+
+See **BTC Exp 053**.
+- COIN_FLIP stands. Clustered by idea family (18 families), the CI is
+  [−1.74, +0.77] pts.
+- The shakeout CI includes 0.

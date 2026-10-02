@@ -423,6 +423,7 @@ def main() -> None:
     test_ml_pool2()
     test_candle_at_level()
     test_stop_diag()
+    test_level_limit()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1490,6 +1491,88 @@ def test_stop_diag() -> None:
           f"{bad['verdict']} skill {bad['direction_skill']:+.3f}")
     check("stop_diag: noise -> COIN_FLIP", flat["verdict"] == "COIN_FLIP",
           f"{flat['verdict']} skill {flat['direction_skill']:+.3f} ci {flat['ci']['direction_skill']}")
+
+
+def _level_bars(k: float, seed: int) -> pd.DataFrame:
+    """1h bars 2020-01..2025-01. k > 0 plants 'levels hold': after a bar trades
+    below the previous UTC day's low, price drifts up by k per bar for 24 bars;
+    after one trades above the previous day's high, it drifts down. k = 0 is noise."""
+    rng = np.random.default_rng(seed)
+    idx = pd.date_range("2020-01-01", "2025-01-10", freq="1h", tz="UTC")
+    n = len(idx)
+    o, h, l, c = (np.zeros(n) for _ in range(4))
+    px, push, until = 30000.0, 0.0, -1
+    day_hi = day_lo = prev_hi = prev_lo = np.nan
+    for i in range(n):
+        if idx[i].hour == 0:
+            prev_hi, prev_lo, day_hi, day_lo = day_hi, day_lo, -np.inf, np.inf
+        drift = push if i <= until else 0.0
+        r = rng.normal(0, 0.006) + drift
+        o[i] = px
+        px = px * np.exp(r)
+        c[i] = px
+        w = abs(rng.normal(0, 0.003, 2))
+        h[i], l[i] = max(o[i], c[i]) * (1 + w[0]), min(o[i], c[i]) * (1 - w[1])
+        if k > 0 and np.isfinite(prev_lo) and l[i] < prev_lo and i > until:
+            push, until = k, i + 24
+        elif k > 0 and np.isfinite(prev_hi) and h[i] > prev_hi and i > until:
+            push, until = -k, i + 24
+        day_hi, day_lo = max(day_hi, h[i]), min(day_lo, l[i])
+    return pd.DataFrame({"open": o, "high": h, "low": l, "close": c}, index=idx)
+
+
+def test_level_limit() -> None:
+    print("\n20. level_limit: hand-computed fills, gaps, same-bar stop, expiry; planted levels found, noise rejected")
+    import contextlib
+    import io
+    import level_limit as LL
+    import indicators as ta
+    t = np.array(["2024-01-01T00", "2024-01-01T01", "2024-01-01T02", "2024-01-01T03", "2024-01-01T04"],
+                 dtype="datetime64[ns]")
+
+    def bars(o2, l2):
+        o = np.array([103, 102, o2, 101, 104.0]); h = np.array([103.5, 102.5, 101.2, 104.5, 104.5])
+        l = np.array([102.5, 101, l2, 100.3, 103.5]); c = np.array([103, 101.5, 100.5, 104, 104.0])
+        return o, h, l, c
+    order = pd.DataFrame({"bar": [0], "side": [1.0], "limit": [100.0], "dist_atr": [1.5], "atr": [2.0]})
+    fm, ft, sl = C.FEE_MAKER, C.FEE_TAKER, C.SLIPPAGE
+    r = LL.simulate_orders(*bars(101, 99.8), order, 1.0, 2.0, t)
+    want = 2.0 - (100 * fm + 104 * fm) / 2
+    check("level_limit: limit fills at the level, target is a maker exit (hand-computed)",
+          len(r) == 1 and r["reason"].iloc[0] == "target" and np.isclose(r["net_r"].iloc[0], want),
+          f"{r.to_dict('records')} want {want}")
+    r = LL.simulate_orders(*bars(99.5, 99.4), order, 1.0, 2.0, t)
+    check("level_limit: a bar that opens below the limit fills at the open",
+          len(r) == 1 and np.isclose(r["gross_r"].iloc[0], (103.5 - 99.5) / 2), r.to_dict("records"))
+    r = LL.simulate_orders(*bars(101, 97.5), order, 1.0, 2.0, t)
+    px_adj = 98 * (1 - sl)
+    want = (px_adj - 100) / 2 - (100 * fm + px_adj * ft) / 2
+    check("level_limit: filled and stopped on the same bar -> stopped (pessimistic, hand-computed)",
+          len(r) == 1 and r["reason"].iloc[0] == "stop" and np.isclose(r["net_r"].iloc[0], want),
+          f"{r.to_dict('records')} want {want}")
+    r = LL.simulate_orders(*bars(97.0, 96.8), order, 1.0, 2.0, t)
+    check("level_limit: a gap fill below the stop exits at the fill (gross 0, not a gain)",
+          len(r) == 1 and np.isclose(r["gross_r"].iloc[0], 0.0), r.to_dict("records"))
+    r = LL.simulate_orders(*bars(101, 99.8), order, 1.0, 2.0, t, expiry=1)
+    check("level_limit: an order not reached before expiry never fills", len(r) == 0)
+    b = _level_bars(0.0, 7).iloc[:6000]
+    atr = ta.atr_(b["high"], b["low"], b["close"], 14).to_numpy(float)
+    for kind in ("prev_day", "swing"):
+        full = LL.place_orders(b, kind, atr)
+        part = LL.place_orders(b.iloc[:4000], kind, atr[:4000])
+        check(f"level_limit: {kind} orders are causal (full run == truncated run on the prefix)",
+              full[full["bar"] < 3999].reset_index(drop=True).equals(part[part["bar"] < 3999].reset_index(drop=True)))
+    grid = [dict(level="prev_day", stop_atr=1.0, tp_r=2.0)]
+    with contextlib.redirect_stdout(io.StringIO()):
+        edge = LL.evaluate(_level_bars(0.0015, 11), None, grid=grid, n_control=60)
+        noise = LL.evaluate(_level_bars(0.0, 12), None, grid=grid, n_control=60)
+    check("level_limit pipeline: planted 'levels hold' -> PASS, above the control p95",
+          edge["verdict"] == "PASS",
+          f"{edge['verdict']} mean {edge['valid'].get('mean_r', 0):+.3f} p95 {edge['control']['valid']['p95']:+.3f} "
+          f"failed {edge['gates_failed']}")
+    check("level_limit pipeline: noise -> REJECT, not above the control p95",
+          noise["verdict"] == "REJECT" and "beats_control_p95_valid" in noise["gates_failed"],
+          f"{noise['verdict']} mean {noise['valid'].get('mean_r', 0):+.3f} failed {noise['gates_failed']}")
 
 
 if __name__ == "__main__":
