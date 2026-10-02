@@ -1,0 +1,60 @@
+{
+  "name": "055_candle_at_swing_level_tf30",
+  "hypothesis": "Same mechanism as 054 at a different kind of level: recent swing highs and lows (pivots with 10 bars each side, known 10 bars later, alive until price closes through them or 500 bars pass) are where the last turn happened and where traders place stops and new orders. A rejection candle that tests such a level and closes back on the near side shows the level held, and traders who bet on the break are trapped. Long at swing-low support, short at swing-high resistance; swing stop beyond the candle (n 2, 0.5 ATR buffer, at least 2.5 ATR), out after 48 h. Pre-registered in PLAN.md section 22; pattern, test distance and target chosen on TRAIN only. [Timeframe variant of 055_candle_at_swing_level, 60m -> 30m, mode chart: same bar counts and ATR multiples, hold x0.5, pct stop x0.707.]",
+  "strategy": "recipe",
+  "tf": 30,
+  "params": {
+    "triggers": [
+      {
+        "type": "candle_at_level",
+        "pattern": "any",
+        "level": "swing",
+        "near_atr": 0.5,
+        "wick_ratio": 2.0,
+        "atr_n": 14,
+        "pivot_len": 10,
+        "max_age": 500
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "swing",
+      "n": 2,
+      "buffer_atr": 0.5,
+      "min_atr": 2.5,
+      "max_atr": 5.0
+    },
+    "tp": {
+      "type": "r",
+      "r": 1.5
+    },
+    "be_at": 0,
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 24.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.pattern": [
+      "engulfing",
+      "pin"
+    ],
+    "triggers.0.near_atr": [
+      0.25,
+      0.5
+    ],
+    "tp.r": [
+      1.5,
+      3.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "055_candle_at_swing_level",
+  "variant_mode": "chart"
+}

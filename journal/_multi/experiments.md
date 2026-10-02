@@ -1131,3 +1131,35 @@ noise floor of a 32-cell search.
 
 **`--final` is not run. No holdout is used and none is warranted.** No setting,
 coin, feature or gate is tried after a result.
+
+---
+
+## Exp 009 - Review of Exp 008 (pooled ML round 2, planner): REJECT stands; one conclusion goes too far
+
+**Date:** 2026-10-02
+**Status:** complete. Record integrity checked: commit 4107228 adds only
+`results/_multi/ml_pool2/summary.json`, `journal/_multi/ml_pool2.md` and this
+journal. No `src/` change, no holdout lock, and `--final` was correctly not
+run. The tables match `summary.json`.
+
+**Corrections:**
+1. **"The fairer control removes round 1's entire apparent edge" / "round 1's
+   edge was mostly the cost arithmetic of high-volatility bars" goes too
+   far.** Round 2 is a different model with a different exit (8 ATR / 96 bars
+   against 3 ATR / 24 bars), different features and a different decision step.
+   Its gross being near its own shifted median says nothing about what round
+   1's gross control would have shown, and that was never measured. The
+   volatility explanation for round 1 (Exp 006) is still a plausible
+   hypothesis, not a finding. The verdicts of both rounds are unaffected.
+2. **"31 leaves is worse than 7 in five of the four pairs"** should read
+   **4 of 4 pairs** at threshold 0.20, checked in `summary.json`. "500 rounds
+   worse than 150 in every pair" is right: 4 of 4.
+3. **The short-leg explanation ("trades more clustered") is a guess.** A
+   simpler reading also fits: a 4-day hold carries 4× the 2023–24 drift of a
+   1-day hold, so shorts lose more in a bull market. The `both_legs>0` gate
+   was there for that. Neither reading was measured.
+
+**Verdict.** REJECT on 6 of 9 gates, and the ML line (§19–21) is closed. The
+holdout was never used by any ML run. This is the end of the "train it
+smarter on the same data" question: it was pre-registered, run once, and
+failed. Further attempts on VALID 2023–24 would be fitting the exam.

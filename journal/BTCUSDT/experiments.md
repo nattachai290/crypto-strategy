@@ -5124,3 +5124,28 @@ is also the tooling entry. Read "Exp 046 (results)" as the second one.
 The rest of the entry stands. The decisive evidence is the OOF curve, which is
 monotone down on TRAIN before VALID was touched. The one-position engine run is
 850 trades, CAGR −15.4%, maxDD 44.3%.
+
+---
+
+## Exp 048 - Candle pattern at a support/resistance level, pre-registration (PLAN.md section 22)
+
+**Date:** 2026-10-02
+**Status:** tooling ready, not run. The research agent runs it.
+
+**Owner request:** "candle pattern + location + support and resistance".
+
+**New block:** `recipes.candle_at_level` (Level 2). It fires on an engulfing
+or pin candle that tests a support or resistance level and closes back on the
+near side. Levels are yesterday's low/high (`prev_day`), live swing pivots
+(`swing`), or both. Test 18 is hand-built; test 7 checks causality.
+
+**Ideas:**
+- `054_candle_at_prev_day_level`;
+- `055_candle_at_swing_level`.
+
+Each is written at 1h with chart-mode variants at 15m, 30m and 4h, giving 8
+files. Each has an 8-cell TRAIN grid: pattern × test distance × target. The
+swing stop is at least 2.5 ATR, so cost stays near 0.1 R at 1h.
+
+**Prior:** low. This is the first rule-based test of candle patterns, and the
+location requirement is the hypothesis.

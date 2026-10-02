@@ -1,0 +1,58 @@
+{
+  "name": "054_candle_at_prev_day_level_tf15",
+  "hypothesis": "Yesterday's high and low are the levels most traders watch: stops and breakout orders queue just beyond them and limit orders rest at them. When price tests one of these levels and the bar closes as a clear rejection candle (a bullish engulfing or hammer at yesterday's low, a bearish engulfing or shooting star at yesterday's high), the orders at the level have absorbed the push, and the breakout traders who chased the test are on the wrong side and must exit, which drives price back into the range. Long at support, short at resistance; the stop sits beyond the rejection candle's extreme (swing stop, n 2, 0.5 ATR buffer, at least 2.5 ATR so cost stays under ~0.1 R), out after 48 h. Pre-registered in PLAN.md section 22: the pattern (engulfing / pin), how close the test must come (0.25 / 0.5 ATR) and the target (1.5 / 3 R) are chosen on TRAIN only. Prior: low; LESSONS.md section 2 says the short leg will be the test. [Timeframe variant of 054_candle_at_prev_day_level, 60m -> 15m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "candle_at_level",
+        "pattern": "any",
+        "level": "prev_day",
+        "near_atr": 0.5,
+        "wick_ratio": 2.0,
+        "atr_n": 14
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "swing",
+      "n": 2,
+      "buffer_atr": 0.5,
+      "min_atr": 2.5,
+      "max_atr": 5.0
+    },
+    "tp": {
+      "type": "r",
+      "r": 1.5
+    },
+    "be_at": 0,
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 12.0,
+    "cooldown_bars": 0,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.pattern": [
+      "engulfing",
+      "pin"
+    ],
+    "triggers.0.near_atr": [
+      0.25,
+      0.5
+    ],
+    "tp.r": [
+      1.5,
+      3.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "054_candle_at_prev_day_level",
+  "variant_mode": "chart"
+}

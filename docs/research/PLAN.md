@@ -1585,3 +1585,61 @@ chosen from a VALID number.
 - The longer hold attacks the main cost problem directly.
 - A wide CI on 104 VALID weeks is likely to stay wide.
 - The both-legs gate is strict in a bull-market VALID.
+
+## 22. Candle pattern at a support/resistance level (owner request, 2026-10-02)
+
+**Why.** The owner asked for "candle pattern + location + support and
+resistance". Candle patterns had never been tested as a rule. ML round 1 saw
+candle anatomy as features, and `liquidity_sweep` (T6) is the nearest past
+idea: a wick through a pivot on a volume spike. A pattern on its own has
+little published evidence, so the location is part of the hypothesis.
+
+**The block (`recipes.candle_at_level`, Level 2):**
+- **Patterns**, using bars i and i−1 only:
+  - bullish/bearish **engulfing**;
+  - **pin**: a hammer or shooting star, with the long wick ≥ 2 × body, the
+    other wick ≤ half of it, and the close in the favourable half of the range.
+- **Levels** (`level`):
+  - `prev_day`: the previous completed UTC day's low is support, its high is
+    resistance;
+  - `swing`: live pivot lows/highs (10 bars each side, known 10 bars later),
+    each alive until a close beyond it or 500 bars;
+  - `both`: either kind.
+- **Long** = a bullish pattern whose low comes within `near_atr` × ATR of
+  support and whose close stays above it. **Short** = the mirror at
+  resistance.
+
+**Tests:**
+- Test 18 is hand-built:
+  - an engulfing at yesterday's low gives a long on that bar only;
+  - a shooting star at yesterday's high gives a short;
+  - the same candles far from a level give nothing;
+  - no level exists on the first day;
+  - a swing low works as support, and a level that has been closed through
+    is dead.
+- Test 7 checks causality and the output shape.
+
+**Ideas** (written at 1h, chart-mode variants at 15m, 30m and 4h):
+- `054_candle_at_prev_day_level`, with `level` = `prev_day`;
+- `055_candle_at_swing_level`, with `level` = `swing`.
+
+Both use the same exits:
+- a swing stop beyond the candle: n 2, 0.5 ATR buffer, **at least 2.5 ATR**,
+  so that cost stays near 0.1 R at 1h (`LESSONS.md` §1);
+- no break-even or trailing stop;
+- out after 48 h at 1h.
+
+The grid is chosen on TRAIN only, 8 cells: `pattern` {engulfing, pin} ×
+`near_atr` {0.25, 0.5} × `tp.r` {1.5, 3}.
+
+**Runs:**
+- BTCUSDT: all 8 files, each one `evaluate.py` run.
+- Then ETHUSDT: the same 8 files, as a replication.
+- Every WATCH/PASS gets `baseline.py` and `benchmark.py`.
+- `--final` only per AGENTS.md step 7 (PASS + SKILL or ALPHA).
+- Report the long and short legs separately (`LESSONS.md` §2).
+- No v2 unless the verdict is WATCH, and only with a diagnosis.
+
+**Prior:** low. 15m will pay ~0.3 R in cost and is expected to lose. A
+positive result must beat random entries within the same exits
+(`baseline.py`) to count.

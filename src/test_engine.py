@@ -421,6 +421,7 @@ def main() -> None:
     test_ml_entry()
     test_ml_pool()
     test_ml_pool2()
+    test_candle_at_level()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1397,6 +1398,51 @@ def test_ml_pool2() -> None:
     check("ml_pool2: no VALID trade runs into HOLDOUT",
           pd.Timestamp(edge["valid_last_exit"]) <= pd.Timestamp(M2.SPLITS["holdout"][0], tz="UTC"),
           str(edge["valid_last_exit"]))
+
+
+def test_candle_at_level() -> None:
+    print("\n18. candle_at_level: hand-built engulfing at yesterday's low, pin at yesterday's high, and misses")
+    import recipes as RC
+    idx = pd.date_range("2024-01-01", periods=48, freq="1h", tz="UTC")
+    o = np.full(48, 105.0); c = np.full(48, 105.0); h = np.full(48, 106.0); l = np.full(48, 104.0)
+    l[5] = 100.0    # day 1 low  = 100
+    h[9] = 110.0    # day 1 high = 110
+    # day 2: a red bar, then a bullish engulfing whose low tags 100.2 (support 100)
+    o[30], c[30], h[30], l[30] = 103.0, 101.5, 103.2, 101.3
+    o[31], c[31], h[31], l[31] = 101.4, 103.5, 103.6, 100.2
+    # day 2: a shooting star whose high tags 109.8 (resistance 110)
+    o[40], c[40], h[40], l[40] = 108.0, 107.8, 109.8, 107.7
+    b = pd.DataFrame({"open": o, "high": h, "low": l, "close": c, "volume": 1.0}, index=idx)
+    s_any = RC.t_candle_at_level(b, None, pattern="any", level="prev_day", near_atr=0.5)
+    s_eng = RC.t_candle_at_level(b, None, pattern="engulfing", level="prev_day", near_atr=0.5)
+    s_pin = RC.t_candle_at_level(b, None, pattern="pin", level="prev_day", near_atr=0.5)
+    check("candle_at_level: bullish engulfing at yesterday's low -> long on that bar only",
+          s_eng[31] == 1.0 and (np.flatnonzero(s_eng) == [31]).all(), str(np.flatnonzero(s_eng)))
+    check("candle_at_level: shooting star at yesterday's high -> short (pattern pin)",
+          s_pin[40] == -1.0 and s_pin[31] == 0.0, str(np.flatnonzero(s_pin)))
+    check("candle_at_level: pattern any = both", s_any[31] == 1.0 and s_any[40] == -1.0
+          and int((s_any != 0).sum()) == 2, str(np.flatnonzero(s_any)))
+    far = b.copy(); far.iloc[9, far.columns.get_loc("high")] = 120.0; far.iloc[5, far.columns.get_loc("low")] = 90.0
+    s_far = RC.t_candle_at_level(far, None, pattern="any", level="prev_day", near_atr=0.5)
+    check("candle_at_level: the same candles far from any level -> no signal", not s_far.any(),
+          str(np.flatnonzero(s_far)))
+    day1 = RC.t_candle_at_level(b.iloc[:24], None, pattern="any", level="prev_day")
+    check("candle_at_level: no level on the first day (no completed previous day)", not day1.any())
+    # swing level: a pivot low at bar 12 (pivot_len 3) is support for later bars
+    o2 = np.full(48, 105.0); c2 = np.full(48, 105.0); h2 = np.full(48, 106.0); l2 = np.full(48, 104.0)
+    l2[12] = 100.0
+    o2[30], c2[30], h2[30], l2[30] = 103.0, 101.5, 103.2, 101.3
+    o2[31], c2[31], h2[31], l2[31] = 101.4, 103.5, 103.6, 100.2
+    b2 = pd.DataFrame({"open": o2, "high": h2, "low": l2, "close": c2, "volume": 1.0}, index=idx)
+    sw = RC.t_candle_at_level(b2, None, pattern="engulfing", level="swing", pivot_len=3, near_atr=0.5)
+    check("candle_at_level: engulfing at a live swing low -> long", sw[31] == 1.0 and int((sw != 0).sum()) == 1,
+          str(np.flatnonzero(sw)))
+    broke = b2.copy()
+    for k in (20, 21):  # two equal lows: a close through the level that is not itself a pivot (ties)
+        broke.iloc[k, broke.columns.get_loc("close")] = 99.0
+        broke.iloc[k, broke.columns.get_loc("low")] = 98.9
+    sb = RC.t_candle_at_level(broke, None, pattern="engulfing", level="swing", pivot_len=3, near_atr=0.5)
+    check("candle_at_level: a swing level closed through is dead", sb[31] == 0.0, str(np.flatnonzero(sb)))
 
 
 if __name__ == "__main__":

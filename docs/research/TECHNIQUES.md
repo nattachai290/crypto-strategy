@@ -76,7 +76,7 @@ Exp 004. Prefer ATR stops of ~2.5–5x on 15m, or 15m/30m bars over 1m/3m.
 | volatility breakout (Larry Williams) | open of day + k × yesterday's range |
 | Keltner / ATR channel break | EMA ± k·ATR |
 | MACD histogram turn, stochastic cross | classic oscillators as triggers |
-| engulfing / pin bar at a level | candle pattern + location (near VWAP or daily extreme) |
+| engulfing / pin bar at a level | **now `candle_at_level`** (PLAN.md §22, ideas 054/055) |
 | liquidation-cascade proxy | bar range > k·ATR **and** volume > m × average, then fade or follow |
 | taker-flow imbalance flip | taker buy ratio crosses 0.5 after being extreme |
 | funding change | funding sign flips or jumps by x |
@@ -396,6 +396,7 @@ entries inside the same trend filters do as well. A long-only result on
 - `chartart_macd_sma(fast, slow, signal, veryslow)` (T3): ChartArt's MACD + SMA 200 strategy (SMA-based MACD).
 - `super_scalper(atr_len, mult, rsi_fast, rsi_slow)` (T4): a big bar (body > WMA-ATR band) in the direction of RSI 25 vs RSI 100.
 - `liquidity_sweep(pivot_len, max_age, min_gap_atr, vol_mult, min_wick_ratio)` (T6): a swing high/low swept by a wick on a volume spike, closed back inside, confirmed next bar past the sweep bar's midpoint. Mozilla Public License 2.0 source.
+- `candle_at_level(pattern, level, near_atr, wick_ratio, pivot_len, max_age, atr_n)` (PLAN.md §22): a reversal candle (engulfing / pin / any) whose wick tests a support or resistance level (`prev_day` = yesterday's low/high, `swing` = live pivots, `both`) within `near_atr` x ATR and closes back on the near side. Long at support, short at resistance.
 
 ## Metrics blocks (new data, PLAN.md section 14)
 

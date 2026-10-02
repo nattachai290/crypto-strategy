@@ -5,9 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: pooled ML round 2, `src/ml_pool2.py` (`docs/research/PLAN.md`
-§21): one run on the 20 cached coins, then stop.** The ML entry model (§19)
-and pooled round 1 (§20) are REJECT and must not be rerun with changes.
+**Active work: candle pattern at a support/resistance level
+(`docs/research/PLAN.md` §22), ideas `054_candle_at_prev_day_level` and
+`055_candle_at_swing_level`, 4 timeframes each, BTCUSDT then ETHUSDT.** The ML
+line (§19–21) is closed: do not rerun it with changes.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
