@@ -74,7 +74,8 @@ p{margin:0 0 12px}
 .hold .fill{left:0;background:var(--accent)}
 footer{margin-top:48px;color:var(--muted);font-size:.85rem}
 code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
-.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;position:sticky;top:8px;z-index:10;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+html{scroll-padding-top:72px}
 .nav a{flex:1 1 140px;text-align:center;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem}
 .nav a:hover{background:var(--bg);color:var(--text)}
 .nav a[aria-current="page"]{background:var(--accent);color:var(--bg);font-weight:600}
@@ -85,16 +86,16 @@ code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
 <nav class="nav" aria-label="เมนู"><a href="./" aria-current="page">📋 สรุปผล</a><a href="equity.html">📈 กราฟเงินทุน</a></nav>
 
 <h1>ผลวิจัยกลยุทธ์เทรดคริปโต</h1>
-<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 2 ต.ค. 2026 (ML รอบ 2)</p>
+<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 2 ต.ค. 2026 (Coinbase premium)</p>
 
 <div class="card hero">
   <div class="big">สรุปสั้นๆ: ยังไม่เจอวิธีไหนที่ทำกำไรได้จริง</div>
-  <p>ทดสอบไปแล้ว 472 รายการ บน 4 เหรียญ และอีก 3 แนวทางแยก ได้แก่ ถือตามเทรนด์รายวัน หมุนเหรียญ ทดลองจุดออกไม้ และให้ AI (LightGBM) หัดเลือกจังหวะเข้า มี 4 กลยุทธ์ที่ดูดีพอจนได้เข้า "สอบจริง" ทั้ง 4 ตัวสอบตก ผลที่ดูดีตอนแรกมาจากโชค หรือจากตลาดช่วงขาขึ้นเอง ไม่ได้มาจากฝีมือของกลยุทธ์</p>
+  <p>ทดสอบไปแล้วกว่า 500 รายการ บน 12 เหรียญ และอีกหลายแนวทางแยก ได้แก่ ถือตามเทรนด์รายวัน หมุนเหรียญ ทดลองจุดออกไม้ และให้ AI (LightGBM) หัดเลือกจังหวะเข้า มี 4 กลยุทธ์ที่ดูดีพอจนได้เข้า "สอบจริง" ทั้ง 4 ตัวสอบตก ผลที่ดูดีตอนแรกมาจากโชค หรือจากตลาดช่วงขาขึ้นเอง ไม่ได้มาจากฝีมือของกลยุทธ์</p>
   <p class="muted small" style="margin:0">ผลลบแบบนี้ก็มีค่า เพราะทำให้รู้ว่าทางไหนไม่ต้องเสียเงินไปลองจริง</p>
 </div>
 
 <div class="stats">
-  <div class="stat"><div class="n">472</div><div class="l">รายการที่ทดสอบ (BTC, ETH, SOL, BNB)</div></div>
+  <div class="stat"><div class="n">500+</div><div class="l">รายการที่ทดสอบ (12 เหรียญ)</div></div>
   <div class="stat"><div class="n">4</div><div class="l">กลยุทธ์ที่ได้เข้าสอบจริง (ไม่นับ 1 ครั้งที่ใช้ทดสอบระบบ)</div></div>
   <div class="stat"><div class="n" style="color:var(--bad)">0</div><div class="l">ที่สอบจริงผ่าน</div></div>
   <div class="stat"><div class="n">+0.06</div><div class="l">R ที่ดีที่สุดของ ML (รวม 20 เหรียญ) แต่ยังแยกจากโชคไม่ได้</div></div>
@@ -172,13 +173,35 @@ code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
   <p class="small muted" style="margin:0">ห้ามปรับแต่งแล้วรันซ้ำบนข้อมูลชุดเดิม เพราะจะกลายเป็นการจูนให้เข้ากับข้อสอบ · ที่มา: <code>journal/*/ml_entry.md</code>, <code>journal/_multi/ml_pool.md</code>, <code>journal/_multi/ml_pool2.md</code></p>
 </div>
 
+<h2>ผลล่าสุด: Coinbase premium กราฟ 4 ชั่วโมง</h2>
+<p><a href="equity.html#prem" style="color:var(--accent);font-weight:600">ดูกราฟเงินทุนรายเหรียญ →</a></p>
+<div class="card" style="border-left:6px solid var(--wait)">
+  <h3>ดีที่สุดเท่าที่เคยเจอ แต่ยังไม่ผ่านการยืนยัน <span class="tag t-wait">ยังไม่ได้สอบจริง</span></h3>
+  <p>เมื่อราคาบน Coinbase (นักลงทุนสหรัฐ) แพงกว่า Binance ผิดปกติ ให้ long ถ้าถูกกว่าผิดปกติ ให้ short ถือได้นานสุดราว 8 วัน · ผลช่วงสอบย่อย 2023–24 · เสี่ยงไม้ละ 1%</p>
+  <div class="scroll"><table class="tbl">
+    <tr><th>เหรียญ</th><th style="text-align:right">ไม้</th><th style="text-align:right">R เฉลี่ย</th><th style="text-align:right">ต่อปี</th><th style="text-align:right">ลงหนักสุด</th></tr>
+    <tr><td>LINK</td><td class="num">95</td><td class="num" style="color:var(--good)">+0.44</td><td class="num">+22.5%</td><td class="num">5.3%</td></tr>
+    <tr><td>ETH</td><td class="num">86</td><td class="num" style="color:var(--good)">+0.39</td><td class="num">+17.4%</td><td class="num">9.6%</td></tr>
+    <tr><td>BCH</td><td class="num">91</td><td class="num" style="color:var(--good)">+0.31</td><td class="num">+14.7%</td><td class="num">5.6%</td></tr>
+    <tr><td>BTC</td><td class="num">72</td><td class="num" style="color:var(--good)">+0.42</td><td class="num">+13.6%</td><td class="num">7.0%</td></tr>
+    <tr><td>ATOM</td><td class="num">90</td><td class="num" style="color:var(--good)">+0.28</td><td class="num">+12.8%</td><td class="num">11.1%</td></tr>
+    <tr><td>ETC</td><td class="num">97</td><td class="num" style="color:var(--good)">+0.15</td><td class="num">+7.0%</td><td class="num">8.4%</td></tr>
+    <tr><td>DOGE</td><td class="num">101</td><td class="num" style="color:var(--good)">+0.10</td><td class="num">+4.7%</td><td class="num">9.5%</td></tr>
+    <tr><td>DOT</td><td class="num">115</td><td class="num" style="color:var(--good)">+0.04</td><td class="num">+1.9%</td><td class="num">14.8%</td></tr>
+    <tr><td>ALGO</td><td class="num">102</td><td class="num" style="color:var(--good)">+0.03</td><td class="num">+1.1%</td><td class="num">12.2%</td></tr>
+    <tr><td>ADA</td><td class="num">114</td><td class="num" style="color:var(--bad)">−0.04</td><td class="num">−2.9%</td><td class="num">15.2%</td></tr>
+  </table></div>
+  <ul style="margin:12px 0 8px;padding-left:20px">
+    <li><b>ดี:</b> บวก 9 จาก 10 เหรียญ ได้ทั้งฝั่ง long และ short และกำไรก่อนหักค่าธรรมเนียมสูงกว่าต้นทุนชัดเจน</li>
+    <li><b>ยังเชื่อไม่ได้:</b> ช่วงซ้อม 2020–22 อ่อนกว่ามาก ผลดีเฉพาะ 2023–24 ไม่ผ่านเกณฑ์ที่ตั้งไว้ (ต้องบวกอย่างน้อย 7 เหรียญจากเหรียญที่ใช้ได้ครบ) และยังไม่เคยเจอข้อมูลสด</li>
+    <li>ถือ BTC เฉยๆ ช่วงเดียวกันได้มากกว่ามาก (ตลาดขึ้นแรง) แต่ระบบนี้เสี่ยงน้อยกว่าหลายเท่า</li>
+  </ul>
+  <p class="small muted" style="margin:0">ที่มา: <code>results/&lt;เหรียญ&gt;/evaluations.csv</code> (ไฟล์ <code>057_coinbase_premium_follow_tf240</code>), <code>journal/_multi/premium_confirm.md</code></p>
+</div>
+
 <h2>ต่อจากนี้</h2>
 <div class="card" style="border-left:6px solid var(--wait)">
-  <p>ยังไม่มีงานที่ค้างอยู่ ทางที่ยังเปิดอยู่มีสองทาง:</p>
-  <ul style="margin:0;padding-left:20px">
-    <li>ตั้งคำถามใหม่ที่ออกแบบไว้ล่วงหน้า โดยไม่อิงจากผลที่เห็นแล้ว</li>
-    <li>รอข้อมูลใหม่หลัง ส.ค. 2026 หลายเดือน แล้วใช้ทดสอบไปข้างหน้า (forward test)</li>
-  </ul>
+  <p>รอตัดสินใจว่าจะใช้ "สอบจริง" (ข้อมูล 2025–ส.ค. 2026 ที่ยังไม่เคยมีใครแตะ) ทดสอบ Coinbase premium 4h ครั้งเดียวหรือไม่ ข้อมูลชุดนี้ใช้ได้ครั้งเดียว ถ้าผ่านจะเป็นหลักฐานจริงชิ้นแรก ถ้าไม่ผ่านจะปิดเรื่อง premium</p>
 </div>
 
 <footer>
@@ -201,7 +224,7 @@ const rounds = [
   {ico:"🧭", t:"ถือตอนขาขึ้น หลบตอนขาลง (รายวัน)", tag:["bad","ไม่ดีกว่าถือเฉยๆ"], d:"SMA200, golden cross, breakout 20 สัปดาห์ · BTC/ETH/BNB · spot และ perp", r:"ลด drawdown ได้บ้าง แต่ไม่มีกฎไหนดีกว่าการถือเฉยๆ อย่างชัดเจนทุกช่วงเวลา"},
   {ico:"🔄", t:"หมุนเหรียญตามโมเมนตัมรายสัปดาห์", tag:["bad","ไม่ผ่าน"], d:"ซื้อเหรียญที่แรงที่สุด 20% จากเหรียญที่มีสภาพคล่องสูงสุด 30 ตัว (รวมเหรียญที่ถูกถอดออกไปแล้ว)", r:"แบบ spot แพ้การถือทุกเหรียญเท่าๆ กัน ส่วนแบบ futures กำไรราว 3/4 มาจากการกิน funding ซึ่งไม่ใช่สิ่งที่เราต้องการ"},
   {ico:"🚪", t:"จุดออกไม้ (TP/SL/BE/trailing)", tag:["bad","ไม่มีฝีมือ"], d:"สุ่มจุดเข้า แล้วลองวิธีออก 6 แบบ · BTC/ETH", r:"กราฟ 1h ขาดทุนทุกแบบ ส่วนกราฟ 4h ที่ดูดีมาจาก trailing stop ที่บังเอิญได้ประโยชน์จากตลาดขาขึ้น"},
-  {ico:"🇺🇸", t:"Coinbase premium (ข้อมูลนอก Binance ครั้งแรก)", tag:["wait","น่าสนใจที่สุด รอยืนยัน"], d:"ราคาบน Coinbase แพงกว่า Binance = นักลงทุนสหรัฐไล่ซื้อ · BTC/ETH · 15m–4h", r:"ครั้งแรกที่ช่วง 2020–22 เป็นบวกทุกแบบ และ 30m ชนะการสุ่มทั้ง BTC และ ETH ส่วน 4h กำไรก่อนหักค่าธรรมเนียมสูงกว่าต้นทุนมาก แต่ไม้ยังน้อย (72–86 ไม้) และยังไม่ชนะการถือเฉยๆ ต้องยืนยันกับเหรียญอื่นก่อน"},
+  {ico:"🇺🇸", t:"Coinbase premium (ข้อมูลนอก Binance ครั้งแรก)", tag:["bad","ยืนยันไม่ผ่าน"], d:"ราคาบน Coinbase แพงกว่า Binance = นักลงทุนสหรัฐไล่ซื้อ · BTC/ETH · 15m–4h", r:"ลองซ้ำกับเหรียญใหม่ 10 ตัวแล้วไม่ผ่านเกณฑ์ 30m ไม่ได้ผลกับเหรียญอื่น ส่วน 4h รวม 5 เหรียญได้ +0.24 R (ช่วงความเชื่อมั่นเหนือ 0) แต่ได้ผลเฉพาะช่วง 2023–24 และมีเหรียญที่ใช้ได้ไม่ครบ 7 ตัวตามเกณฑ์"},
   {ico:"🎯", t:"วาง limit ดักรอที่แนวรับแนวต้าน", tag:["bad","ไม่ผ่าน"], d:"buy limit ที่ก้นเมื่อวาน/swing low, sell limit ที่ยอด · ค่าธรรมเนียม maker · BTC/ETH 1h, 4h", r:"ไม่ผ่านทั้ง 4 แบบ ค่าธรรมเนียมถูกลงจริง แต่การวางที่แนวไม่ได้ดีกว่าการวางที่ราคาสุ่ม เพราะ order ที่ได้ของส่วนใหญ่คือตอนที่ราคาหักหัวทะลุแนวลงไป"},
   {ico:"🔍", t:"ตรวจว่าเข้าผิดทาง หรือโดนลากไส้หลอก", tag:["bad","ทายทิศทางได้แค่เท่าโยนเหรียญ"], d:"ดูไม้จริงกว่า 54,000 ไม้ของทุกกลยุทธ์ เทียบกับจุดเข้าสุ่ม", r:"เข้าถูกทาง 49% (สุ่มได้ 50.5%) ส่วนที่โดน stop แล้วสุดท้ายราคากลับมาถูกทางมีมากกว่าสุ่มแค่ 2.5% ปัญหาหลักคือจุดเข้า ไม่ใช่การโดนหลอกออก"},
   {ico:"🕯️", t:"รูปแท่งเทียน + แนวรับแนวต้าน", tag:["bad","ไม่ผ่าน"], d:"Engulfing / Pin bar ที่แตะยอด-ก้นเมื่อวาน หรือ swing high/low · BTC/ETH · 15m–4h", r:"0 จาก 16 การทดสอบที่ผ่าน กราฟเล็ก (15m, 30m) แพ้ค่าธรรมเนียมชัด ส่วนตัวที่ดูบวกเป็นฝั่ง long ช่วงตลาดขาขึ้น หรือมีไม้น้อยเกินจะสรุป"},

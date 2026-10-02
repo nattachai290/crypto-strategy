@@ -472,6 +472,17 @@ source from outside Binance.
   one result, not two. Confirm on coins this idea has never seen before
   believing it.
 
+**Confirmation on 10 unseen coins (`_multi` Exp 011/012): NOT_CONFIRMED.**
+- **30m:** positive on 2 of 10 coins. The BTC/ETH 30m SKILL did not carry
+  over; closed.
+- **4h:** pooled over 5 usable coins, mean +0.237 with CI [+0.10, +0.38],
+  and both legs positive. It failed breadth: 5 coins positive against 7
+  needed, because 5 coins were unusable (data gaps, short Coinbase history).
+- The 4h idea beats the random median on 7 of 8 coins in VALID, but is weak
+  in TRAIN. Any edge sits in 2023–24.
+- **Rule:** a breadth bar must count only usable coins. Write that down
+  before running, never after.
+
 ## 13. A cross-coin confirmation is the only test that settles a lead, and it must be pre-registered (32 evaluations)
 
 PLAN.md §26, `_multi` Exp 011: idea `057_coinbase_premium_follow` **frozen and

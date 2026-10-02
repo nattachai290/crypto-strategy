@@ -1343,3 +1343,63 @@ and 2 never passed data validation, so the 7-coin breadth bar was unreachable,
 and because 14 of 16 random-entry controls say DRIFT. Two coins are clean leads
 - BCHUSDT 4h (+0.3101, CI above 0, SKILL, on 91 trades) and ATOMUSDT 30m (+0.0973,
 SKILL) - and neither is under 100 trades.**
+
+---
+
+## Exp 012 - Review of Exp 011 (premium confirmation, planner): NOT_CONFIRMED stands; part of the miss is my design
+
+**Date:** 2026-10-02
+**Status:** complete.
+
+**Integrity.** The commit adds results and journals only. No `src/` or idea
+change, no holdout. The verdict follows from the pre-registered bars in
+`premium_confirm.py`.
+
+**The verdict stands: NOT_CONFIRMED.**
+- **30m:** positive on 2 of 10 coins, SKILL on 1. The 30m lead from BTC/ETH
+  does not carry over to other coins and is closed.
+- **4h:** pooled over the 5 admissible coins, 475 trades, mean **+0.237**,
+  CI [+0.102, +0.383], long +0.227 / short +0.248. It failed only on breadth:
+  5 coins positive against 7 needed.
+
+**My design flaw.** The breadth bar counted unusable coins as failures.
+- 5 coins were unusable for reasons unrelated to the signal:
+  - SOL and LTC failed `datafeed` validation (2 bar gaps each);
+  - DOGE, ADA and DOT were INCONCLUSIVE at 4h because their Coinbase history
+    starts mid-2021, leaving no TRAIN cell with 100 trades.
+- A bar of "≥ 7 of the usable coins" would have been fairer. **The rule is
+  not changed after the fact.** NOT_CONFIRMED stands.
+
+**What the 4h numbers do and do not show** (random-entry baseline, same exits):
+
+| coin | VALID idea | VALID random median / p95 | TRAIN idea | TRAIN random median / p95 |
+|---|---|---|---|---|
+| BTC | +0.423 | +0.052 / +0.291 | +0.211 | +0.039 / +0.234 |
+| LINK | +0.440 | +0.012 / +0.249 | +0.044 | +0.014 / +0.169 |
+| BCH | +0.310 | −0.000 / +0.204 | +0.214 | +0.015 / +0.160 |
+| ETC | +0.149 | +0.005 / +0.229 | +0.098 | +0.082 / +0.252 |
+| ALGO | +0.032 | +0.043 / +0.285 | −0.026 | −0.008 / +0.132 |
+| ATOM | +0.275 | +0.006 / +0.222 | +0.058 | −0.036 / +0.103 |
+| DOGE | +0.098 | +0.003 / +0.187 | −0.055 | +0.014 / +0.181 |
+| ADA | −0.044 | −0.002 / +0.191 | +0.111 | +0.023 / +0.173 |
+| DOT | +0.040 | +0.005 / +0.204 | +0.046 | −0.019 / +0.147 |
+
+- **On VALID (2023–24)**, the idea is above the random median on 7 of 8
+  unseen coins, and above the p95 on 3 of 8 (LINK, BCH, ATOM).
+- **On TRAIN (2020–22)** it is much weaker: above the p95 only on BCH.
+- **The random medians are near 0,** so the 4h VALID result is not the bull
+  market lifting every entry. It is the premium's timing, mainly in 2023–24.
+- **A plausible reading, not a finding:** the premium matters more in the
+  US-ETF era. That idea was suggested by VALID, so only data after VALID can
+  test it.
+
+**Correction to Exp 011.** "Every coin is under 100 VALID trades at 4h" is
+wrong: ALGO (102), DOGE (101), ADA (114) and DOT (115) are above 100.
+
+**What remains (the owner's decision, not mine).** Following §26, the lead is
+closed and no 057 variant is tried. The only clean test left for the "4h, ETF
+era" reading is the untouched HOLDOUT (2025-01 → 2026-08). That would mean a
+new, explicitly exploratory, pre-registered pooled holdout test of the frozen
+4h file across all usable coins, run once. It would spend the last clean data
+on a hypothesis that VALID suggested. I am setting out the choice, not
+recommending it by default.
