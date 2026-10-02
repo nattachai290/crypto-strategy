@@ -1403,3 +1403,28 @@ new, explicitly exploratory, pre-registered pooled holdout test of the frozen
 4h file across all usable coins, run once. It would spend the last clean data
 on a hypothesis that VALID suggested. I am setting out the choice, not
 recommending it by default.
+
+---
+
+## Exp 013 - Owner decision: the Coinbase premium lead is closed, the holdout is kept
+
+**Date:** 2026-10-02
+**Status:** complete
+
+### Decision
+After Exp 012 set out the choice (spend the untouched HOLDOUT on one
+exploratory, pre-registered pooled 4h test of the frozen 057 file, or close the
+lead), the owner chose to **close the lead and keep the holdout**: the result
+is not good enough to justify the one-time test.
+
+### What this means
+- No 057 variant and no premium holdout test will be run.
+- The HOLDOUT (2025-01 → 2026-08) stays untouched for a future idea that
+  reaches PASS plus SKILL or ALPHA under the normal rules.
+- The premium data and blocks (`cb_prem`, `premium_cross`, `premium_side`)
+  stay in the code; any new use of them is a new owner decision.
+
+### Verdict
+REJECT (lead closed by the owner) - the premium was the best lead found, but it
+did not pass the pre-registered confirmation (Exp 011) and the owner declined
+the exploratory holdout test.
