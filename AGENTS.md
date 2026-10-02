@@ -5,12 +5,11 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: Coinbase premium (`docs/research/PLAN.md` §25), the first
-data from outside Binance: `python src/datafeed.py --premium` per coin, then
-ideas `057_coinbase_premium_follow` (BTCUSDT, ETHUSDT) and
-`058_btc_premium_follow_eth` (ETHUSDT), 4 timeframes each.** Resting limits at
-levels (§24), the stop diagnosis (§23), the candle round (§22) and the ML line
-(§19–21) are closed.
+**No active work; awaiting the owner on PLAN §26.** The Coinbase premium (§25,
+BTC Exp 058/059, ETH Exp 021/022) is the best lead in the project: 30m SKILL on
+BTC and ETH, 4h gross far above cost, but no PASS. The proposed next step is
+confirmation on coins this idea has never seen, which needs owner approval to
+add coins (Level 3). Do not rerun or tweak 057/058 on BTC/ETH.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The

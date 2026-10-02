@@ -457,6 +457,21 @@ is a maker fill at the level, and the stop sits just beyond it.
   has now failed both as a confirmation entry (§12) and as a resting-order
   entry. Do not try a third variant of the same levels.
 
+## 15. The Coinbase premium is the best lead so far, not yet a result (12 evaluations)
+
+`PLAN.md` §25, BTC Exp 058/059, ETH Exp 021/022. This was the first data
+source from outside Binance.
+
+- **TRAIN is positive in all 12 rows.**
+- **30m is SKILL on BTC and on ETH with the same frozen file**, but NO_EDGE
+  against buy-and-hold.
+- **At 4h, gross is far above cost** (BTC +0.46 against 0.037 cost, ETH +0.43),
+  but there are too few trades (72 and 86), BTC 4h is DRIFT on TRAIN, and ETH
+  4h is UNSIZABLE (one March-2020 sizing skip).
+- **Rule (from §8):** BTC and ETH premiums move together. A SKILL on both is
+  one result, not two. Confirm on coins this idea has never seen before
+  believing it.
+
 ## What to do with this
 
 1. **Filter out, don't fit.** Skip ideas with expected `cost_r` > 0.1 R and

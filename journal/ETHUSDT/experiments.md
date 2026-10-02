@@ -1876,3 +1876,20 @@ is the first two-sided positive result in this project. The one admissible WATCH
 is 30m, mean +0.1235 R, CI [-0.0722, +0.3207], random-entry control **SKILL** on
 both splits, but against buy-and-hold **NO_EDGE** with the alpha CI crossing zero.
 Nothing is a candidate.**
+
+---
+
+## Exp 022 - Review of Exp 021 (Coinbase premium on ETH, planner)
+
+See **BTC Exp 059**.
+
+- **30m (057) is SKILL**, the same result as BTC 30m with the same frozen
+  file. BTC's and ETH's premiums move together, so this is not two
+  independent confirmations.
+- **The UNSIZABLE rows (1h, 4h) are a sizing artefact.** Each has 1 TRAIN skip,
+  which is ETH's 20 USDT min_notional against a very wide 3-ATR stop, most
+  likely in March 2020. The rules say they are not evidence. The fix is a
+  capped-stop v2 file, not a change to the account.
+- **058 (BTC's premium as ETH's signal) is weaker than ETH's own premium**:
+  15m and 30m were REJECT. This is consistent with each coin's own flow
+  mattering most.
