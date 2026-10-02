@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>จุดเข้าออก</title>
+<meta name="description" content="กราฟแท่งเทียนของกลยุทธ์ที่ผ่าน (PASS) พร้อมจุดเข้าและจุดออกทุกไม้ ช่วงสอบย่อย 2023–24">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+:root{
+  --bg:#0b0e14; --panel:#131722; --panel2:#1b2030; --text:#e6e8ee; --muted:#9aa1b1; --faint:#5d6475; --line:#262c3b;
+  --up:#26a69a; --down:#ef5350; --accent:#2dd4bf; --sel:#f5c542; --stop:#ef5350;
+}
+:root[data-theme="light"]{
+  --bg:#f3f4f7; --panel:#ffffff; --panel2:#f0f2f6; --text:#11141b; --muted:#555c6b; --faint:#9ba1ad; --line:#dfe3ea;
+  --up:#089981; --down:#e5484d; --accent:#0f766e; --sel:#c2880a; --stop:#e5484d;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.5}
+main{max-width:1400px;margin:0 auto;padding:12px 16px 40px}
+a{color:var(--accent)}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;position:sticky;top:8px;z-index:20}
+.nav a{flex:1 1 120px;text-align:center;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500;font-size:.92rem}
+.nav a:hover{background:var(--panel2);color:var(--text)}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--bg);font-weight:600}
+.bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px 12px 0 0;padding:10px 12px}
+select,button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+select{max-width:100%;font-weight:600}
+button:hover,select:hover{border-color:var(--faint)}
+.tk{font-weight:700;font-size:1.05rem;letter-spacing:.02em}
+.stat{display:flex;flex-direction:column;line-height:1.2}
+.stat span{font-size:.72rem;color:var(--muted)}
+.stat b{font-variant-numeric:tabular-nums;font-size:.95rem}
+.pill{font-size:.72rem;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.g{border-color:var(--up);color:var(--up)} .pill.r{border-color:var(--down);color:var(--down)}
+.up{color:var(--up)} .down{color:var(--down)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;overflow:hidden;background:var(--panel)}
+#chart{height:560px;min-width:0;position:relative}
+.side{border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;height:560px}
+.side .hd{display:flex;gap:6px;padding:8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.side .hd button{padding:3px 10px;font-size:.8rem;border-radius:999px}
+.side .hd button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+.list{overflow:auto;flex:1}
+.row{display:grid;grid-template-columns:38px 42px 1fr 64px;gap:6px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);cursor:pointer;font-size:.82rem;font-variant-numeric:tabular-nums}
+.row:hover{background:var(--panel2)}
+.row.on{background:var(--panel2);box-shadow:inset 3px 0 0 var(--sel)}
+.row .r{text-align:right;font-weight:600}
+.row .d{color:var(--muted);font-size:.76rem;line-height:1.25}
+.tag{font-size:.7rem;font-weight:700;padding:1px 5px;border-radius:4px;text-align:center;color:#fff}
+.tag.L{background:var(--up)} .tag.S{background:var(--down)}
+.detail{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px}
+.detail .nav2{display:flex;gap:6px;margin-left:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--muted);margin:10px 2px 0}
+.sw{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:.88rem;color:var(--muted)}
+.note b{color:var(--text)}
+.desc{font-size:.85rem;color:var(--muted);margin:8px 2px 10px}
+.desc b{color:var(--text)}
+code{font-size:.85em;overflow-wrap:anywhere}
+#load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);z-index:5;pointer-events:none}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  #chart{height:420px}
+  .side{border-left:0;border-top:1px solid var(--line);height:360px}
+  .detail .nav2{margin-left:0}
+}
+</style>
+</head>
+<body>
+<main>
+<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html" aria-current="page">🕯️ จุดเข้าออก</a></nav>
+
+<div class="bar">
+  <select id="pick" aria-label="เลือกกลยุทธ์"></select>
+  <span class="tk" id="tk"></span>
+  <div class="stat"><span>ไม้</span><b id="sN"></b></div>
+  <div class="stat"><span>ชนะ</span><b id="sW"></b></div>
+  <div class="stat"><span>เฉลี่ย/ไม้</span><b id="sR"></b></div>
+  <div class="stat"><span>ทุน 1,000 →</span><b id="sE"></b></div>
+  <span id="pills" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+  <button id="theme" type="button" style="margin-left:auto" aria-label="สลับธีม">☀︎ / ☾</button>
+</div>
+<div class="layout">
+  <div id="chart"><div id="load">กำลังโหลด…</div></div>
+  <div class="side">
+    <div class="hd" id="flt"></div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<div class="detail" id="detail"></div>
+<div class="legend">
+  <span><span class="sw" style="background:var(--up)"></span>▲ เข้า Long (ซื้อ)</span>
+  <span><span class="sw" style="background:var(--down)"></span>▼ เข้า Short (ขาย)</span>
+  <span>● จุดออก (เขียว = กำไร, แดง = ขาดทุน)</span>
+  <span><span class="sw" style="background:var(--sel)"></span>เส้นเข้า→ออก ของไม้ที่เลือก</span>
+  <span><span class="sw" style="background:none;border-top:2px dashed var(--stop);height:0"></span>ระดับ stop ตอนออก</span>
+</div>
+<p class="desc" id="desc"></p>
+
+<div class="note">
+  <b>อ่านยังไง:</b> เลือกกลยุทธ์ด้านบน กดไม้ในรายการด้านขวา (หรือปุ่ม ◀ ▶ / ลูกศรบนคีย์บอร์ด) กราฟจะพาไปที่ไม้นั้น ลากเพื่อเลื่อน หมุนล้อหรือบีบนิ้วเพื่อซูม ·
+  ทุกไม้คือของจริงที่ระบบบันทึกไว้ช่วงสอบย่อย (2023–24) หักค่าธรรมเนียม slippage และ funding แล้ว · เวลาเป็น<b>เวลาไทย</b> (UTC+7) ·
+  "R" = กำไรขาดทุนเทียบกับเงินที่เสี่ยงต่อไม้ (1R = 1% ของพอร์ต) ·
+  กลยุทธ์กราฟ 5 นาที (039, 041) แสดงเป็นแท่ง 1 ชั่วโมงเพื่อให้โหลดเร็ว จุดเข้าออกจึงอยู่ในแท่งที่มีเวลานั้น ·
+  ระดับ stop ที่แสดงคือ stop <b>ตอนออก</b> ถ้ากลยุทธ์เลื่อน stop ตามราคา (trailing) จะไม่ใช่ stop ตอนเข้า<br>
+  <b>อย่าลืม:</b> ทั้ง 7 ตัวนี้ผ่านสอบย่อย แต่ 5 ตัวแพ้การเข้าแบบสุ่ม และ 4 ตัวที่ได้เข้าสอบจริงไม่ผ่านทั้งหมด หน้านี้มีไว้ดูภาพการเทรด ไม่ใช่หลักฐานว่ากลยุทธ์ทำกำไรได้<br>
+  <span style="font-size:.8rem">ที่มา: <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> · แท่งเทียน Binance USDT-M (ไฟล์ทางการ ไม่ได้แปลงกรอบเวลา)</span>
+</div>
+</main>
+<script>
+const DESC = {
+  "022_exit_risk_side": "เข้า <b>Long</b> เมื่อราคาปิดทะลุจุดสูงสุด 24 แท่ง (12 ชม.) ขณะเทรนด์ใหญ่เป็นขาขึ้นและแรง (ADX ≥ 20) · stop 1% · เลื่อน stop ตามเมื่อกำไร 1.5R · ถือไม่เกิน 24 ชม.",
+  "023_trend_regime_long": "ถือ <b>Long</b> ตลอดช่วงที่ราคาอยู่เหนือเทรนด์ 100 ชม. · stop 10% · ทุก 72 ชม. ปิดแล้วเช็กใหม่ (จึงมีไม้ติดกันเยอะ)",
+  "027_multiday_pullback_long_tf30": "เข้า <b>Long</b> เมื่อราคาย่อลงมาหาเส้นค่าเฉลี่ยในขาขึ้น (EMA 50 เหนือ EMA 200) · stop ≈ 4.2% · ถือไม่เกิน 48 ชม.",
+  "029_opening_range_tf240": "ดูกรอบราคาช่วงต้นวัน (หลัง 07:00 น. เวลาไทย) แล้วเข้าตามทางที่ราคาปิดทะลุกรอบ <b>ทั้ง Long และ Short</b> · stop 4% · ถือไม่เกิน 48 ชม.",
+  "038_opening_range_both_sides": "ดูกรอบราคาชั่วโมงแรกหลัง 07:00 น. เวลาไทย แล้วเข้าตามทางที่ทะลุ <b>ทั้ง Long และ Short</b> · stop 5% · เลื่อน stop ตามเมื่อกำไร 2R · ถือไม่เกิน 96 ชม.",
+  "039_breakout_flow_confirm_tf5_time": "เข้าเมื่อราคาทะลุจุดสูง/ต่ำ 80 ชม. พร้อม volume สูงและแรงซื้อขายเชิงรุกไปทางเดียวกัน <b>ทั้ง Long และ Short</b> · stop 6% · ถือไม่เกิน 96 ชม.",
+  "041_impulse_not_crowded_tf5_time": "เข้าตามแรงพุ่งของราคาใน 24 ชม. เมื่อ volume สูงและ funding บอกว่าคนยังไม่แห่ไปฝั่งเดียวกัน <b>ทั้ง Long และ Short</b> · stop 6% · ถือไม่เกิน 96 ชม."
+};
+const REASON = {stop: "โดน stop", time: "หมดเวลาถือ", eod: "จบช่วงทดสอบ", tp: "ถึงเป้า", signal: "สัญญาณกลับ"};
+const TZ = 7 * 3600;
+const th = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const dt = s => { const d = new Date(s * 1000); return `${d.getUTCDate()} ${th[d.getUTCMonth()]} ${String(d.getUTCFullYear()).slice(2)} ${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`; };
+const tfs = tf => tf >= 60 ? tf / 60 + "h" : tf + "m";
+const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+const $ = id => document.getElementById(id);
+
+try { const t = localStorage.getItem("tradeTheme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+let chart, candle, segLine, stopLine, D, B, sel = -1, filt = "all", cache = {};
+
+function makeChart() {
+  if (chart) chart.remove();
+  const box = $("chart");
+  chart = LightweightCharts.createChart(box, {
+    autoSize: true,
+    layout: {background: {type: "solid", color: css("--panel")}, textColor: css("--muted"), fontFamily: "IBM Plex Sans Thai, system-ui, sans-serif"},
+    grid: {vertLines: {color: css("--line")}, horzLines: {color: css("--line")}},
+    rightPriceScale: {borderColor: css("--line")},
+    timeScale: {borderColor: css("--line"), timeVisible: true, secondsVisible: false, rightOffset: 6},
+    crosshair: {mode: LightweightCharts.CrosshairMode.Normal},
+    localization: {locale: "en-US", timeFormatter: t => dt(t)}
+  });
+  candle = chart.addCandlestickSeries({upColor: css("--up"), downColor: css("--down"), borderVisible: false,
+    wickUpColor: css("--up"), wickDownColor: css("--down"), priceLineVisible: false});
+  segLine = chart.addLineSeries({color: css("--sel"), lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false});
+  stopLine = chart.addLineSeries({color: css("--stop"), lineWidth: 1, lineStyle: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false});
+}
+
+function barAt(t) { // index of the displayed bar containing time t
+  const a = B; let lo = 0, hi = a.length - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (a[m] <= t) lo = m; else hi = m - 1; }
+  return lo;
+}
+
+async function load(id) {
+  $("load").style.display = "flex";
+  if (!cache[id]) cache[id] = await (await fetch("trades/" + id + ".json")).json();
+  D = cache[id];
+  const m = D.meta, b = D.bars, dec = m.dec;
+  B = b.t;
+  makeChart();
+  candle.applyOptions({priceFormat: {type: "price", precision: dec, minMove: Math.pow(10, -dec)}});
+  segLine.applyOptions({priceFormat: {type: "price", precision: dec, minMove: Math.pow(10, -dec)}});
+  candle.setData(b.t.map((t, i) => ({time: t + TZ, open: b.o[i], high: b.h[i], low: b.l[i], close: b.c[i]})));
+  $("load").style.display = "none";
+  // header
+  const tr = D.trades, wins = tr.filter(x => x[7] > 0).length;
+  $("tk").textContent = `${m.sym.replace("USDT", "")}/USDT · ${tfs(m.tf)}${m.dtf !== m.tf ? " (แสดง " + tfs(m.dtf) + ")" : ""}`;
+  $("sN").textContent = tr.length;
+  $("sW").textContent = (wins / tr.length * 100).toFixed(0) + "%";
+  $("sR").innerHTML = `<span class="${m.mr >= 0 ? "up" : "down"}">${m.mr >= 0 ? "+" : ""}${m.mr.toFixed(2)}R</span>`;
+  $("sE").innerHTML = `<span class="${m.end >= 1000 ? "up" : "down"}">${Math.round(m.end).toLocaleString("en-US")} (${m.end >= 1000 ? "+" : ""}${((m.end / 1000 - 1) * 100).toFixed(1)}%)</span>`;
+  $("pills").innerHTML = `<span class="pill g">PASS</span>` +
+    (m.base === "SKILL" ? `<span class="pill g">ชนะสุ่ม</span>` : `<span class="pill">แพ้สุ่ม</span>`) +
+    (m.hold ? `<span class="pill r">สอบจริง: ไม่ผ่าน</span>` : `<span class="pill">ไม่ได้เข้าสอบจริง</span>`);
+  $("desc").innerHTML = `<b>${m.name}</b> — ${DESC[m.name] || ""}`;
+  sel = -1; markers(); renderList();
+  chart.timeScale().fitContent();
+  $("detail").innerHTML = `<span style="color:var(--muted)">กดไม้ในรายการเพื่อดูจุดเข้าออกแบบใกล้ๆ</span>` + navBtns();
+}
+
+function markers() {
+  const ms = [];
+  D.trades.forEach((x, i) => {
+    const on = i === sel, long = x[2] > 0;
+    ms.push({time: B[barAt(x[0])] + TZ, position: long ? "belowBar" : "aboveBar", shape: long ? "arrowUp" : "arrowDown",
+      color: on ? css("--sel") : long ? css("--up") : css("--down"), text: on ? (long ? "Long" : "Short") : "", size: on ? 2 : 1});
+    ms.push({time: B[barAt(x[1])] + TZ, position: long ? "aboveBar" : "belowBar", shape: "circle",
+      color: x[7] > 0 ? css("--up") : css("--down"), text: on ? (x[7] >= 0 ? "+" : "") + x[7].toFixed(2) + "R" : "", size: on ? 1.4 : .7});
+  });
+  ms.sort((a, b) => a.time - b.time);
+  candle.setMarkers(ms);
+}
+
+function show(i) {
+  if (i < 0 || i >= D.trades.length) return;
+  sel = i; const x = D.trades[i], m = D.meta, long = x[2] > 0, dec = m.dec;
+  const a = B[barAt(x[0])] + TZ, z = B[barAt(x[1])] + TZ;
+  segLine.setData(z > a ? [{time: a, value: x[3]}, {time: z, value: x[4]}] : [{time: a, value: x[3]}]);
+  const s0 = B[barAt(Math.max(x[0], x[1] - (x[1] - x[0]) * 0.3))] + TZ; // final stop: drawn only near the exit, it may have trailed
+  stopLine.setData(x[5] > 0 ? (z > s0 ? [{time: s0, value: x[5]}, {time: z, value: x[5]}] : [{time: z, value: x[5]}]) : []);
+  markers();
+  const span = Math.max(z - a, m.dtf * 60 * 12), pad = span * 1.2;
+  chart.timeScale().setVisibleRange({from: a - pad, to: z + pad});
+  const hold = (x[1] - x[0]) / 3600;
+  const p = v => v.toLocaleString("en-US", {minimumFractionDigits: dec, maximumFractionDigits: dec});
+  const mv = (x[4] / x[3] - 1) * 100 * (long ? 1 : -1);
+  $("detail").innerHTML = `<b>ไม้ที่ ${i + 1}/${D.trades.length}</b>
+    <span class="tag ${long ? "L" : "S"}" style="padding:2px 8px">${long ? "LONG" : "SHORT"}</span>
+    <span>เข้า <b>${p(x[3])}</b> <span style="color:var(--muted)">${dt(x[0] + TZ)}</span></span>
+    <span>ออก <b>${p(x[4])}</b> <span style="color:var(--muted)">${dt(x[1] + TZ)}</span></span>
+    <span>stop ตอนออก <b>${x[5] > 0 ? p(x[5]) : "-"}</b></span>
+    <span>ถือ <b>${hold >= 48 ? (hold / 24).toFixed(1) + " วัน" : hold.toFixed(1) + " ชม."}</b></span>
+    <span>ราคาไป <b class="${mv >= 0 ? "up" : "down"}">${mv >= 0 ? "+" : ""}${mv.toFixed(2)}%</b></span>
+    <span>ผล <b class="${x[7] >= 0 ? "up" : "down"}">${x[7] >= 0 ? "+" : ""}${x[7].toFixed(2)}R</b> · ${REASON[x[8]] || x[8]}</span>
+    <span>ทุนหลังไม้ <b>${Math.round(x[9]).toLocaleString("en-US")}</b></span>` + navBtns();
+  document.querySelectorAll(".row").forEach(r => r.classList.toggle("on", +r.dataset.i === i));
+  const row = document.querySelector(`.row[data-i="${i}"]`);
+  if (row) row.scrollIntoView({block: "nearest"});
+}
+
+function navBtns() {
+  return `<span class="nav2"><button type="button" onclick="step(-1)" aria-label="ไม้ก่อนหน้า">◀ ก่อนหน้า</button><button type="button" onclick="step(1)" aria-label="ไม้ถัดไป">ถัดไป ▶</button><button type="button" onclick="sel=-1;segLine.setData([]);stopLine.setData([]);markers();chart.timeScale().fitContent();document.querySelectorAll('.row').forEach(r=>r.classList.remove('on'))">ดูทั้งหมด</button></span>`;
+}
+function visible() { return D.trades.map((x, i) => i).filter(i => { const x = D.trades[i]; return filt === "all" || (filt === "win" && x[7] > 0) || (filt === "loss" && x[7] <= 0) || (filt === "L" && x[2] > 0) || (filt === "S" && x[2] < 0); }); }
+function step(d) { const v = visible(); if (!v.length) return; let k = v.indexOf(sel); k = k < 0 ? (d > 0 ? 0 : v.length - 1) : Math.min(Math.max(k + d, 0), v.length - 1); show(v[k]); }
+
+function renderList() {
+  const tr = D.trades, nL = tr.filter(x => x[2] > 0).length, nS = tr.length - nL;
+  const F = [["all", "ทั้งหมด " + tr.length], ["win", "กำไร " + tr.filter(x => x[7] > 0).length], ["loss", "ขาดทุน " + tr.filter(x => x[7] <= 0).length]]
+    .concat(nL && nS ? [["L", "Long " + nL], ["S", "Short " + nS]] : []);
+  if (!F.some(f => f[0] === filt)) filt = "all";
+  $("flt").innerHTML = F.map(([k, s]) => `<button type="button" data-k="${k}" aria-pressed="${k === filt}">${s}</button>`).join("");
+  $("flt").querySelectorAll("button").forEach(b => b.onclick = () => { filt = b.dataset.k; renderList(); });
+  $("list").innerHTML = visible().map(i => { const x = tr[i], long = x[2] > 0;
+    return `<div class="row${i === sel ? " on" : ""}" data-i="${i}"><span style="color:var(--muted)">#${i + 1}</span>
+      <span class="tag ${long ? "L" : "S"}">${long ? "L" : "S"}</span>
+      <span class="d">${dt(x[0] + TZ)}<br>${REASON[x[8]] || x[8]}</span>
+      <span class="r ${x[7] >= 0 ? "up" : "down"}">${x[7] >= 0 ? "+" : ""}${x[7].toFixed(2)}R</span></div>`; }).join("");
+  $("list").querySelectorAll(".row").forEach(r => r.onclick = () => show(+r.dataset.i));
+}
+
+document.addEventListener("keydown", e => { if (e.target.tagName === "SELECT") return; if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
+$("theme").onclick = () => {
+  const cur = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  document.documentElement.dataset.theme = cur;
+  try { localStorage.setItem("tradeTheme", cur); } catch (e) {}
+  const s = sel; load(D.meta.id).then(() => { if (s >= 0) show(s); });
+};
+
+(async () => {
+  const idx = await (await fetch("trades/index.json")).json();
+  const pick = $("pick");
+  pick.innerHTML = idx.map(r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`).join("");
+  let first = idx[0].id;
+  try { const h = location.hash.slice(1); if (idx.some(r => r.id === h)) first = h; } catch (e) {}
+  pick.value = first;
+  pick.onchange = () => { history.replaceState(null, "", "#" + pick.value); load(pick.value); };
+  load(first);
+})();
+</script>
+</body>
+</html>
