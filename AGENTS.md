@@ -7,8 +7,9 @@ holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
 **No active work.** The Coinbase premium confirmation (§26, `_multi` Exp
 011/012) is NOT_CONFIRMED: 30m does not carry to other coins; 4h is positive
-pooled but failed breadth and is weak on TRAIN. Whether to spend the holdout on
-an exploratory 4h test is the owner's decision. Ask before starting anything.
+pooled but failed breadth and is weak on TRAIN. The owner decided (2026-10-02,
+`_multi` Exp 013) **not** to spend the holdout on it: the premium lead is closed
+and the holdout stays untouched. Ask before starting anything.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
