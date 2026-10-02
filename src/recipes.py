@@ -538,6 +538,101 @@ def t_liquidity_sweep(b, f, pivot_len=7, max_age=150, min_gap_atr=0.25,
     return out
 
 
+def candle_patterns(b: pd.DataFrame, wick_ratio: float = 2.0) -> dict:
+    """Bar-i candle patterns from bars i and i-1 only.
+      bull_engulf: bar i-1 red, bar i green, i's body covers i-1's body.
+      bear_engulf: mirror.
+      bull_pin (hammer): lower wick >= wick_ratio x body, upper wick <= half
+        the lower wick, close in the top half of the range.
+      bear_pin (shooting star): mirror."""
+    o, h, l, c = (b[k].to_numpy(float) for k in ("open", "high", "low", "close"))
+    po, pc = np.r_[np.nan, o[:-1]], np.r_[np.nan, c[:-1]]
+    body = np.abs(c - o)
+    rng_ = h - l
+    up = h - np.maximum(o, c)
+    dn = np.minimum(o, c) - l
+    with np.errstate(invalid="ignore", divide="ignore"):
+        pos = (c - l) / rng_
+        ref = np.maximum(body, 0.05 * rng_)  # a doji-sized body still needs a long wick
+        bull_pin = (rng_ > 0) & (dn >= wick_ratio * ref) & (up <= 0.5 * dn) & (pos >= 0.5)
+        bear_pin = (rng_ > 0) & (up >= wick_ratio * ref) & (dn <= 0.5 * up) & (pos <= 0.5)
+    bull_eng = (pc < po) & (c > o) & (c >= po) & (o <= pc)
+    bear_eng = (pc > po) & (c < o) & (c <= po) & (o >= pc)
+    return {"bull_engulf": bull_eng, "bear_engulf": bear_eng, "bull_pin": bull_pin, "bear_pin": bear_pin}
+
+
+def _swing_levels_touched(h, l, c, piv_h, piv_l, tol, max_age, pivot_len):
+    """Per bar: did the low touch a live swing-low level (within tol) and close
+    above it (support held); did the high touch a live swing-high level and
+    close below it (resistance held). A level is live from the bar its pivot
+    is confirmed (pivot_len bars after the pivot) until a close beyond it or
+    max_age bars after the pivot."""
+    n = len(c)
+    sup, res = np.zeros(n, bool), np.zeros(n, bool)
+    lows: list[list] = []
+    highs: list[list] = []
+    for i in range(n):
+        t = tol[i]
+        if np.isfinite(t):
+            for lv in lows:
+                if l[i] <= lv[0] + t and c[i] > lv[0]:
+                    sup[i] = True
+                    break
+            for lv in highs:
+                if h[i] >= lv[0] - t and c[i] < lv[0]:
+                    res[i] = True
+                    break
+        lows = [lv for lv in lows if c[i] >= lv[0] and i - lv[1] <= max_age]
+        highs = [lv for lv in highs if c[i] <= lv[0] and i - lv[1] <= max_age]
+        # a pivot confirmed on bar i becomes a level from bar i + 1 on
+        if np.isfinite(piv_l[i]):
+            lows.append([piv_l[i], i - pivot_len])
+        if np.isfinite(piv_h[i]):
+            highs.append([piv_h[i], i - pivot_len])
+    return sup, res
+
+
+def t_candle_at_level(b, f, pattern="any", level="prev_day", near_atr=0.5, wick_ratio=2.0,
+                      pivot_len=10, max_age=500, atr_n=14):
+    """A reversal candle AT a support/resistance level (PLAN.md section 22).
+    Long: a bullish pattern (engulfing, pin, or either: pattern = "engulfing" /
+    "pin" / "any") whose low comes within near_atr x ATR of a support level and
+    whose close stays above it. Short: the mirror at resistance.
+    level = "prev_day": the previous completed UTC day's low (support) and high
+    (resistance). level = "swing": live swing lows/highs (pivots with
+    pivot_len bars each side, known pivot_len bars later), alive until a close
+    beyond them or max_age bars. level = "both": either kind."""
+    pats = candle_patterns(b, wick_ratio)
+    if pattern == "engulfing":
+        bull, bear = pats["bull_engulf"], pats["bear_engulf"]
+    elif pattern == "pin":
+        bull, bear = pats["bull_pin"], pats["bear_pin"]
+    elif pattern == "any":
+        bull = pats["bull_engulf"] | pats["bull_pin"]
+        bear = pats["bear_engulf"] | pats["bear_pin"]
+    else:
+        raise ValueError(f"candle_at_level: unknown pattern {pattern!r}")
+    h, l, c = b["high"], b["low"], b["close"]
+    tol = (ta.atr_(h, l, c, int(atr_n)) * float(near_atr)).to_numpy(float)
+    hh, ll, cc = h.to_numpy(float), l.to_numpy(float), c.to_numpy(float)
+    sup = np.zeros(len(b), bool)
+    res = np.zeros(len(b), bool)
+    if level in ("prev_day", "both"):
+        hi_p, lo_p = _daily_extremes(b, 1)
+        with np.errstate(invalid="ignore"):
+            sup |= (ll <= lo_p + tol) & (cc > lo_p)
+            res |= (hh >= hi_p - tol) & (cc < hi_p)
+    if level in ("swing", "both"):
+        L = int(pivot_len)
+        s2, r2 = _swing_levels_touched(hh, ll, cc, _pine_pivot(h, L, True), _pine_pivot(l, L, False),
+                                       tol, int(max_age), L)
+        sup |= s2
+        res |= r2
+    if level not in ("prev_day", "swing", "both"):
+        raise ValueError(f"candle_at_level: unknown level {level!r}")
+    return _side(bull & sup, bear & res)
+
+
 # --------------------------------------------------------------------------
 # Metrics blocks (PLAN.md section 14): open interest and long/short ratios.
 # They read the columns experiment.get_bars() attaches when the metrics cache
@@ -625,6 +720,7 @@ TRIGGERS = {
     "chartart_macd_sma": t_chartart_macd_sma,
     "super_scalper": t_super_scalper,
     "liquidity_sweep": t_liquidity_sweep,
+    "candle_at_level": t_candle_at_level,
     "oi_flush": t_oi_flush,
     "crowd_fade": t_crowd_fade,
     "smart_divergence": t_smart_divergence,
