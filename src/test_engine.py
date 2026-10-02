@@ -1781,7 +1781,7 @@ def test_ml_wf() -> None:
         return out
     with contextlib.redirect_stdout(io.StringIO()):
         Pe = WF.prepare(by_tf(0.0008, [(f"C{i}USDT", 90 + i) for i in range(3)]), 60)
-        edge = WF.evaluate(Pe, 60, grid=WF.GRID[:1], min_coins=3, step=3)
+        edge = WF.evaluate(Pe, 60, grid=WF.GRID[:1], min_coins=3, step=3, keep=True)
         noise = WF.evaluate(WF.prepare(by_tf(0.0, [(f"N{i}USDT", 95 + i) for i in range(3)]), 60), 60,
                             grid=WF.GRID[:1], min_coins=3, step=3)
     past = all(pd.Timestamp(r["last_train_label_end"]) < pd.Timestamp(r["month"], tz="UTC") for r in edge["refits"])
@@ -1797,6 +1797,18 @@ def test_ml_wf() -> None:
           noise["verdict"] == "REJECT" and "timing_beats_shift_p95" in noise["gates_failed"],
           f"{noise['verdict']} timing {noise['valid'].get('timing')} p95 {noise['valid'].get('shift_p95')} "
           f"failed {noise['gates_failed']}")
+    tr = edge.get("_trades")
+    ok_why = tr is not None and len(tr) > 0
+    if ok_why:
+        import json as _json
+        e = tr.dropna(subset=["entry_why"])
+        good_side = bool(((e["side"] > 0) == (e["entry_pred"].astype(float) > 0)).all())
+        above = bool((e["entry_pred"].astype(float).abs() >= e["entry_bar"].astype(float) - 1e-9).all())
+        sig = tr[tr["reason"] == "signal"]
+        n_why = all(len(_json.loads(w)) == WF.TOP_WHY for w in e["entry_why"])
+        ok_why = len(e) > 0.9 * len(tr) and good_side and above and n_why and sig["exit_why"].notna().mean() > 0.9
+    check("ml_wf WHY: every opening decision is explained (forecast on the trade's side, past the entry bar, 3 features); signal exits too",
+          ok_why)
     check("ml_wf: no VALID trade runs into HOLDOUT, no clock exit, one holdout timeframe by the TRAIN rule",
           pd.Timestamp(edge["valid"]["last_exit"]) < pd.Timestamp(WF.WINDOWS["holdout"][0], tz="UTC")
           and "time" not in (edge["valid"].get("exit_mix") or {})

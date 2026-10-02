@@ -2064,6 +2064,17 @@ run.
   - timing above the shifted median;
   - breadth ≥ half.
 
+**Why each trade (reported, never a gate).** Every trade file carries:
+- the forecast at the decision that opened the trade, and at the decision that
+  closed it when the exit was a signal;
+- the entry bar at that moment;
+- the 3 features that pushed the forecast most toward the decision. These are
+  LightGBM per-feature contributions, which add up to the forecast. Test 24
+  checks that each opening forecast is on the trade's side and past the entry
+  bar.
+
+The results page shows them as the reason for each entry and exit.
+
 **Outputs.**
 - `results/_multi/ml_wf/`:
   - `universe.json`;

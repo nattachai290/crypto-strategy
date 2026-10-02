@@ -45,6 +45,10 @@ section 27's design, scaled in bars ("chart mode") to each timeframe:
     timeframes, the one with the highest TRAIN walk-forward mean. It continues
     the monthly refits over 2025-01..2026-08. CONFIRMED = net mean > 0, CI
     lower bound > 0, timing above the shifted median, breadth >= half.
+  * Every trade file also carries WHY: the forecast at the opening decision
+    (and at a signal exit), the entry bar at that moment, and the 3 features
+    that pushed the forecast most toward the decision (LightGBM per-feature
+    contributions; explain()). Reported only, never a gate.
 Writes results/_multi/ml_wf/ (universe.json, tf<N>.json, trades_valid_tf<N>.csv.gz,
 desired_valid_tf<N>.csv.gz, holdout files) and the generated journal/_multi/ml_wf.md.
 """
@@ -261,7 +265,8 @@ def month_starts(a: str, b: str, step: int = 1) -> list[pd.Timestamp]:
                               freq=f"{step}MS", inclusive="left"))
 
 
-def walk_forward(P: dict, tf: int, cfg: dict, a: str, b: str, step: int = 1, log: list | None = None) -> dict:
+def walk_forward(P: dict, tf: int, cfg: dict, a: str, b: str, step: int = 1, log: list | None = None,
+                 models: dict | None = None) -> dict:
     """Forecasts on [a, b): for each month m, a model fitted on every row whose
     label is complete before m (time + (H+1) bars < m), predicting [m, m+step)."""
     cols = MH._cols(P)
@@ -279,6 +284,8 @@ def walk_forward(P: dict, tf: int, cfg: dict, a: str, b: str, step: int = 1, log
         if y.notna().sum() < 1000:
             continue
         model = M2.fit(X, y, cfg)
+        if models is not None:
+            models[m0] = model
         if log is not None:
             log.append({"month": str(m0.date()), "train_rows": int(y.notna().sum()),
                         "last_train_label_end": str(max(P[c]["X"].index[P[c]["X"].index + lag < m0].max()
@@ -312,6 +319,56 @@ def run_cell(P, pred, a, b, q, mode, stress=1.0):
         fr.append(t.assign(coin=c))
         paths[c] = (desired, rows, lo, hi)
     return pd.concat(fr, ignore_index=True), paths
+
+
+TOP_WHY = 3
+
+
+def explain(P: dict, tf: int, t: pd.DataFrame, pred: dict, models: dict, q: float) -> pd.DataFrame:
+    """Reported only, never used by a gate: for every trade, the decision that
+    opened it and (for a signal exit) the decision that closed it - the
+    forecast, the entry bar e_in at that moment, and the TOP_WHY features that
+    pushed the forecast most in the direction of the decision (LightGBM
+    pred_contrib: per-feature contributions that add up to the forecast)."""
+    if t.empty:
+        return t
+    cols = MH._cols(P)
+    step = pd.Timedelta(minutes=tf)
+    keys = sorted(models)
+    starts = np.array([k.tz_convert(None).to_datetime64() for k in keys], dtype="datetime64[ns]")
+    t = t.copy()
+    for k in ("entry_pred", "entry_bar", "entry_why", "exit_pred", "exit_why"):
+        t[k] = None
+    ebar = {}
+    for c in P:
+        p = pred[c]
+        ok = np.isfinite(p)
+        e = np.full(len(p), np.nan)
+        e[ok] = MH.entry_bar(p[ok], q)
+        ebar[c] = e
+    for i, r in t.iterrows():
+        c, side = r["coin"], r["side"]
+        idx = P[c]["X"].index
+        for what, when, sign in (("entry", r["entry_time"] - step, side),
+                                 ("exit", r["exit_time"] if r["reason"] == "signal" else None, -side)):
+            if when is None:
+                continue
+            k = idx.get_indexer([when])[0]
+            if k < 0 or not np.isfinite(pred[c][k]):
+                continue
+            mi = np.searchsorted(starts, np.datetime64(when.tz_convert(None)), side="right") - 1
+            if mi < 0:
+                continue
+            row = P[c]["X"].reindex(columns=cols).iloc[[k]]
+            contrib = models[keys[mi]].predict(row, pred_contrib=True)[0][:-1]
+            order = np.argsort(-sign * contrib)[:TOP_WHY]
+            why = [[cols[j], None if not np.isfinite(row.iat[0, j]) else round(float(row.iat[0, j]), 5),
+                    round(float(contrib[j]), 4)] for j in order]
+            t.at[i, f"{what}_pred"] = round(float(pred[c][k]), 4)
+            t.at[i, f"{what}_why"] = json.dumps(why)
+            if what == "entry":
+                t.at[i, "entry_bar"] = round(float(ebar[c][k]), 4) if np.isfinite(ebar[c][k]) else None
+    return t
 
 
 def judge(P, pred, a, b, q, mode, min_coins=MIN_COINS) -> tuple[dict, pd.DataFrame, dict]:
@@ -358,9 +415,12 @@ def evaluate(P: dict, tf: int, grid: list = GRID, min_coins: int = MIN_COINS, st
     best = max(ok, key=lambda x: x["mean_r"]) if ok else table[0]
     gi, q, mode = best["setting"], best["q_in"], best["exit"]
     cfg = grid[gi]
-    vpred = walk_forward(P, tf, cfg, a_va, b_va, step, log=refits)
+    vmodels = {}
+    vpred = walk_forward(P, tf, cfg, a_va, b_va, step, log=refits, models=vmodels)
     pred = {c: np.where(np.isfinite(vpred[c]), vpred[c], preds[gi][c]) for c in P}
     v, t, extra = judge(P, pred, a_va, b_va, q, mode, min_coins)
+    if keep:
+        t = explain(P, tf, t, pred, vmodels, q)
     gates = {"train_wf_mean>0": (best["mean_r"] or -1) > 0 and best in ok,
              f"valid_trades>={MIN_VALID_TRADES}": v.get("trades", 0) >= MIN_VALID_TRADES,
              "valid_mean>0": v.get("mean_r", -1) > 0,
@@ -385,9 +445,11 @@ def holdout(P: dict, tf: int, res: dict, step: int = 1) -> tuple[dict, pd.DataFr
     a_tr, _ = WINDOWS["train"]
     a_h, b_h = WINDOWS["holdout"]
     warm = walk_forward(P, tf, cfg, WINDOWS["valid"][0], a_h, step)       # forecasts before the holdout,
-    hp = walk_forward(P, tf, cfg, a_h, b_h, step)                          # used only by the rolling bar
+    hmodels = {}
+    hp = walk_forward(P, tf, cfg, a_h, b_h, step, models=hmodels)          # warm: only for the rolling bar
     pred = {c: np.where(np.isfinite(hp[c]), hp[c], warm[c]) for c in P}
     h, t, extra = judge(P, pred, a_h, b_h, res["q_in"], res["exit_mode"])
+    t = explain(P, tf, t, pred, hmodels, res["q_in"])
     h["verdict"] = ("CONFIRMED" if h.get("mean_r", -1) > 0 and (h.get("ci_lo") or -1) > 0
                     and h["shift_median"] is not None and h["timing"] is not None
                     and h["timing"] > h["shift_median"] and h["breadth"]["share"] >= BREADTH_SHARE

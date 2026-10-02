@@ -1786,3 +1786,11 @@ removes that staleness.
 
 ### Verdict
 Pending the research agent's single run.
+
+**Addendum (2026-10-02, before any run).** On the owner's request, every trade
+file of §28 now also records **why**:
+- the forecast at the opening decision, and at a signal exit;
+- the entry bar at that moment;
+- the top 3 LightGBM feature contributions toward the decision.
+
+This is reported only and changes no trade or gate. Test 24 checks it.
