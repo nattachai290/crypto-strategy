@@ -9,7 +9,9 @@ holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 011/012) is NOT_CONFIRMED: 30m does not carry to other coins; 4h is positive
 pooled but failed breadth and is weak on TRAIN. The owner decided (2026-10-02,
 `_multi` Exp 013) **not** to spend the holdout on it: the premium lead is closed
-and the holdout stays untouched. Ask before starting anything.
+and the holdout stays untouched. **One approved run is pending:** PLAN.md §27
+(`src/ml_hold.py`, owner request 2026-10-02, `_multi` Exp 015). Ask before
+starting anything else.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
@@ -344,6 +346,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `ml_entry.py` | PLAN.md §19: LightGBM long/short models predict the net R of a fixed symmetric exit; the threshold comes from purged TRAIN walk-forward OOF; VALID gates include beating random signals with the same long/short counts; `--final` runs the holdout once. Writes `results/<SYMBOL>/ml_entry/` and the generated `journal/<SYMBOL>/ml_entry.md` |
 | `ml_pool.py` | PLAN.md §20: the §19 model fitted once on 20 coins together (universe chosen on TRAIN volume, survivorship-free). `--build` downloads 1h perp klines + funding to `data/*/_multi/pool_1h`; gates add breadth (half the coins beat their own control). Writes `results/_multi/ml_pool/` and the generated `journal/_multi/ml_pool.md` |
 | `ml_pool2.py` | PLAN.md §21: round 2 of the pooled model on the same 20 coins: 4-day hold decided every 4 h, cross-coin/BTC features, LightGBM settings tuned on TRAIN OOF, control on GROSS R, both legs must be net positive. Writes `results/_multi/ml_pool2/` and the generated `journal/_multi/ml_pool2.md` |
+| `ml_hold.py` | PLAN.md §27: one pooled LightGBM forecast (next 24 h in ATRs) every 4 h on the same 20 coins; a hysteresis policy decides entry AND exit, no time limit (8-ATR protective stop only); TRAIN OOF picks setting, entry quantile and exit mode; control = 200 time-shifts of the desired-position path, timing before costs; simulator matches the engine (test 23). Writes `results/_multi/ml_hold/` and the generated `journal/_multi/ml_hold.md` |
 | `stop_diag.py` | PLAN.md §23: from the VALID trade files, asks whether entries were on the wrong side or right and then stopped out, against random fills with the same side, stop fraction and hold. Read-only; writes `results/<SYMBOL>/stop_diag/` and the generated `journal/<SYMBOL>/stop_diag.md` |
 | `level_limit.py` | PLAN.md §24: limit orders resting AT support/resistance (previous-day extremes or live swing pivots), maker entry, stop just beyond the level; each order simulated on its own; TRAIN picks 1 of 8 cells; gates include beating control orders at the same distance from price at random bars, on TRAIN and VALID. Writes `results/<SYMBOL>/level_limit/` and the generated `journal/<SYMBOL>/level_limit.md` |
 | `premium_confirm.py` | PLAN.md §26: reads the recorded 057 results on the 10 confirmation coins (no backtest) and applies the pre-registered bars (30m: positive on ≥7, SKILL on ≥5; 4h: pooled ≥100 trades, mean > 0, weekly-block CI > 0, ≥7 coins positive). Writes `results/_multi/premium_confirm/` and the generated `journal/_multi/premium_confirm.md` |

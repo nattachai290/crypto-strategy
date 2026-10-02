@@ -163,13 +163,14 @@ function barAt(t) { // index of the displayed bar containing time t
 }
 
 let PER = "valid", IDX = [];
+const VER = "2";   // bump when docs/trades/ changes, so browsers do not keep an old copy
 async function load(id) {
   $("load").style.display = "flex";
   const it = IDX.find(r => r.id === id);
   if (PER === "holdout" && !(it && it.hasHold)) PER = "valid";
   document.querySelectorAll("#per button").forEach(b => { b.setAttribute("aria-pressed", b.dataset.p === PER); if (b.dataset.p === "holdout") { b.disabled = !(it && it.hasHold); b.title = b.disabled ? "ตัวนี้ไม่ได้เข้าสอบจริง" : ""; } });
   const key = id + (PER === "holdout" ? "_holdout" : "");
-  if (!cache[key]) cache[key] = await (await fetch("trades/" + key + ".json")).json();
+  if (!cache[key]) cache[key] = await (await fetch("trades/" + key + ".json?v=" + VER, {cache: "no-cache"})).json();
   D = cache[key];
   const m = D.meta, b = D.bars, dec = m.dec;
   B = b.t;
@@ -264,7 +265,8 @@ $("theme").onclick = () => {
 };
 
 (async () => {
-  const idx = await (await fetch("trades/index.json")).json();
+  const idx = await (await fetch("trades/index.json?v=" + VER, {cache: "no-cache"})).json();
+  idx.forEach(r => { if (r.hasHold === undefined) r.hasHold = !!r.hold; });
   const pick = $("pick");
   IDX = idx;
   pick.innerHTML = idx.map(r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`).join("");

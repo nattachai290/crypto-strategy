@@ -1915,3 +1915,86 @@ results.
 
 **Prior:** low to medium-low. This is the first idea with a positive TRAIN
 mean in every cell, but altcoin premiums are noisier than BTC's.
+
+---
+
+## 27. ML decides entry AND exit, with no time limit (owner request, 2026-10-02)
+
+**Why.** Every ML round so far (§19–21) let the model choose entries only and
+closed each trade on a clock: 24 bars, or 4 days in §21. The owner has since
+ruled out time exits (`AGENTS.md` step 3b). They asked for a model that, at
+every bar it holds, decides whether to keep the position or close it, with no
+time limit. This is the first test in the project in which the model also
+owns the exit.
+
+**Design (`src/ml_hold.py`, test 23).** Every value below is fixed before the
+run.
+- **Data and features.** The same 20 coins and 1h cache as §20–21
+  (`ml_pool.py --build`; no new download). The features are §21's set (the
+  coin's own bars, cross-coin and BTC), read at the bar close.
+- **One pooled LightGBM regression.** Every 4 hours (the close of hours
+  3, 7, …, 23 UTC) it forecasts
+  `log(open[i+1+24] / open[i+1]) / (ATR14 / close)`: the next 24 h move in
+  ATRs.
+- **Policy, with hysteresis.** `e_in` is the rolling `q_in` quantile of the
+  coin's own last 180 |forecasts| (causal; no entries during the first 60
+  decisions of a period).
+  - Flat → long when the forecast is above `e_in`; flat → short when it is
+    below −`e_in`.
+  - Long → short (or short → long) directly when the forecast crosses to the
+    other side's `e_in`.
+  - Long → flat when the forecast falls under `e_out`, and short → flat
+    likewise. `e_out` is 0 ("flip") or `e_in`/2 ("half").
+- **Exits.** A position ends only when:
+  - the desired position changes (next open, taker + slippage, reason
+    `signal`);
+  - the protective stop of 8 × ATR at entry is hit (stop-first, gaps at the
+    open); or
+  - the period ends (`eod`).
+
+  There is **no maximum hold**. After a stop, the next decision can re-enter.
+- **Tuning on TRAIN only.** 4 LightGBM settings × `q_in` {0.6, 0.75, 0.9} ×
+  exit {flip, half} = 24 cells. The cell with the highest out-of-fold net mean
+  R per trade (≥ 300 trades) is chosen, over the 3 purged expanding folds of
+  §19.
+- **Timing control.** This replaces the trade-shift control of §21, because
+  holds are not fixed.
+  - The statistic is the return held per hour, in ATRs, before stops and
+    costs: pure timing.
+  - The model's desired-position sequence is shifted circularly 200 times per
+    coin. Each copy keeps the same long, short and flat durations, so market
+    drift helps the copies exactly as much as it helps the model.
+- **Simulator.** `ml_hold.simulate` is checked trade-for-trade against
+  `run_backtest`, with exit signals, reversals, stops and funding (test 23).
+
+**Gates on VALID (all needed):**
+- TRAIN OOF mean > 0.
+- ≥ 300 VALID trades.
+- Net mean > 0, and weekly-block 95% CI lower bound > 0.
+- Net mean > 0 at cost ×1.5.
+- Pooled timing above the shifted copies' 95th percentile.
+- ≥ 10 coins with ≥ 15 trades. At least half of those must be net > 0
+  **and** above their own shifted median.
+- Both legs net > 0.
+
+**Holdout (`--final`, once, only after PASS).** CONFIRMED needs all of:
+- net mean > 0;
+- CI lower bound > 0;
+- timing above the shifted median;
+- at least half the coins above their own shifted median.
+
+**Outputs.**
+- `results/_multi/ml_hold/`:
+  - `summary.json`;
+  - `trades_valid.csv.gz` and `desired_valid.csv.gz`, which are for the
+    results-page chart;
+  - the holdout files, if any.
+- `journal/_multi/ml_hold.md` (generated).
+
+**Prior:** low. Three ML rounds found no entry timing (§19–21), and adding the
+exit gives the model more freedom to fit noise. Two things make this round
+different, not just bigger:
+- the model now owns the exit;
+- the control is built for variable holds.
+
+A REJECT closes ML on this data.

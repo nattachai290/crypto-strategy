@@ -426,6 +426,7 @@ def main() -> None:
     test_level_limit()
     test_premium()
     test_premium_confirm()
+    test_ml_hold()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1659,6 +1660,78 @@ def test_premium_confirm() -> None:
           str({k: rb[k] for k in ("m30", "h4")}))
     check("premium_confirm: the CONFIRM coins are configured and exclude BTC/ETH (already seen)",
           all(c in C.SYMBOL_SPECS for c in PC.CONFIRM) and not {"BTCUSDT", "ETHUSDT"} & set(PC.CONFIRM))
+
+
+# --------------------------------------------------------------------------
+# 23. ML that decides entry and exit, no clock (PLAN.md section 27)
+# --------------------------------------------------------------------------
+def test_ml_hold() -> None:
+    print("\n23. ML hold: hysteresis policy, causal entry bar, simulator == engine, planted edge found, noise rejected")
+    import contextlib
+    import io
+    import indicators as ta
+    import ml_hold as MH
+    p = np.array([0.0, 2.0, 0.5, -0.1, 0.5, -2.0, -0.6, 0.1, np.nan, 3.0])
+    e = np.full(len(p), 1.0)
+    check("ml_hold policy 'flip': enter past e_in, hold through weak forecasts, exit when the sign turns, reverse past -e_in",
+          list(MH.policy(p, e, "flip")) == [0, 1, 1, 0, 0, -1, -1, 0, 0, 1])
+    check("ml_hold policy 'half': exit when the forecast falls under e_in / 2",
+          list(MH.policy(p, e, "half")) == [0, 1, 1, 0, 0, -1, -1, 0, 0, 1])
+    p2 = np.array([0.0, 2.0, 0.7, 0.3, -0.7, -2.0, -0.4])
+    check("ml_hold policy 'flip' vs 'half' differ only on the exit bar",
+          list(MH.policy(p2, np.ones(7), "flip")) == [0, 1, 1, 1, 0, -1, -1]
+          and list(MH.policy(p2, np.ones(7), "half")) == [0, 1, 1, 0, 0, -1, 0])
+    rng = np.random.default_rng(4)
+    x = rng.normal(size=500)
+    check("ml_hold entry bar is causal (full run == truncated run on the prefix) and warms up",
+          np.allclose(MH.entry_bar(x, 0.75)[:300], MH.entry_bar(x[:300], 0.75), equal_nan=True)
+          and np.isnan(MH.entry_bar(x, 0.75)[MH.MIN_ROLL - 2]))
+
+    bars, _, funding = _random_case(53, n=3000)
+    funding = funding.assign(last_funding_rate=funding["last_funding_rate"] * 20)
+    atr = ta.atr_(bars["high"], bars["low"], bars["close"], MH.ATR_N).to_numpy(float)
+    n = len(bars)
+    dec = np.zeros(n, bool); dec[40::4] = True; dec[-1] = False
+    path = np.zeros(n); state = 0.0
+    for i in np.flatnonzero(dec):
+        r = rng.random()
+        state = 1.0 if r < 0.08 else -1.0 if r < 0.16 else 0.0 if r < 0.22 else state
+        path[i] = state
+    tgt = np.where(dec, path, np.nan)
+    got = MH.simulate(bars, tgt, atr, funding, stop_atr=2.0)
+    sig = pd.DataFrame({"side": np.where(dec, path, 0.0), "stop_dist": 2.0 * atr, "tp_dist": 0.0,
+                        "max_hold": 100000.0, "atr": atr,
+                        "exit_long": (dec & (path <= 0)).astype(float),
+                        "exit_short": (dec & (path >= 0)).astype(float)}, index=bars.index)
+    res = run_backtest(bars, sig, funding=funding, initial_equity=1e12, max_leverage=1e9, qty_step=1e-12,
+                       min_notional=0.0, flat_at_session_end=False)
+    eng = [t for t in res.trades]
+    k = min(len(eng), len(got))
+    same_t = all(eng[i].entry_time == got["entry_time"].iloc[i] for i in range(k))
+    worst = max([abs(eng[i].r_multiple - got["net_r"].iloc[i]) for i in range(k - 1)] or [np.inf])
+    reasons = set(got["reason"])
+    check("ml_hold simulator == engine (exit signals, reversals, stops, funding), trade for trade",
+          len(eng) == len(got) and same_t and worst < 1e-6 and {"signal", "stop"} <= reasons,
+          f"engine {len(eng)} sim {len(got)} max |dR| {worst:.2e} exits {sorted(reasons)}")
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    with contextlib.redirect_stdout(io.StringIO()):
+        edge = MH.evaluate(MH.prepare({f"C{i}USDT": (_momentum_bars(0.0008, seed=60 + i), fund) for i in range(3)}),
+                           grid=MH.GRID[:1], min_coins=3)
+        noise = MH.evaluate(MH.prepare({f"N{i}USDT": (_momentum_bars(0.0, seed=70 + i), fund) for i in range(3)}),
+                            grid=MH.GRID[:1], min_coins=3)
+    check("ml_hold pipeline: a planted edge is found (PASS, timing above the shifted p95)",
+          edge["verdict"] == "PASS",
+          f"{edge['verdict']} mean {edge['valid'].get('mean_r', 0):+.3f} timing {edge['timing']} "
+          f"p95 {edge['shift_p95']} hold {edge['valid'].get('avg_hold_h')} failed {edge['gates_failed']}")
+    check("ml_hold pipeline: pure noise is not a PASS and its timing does not beat the shifted p95",
+          noise["verdict"] == "REJECT" and "timing_beats_shift_p95" in noise["gates_failed"],
+          f"{noise['verdict']} timing {noise['timing']} p95 {noise['shift_p95']} failed {noise['gates_failed']}")
+    check("ml_hold: no VALID trade runs into HOLDOUT, and no trade is closed by a clock",
+          pd.Timestamp(edge["valid_last_exit"]) < pd.Timestamp(MH.SPLITS["holdout"][0], tz="UTC")
+          and "time" not in (edge["valid"].get("exit_mix") or {}),
+          f"{edge['valid_last_exit']} {edge['valid'].get('exit_mix')}")
 
 
 if __name__ == "__main__":
