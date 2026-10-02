@@ -1,3 +1,46 @@
+> **Candle pattern at a support/resistance level (§22, Exp 015): 0 PASS, 0 WATCH,
+> 6 REJECT, 1 UNSIZABLE, 1 INCONCLUSIVE. No controls, no v2, no holdout.** The
+> ETH replication of BTC Exp 049, same block (`recipes.candle_at_level`), same
+> exits, same 8-cell grid. ETHUSDT now has **97 evaluations**.
+>
+> | idea | tf | verdict | trades | gross_r | cost_r | mean R | 95% CI | long/short |
+> |---|---|---|---|---|---|---|---|---|
+> | 054 `prev_day` | 15m | REJECT | 347 | -0.0329 | 0.1412 | -0.1741 | [-0.2973, -0.0461] | 170/177 |
+> | 054 `prev_day` | 30m | REJECT | 302 | +0.0606 | 0.1145 | -0.0539 | [-0.2094, +0.1012] | 153/149 |
+> | 054 `prev_day` | 1h | REJECT | 168 | -0.1397 | 0.0749 | -0.2146 | [-0.3928, -0.0302] | 70/98 |
+> | **054 `prev_day`** | **4h** | **UNSIZABLE** | 96 | **+0.1047** | 0.0305 | **+0.0743** | [-0.2106, +0.3725] | 41/55 |
+> | 055 `swing` | 15m | REJECT | 419 | -0.0486 | 0.1858 | -0.2344 | [-0.3640, -0.1013] | 204/215 |
+> | 055 `swing` | 30m | REJECT | 462 | -0.0528 | 0.1198 | -0.1726 | [-0.2966, -0.0471] | 256/206 |
+> | 055 `swing` | 1h | REJECT | 216 | -0.0016 | 0.0824 | -0.0840 | [-0.2600, +0.0990] | 115/101 |
+> | **`055 `swing`** | **4h** | **INCONCLUSIVE** | 63 | **+0.2240** | 0.0376 | **+0.1864** | [-0.0949, +0.4636] | 35/28 |
+>
+> `size_skips` is 1 on six rows and 2 on `055_swing` 4h, all on TRAIN, which is
+> what makes the two 4h files UNSIZABLE / INCONCLUSIVE rather than REJECT: per
+> AGENTS.md §1 step 6 the trade list is then not the rule's, so **neither 4h row is
+> evidence either way.** ETH's 1h sizes comfortably (Exp 003), so this is a
+> 4h-chart-mode stop-width artefact - recorded, not fixed. TRAIN chose **pin in 5
+> of 8** files, against engulfing in 7 of 8 on BTC.
+>
+> **Four things this coin settles:**
+> 1. **The two biggest gross R numbers in the whole project are both 4h on ETH
+>    (+0.2240 and +0.1047), and the 4h files are exactly the two this harness
+>    cannot size or cannot count.** +0.2240 R gross on 63 VALID trades, CI
+>    [-0.0949, +0.4636], TRAIN mean -0.0982, 2 size skips: **the most
+>    interesting number in the round and the least usable.**
+> 2. **Cost is cheaper on ETH at every clock** (15m 0.141-0.186, 30m 0.115-0.120,
+>    1h 0.075-0.082, 4h 0.031-0.038, all below BTC's) **and every clock is still
+>    negative. Cheaper cost and no edge are independent.**
+> 3. **The 1h replication fails and the two coins disagree on the pattern.** BTC
+>    `055_swing` 1h was the round's best (+0.1291 gross, +0.0296 net) and chose
+>    `engulfing`; ETH's is -0.0016 gross, -0.0840 net and chose `pin`. One
+>    pattern is better on BTC, the other on ETH, and neither is worth anything -
+>    `LESSONS.md` §5's cross-coin disagreement, in its mildest form.
+> 4. **Both 4h rows are carried by 2023** (+0.336 on 33 trades, +0.144 on 47)
+>    with 2024 at +0.022 and +0.008. **33 and 47 trades is the size where one year
+>    can carry anything.**
+>
+> Details: Exp 015. BTC half: BTC Exp 049.
+
 > **ML entry model done (§19, Exp 010): REJECT, 3 of 6 gates failed — closer than
 > BTC's 5 of 6, and still REJECT. `--final` not run.**
 >

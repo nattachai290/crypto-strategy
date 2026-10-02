@@ -1345,3 +1345,94 @@ second Exp 010 in this file.
    +0.0107 against a p95 of −0.0107. BTC did not (BTC Exp 047).
 
 As in BTC Exp 047, the feature ranking is split counts, not gain.
+
+---
+
+## Exp 015 - Candle pattern at a support/resistance level on ETHUSDT: 0 PASS, 0 WATCH, 6 REJECT, 1 UNSIZABLE, 1 INCONCLUSIVE
+
+**Date:** 2026-10-02
+**Status:** complete. **8 evaluations. HOLDOUT UNTOUCHED - nothing passed, so
+`--final` was never a candidate. No WATCH or PASS row, so no `baseline.py` or
+`benchmark.py` and no v2 file.** No idea file or code was changed. ETHUSDT now
+has **97 evaluations**.
+
+**This is the ETH half of the round pre-registered on BTC as Exp 049.** The
+block, the exits, the grid and the judgement are the same; what follows is what
+is specific to ETH.
+
+**Session state.** `test_engine.py` -> **ALL CHECKS PASSED** (tests 7 and 18).
+`datafeed.py` -> **VALIDATION: OK**.
+
+### The eight rows, in full
+
+| idea file | tf | verdict | VALID trades | gross_r | cost_r | mean R | 95% CI | long/short | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `054_prev_day` tf15 | 15m | REJECT | 347 | −0.0329 | 0.1412 | **−0.1741** | [−0.2973, −0.0461] | 170/177 | −26.9% | 52.2% |
+| `054_prev_day` tf30 | 30m | REJECT | 302 | +0.0606 | 0.1145 | **−0.0539** | [−0.2094, +0.1012] | 153/149 | −9.1% | 36.1% |
+| `054_prev_day` (1h) | 1h | REJECT | 168 | −0.1397 | 0.0749 | **−0.2146** | [−0.3928, −0.0302] | 70/98 | −17.0% | 35.8% |
+| **`054_prev_day` tf240** | 4h | **UNSIZABLE** | 96 | **+0.1047** | 0.0305 | **+0.0743** | [−0.2106, +0.3725] | 41/55 | +3.1% | 13.3% |
+| `055_swing` tf15 | 15m | REJECT | 419 | −0.0486 | 0.1858 | **−0.2344** | [−0.3640, −0.1013] | 204/215 | −39.9% | 66.6% |
+| `055_swing` tf30 | 30m | REJECT | 462 | −0.0528 | 0.1198 | **−0.1726** | [−0.2966, −0.0471] | 256/206 | −34.2% | 59.8% |
+| `055_swing` (1h) | 1h | REJECT | 216 | −0.0016 | 0.0824 | **−0.0840** | [−0.2600, +0.0990] | 115/101 | −9.6% | 32.3% |
+| **`055_swing` tf240** | 4h | **INCONCLUSIVE** | 63 | **+0.2240** | 0.0376 | **+0.1864** | [−0.0949, +0.4636] | 35/28 | +5.8% | 5.0% |
+
+**`size_skips` is 1 on six rows and 2 on `055_swing` tf240, all on TRAIN.** That
+is what makes the two 4h files `UNSIZABLE` / `INCONCLUSIVE` rather than plain
+`REJECT`: per AGENTS.md §1 step 6, `size_skips > 0` means the 1,000 USDT research
+account could not size some signals, so **the trade list is not the rule's and
+neither row is evidence in either direction.** ETH's 1h is comfortably sizable
+(Exp 003: a 6% stop sizes while ETH < 166,667 against a holdout peak of 4,832),
+so the skips are a 4h-chart-mode stop-width artefact, recorded not fixed.
+
+**TRAIN chose `pin` in 5 of the 8 files** (against `engulfing` in 7 of 8 on BTC),
+and `near_atr` 0.25 with tp 3.0 R in six.
+
+### What the numbers say
+
+**1. Cost is cheaper on ETH at every clock, and it does not save the round.**
+Measured `cost_r` on ETH: **15m 0.141-0.186, 30m 0.115-0.120, 1h 0.075-0.082,
+4h 0.031-0.038** - consistently below BTC's 0.177/0.130/0.097/0.041, because
+ETH's ATR is wider so the same ATR-multiple stop is further from price. **And
+every clock is still negative.** Cheaper cost and no edge: these are independent.
+
+**2. The same gross-versus-cost structure as BTC, with a different winner.**
+Four rows have positive gross: `055_swing` 4h **+0.2240**, `054_prev_day` 4h
+**+0.1047**, `054_prev_day` 30m +0.0606, and `055_swing` tf30 is near zero.
+**The two biggest gross numbers on either coin are both 4h on ETH, and the 4h
+files are exactly the two this harness cannot size or cannot count.** A +0.2240
+R gross on 63 VALID trades, with `cost_r` 0.0376 and a CI of [−0.0949, +0.4636],
+is the most interesting number in the round and the least usable: 63 trades, a CI
+whose lower bound is −0.095, a TRAIN mean of −0.0982, and 2 size skips. **It is
+not evidence and it is not a candidate.**
+
+**3. ETH's 1h rows are worse than BTC's, and the replication fails.** BTC
+`055_swing` 1h was the round's best: +0.1291 gross, +0.0296 net. ETH's is
+**−0.0016 gross, −0.0840 net** - and TRAIN chose a *different pattern* (`pin`
+here, `engulfing` there). **So the two coins do not agree on which pattern to
+use, which is `LESSONS.md` §5's cross-coin disagreement being informative rather
+than automatic, in the mildest possible way: one pattern is better on BTC, the
+other on ETH, and neither is good enough to be worth anything.**
+
+**4. Every long/short split is again close to balanced and both legs lose.**
+`055_swing` tf30 is 256 long / 206 short and `054_prev_day` tf15 is 170/177. **The
+two-sided family is negative on both coins, so §2's drift reading does not apply
+and is not needed here.**
+
+**5. The year split kills the two 4h rows as well.** `055_swing` 4h is 2023
+**+0.336** (33 trades) and 2024 **+0.022** (30). `054_prev_day` 4h is 2023
+**+0.144** (47) and 2024 **+0.008** (49). **Both are carried by 2023, and both
+2024 cells are a rounding error - but the 2023 cells are on 33 and 47 trades,
+which is the size where one year can carry anything.**
+
+### Verdict
+
+`REJECT` on 6, `UNSIZABLE` on 1, `INCONCLUSIVE` on 1. **No PASS, no WATCH, no
+holdout, no controls, no v2.**
+
+**The replication fails, and it fails in the most informative way available:
+the pattern-at-a-level family produced two of the largest gross R numbers in the
+project (+0.2240 and +0.1047 on ETH 4h, +0.1291 on BTC 1h) and every one of them
+is either unsizable, under 100 trades, or eaten by cost.** `LESSONS.md` §1: the
+structure is real and the cost of harvesting it is the same size. The one clock
+where cost would be cheap enough is 4h, and 4h cannot be traded from a 1,000 USDT
+account at these stop widths or cannot produce 100 VALID trades.

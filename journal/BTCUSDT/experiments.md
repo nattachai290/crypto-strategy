@@ -5149,3 +5149,108 @@ swing stop is at least 2.5 ATR, so cost stays near 0.1 R at 1h.
 
 **Prior:** low. This is the first rule-based test of candle patterns, and the
 location requirement is the hypothesis.
+
+---
+
+## Exp 049 - Candle pattern at a support/resistance level on BTCUSDT: 0 PASS, 0 WATCH, 7 REJECT, 1 INCONCLUSIVE
+
+**Date:** 2026-10-02
+**Status:** complete. **8 evaluations. HOLDOUT UNTOUCHED - nothing passed, so
+`--final` was never a candidate. No WATCH or PASS row, so `baseline.py` and
+`benchmark.py` were not run on this coin, and no v2 file was made (v2 is only
+allowed after a WATCH).** No idea file or code was changed. BTCUSDT now has
+**258 evaluations**.
+
+**Session state.** `git pull` clean. `pip install -r requirements.txt` - all
+present. `test_engine.py` -> **ALL CHECKS PASSED**, including test **7** (every
+block causal) and **test 18** (`candle_at_level: hand-built engulfing at
+yesterday's low, pin at yesterday's high, and misses`). `datafeed.py` ->
+**VALIDATION: OK** on both coins.
+
+**What was tested** (`PLAN.md` §22, the owner's request for "candle pattern +
+location + support and resistance"). The block is `recipes.candle_at_level`:
+engulfing or pin, at either the previous completed UTC day's low/high
+(`prev_day`) or a live 10-bar pivot (`swing`). Exits: a swing stop 2 bars beyond
+the candle with a 0.5 ATR buffer and a 2.5-5.0 ATR floor, no break-even or
+trailing, out after 48 h at 1h. Grid of 8 cells chosen on TRAIN: pattern
+{engulfing, pin} x near_atr {0.25, 0.5} x tp.r {1.5, 3.0}.
+
+### The eight rows, in full
+
+| idea file | tf | verdict | VALID trades | gross_r | cost_r | mean R | 95% CI | long/short | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `054_prev_day` tf15 | 15m | REJECT | 341 | −0.0106 | 0.1771 | **−0.1878** | [−0.3190, −0.0544] | 174/167 | −27.6% | 51.1% |
+| `054_prev_day` tf30 | 30m | REJECT | 290 | −0.0393 | 0.1298 | **−0.1691** | [−0.2936, −0.0419] | 138/152 | −22.0% | 40.4% |
+| `054_prev_day` (1h) | 1h | REJECT | 227 | −0.0280 | 0.0974 | **−0.1254** | [−0.3014, +0.0542] | 96/131 | −13.1% | 27.2% |
+| `054_prev_day` tf240 | 4h | REJECT | 100 | +0.0571 | 0.0412 | **+0.0159** | [−0.2496, +0.3003] | 45/55 | +0.1% | 11.2% |
+| `055_swing` tf15 | 15m | REJECT | 475 | −0.0709 | 0.2128 | **−0.2837** | [−0.4030, −0.1635] | 247/228 | −47.9% | 75.6% |
+| `055_swing` tf30 | 30m | REJECT | 242 | −0.0338 | 0.1415 | **−0.1753** | [−0.3383, −0.0025] | 126/116 | −19.5% | 36.0% |
+| **`055_swing` (1h)** | 1h | **REJECT** | 166 | **+0.1291** | 0.0995 | **+0.0296** | [−0.1896, +0.2551] | 94/72 | +0.9% | 19.4% |
+| `055_swing` tf240 | 4h | INCONCLUSIVE | 61 | −0.0325 | 0.0409 | −0.0734 | [−0.3502, +0.2057] | 32/29 | −2.0% | 10.7% |
+
+`size_skips` is **0 on every row**, so nothing is `UNSIZABLE` here. The best cell
+of each file is bold.
+
+**TRAIN chose `engulfing` in 7 of the 8 files** (the exception is
+`055_swing` tf240, which chose `pin`), and `near_atr` 0.5 with tp 3.0 R in the
+three 1h/4h files that got that far.
+
+### What the numbers say
+
+**1. `LESSONS.md` §1 predicted 15m would lose, and 15m is the worst clock by a
+wide margin on both coins and both ideas.** Measured `cost_r` by clock on this
+coin: **15m 0.177-0.213, 30m 0.130-0.142, 1h 0.097-0.100, 4h 0.041.** The plan
+wrote "15m will pay ~0.3 R in cost and is expected to lose"; the measurement is
+0.18-0.21, so the direction and the ranking were right and the magnitude was
+optimistic. **At 15m a 2.5-5 ATR stop still costs 0.18 R per trade, which is more
+than any gross R in the round.**
+
+**2. The gross numbers are the finding, and they are not zero.** Four of the
+eight rows have a positive gross R: `055_swing` 1h **+0.1291**, `054_prev_day`
+4h **+0.0571**, and on ETH (below) two more. **`055_swing` at 1h produced
++0.1291 R gross of structure and +0.0296 R net - the cost took 0.0995 R, which is
+77% of the gross.** So a candle pattern at a live swing level **does** carry
+information about where price goes next; at 1h on a 2.5-5 ATR stop it just
+cannot pay for it. This is §1 in its most precise form yet: **+0.1291 R of
+structure, −0.0995 R of cost.**
+
+**3. The stop floor is why the gross is there at all, and it is the right
+design.** Without a 2.5-5 ATR floor the stop would sit just beyond the candle,
+`cost_r` would approach the 0.3 R the plan feared, and the round would have said
+nothing about whether the pattern carries information. **The wide stop bought a
+readable gross number, and the gross number is positive.** That is a
+well-designed experiment that returned a clean negative.
+
+**4. Every row's long/short split is close to balanced, and both legs lose.**
+`054_prev_day` 1h is 96 long / 131 short and `055_swing` tf15 is 247/228, and
+every cell is within about 40% of even. **So this is not §2's long-in-a-bull-
+market shape** - unlike almost every positive result in this project, this
+family is two-sided, and the two sides lose together. `LESSONS.md` §2's advice
+to check the short side was followed and here it changes the reading: **there is
+no drift to remove here, and the idea is still negative.**
+
+**5. Only two rows fail just the CI, and both are 1h or 4h.** `055_swing` 1h
+(+0.0296, CI [−0.1896, +0.2551]) and `054_prev_day` 4h (+0.0159, CI [−0.2496,
++0.3003]) fail `valid_ci_lo>0` and `stress_mean>0` and nothing else. **Neither is
+a WATCH** - a WATCH needs the mean positive on TRAIN and at cost x1.5, and both
+go negative on the stress (BTC `055_swing` 1h: +0.0296 -> **−0.0142**). **The
+entire edge is smaller than a 50% worse execution, which is the definition of not
+an edge.**
+
+**6. The year split kills the two surviving clocks.** `055_swing` 1h is
+2023 **−0.026** (87 trades) and 2024 **+0.091** (79). `054_prev_day` 4h is 2023
+**+0.088** (48) and 2024 **−0.051** (52). **Opposite directions on the two
+clocks, and neither year carries a result.**
+
+### Verdict
+
+`REJECT`, 7 of 8, with the 4h swing file `INCONCLUSIVE` for want of trades (61
+VALID trades against a 100 floor; its TRAIN had 98, also short). **No PASS, no
+WATCH, no holdout, no controls, no v2.**
+
+**The honest summary: the pattern carries information - `055_swing` at 1h shows
++0.1291 R gross - and at every clock this project trades, the cost of getting in
+and out is between 0.04 and 0.21 R. The one clock where cost is cheap enough
+(4h, 0.041 R) cannot produce 100 VALID trades.** That is the same wall as
+every other round here, reached by a different road: this time it is not that
+the idea is wrong but that **the cheap clock is the illiquid clock**.

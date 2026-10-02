@@ -10,24 +10,24 @@ stays the only test that counts.
 
 ## Overview
 
-- 436 evaluations of 55 ideas: {'BNBUSDT': 50, 'BTCUSDT': 247, 'ETHUSDT': 89, 'SOLUSDT': 50}
-- verdicts: {'REJECT': 238, 'WATCH': 117, 'INCONCLUSIVE': 74, 'PASS': 7}
+- 452 evaluations of 57 ideas: {'BNBUSDT': 50, 'BTCUSDT': 255, 'ETHUSDT': 97, 'SOLUSDT': 50}
+- verdicts: {'REJECT': 251, 'WATCH': 117, 'INCONCLUSIVE': 76, 'PASS': 7, 'UNSIZABLE': 1}
 - baseline: {'DRIFT': 114, 'SKILL': 12} · benchmark: {'NO_EDGE': 119, 'ALPHA': 7}
 - holdouts: 5 {'FAILED': 5}
 
 ## Cost
 
-- VALID gross R > 0 in **68%** of evaluations, net R > 0 in **47%**; cost turned a gross win into a net loss in **21%**. Median cost 0.022 R per trade.
+- VALID gross R > 0 in **67%** of evaluations, net R > 0 in **46%**; cost turned a gross win into a net loss in **21%**. Median cost 0.023 R per trade.
 
 ## Luck
 
-- VALID z-scores (mean R / its bootstrap SE): mean -1.49, sd 4.55, n 436. **17** clear +1.96; with no edge anywhere about **10.9** would (and the rows are correlated, so fewer are independent). Among the 247 evaluations with cost < 0.03 R (27 ideas): 13 clear +1.96.
+- VALID z-scores (mean R / its bootstrap SE): mean -1.49, sd 4.48, n 452. **17** clear +1.96; with no edge anywhere about **11.3** would (and the rows are correlated, so fewer are independent). Among the 247 evaluations with cost < 0.03 R (27 ideas): 13 clear +1.96.
 
 ## Does TRAIN predict VALID?
 
-- Spearman(TRAIN mean R, VALID mean R) = **+0.52** (n 436); BNBUSDT +0.37, BTCUSDT +0.67, ETHUSDT +0.28, SOLUSDT +0.29
+- Spearman(TRAIN mean R, VALID mean R) = **+0.53** (n 452); BNBUSDT +0.37, BTCUSDT +0.68, ETHUSDT +0.30, SOLUSDT +0.29
 - Only evaluations with cost < 0.03 R: **+0.28** (n 247). The overall figure includes the cost effect, which is the same on both periods.
-- VALID > 0 in 64% of evaluations whose TRAIN was > 0, and in 21% of those whose TRAIN was <= 0.
+- VALID > 0 in 64% of evaluations whose TRAIN was > 0, and in 20% of those whose TRAIN was <= 0.
 
 ## The same idea file on two coins
 
@@ -36,7 +36,7 @@ stays the only test that counts.
 | BNBUSDT-BTCUSDT | 50 | +0.26 | 50% |
 | BNBUSDT-ETHUSDT | 50 | -0.12 | 36% |
 | BNBUSDT-SOLUSDT | 50 | -0.01 | 40% |
-| BTCUSDT-ETHUSDT | 89 | +0.29 | 66% |
+| BTCUSDT-ETHUSDT | 97 | +0.35 | 67% |
 | BTCUSDT-SOLUSDT | 50 | +0.30 | 74% |
 | ETHUSDT-SOLUSDT | 50 | +0.41 | 72% |
 
@@ -47,27 +47,27 @@ stays the only test that counts.
 | 1 | 48 | 27 | -0.073 | -0.174 | -0.084 | 38% | -0.324 | +0.021 | 7 |  |
 | 3 | 48 | 27 | -0.010 | -0.063 | -0.069 | 33% | -0.125 | +0.021 | 12 |  |
 | 5 | 49 | 28 | -0.000 | -0.033 | -0.066 | 35% | -0.072 | +0.020 | 10 |  |
-| 15 | 83 | 52 | +0.030 | -0.029 | -0.060 | 36% | -0.045 | +0.065 | 17 |  |
-| 30 | 72 | 39 | +0.062 | +0.017 | +0.018 | 53% | +0.015 | +0.035 | 32 | yes |
-| 60 | 68 | 37 | +0.087 | +0.004 | +0.004 | 54% | +0.004 | +0.023 | 27 | yes |
-| 240 | 68 | 37 | +0.089 | +0.095 | +0.059 | 71% | +0.104 | +0.019 | 19 | yes |
+| 15 | 87 | 54 | +0.025 | -0.038 | -0.061 | 34% | -0.051 | +0.071 | 17 |  |
+| 30 | 76 | 41 | +0.056 | +0.009 | +0.000 | 50% | +0.007 | +0.043 | 32 | yes |
+| 60 | 72 | 39 | +0.084 | -0.002 | +0.002 | 53% | -0.001 | +0.029 | 27 |  |
+| 240 | 72 | 39 | +0.083 | +0.092 | +0.059 | 71% | +0.101 | +0.019 | 19 | yes |
 
 ## By avg hold
 
 | hold_bucket | rows | ideas | train_mean | valid_mean | valid_median | valid_pos_share | idea_mean | cost_r | pass_watch | robust |
 |---|---|---|---|---|---|---|---|---|---|---|
 | <4h | 52 | 17 | -0.153 | -0.265 | -0.176 | 0% | -0.276 | +0.204 | 0 |  |
-| 4-24h | 78 | 42 | +0.007 | -0.041 | -0.057 | 35% | -0.041 | +0.075 | 14 |  |
-| 1-3d | 185 | 37 | +0.055 | +0.001 | +0.001 | 51% | +0.032 | +0.020 | 50 | yes |
-| >3d | 121 | 26 | +0.099 | +0.076 | +0.058 | 69% | +0.137 | +0.019 | 60 | yes |
+| 4-24h | 86 | 44 | +0.000 | -0.054 | -0.062 | 31% | -0.047 | +0.079 | 14 |  |
+| 1-3d | 189 | 39 | +0.055 | -0.001 | +0.001 | 50% | +0.026 | +0.020 | 50 |  |
+| >3d | 125 | 28 | +0.096 | +0.075 | +0.058 | 69% | +0.131 | +0.019 | 60 | yes |
 
 ## By cost per trade
 
 | cost_bucket | rows | ideas | train_mean | valid_mean | valid_median | valid_pos_share | idea_mean | cost_r | pass_watch | robust |
 |---|---|---|---|---|---|---|---|---|---|---|
 | <0.03R | 247 | 27 | +0.062 | +0.019 | +0.017 | 57% | +0.037 | +0.019 | 94 | yes |
-| 0.03-0.1R | 113 | 38 | +0.047 | +0.020 | -0.020 | 48% | -0.004 | +0.062 | 25 |  |
-| 0.1-0.3R | 56 | 29 | -0.009 | -0.080 | -0.119 | 16% | -0.088 | +0.148 | 5 |  |
+| 0.03-0.1R | 121 | 40 | +0.044 | +0.017 | -0.020 | 48% | -0.005 | +0.062 | 25 |  |
+| 0.1-0.3R | 64 | 31 | -0.017 | -0.093 | -0.128 | 14% | -0.094 | +0.144 | 5 |  |
 | >0.3R | 20 | 16 | -0.260 | -0.496 | -0.422 | 0% | -0.483 | +0.465 | 0 |  |
 
 ## By trigger
@@ -93,6 +93,7 @@ stays the only test that counts.
 | range_break | 14 | 2 | -0.039 | -0.093 | -0.052 | 29% | -0.093 | +0.101 | 1 |  |
 | keltner_break | 35 | 2 | +0.062 | -0.043 | -0.020 | 43% | -0.095 | +0.019 | 11 |  |
 | prev_day_break | 14 | 2 | -0.082 | -0.097 | -0.050 | 29% | -0.097 | +0.078 | 0 |  |
+| candle_at_level | 16 | 2 | -0.030 | -0.103 | -0.147 | 25% | -0.103 | +0.107 | 0 |  |
 | funding_extreme | 7 | 1 | +0.120 | -0.105 | -0.105 | 0% | -0.105 | +0.023 | 0 |  |
 | zscore_revert | 29 | 2 | -0.048 | -0.082 | -0.088 | 17% | -0.113 | +0.019 | 3 |  |
 | supertrend_flip | 1 | 1 | +0.041 | -0.120 | -0.120 | 0% | -0.120 | +0.066 | 0 |  |
@@ -105,7 +106,7 @@ stays the only test that counts.
 
 | direction | rows | ideas | train_mean | valid_mean | valid_median | valid_pos_share | idea_mean | cost_r | pass_watch | robust |
 |---|---|---|---|---|---|---|---|---|---|---|
-| both | 362 | 36 | +0.043 | -0.011 | -0.008 | 48% | -0.038 | +0.020 | 106 |  |
+| both | 378 | 38 | +0.040 | -0.014 | -0.013 | 47% | -0.041 | +0.021 | 106 |  |
 | long | 67 | 12 | -0.001 | -0.042 | -0.035 | 46% | -0.021 | +0.084 | 18 |  |
 | short | 7 | 7 | -0.070 | -0.122 | -0.120 | 0% | -0.122 | +0.066 | 0 |  |
 
@@ -115,13 +116,13 @@ stays the only test that counts.
 |---|---|---|---|---|---|---|---|---|---|---|
 | atr | 18 | 6 | -0.064 | -0.155 | -0.072 | 28% | -0.077 | +0.168 | 0 |  |
 | pct | 401 | 46 | +0.041 | -0.010 | -0.007 | 48% | -0.039 | +0.021 | 122 |  |
-| swing | 17 | 3 | -0.014 | -0.049 | -0.099 | 29% | -0.079 | +0.091 | 2 |  |
+| swing | 33 | 5 | -0.022 | -0.075 | -0.125 | 27% | -0.088 | +0.100 | 2 |  |
 
 ## By exits
 
 | exits | rows | ideas | train_mean | valid_mean | valid_median | valid_pos_share | idea_mean | cost_r | pass_watch | robust |
 |---|---|---|---|---|---|---|---|---|---|---|
-| TP | 38 | 8 | -0.043 | -0.082 | -0.087 | 26% | -0.063 | +0.089 | 3 |  |
+| TP | 54 | 10 | -0.040 | -0.088 | -0.098 | 26% | -0.071 | +0.098 | 3 |  |
 | TP + trail | 1 | 1 | -0.049 | -0.042 | -0.042 | 0% | -0.042 | +0.113 | 0 |  |
 | no TP | 110 | 16 | +0.068 | -0.000 | -0.005 | 49% | +0.002 | +0.070 | 30 |  |
 | no TP + trail | 287 | 32 | +0.032 | -0.015 | -0.006 | 49% | -0.055 | +0.019 | 91 |  |
@@ -130,16 +131,16 @@ stays the only test that counts.
 
 | exit_mix | rows | ideas | train_mean | valid_mean | valid_median | valid_pos_share | idea_mean | cost_r | pass_watch | robust |
 |---|---|---|---|---|---|---|---|---|---|---|
-| mixed | 13 | 3 | -0.021 | -0.100 | -0.094 | 31% | -0.140 | +0.112 | 2 |  |
-| mostly stop | 69 | 19 | +0.092 | +0.003 | +0.001 | 51% | -0.011 | +0.071 | 20 |  |
+| mixed | 14 | 4 | -0.024 | -0.106 | -0.118 | 29% | -0.152 | +0.131 | 2 |  |
+| mostly stop | 82 | 21 | +0.076 | -0.017 | -0.036 | 46% | -0.022 | +0.075 | 20 |  |
 | mostly time | 349 | 45 | +0.026 | -0.019 | -0.012 | 47% | -0.041 | +0.020 | 102 |  |
-| tp often | 5 | 1 | -0.078 | +0.026 | -0.099 | 40% | +0.026 | +0.074 | 0 |  |
+| tp often | 7 | 2 | -0.096 | +0.034 | -0.073 | 43% | +0.041 | +0.041 | 0 |  |
 
 ## By number of filters
 
 | n_filters | rows | ideas | train_mean | valid_mean | valid_median | valid_pos_share | idea_mean | cost_r | pass_watch | robust |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 344 | 35 | +0.032 | -0.024 | -0.028 | 43% | -0.039 | +0.023 | 84 |  |
+| 1 | 360 | 37 | +0.029 | -0.028 | -0.034 | 42% | -0.043 | +0.024 | 84 |  |
 | 2 | 88 | 16 | +0.046 | +0.016 | +0.055 | 64% | -0.033 | +0.019 | 40 |  |
 | 3 | 4 | 4 | -0.063 | -0.142 | -0.143 | 0% | -0.142 | +0.078 | 0 |  |
 
@@ -148,8 +149,8 @@ stays the only test that counts.
 | symbol | rows | ideas | train_mean | valid_mean | valid_median | valid_pos_share | idea_mean | cost_r | pass_watch | robust |
 |---|---|---|---|---|---|---|---|---|---|---|
 | BNBUSDT | 50 | 8 | +0.067 | -0.032 | -0.036 | 26% | -0.042 | +0.017 | 10 |  |
-| BTCUSDT | 247 | 55 | +0.002 | -0.028 | -0.029 | 44% | -0.025 | +0.045 | 57 |  |
-| ETHUSDT | 89 | 17 | +0.088 | -0.005 | +0.018 | 56% | -0.019 | +0.022 | 36 |  |
+| BTCUSDT | 255 | 57 | +0.001 | -0.031 | -0.032 | 43% | -0.029 | +0.048 | 57 |  |
+| ETHUSDT | 97 | 19 | +0.080 | -0.011 | +0.013 | 54% | -0.026 | +0.022 | 36 |  |
 | SOLUSDT | 50 | 8 | +0.062 | +0.030 | +0.034 | 66% | +0.037 | +0.018 | 21 | yes |
 
 ## Long vs short (VALID, each evaluation once)
@@ -158,10 +159,10 @@ stays the only test that counts.
 |---|---|---|---|---|---|
 | BNBUSDT | long | 50 | 2501 | +0.0579 | 68% |
 | BNBUSDT | short | 50 | 2593 | -0.1187 | 8% |
-| BTCUSDT | long | 232 | 96844 | +0.0477 | 60% |
-| BTCUSDT | short | 176 | 39692 | -0.1243 | 15% |
-| ETHUSDT | long | 89 | 7368 | +0.0566 | 60% |
-| ETHUSDT | short | 85 | 6742 | -0.0578 | 36% |
+| BTCUSDT | long | 240 | 97796 | +0.0438 | 59% |
+| BTCUSDT | short | 184 | 40642 | -0.1263 | 14% |
+| ETHUSDT | long | 97 | 8412 | +0.0464 | 57% |
+| ETHUSDT | short | 93 | 7771 | -0.0612 | 35% |
 | SOLUSDT | long | 50 | 2807 | +0.2010 | 88% |
 | SOLUSDT | short | 50 | 2875 | -0.1294 | 16% |
 
@@ -171,10 +172,10 @@ stays the only test that counts.
 |---|---|---|---|---|---|
 | BNBUSDT | 2023 | 50 | 2543 | -0.0489 | 26% |
 | BNBUSDT | 2024 | 50 | 2551 | -0.0126 | 38% |
-| BTCUSDT | 2023 | 247 | 90801 | -0.0166 | 41% |
-| BTCUSDT | 2024 | 233 | 45735 | -0.0220 | 45% |
-| ETHUSDT | 2023 | 89 | 6918 | -0.0255 | 38% |
-| ETHUSDT | 2024 | 89 | 7192 | +0.0319 | 62% |
+| BTCUSDT | 2023 | 255 | 91749 | -0.0193 | 40% |
+| BTCUSDT | 2024 | 241 | 46689 | -0.0262 | 44% |
+| ETHUSDT | 2023 | 97 | 7980 | -0.0253 | 38% |
+| ETHUSDT | 2024 | 97 | 8203 | +0.0167 | 58% |
 | SOLUSDT | 2023 | 50 | 2776 | +0.0998 | 60% |
 | SOLUSDT | 2024 | 50 | 2906 | -0.0409 | 32% |
 

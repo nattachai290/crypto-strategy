@@ -1,18 +1,19 @@
 {
  "overview": {
-  "evaluations": 436,
-  "ideas": 55,
+  "evaluations": 452,
+  "ideas": 57,
   "by_symbol": {
    "BNBUSDT": 50,
-   "BTCUSDT": 247,
-   "ETHUSDT": 89,
+   "BTCUSDT": 255,
+   "ETHUSDT": 97,
    "SOLUSDT": 50
   },
   "verdicts": {
-   "REJECT": 238,
+   "REJECT": 251,
    "WATCH": 117,
-   "INCONCLUSIVE": 74,
-   "PASS": 7
+   "INCONCLUSIVE": 76,
+   "PASS": 7,
+   "UNSIZABLE": 1
   },
   "baseline": {
    "DRIFT": 114,
@@ -28,37 +29,37 @@
   }
  },
  "cost": {
-  "gross_pos_share": 0.6788990825688074,
-  "net_pos_share": 0.46788990825688076,
-  "gross_pos_net_neg_share": 0.21100917431192662,
-  "median_cost_r": 0.022212793125906148
+  "gross_pos_share": 0.665929203539823,
+  "net_pos_share": 0.46017699115044247,
+  "gross_pos_net_neg_share": 0.20575221238938052,
+  "median_cost_r": 0.022946151857342452
  },
  "luck": {
-  "n": 436,
+  "n": 452,
   "z_gt_1_96": 17,
-  "expected_if_no_edge": 10.9,
-  "z_mean": -1.490645899106424,
-  "z_sd": 4.5495136858522605,
+  "expected_if_no_edge": 11.3,
+  "z_mean": -1.4924524648437552,
+  "z_sd": 4.478075763289081,
   "low_cost_n": 247,
   "low_cost_z_gt_1_96": 13,
   "low_cost_ideas": 27
  },
  "train_predicts_valid": {
   "all": {
-   "n": 436,
-   "spearman": 0.5242401493603754
+   "n": 452,
+   "spearman": 0.5283704721241081
   },
   "BNBUSDT": {
    "n": 50,
    "spearman": 0.37181272509003604
   },
   "BTCUSDT": {
-   "n": 247,
-   "spearman": 0.6713464803447825
+   "n": 255,
+   "spearman": 0.6792995889300603
   },
   "ETHUSDT": {
-   "n": 89,
-   "spearman": 0.28255022131426627
+   "n": 97,
+   "spearman": 0.3018225331369661
   },
   "SOLUSDT": {
    "n": 50,
@@ -68,8 +69,8 @@
    "n": 247,
    "spearman": 0.28076254152903285
   },
-  "valid_pos_share_if_train_pos": 0.6436781609195402,
-  "valid_pos_share_if_train_neg": 0.2057142857142857
+  "valid_pos_share_if_train_pos": 0.6404494382022472,
+  "valid_pos_share_if_train_neg": 0.2
  },
  "cross_coin": {
   "BNBUSDT-BTCUSDT": {
@@ -88,9 +89,9 @@
    "same_sign_share": 0.4
   },
   "BTCUSDT-ETHUSDT": {
-   "n": 89,
-   "spearman": 0.29388832141641136,
-   "same_sign_share": 0.6629213483146067
+   "n": 97,
+   "spearman": 0.35327687776141375,
+   "same_sign_share": 0.6701030927835051
   },
   "BTCUSDT-SOLUSDT": {
    "n": 50,
@@ -146,53 +147,53 @@
    },
    {
     "tf": 15,
-    "rows": 83,
-    "ideas": 52,
-    "train_mean": 0.030400107473552387,
-    "valid_mean": -0.029440009237097647,
-    "valid_median": -0.060340731097682,
-    "valid_pos_share": 0.3614457831325301,
-    "idea_mean": -0.0447820521897533,
-    "cost_r": 0.0652935634629214,
+    "rows": 87,
+    "ideas": 54,
+    "train_mean": 0.024775754605259444,
+    "valid_mean": -0.03820212064102711,
+    "valid_median": -0.0605115926329386,
+    "valid_pos_share": 0.3448275862068966,
+    "idea_mean": -0.05127219589652405,
+    "cost_r": 0.071024304842924,
     "pass_watch": 17,
     "robust": ""
    },
    {
     "tf": 30,
-    "rows": 72,
-    "ideas": 39,
-    "train_mean": 0.061728494616401876,
-    "valid_mean": 0.0173988028594622,
-    "valid_median": 0.017889151632490302,
-    "valid_pos_share": 0.5277777777777778,
-    "idea_mean": 0.014515599820414794,
-    "cost_r": 0.034712509251125345,
+    "rows": 76,
+    "ideas": 41,
+    "train_mean": 0.055948031446097335,
+    "valid_mean": 0.008971380666143803,
+    "valid_median": 0.00010769861344445,
+    "valid_pos_share": 0.5,
+    "idea_mean": 0.006845462326073225,
+    "cost_r": 0.04273750130733725,
     "pass_watch": 32,
     "robust": "yes"
    },
    {
     "tf": 60,
-    "rows": 68,
-    "ideas": 37,
-    "train_mean": 0.08660518034091093,
-    "valid_mean": 0.0036735917794760782,
-    "valid_median": 0.00428110862917735,
-    "valid_pos_share": 0.5441176470588235,
-    "idea_mean": 0.004276448860955018,
-    "cost_r": 0.022782746478148652,
+    "rows": 72,
+    "ideas": 39,
+    "train_mean": 0.08394951431651479,
+    "valid_mean": -0.0020078739353755594,
+    "valid_median": 0.00220381895170305,
+    "valid_pos_share": 0.5277777777777778,
+    "idea_mean": -0.000998896777445414,
+    "cost_r": 0.029054966644758,
     "pass_watch": 27,
-    "robust": "yes"
+    "robust": ""
    },
    {
     "tf": 240,
-    "rows": 68,
-    "ideas": 37,
-    "train_mean": 0.08887703182236836,
-    "valid_mean": 0.09489315378948258,
+    "rows": 72,
+    "ideas": 39,
+    "train_mean": 0.0827876860361484,
+    "valid_mean": 0.09244429358289823,
     "valid_median": 0.059463770516596896,
-    "valid_pos_share": 0.7058823529411765,
-    "idea_mean": 0.10399543171202041,
-    "cost_r": 0.018873923055756248,
+    "valid_pos_share": 0.7083333333333334,
+    "idea_mean": 0.10126816188427396,
+    "cost_r": 0.019229917015394497,
     "pass_watch": 19,
     "robust": "yes"
    }
@@ -213,40 +214,40 @@
    },
    {
     "hold_bucket": "4-24h",
-    "rows": 78,
-    "ideas": 42,
-    "train_mean": 0.007344896426897957,
-    "valid_mean": -0.040638241588689866,
-    "valid_median": -0.056643062654242154,
-    "valid_pos_share": 0.34615384615384615,
-    "idea_mean": -0.04077562831041398,
-    "cost_r": 0.07494332998399056,
+    "rows": 86,
+    "ideas": 44,
+    "train_mean": 0.00014863289736309206,
+    "valid_mean": -0.0537294819565397,
+    "valid_median": -0.0618886438450499,
+    "valid_pos_share": 0.313953488372093,
+    "idea_mean": -0.047166239548262226,
+    "cost_r": 0.07884248896917864,
     "pass_watch": 14,
     "robust": ""
    },
    {
     "hold_bucket": "1-3d",
-    "rows": 185,
-    "ideas": 37,
-    "train_mean": 0.05528715412009427,
-    "valid_mean": 0.001299845483726335,
-    "valid_median": 0.0007833905395211,
-    "valid_pos_share": 0.5081081081081081,
-    "idea_mean": 0.03239337735701954,
-    "cost_r": 0.0195650777318622,
+    "rows": 189,
+    "ideas": 39,
+    "train_mean": 0.05493828719483895,
+    "valid_mean": -0.0008142843908044528,
+    "valid_median": 0.0006618509065061,
+    "valid_pos_share": 0.5026455026455027,
+    "idea_mean": 0.025676137949590158,
+    "cost_r": 0.0196028854450873,
     "pass_watch": 50,
-    "robust": "yes"
+    "robust": ""
    },
    {
     "hold_bucket": ">3d",
-    "rows": 121,
-    "ideas": 26,
-    "train_mean": 0.09948629408935716,
-    "valid_mean": 0.07617219449858799,
+    "rows": 125,
+    "ideas": 28,
+    "train_mean": 0.09563933452395082,
+    "valid_mean": 0.07536072171690403,
     "valid_median": 0.0583963569242386,
-    "valid_pos_share": 0.6859504132231405,
-    "idea_mean": 0.13674652668855478,
-    "cost_r": 0.0188408489329382,
+    "valid_pos_share": 0.688,
+    "idea_mean": 0.13060846550158403,
+    "cost_r": 0.0188670082796469,
     "pass_watch": 60,
     "robust": "yes"
    }
@@ -267,27 +268,27 @@
    },
    {
     "cost_bucket": "0.03-0.1R",
-    "rows": 113,
-    "ideas": 38,
-    "train_mean": 0.04690091892517457,
-    "valid_mean": 0.020064325510403703,
+    "rows": 121,
+    "ideas": 40,
+    "train_mean": 0.04439745319697093,
+    "valid_mean": 0.017158283459570756,
     "valid_median": -0.0196961365350739,
-    "valid_pos_share": 0.4778761061946903,
-    "idea_mean": -0.004198283817946988,
+    "valid_pos_share": 0.4793388429752066,
+    "idea_mean": -0.00518284765247187,
     "cost_r": 0.0620395745224086,
     "pass_watch": 25,
     "robust": ""
    },
    {
     "cost_bucket": "0.1-0.3R",
-    "rows": 56,
-    "ideas": 29,
-    "train_mean": -0.00895391401941785,
-    "valid_mean": -0.07983442508689909,
-    "valid_median": -0.1194140275737878,
-    "valid_pos_share": 0.16071428571428573,
-    "idea_mean": -0.08763152182154732,
-    "cost_r": 0.14755624569299297,
+    "rows": 64,
+    "ideas": 31,
+    "train_mean": -0.016586541831440847,
+    "valid_mean": -0.09252625639392115,
+    "valid_median": -0.12837460046745186,
+    "valid_pos_share": 0.140625,
+    "idea_mean": -0.09367910593261365,
+    "cost_r": 0.14418514949688996,
     "pass_watch": 5,
     "robust": ""
    },
@@ -554,6 +555,19 @@
     "robust": ""
    },
    {
+    "trigger": "candle_at_level",
+    "rows": 16,
+    "ideas": 2,
+    "train_mean": -0.03048946836475359,
+    "valid_mean": -0.10262931802576006,
+    "valid_median": -0.14726734452039925,
+    "valid_pos_share": 0.25,
+    "idea_mean": -0.10262931802576006,
+    "cost_r": 0.10701961841211241,
+    "pass_watch": 0,
+    "robust": ""
+   },
+   {
     "trigger": "funding_extreme",
     "rows": 7,
     "ideas": 1,
@@ -648,14 +662,14 @@
   "direction": [
    {
     "direction": "both",
-    "rows": 362,
-    "ideas": 36,
-    "train_mean": 0.042709137420651244,
-    "valid_mean": -0.010545552756620075,
-    "valid_median": -0.00844944916109475,
-    "valid_pos_share": 0.47790055248618785,
-    "idea_mean": -0.037776712863856504,
-    "cost_r": 0.02023656317923235,
+    "rows": 378,
+    "ideas": 38,
+    "train_mean": 0.03961078373661295,
+    "valid_mean": -0.014443278270657745,
+    "valid_median": -0.0127376694119255,
+    "valid_pos_share": 0.46825396825396826,
+    "idea_mean": -0.04119000787237774,
+    "cost_r": 0.02070342174091875,
     "pass_watch": 106,
     "robust": ""
    },
@@ -715,14 +729,14 @@
    },
    {
     "stop_type": "swing",
-    "rows": 17,
-    "ideas": 3,
-    "train_mean": -0.014417831192328612,
-    "valid_mean": -0.049073308079931356,
-    "valid_median": -0.0992571934989462,
-    "valid_pos_share": 0.29411764705882354,
-    "idea_mean": -0.07858713739976415,
-    "cost_r": 0.0911974896644066,
+    "rows": 33,
+    "ideas": 5,
+    "train_mean": -0.02221014012441345,
+    "valid_mean": -0.07503985835669678,
+    "valid_median": -0.1254156998634093,
+    "valid_pos_share": 0.2727272727272727,
+    "idea_mean": -0.08820400965016252,
+    "cost_r": 0.0995213265040048,
     "pass_watch": 2,
     "robust": ""
    }
@@ -730,14 +744,14 @@
   "exits": [
    {
     "exits": "TP",
-    "rows": 38,
-    "ideas": 8,
-    "train_mean": -0.04342656211679074,
-    "valid_mean": -0.08175840005620652,
-    "valid_median": -0.08722229328201375,
-    "valid_pos_share": 0.2631578947368421,
-    "idea_mean": -0.0634161198508527,
-    "cost_r": 0.0888244875025752,
+    "rows": 54,
+    "ideas": 10,
+    "train_mean": -0.039593349153224176,
+    "valid_mean": -0.08794237575088905,
+    "valid_median": -0.09796998061496826,
+    "valid_pos_share": 0.25925925925925924,
+    "idea_mean": -0.07125875948583418,
+    "cost_r": 0.0984766462005792,
     "pass_watch": 3,
     "robust": ""
    },
@@ -784,27 +798,27 @@
   "exit mix": [
    {
     "exit_mix": "mixed",
-    "rows": 13,
-    "ideas": 3,
-    "train_mean": -0.020716623227327417,
-    "valid_mean": -0.09965376096608838,
-    "valid_median": -0.0940567156332169,
-    "valid_pos_share": 0.3076923076923077,
-    "idea_mean": -0.14036358983169847,
-    "cost_r": 0.1121981543597857,
+    "rows": 14,
+    "ideas": 4,
+    "train_mean": -0.02390763623063507,
+    "valid_mean": -0.10594965863228269,
+    "valid_median": -0.11809633823398219,
+    "valid_pos_share": 0.2857142857142857,
+    "idea_mean": -0.15222177444697596,
+    "cost_r": 0.1313407204202964,
     "pass_watch": 2,
     "robust": ""
    },
    {
     "exit_mix": "mostly stop",
-    "rows": 69,
-    "ideas": 19,
-    "train_mean": 0.09244253144044783,
-    "valid_mean": 0.00252510519675344,
-    "valid_median": 0.0006618509065061,
-    "valid_pos_share": 0.5072463768115942,
-    "idea_mean": -0.01084514015044971,
-    "cost_r": 0.0706667573963095,
+    "rows": 82,
+    "ideas": 21,
+    "train_mean": 0.07609173861770839,
+    "valid_mean": -0.01698926759560413,
+    "valid_median": -0.036453642154226445,
+    "valid_pos_share": 0.4634146341463415,
+    "idea_mean": -0.021518014496113978,
+    "cost_r": 0.0754385330263042,
     "pass_watch": 20,
     "robust": ""
    },
@@ -823,14 +837,14 @@
    },
    {
     "exit_mix": "tp often",
-    "rows": 5,
-    "ideas": 1,
-    "train_mean": -0.07818467052520894,
-    "valid_mean": 0.025640391550972384,
-    "valid_median": -0.0992571934989462,
-    "valid_pos_share": 0.4,
-    "idea_mean": 0.025640391550972384,
-    "cost_r": 0.0736314437256049,
+    "rows": 7,
+    "ideas": 2,
+    "train_mean": -0.09633599120709371,
+    "valid_mean": 0.034468771293005074,
+    "valid_median": -0.0733517112230718,
+    "valid_pos_share": 0.42857142857142855,
+    "idea_mean": 0.04109005609952959,
+    "cost_r": 0.0408762256394043,
     "pass_watch": 0,
     "robust": ""
    }
@@ -838,14 +852,14 @@
   "number of filters": [
    {
     "n_filters": 1,
-    "rows": 344,
-    "ideas": 35,
-    "train_mean": 0.03218883225664222,
-    "valid_mean": -0.024168766622422812,
-    "valid_median": -0.02818994550331265,
-    "valid_pos_share": 0.43023255813953487,
-    "idea_mean": -0.0390975629800626,
-    "cost_r": 0.02337415010055065,
+    "rows": 360,
+    "ideas": 37,
+    "train_mean": 0.02940313000680241,
+    "valid_mean": -0.027655902240348917,
+    "valid_median": -0.0335217377772985,
+    "valid_pos_share": 0.4222222222222222,
+    "idea_mean": -0.04253171190145165,
+    "cost_r": 0.0241745262519064,
     "pass_watch": 84,
     "robust": ""
    },
@@ -892,27 +906,27 @@
    },
    {
     "symbol": "BTCUSDT",
-    "rows": 247,
-    "ideas": 55,
-    "train_mean": 0.0023279982774744414,
-    "valid_mean": -0.02823043987321964,
-    "valid_median": -0.0291047683256043,
-    "valid_pos_share": 0.43724696356275305,
-    "idea_mean": -0.02534725683875398,
-    "cost_r": 0.0453611776860635,
+    "rows": 255,
+    "ideas": 57,
+    "train_mean": 0.0006755647164180019,
+    "valid_mean": -0.031145452614134456,
+    "valid_median": -0.0317072026759207,
+    "valid_pos_share": 0.43137254901960786,
+    "idea_mean": -0.028708632773881197,
+    "cost_r": 0.0480887643766895,
     "pass_watch": 57,
     "robust": ""
    },
    {
     "symbol": "ETHUSDT",
-    "rows": 89,
-    "ideas": 17,
-    "train_mean": 0.08841282991686822,
-    "valid_mean": -0.004707513867977489,
-    "valid_median": 0.017601074514798,
-    "valid_pos_share": 0.5617977528089888,
-    "idea_mean": -0.01871258768863974,
-    "cost_r": 0.0218419064324803,
+    "rows": 97,
+    "ideas": 19,
+    "train_mean": 0.08024388598571969,
+    "valid_mean": -0.011256351079825987,
+    "valid_median": 0.0131324090934043,
+    "valid_pos_share": 0.5360824742268041,
+    "idea_mean": -0.02559675372790298,
+    "cost_r": 0.0222210759069813,
     "pass_watch": 36,
     "robust": ""
    },
@@ -951,34 +965,34 @@
   {
    "symbol": "BTCUSDT",
    "side": "long",
-   "evals": 232,
-   "trades": 96844,
-   "mean_r": 0.047653395315383526,
-   "pos_share": 0.5991379310344828
+   "evals": 240,
+   "trades": 97796,
+   "mean_r": 0.043770068924882305,
+   "pos_share": 0.5916666666666667
   },
   {
    "symbol": "BTCUSDT",
    "side": "short",
-   "evals": 176,
-   "trades": 39692,
-   "mean_r": -0.12433319701198803,
-   "pos_share": 0.14772727272727273
+   "evals": 184,
+   "trades": 40642,
+   "mean_r": -0.12626687504588183,
+   "pos_share": 0.14130434782608695
   },
   {
    "symbol": "ETHUSDT",
    "side": "long",
-   "evals": 89,
-   "trades": 7368,
-   "mean_r": 0.05661833568902054,
-   "pos_share": 0.5955056179775281
+   "evals": 97,
+   "trades": 8412,
+   "mean_r": 0.046388836682217716,
+   "pos_share": 0.5670103092783505
   },
   {
    "symbol": "ETHUSDT",
    "side": "short",
-   "evals": 85,
-   "trades": 6742,
-   "mean_r": -0.05778657170849529,
-   "pos_share": 0.36470588235294116
+   "evals": 93,
+   "trades": 7771,
+   "mean_r": -0.06118712605320505,
+   "pos_share": 0.3548387096774194
   },
   {
    "symbol": "SOLUSDT",
@@ -1017,34 +1031,34 @@
   {
    "symbol": "BTCUSDT",
    "year": 2023,
-   "evals": 247,
-   "trades": 90801,
-   "mean_r": -0.016575933061432475,
-   "pos_share": 0.41295546558704455
+   "evals": 255,
+   "trades": 91749,
+   "mean_r": -0.019266665566828413,
+   "pos_share": 0.403921568627451
   },
   {
    "symbol": "BTCUSDT",
    "year": 2024,
-   "evals": 233,
-   "trades": 45735,
-   "mean_r": -0.021975784386707633,
-   "pos_share": 0.44635193133047213
+   "evals": 241,
+   "trades": 46689,
+   "mean_r": -0.02615942702335809,
+   "pos_share": 0.43568464730290457
   },
   {
    "symbol": "ETHUSDT",
    "year": 2023,
-   "evals": 89,
-   "trades": 6918,
-   "mean_r": -0.025497266543859157,
-   "pos_share": 0.38202247191011235
+   "evals": 97,
+   "trades": 7980,
+   "mean_r": -0.025260059727851565,
+   "pos_share": 0.38144329896907214
   },
   {
    "symbol": "ETHUSDT",
    "year": 2024,
-   "evals": 89,
-   "trades": 7192,
-   "mean_r": 0.031911771427023373,
-   "pos_share": 0.6179775280898876
+   "evals": 97,
+   "trades": 8203,
+   "mean_r": 0.016738534181302927,
+   "pos_share": 0.5773195876288659
   },
   {
    "symbol": "SOLUSDT",

@@ -1,3 +1,47 @@
+> **Candle pattern at a support/resistance level (§22, Exp 049): 0 PASS, 0 WATCH,
+> 7 REJECT, 1 INCONCLUSIVE. No controls, no v2, no holdout.** The owner's request
+> for "candle pattern + location + support and resistance", as the new block
+> `recipes.candle_at_level` (engulfing or pin at the previous UTC day's low/high,
+> or at a live 10-bar pivot), exits on a swing stop 2 bars beyond the candle with
+> a 2.5-5 ATR floor, 8-cell grid chosen on TRAIN. BTCUSDT now has **258
+> evaluations**.
+>
+> | idea | tf | verdict | trades | gross_r | cost_r | mean R | 95% CI | long/short |
+> |---|---|---|---|---|---|---|---|---|
+> | 054 `prev_day` | 15m | REJECT | 341 | -0.0106 | 0.1771 | -0.1878 | [-0.3190, -0.0544] | 174/167 |
+> | 054 `prev_day` | 30m | REJECT | 290 | -0.0393 | 0.1298 | -0.1691 | [-0.2936, -0.0419] | 138/152 |
+> | 054 `prev_day` | 1h | REJECT | 227 | -0.0280 | 0.0974 | -0.1254 | [-0.3014, +0.0542] | 96/131 |
+> | 054 `prev_day` | 4h | REJECT | 100 | +0.0571 | 0.0412 | +0.0159 | [-0.2496, +0.3003] | 45/55 |
+> | 055 `swing` | 15m | REJECT | 475 | -0.0709 | 0.2128 | -0.2837 | [-0.4030, -0.1635] | 247/228 |
+> | 055 `swing` | 30m | REJECT | 242 | -0.0338 | 0.1415 | -0.1753 | [-0.3383, -0.0025] | 126/116 |
+> | **055 `swing`** | **1h** | **REJECT** | 166 | **+0.1291** | 0.0995 | **+0.0296** | [-0.1896, +0.2551] | 94/72 |
+> | 055 `swing` | 4h | INCONCLUSIVE | 61 | -0.0325 | 0.0409 | -0.0734 | [-0.3502, +0.2057] | 32/29 |
+>
+> `size_skips` is 0 on every row. TRAIN chose **engulfing in 7 of 8** files.
+>
+> **The finding, and it is a good one for a negative result: the pattern carries
+> information, and the cost is the same size.**
+> 1. **`055_swing` @1h produced +0.1291 R gross and +0.0296 R net** - cost took
+>    0.0995 R, **77% of the gross.** The stop floor of 2.5-5 ATR is what bought
+>    that readable gross number; a stop just beyond the candle would have cost
+>    ~0.3 R and said nothing. A well-designed experiment that returned a clean
+>    negative.
+> 2. **The 2.5-5 ATR floor does not make 15m tradeable.** Measured `cost_r` by
+>    clock: **15m 0.177-0.213, 30m 0.130-0.142, 1h 0.097-0.100, 4h 0.041.**
+>    `LESSONS.md` section 1 predicted 15m would pay ~0.3 R and lose; the ranking
+>    was right, the magnitude optimistic.
+> 3. **Every long/short split is near-balanced and both legs lose** - this is
+>    **not** section 2's long-in-a-bull-market shape. The family is two-sided, so
+>    there is no drift to remove, and it is still negative.
+> 4. **Only two rows fail just the CI, and both go negative at cost x1.5**
+>    (+0.0296 -> **-0.0142**; +0.0159 -> -0.0031). The entire edge is smaller than
+>    a 50% worse execution. **The 4h files are the cheapest clock (0.041 R) and
+>    the only ones that cannot produce 100 VALID trades** - the same wall as
+>    every other round, reached by a different road: **the cheap clock is the
+>    illiquid clock.**
+>
+> Details: Exp 049. ETH half: ETH Exp 015. The ML line (sections 19-21) is closed.
+
 > **ML entry model done (§19, Exp 046): REJECT, 5 of 6 gates failed. `--final`
 > not run.** A LightGBM model on 26,000 TRAIN rows, 27 causal features (corrected, Exp 047) and a
 > net-of-cost label **cannot time 1h entries better than chance on this coin** —
