@@ -5,12 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: confirm the Coinbase premium idea on 10 coins it has never
-seen (`docs/research/PLAN.md` §26): SOL, LTC, LINK, BCH, ETC, ALGO, ATOM, DOGE,
-ADA, DOT. Per coin: `datafeed.py --tfs 15,30,60,240`, `--premium`, the four
-unchanged `057_coinbase_premium_follow*` files, `baseline.py` on the 30m and 4h
-rows; then `python src/premium_confirm.py` once.** These coins are for this
-test only. Do not rerun or tweak 057/058 on BTC/ETH.
+**No active work.** The Coinbase premium confirmation (§26, `_multi` Exp
+011/012) is NOT_CONFIRMED: 30m does not carry to other coins; 4h is positive
+pooled but failed breadth and is weak on TRAIN. Whether to spend the holdout on
+an exploratory 4h test is the owner's decision. Ask before starting anything.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
