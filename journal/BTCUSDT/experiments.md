@@ -5335,3 +5335,130 @@ It does three things:
 
 The tool is read-only: no strategy is rerun or tuned, and HOLDOUT is not
 read. The research agent runs it once per coin. **Prior: COIN_FLIP.**
+
+---
+
+## Exp 052 - Stop diagnosis (PLAN.md section 23): the entries are on the WRONG side, not shaken out
+
+**Date:** 2026-10-02
+**Status:** complete. Read-only: no strategy was rerun, no code and no idea file
+was changed, `evaluate.py` was not run, `--final` was not run, HOLDOUT was never
+read. **No new evaluation.** BTCUSDT still has 258 evaluations.
+
+**Session state.** `git pull` clean · `pip install -r requirements.txt` all
+present · `test_engine.py` -> **ALL CHECKS PASSED** (test 19, the synthetic
+stop_diag check) · `datafeed.py` -> **VALIDATION: OK** on both coins.
+
+**The owner's question.** Do the strategies enter the wrong way, or the right way
+and then get shaken out by a fake move ("โดนลากไส้")?
+
+### The verdict
+
+**BTCUSDT: `WRONG_DIRECTION`** - 138 evaluations, **44,057 VALID trades**.
+
+| measure | real | random (same side, same stop, same H) | excess | 95% CI |
+|---|---|---|---|---|
+| right direction at the time limit | **49.01%** | **50.55%** | **-1.54 pts** | **[-2.48, -0.62] pts** |
+| right, among trades that were stopped | (see shakeout) | | **+2.47 pts** | **[+1.25, +3.74] pts** |
+| no-stop move to the time limit | **+0.0596 R** | **+0.0180 R** | **+0.0202 R** | **[-0.00006, +0.0406] R** |
+| real stop rate | 24.27% | | | |
+
+**So the answer to the owner is: both, but the first one dominates and it is the
+bad one.** On the direction call alone - the stop ignored, "is the close H bars
+later on the side we entered?" - these entries are **worse than a random fill
+with the same side, the same stop and the same holding time**, and the CI is
+below 0, which is the `WRONG_DIRECTION` verdict. The excess among stopped trades
+is *positive* (+2.5 pts, CI above 0), which is the shakeout reading, but it
+cannot make the verdict because the direction skill itself is negative.
+
+### The five best and five worst ideas by direction skill
+
+| idea | tf | trades | right (real / random) | excess | stop rate | shakeout excess |
+|---|---|---|---|---|---|---|
+| `053_oi_confirmed_breakout_tf30` | 30m | 59 | 59.3% / 48.1% | **+11.27 pts** | 0.237 | -3.30 pts |
+| `048_tv_chartart_rsi_bb_long_v12_tf30` | 30m | 90 | 71.1% / 60.7% | **+10.39 pts** | 0.789 | +14.38 pts |
+| `044_tv_chartart_rsi_bb_tf30` | 30m | 172 | 58.7% / 49.9% | **+8.84 pts** | 0.837 | +12.81 pts |
+| `016_long_mean_reversion_pct_stop` | 15m | 85 | 58.8% / 50.2% | **+8.59 pts** | 0.424 | +11.49 pts |
+| `044_tv_chartart_rsi_bb_tf60` | 1h | 72 | 52.8% / 45.0% | **+7.78 pts** | 0.847 | +8.70 pts |
+| ... | | | | | | |
+| `045_tv_luxalgo_smc_tf15` | 15m | 293 | 39.9% / 49.6% | **-9.71 pts** | 0.208 | -2.69 pts |
+| `015_short_supertrend_robustness` | 15m | 227 | 38.3% / 48.1% | **-9.78 pts** | 0.194 | +4.42 pts |
+| `012_short_breakout_taker_flow` | 15m | 166 | 38.6% / 48.6% | **-10.03 pts** | 0.223 | +16.69 pts |
+| `014_short_breakout_funding_crowding` | 15m | 380 | 37.1% / 48.0% | **-10.86 pts** | 0.316 | +7.78 pts |
+| `010_short_breakout_post_only` | 15m | 339 | 36.9% / 48.2% | **-11.37 pts** | 0.206 | +7.44 pts |
+
+### What the numbers say
+
+**1. This is not a coin-specific artefact, and the prior was wrong.** `PLAN.md`
+§23 predicted `COIN_FLIP`, on the grounds that 102 of 108 WATCH/PASS results were
+DRIFT and ML round 2's 8-ATR stops left gross at ~0. Instead BTC lands on
+`WRONG_DIRECTION` with a CI that clears 0 by a factor of four (upper bound
+-0.62 pts). **The diagnosis is that the entry side is systematically the wrong
+side, and that this is visible even on the 89 REJECT and 44 WATCH rows - it is
+not a property of the five PASSes.**
+
+**2. It is the SHORT side that is wrong, and the long side only mildly so.**
+Trade-weighted by direction skill on BTC:
+
+| family | evaluations | trades | direction skill | shakeout excess |
+|---|---|---|---|---|
+| short-named ideas (008, 010, 011, 012, 014, 015) | 6 | 1,923 | **-8.67 pts** | +7.19 pts |
+| long-named ideas | 19 | 6,413 | -1.39 pts | +0.18 pts |
+| everything else | 113 | 35,721 | -1.22 pts | +1.02 pts |
+
+**The 15m short-breakout cluster is the worst block in the whole table** - four
+of the five worst ideas are `*_short_breakout*` or short supertrend at 15m, all
+between -9.8 and -11.4 points. **On the same bar, the same side and the same
+hold, those ideas are right 37-39% of the time where random is right 48%.** That
+is not a weak edge, that is an inverted signal. Note the caveat: only 6 of 138
+evaluations have "short" in the name, so this is a real pattern in a small,
+identifiable block, not a statement about all short trades.
+
+**3. The shakeout reading is real but it is a second-order effect, and it cannot
+rescue the round.** Among trades that were stopped, real entries were right
+**+2.47 pts** more often than random (CI [+1.25, +3.74]) on BTC and **+1.20 pts**
+on ETH (CI [-0.24, +2.75]). So there *is* something here: **a stopped trade is
+slightly more likely to have been on the right side than a random fill that also
+got stopped.** But the overall direction skill is -1.54 pts, so the fake-move
+effect is 1.6x smaller than the wrong-side effect and pointed the other way.
+
+**4. The no-stop move is the one number that agrees with "there is structure".**
+Move to the time limit with the stop ignored: BTC real **+0.0596 R** vs random
+**+0.0180 R**, excess **+0.0202 R**, CI **[-0.00006, +0.0406]** - touching 0 from
+above. ETH real +0.0449 vs random +0.0370, excess **+0.0294 R**, CI
+[-0.0398, +0.1112] - wide and centred near 0. **So the entries do pick up a little
+more drift than random over the hold, and that is exactly the amount
+`LESSONS.md` §1 says exists everywhere: real, and smaller than the cost of
+getting in and out.** Consistent with §2's DRIFT reading and §10's finding that
+the structure is real but too small to trade.
+
+**5. By clock, the damage is at 15m.** Direction skill by timeframe on BTC:
+15m **-2.02 pts** (47 evals, 15 positive / 32 negative), 30m **+0.22 pts**
+(38 evals, 19/18), 1h **-0.59 pts** (35 evals, 12/23), 4h **+0.29 pts** (18 evals,
+10/8). **Only 15m is clearly negative, and 15m is also where `cost_r` is
+0.177-0.213 R** (BTC Exp 049). Same wall, again.
+
+**6. ETH does not confirm it - and that matters.** ETHUSDT: 58 evaluations, 10,738
+trades, direction skill **-0.48 pts**, CI **[-1.47, +0.47]** - straddles 0, so
+the verdict is `COIN_FLIP`. Shakeout +1.20 pts, CI [-0.24, +2.75]. Stop rate
+45.98% against BTC's 24.27%. **So the BTC result is a BTC result.** Per-idea
+direction skill on ETH is positive in 23 of 58 rows and negative in 35 - the same
+sign pattern as BTC but with an order of magnitude less magnitude, and the
+per-evaluation medians are -0.49 pts on ETH against -1.59 pts on BTC.
+
+### Verdict
+
+`WRONG_DIRECTION` on BTCUSDT, `COIN_FLIP` on ETHUSDT. **This is a diagnosis, not
+a strategy, and nothing here is a candidate.**
+
+**The honest one-paragraph version for the owner: on BTCUSDT, 44,057 recorded
+VALID trades from 138 evaluations are on the wrong side slightly more often than
+a random fill with the same side, stop and hold - 49.0% vs 50.5%, CI
+[-2.5, -0.6] points. The worst of it is a 15m short-breakout cluster that is
+right 37-39% of the time where random is right 48%. There is a genuine but
+smaller "shaken out" effect: among stopped trades, real entries were right +2.5
+points more often than random (CI [+1.2, +3.7]), but it is 1.6x too small to
+offset being on the wrong side. And the no-stop move is +0.020 R against random
+(CI touching 0), which is the same small real drift this project has measured
+everywhere else - the structure exists and it is smaller than the cost. ETHUSDT
+does not reproduce the effect (CI straddles 0), so it is a BTC finding.**

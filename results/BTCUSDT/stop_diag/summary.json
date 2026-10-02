@@ -1,0 +1,25 @@
+{
+ "evaluations": 138,
+ "trades": 44057,
+ "real_right": 0.4900696824568173,
+ "ctl_right": 0.5054804003904033,
+ "real_stop_rate": 0.24273100755839028,
+ "direction_skill": -0.015410717933586037,
+ "shakeout_excess": 0.024713837251948877,
+ "no_stop_gross_excess": 0.020201435468843367,
+ "ci": {
+  "direction_skill": [
+   -0.024800667259213763,
+   -0.00622847465280079
+  ],
+  "shakeout_excess": [
+   0.012479079195182008,
+   0.037372635042731916
+  ],
+  "no_stop_gross_excess": [
+   -6.497197780583368e-05,
+   0.0405899053125044
+  ]
+ },
+ "verdict": "WRONG_DIRECTION"
+}

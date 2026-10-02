@@ -1,3 +1,33 @@
+> **Stop diagnosis (§23, Exp 017): `COIN_FLIP` - BTC's `WRONG_DIRECTION` does
+> not reproduce here. Read-only - nothing re-tuned, no new evaluation, no
+> holdout.** **58 evaluations, 10,738 VALID trades** (34 REJECT, 24 WATCH).
+
+> | measure | real | random (same side/stop/hold) | excess | 95% CI |
+> |---|---|---|---|---|
+> | right direction at the time limit | 49.73% | 50.21% | -0.48 pts | [-1.47, +0.47] |
+> | right, among stopped trades | | | +1.20 pts | [-0.24, +2.75] |
+> | no-stop move to the time limit | +0.0449 R | +0.0370 R | +0.0294 R | [-0.0398, +0.1112] |
+> | real stop rate | **45.98%** | | | |
+
+> 1. **Same sign as BTC, an order of magnitude smaller.** Negative in 35 of 58
+>    rows (BTC: 81 of 138) but -0.48 pts against BTC's -1.54; per-evaluation
+>    median -0.49 against -1.59. Per §5 that is a weak confirmation of the sign
+>    and no confirmation of the size.
+> 2. **No short block here, so BTC's worst finding has nothing to attach to.** No
+>    ETH evaluation has "short" in its name; long-named +1.27 pts (2 evals),
+>    everything else -0.52 pts (56 evals). BTC's -8.67-pt 15m short-breakout
+>    cluster looks **BTC-specific and not traded here.**
+> 3. **By clock ETH is flat everywhere** -15m -0.36, 30m -1.09, 1h -1.24, 4h -0.20
+>    pts - so BTC's 15m dip does not carry over either.
+> 4. **The number worth the owner's attention: ETH's strategies are stopped
+>    45.98% of the time against BTC's 24.27%.** The stop does nearly twice the
+>    damage here, and the diagnosis says **mostly the wrong side, not a fake
+>    move.** That lines up with BTC Exp 049, where ETH's 1h rows were much worse
+>    than BTC's.
+
+> Details: Exp 017. Per-idea table: `journal/ETHUSDT/stop_diag.md` (generated).
+> BTC half: BTC Exp 052. This is a diagnosis, not a candidate.
+
 > **Candle pattern at a support/resistance level (§22, Exp 015): 0 PASS, 0 WATCH,
 > 6 REJECT, 1 UNSIZABLE, 1 INCONCLUSIVE. No controls, no v2, no holdout.** The
 > ETH replication of BTC Exp 049, same block (`recipes.candle_at_level`), same

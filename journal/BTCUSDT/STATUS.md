@@ -1,3 +1,44 @@
+> **Stop diagnosis (§23, Exp 052): `WRONG_DIRECTION`. Read-only - nothing was
+> re-tuned, no new evaluation, no holdout touched.** `src/stop_diag.py` re-read
+> every recorded VALID trade file (15m/30m/1h/4h, PASS/WATCH/REJECT, 0 size
+> skips, ≥ 30 trades) and asked the owner's question - wrong way, or right way
+> then shaken out? **138 evaluations, 44,057 VALID trades.**
+
+> | measure | real | random (same side/stop/hold) | excess | 95% CI |
+> |---|---|---|---|---|
+> | right direction at the time limit | **49.01%** | 50.55% | **-1.54 pts** | **[-2.48, -0.62]** |
+> | right, among stopped trades | | | **+2.47 pts** | **[+1.25, +3.74]** |
+> | no-stop move to the time limit | +0.0596 R | +0.0180 R | +0.0202 R | [-0.00006, +0.0406] |
+> | real stop rate | 24.27% | | | |
+
+> **The owner's answer: both, but the bad one dominates.** On the direction call
+> alone these entries are *worse* than a random fill, and the CI clears 0 by a
+> factor of 4. It is visible on the 89 REJECT and 44 WATCH rows too, not just
+> the 5 PASSes. **Prior was `COIN_FLIP`; it was wrong for BTC.**
+>
+> 1. **The 15m short-breakout cluster is the worst block in the project.** Four
+>    of the five worst ideas (`010`, `012`, `014`, `015`) are right **36.9-38.6%**
+>    of the time where random is right 48.0-48.6% - **-9.8 to -11.4 points.** Six
+>    short-named evaluations, trade-weighted **-8.67 pts**, against -1.39 for
+>    long-named and -1.22 for everything else. That is an inverted signal, not a
+>    weak edge. Only 6 of 138 evaluations are short-named, so this is a real
+>    pattern in a small identifiable block.
+> 2. **The shakeout effect is real but 1.6x too small.** Among stopped trades,
+>    real entries were right +2.47 pts more often than random (CI above 0), so
+>    something is there - and it points the opposite way to the -1.54 pts
+>    direction skill.
+> 3. **The no-stop move agrees with §1 and §10:** +0.0202 R against random, CI
+>    touching 0 from above. The structure is real and it is the size of the cost.
+> 4. **By clock, the damage is at 15m** (-2.02 pts; 30m +0.22, 1h -0.59, 4h
+>    +0.29) - and 15m is also where `cost_r` is 0.177-0.213 R (Exp 049).
+>
+> **Does not carry to ETH:** ETH is `COIN_FLIP`, -0.48 pts, CI [-1.47, +0.47]
+> (ETH Exp 017). Same sign, four times smaller, and the short-breakout block was
+> never traded there.
+>
+> Details: Exp 052. Per-idea table: `journal/BTCUSDT/stop_diag.md` (generated),
+> `results/BTCUSDT/stop_diag/`. This is a diagnosis, not a candidate.
+
 > **Candle pattern at a support/resistance level (§22, Exp 049): 0 PASS, 0 WATCH,
 > 7 REJECT, 1 INCONCLUSIVE. No controls, no v2, no holdout.** The owner's request
 > for "candle pattern + location + support and resistance", as the new block

@@ -1452,3 +1452,105 @@ See **BTC Exp 050**. In short:
   not because of size skips.
 
 The verdicts stand.
+
+---
+
+## Exp 017 - Stop diagnosis (PLAN.md section 23) on ETHUSDT: `COIN_FLIP`, the BTC effect does not reproduce
+
+**Date:** 2026-10-02
+**Status:** complete. Read-only: no strategy rerun, no code or idea file changed,
+`evaluate.py` not run, `--final` not run, HOLDOUT never read. **No new
+evaluation.** ETHUSDT still has 97 evaluations.
+
+**This is the ETH half of BTC Exp 052.** Same tool, same seed, same trade
+eligibility rules. Only what is specific to ETH follows.
+
+### The verdict
+
+**ETHUSDT: `COIN_FLIP`** - 58 evaluations, **10,738 VALID trades**
+(34 REJECT, 24 WATCH, 0 PASS).
+
+| measure | real | random (same side, same stop, same H) | excess | 95% CI |
+|---|---|---|---|---|
+| right direction at the time limit | **49.73%** | **50.21%** | **-0.48 pts** | **[-1.47, +0.47] pts** |
+| right, among trades that were stopped | | | **+1.20 pts** | **[-0.24, +2.75] pts** |
+| no-stop move to the time limit | **+0.0449 R** | **+0.0370 R** | **+0.0294 R** | **[-0.0398, +0.1112] R** |
+| real stop rate | 45.98% | | | |
+
+**The answer to the owner, for ETH: neither.** The direction skill is -0.48 pts
+with a CI that straddles 0, so it is neither "wrong direction" nor skill. Same
+for the shakeout excess (+1.20 pts, CI [-0.24, +2.75]). **BTC's
+`WRONG_DIRECTION` does not reproduce here, and the effect on BTC was four times
+larger - 138 evaluations / 44,057 trades against 58 / 10,738.**
+
+### The five best and five worst ideas by direction skill
+
+| idea | tf | trades | right (real / random) | excess | stop rate | shakeout excess |
+|---|---|---|---|---|---|---|
+| `043_squeeze_multiday_break_tf15_time` | 15m | 56 | 58.9% / 48.2% | **+10.71 pts** | 0.107 | +13.26 pts |
+| `036_keltner_multiday_tf60_time` | 1h | 105 | 55.2% / 48.1% | **+7.10 pts** | 0.267 | +9.15 pts |
+| `054_candle_at_prev_day_level_tf30` | 30m | 302 | 55.6% / 49.8% | **+5.88 pts** | 0.550 | +0.83 pts |
+| `049_tv_liquidity_sweep_tf60` | 1h | 92 | 54.3% / 49.1% | **+5.22 pts** | 0.652 | +10.60 pts |
+| `038_opening_range_both_sides_tf60_time` | 1h | 246 | 52.8% / 47.9% | **+4.96 pts** | 0.146 | +4.13 pts |
+| ... | | | | | | |
+| `045_tv_luxalgo_smc_tf30` | 30m | 92 | 44.6% / 51.2% | **-6.63 pts** | 0.685 | -13.45 pts |
+| `035_multiday_momentum_tf30_time` | 30m | 97 | 43.3% / 50.9% | **-7.58 pts** | 0.443 | +12.66 pts |
+| `053_oi_confirmed_breakout_tf30` | 30m | 336 | 42.6% / 50.7% | **-8.10 pts** | 0.426 | -3.76 pts |
+| `046_tv_chartart_macd_sma_tf60` | 1h | 74 | 39.2% / 47.7% | **-8.51 pts** | 0.716 | -9.29 pts |
+| `036_keltner_multiday_tf15_time` | 15m | 86 | 38.4% / 49.7% | **-11.34 pts** | 0.314 | +14.05 pts |
+
+### What the numbers say
+
+**1. Same sign as BTC, an order of magnitude smaller.** Direction skill is
+negative in **35 of 58** rows and positive in 23 - the same 60/40 split as BTC
+(81 negative of 138) - but the pooled excess is -0.48 pts against BTC's
+-1.54 pts, and the per-evaluation **median** is -0.49 pts against BTC's
+**-1.59 pts**. **So ETH agrees on the direction of the effect and does not
+confirm its size.** Per `LESSONS.md` §5, a coin that agrees on the sign and not
+the magnitude is a weak confirmation at best.
+
+**2. There is no short-side block on ETH, so BTC's worst finding has nothing to
+attach to.** BTC's four worst ideas were all 15m `*_short_breakout*` and short
+supertrend, with a trade-weighted direction skill of **-8.67 pts** over six
+evaluations. On ETH **no evaluation has "short" in its name at all**, so this
+test cannot say anything about that block. The trade-weighted figures available
+are long-named ideas **+1.27 pts** (2 evaluations) and everything else
+**-0.52 pts** (56 evaluations) - both small. **The cleanest reading is that the
+BTC short-breakout cluster is a BTC-specific problem that this coin does not
+reproduce because it was never traded here.**
+
+**3. By clock, ETH is flat everywhere.** Direction skill by timeframe: 15m
+-0.36 pts (17 evals, 8 positive / 9 negative), 30m **-1.09 pts** (17 evals,
+6/11), 1h **-1.24 pts** (15 evals, 5/10), 4h -0.20 pts (9 evals, 4/5). **BTC's
+clear 15m dip (-2.02 pts) is absent here; ETH's mildest clock is 1h.** So the
+"15m is where entries are wrong" reading from BTC does not carry over either.
+
+**4. ETH's stop rate is nearly twice BTC's - 45.98% against 24.27%.** Same
+family of ideas, same eligibility rules, and the average ETH row is stopped
+almost half the time against a quarter on BTC. **This is the practical reason
+the round matters even though the verdict is COIN_FLIP: on ETH the stop is being
+hit nearly twice as often, and the diagnosis says it is mostly not a fake move -
+it is the wrong side.** That also lines up with BTC Exp 049, where ETH's 1h rows
+were much worse than BTC's.
+
+**5. The no-stop move again points the same way as everywhere else in this
+project.** +0.0294 R against random, CI [-0.0398, +0.1112] - centred above 0,
+wide, not significant. `LESSONS.md` §1 and §10 again: the structure is real and
+it is the size of the cost, not the size of an edge.
+
+### Verdict
+
+`COIN_FLIP`. **Nothing here is a candidate, nothing was re-tuned, and no holdout
+was touched.**
+
+**The honest one-paragraph version for the owner: on ETHUSDT the stop diagnosis
+comes out `COIN_FLIP`. 10,738 trades from 58 evaluations are on the wrong side
+49.73% of the time against 50.21% for a random fill with the same side, stop and
+hold - a -0.48 point skill with a CI of [-1.47, +0.47], so neither wrong nor
+skill. The shakeout excess is +1.20 points (CI [-0.24, +2.75]) and the no-stop
+move is +0.029 R (CI [-0.040, +0.111]). BTC's clean `WRONG_DIRECTION` result
+therefore does not reproduce on ETH: same sign, four times smaller, and the
+15m short-breakout block that dominates BTC's table was never traded here. The
+one number worth the owner's attention is that ETH's strategies are stopped
+45.98% of the time against BTC's 24.27% - the stop is doing twice the damage on
+ETH, and this diagnosis says it is the wrong side rather than a fake move.**
