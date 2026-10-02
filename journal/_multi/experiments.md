@@ -1916,3 +1916,49 @@ stale zero-volume bars whose zero true range makes the ATR-normalised label
 diverge, and the 1h TRAIN walk-forward printed means of order -1e30 R across all
 24 cells. **The holdout was never opened, nothing was committed except the
 universe, and `src/ml_wf.py` is unchanged.**
+
+---
+
+## Exp 021 - Review of Exp 020 (planner) and re-registration of §28 after a code fix
+
+**Date:** 2026-10-02
+**Status:** pre-registered, not run.
+
+### Review of Exp 020
+- **Stopping was right.** A mean of -1e30 R is overflow, not a result.
+  - No result file was written.
+  - `src/` was unchanged and the holdout was not opened.
+- **Cause confirmed.** It was a defect in my `ml_wf.py`, not in the reader.
+  Halted and delisted contracts keep frozen zero-volume bars in the archive
+  (open = high = low = close, volume 0). Their true range is 0, so ATR14
+  reaches 0. The label, the timing statistic and R all divide by ATR.
+  `ml_hold.py` (§27) used the 20 largest coins, which have no such bars.
+- **Correction.** "49, not 50: one coin had no usable cache" is wrong. Only 49
+  coins met the selection rule, so `universe.json` lists 49 and all 49 built.
+- **Second defect, found in review.** The universe rule counted a frozen
+  zero-volume day as "trading on the last TRAIN day". Some already-dead
+  contracts (for example CVC, REN, BLZ and BAL, whose files run flat to
+  2026-08) could therefore enter the universe.
+
+### Fix (src/ml_wf.py; test 24 extended; PLAN.md §28 addendum)
+- **Tradable bars.** A bar is tradable only if its volume is > 0 and
+  ATR14/close ≥ 0.01%.
+  - There is no forecast, decision or entry on any other bar.
+  - A label whose window touches a dead bar is NaN.
+  - Dead bars are excluded from the timing statistic and from the cross-coin
+    closes.
+- **Dead tail.** Each coin's series is cut after its last traded bar.
+- **Universe.** It is re-chosen with zero-volume days removed
+  (`universe_v2.json`). `universe.json` stays as Exp 020's record.
+- **New check in test 24.** A synthetic coin with a mid-series halt and a dead
+  tail must give:
+  - finite labels only;
+  - no label touching a dead bar;
+  - no entry on a dead bar;
+  - bounded R.
+
+### Re-registration
+Every other value of §28 is unchanged. The run is new because its data and
+universe changed. No result existed, so nothing is being re-run until it
+passes. The prompt for the research agent is the same as for Exp 019, plus
+`--build` again: it downloads only the coins that are new to v2.

@@ -2086,3 +2086,25 @@ The results page shows them as the reason for each entry and exit.
 **Prior:** low. VALID has now judged five ML attempts. Monthly refits address
 §27's stale-regime problem. They do not obviously make the timing larger than
 cost. A REJECT on all three timeframes closes ML in this project.
+
+**Addendum (2026-10-02, after Exp 020 aborted; code fix, then re-registered as
+Exp 021).** The first run stopped with means of about −1e30 R. The cause was
+frozen zero-volume bars in halted or delisted contracts, where open = high =
+low = close. Their true range is 0, so ATR14 reaches 0 and every ATR-scaled
+label and R diverges. This was a defect in `ml_wf.py`, not a market result.
+
+Fixed in code, with test 24 extended:
+- **Tradable bars.** A bar is tradable only if its volume is > 0 and
+  ATR14/close ≥ 0.01% (`AFRAC_MIN`).
+  - No forecast, no decision and no entry on a non-tradable bar.
+  - A label is NaN if any bar of its window did not trade.
+  - The timing statistic skips dead bars.
+- **Dead tail.** Each coin's series is cut after its last traded bar.
+- **Cross-coin features.** A dead bar's close is not a price.
+- **Universe.** It is re-chosen with zero-volume days removed
+  (`universe_v2.json`), because v1 counted a frozen day as "trading on the last
+  TRAIN day". The v1 file stays as the record of Exp 020.
+
+Every other value of §28 is unchanged. Because the data and the universe
+changed, the run counts as a new registered run (Exp 021), not a re-run of a
+result: none existed.

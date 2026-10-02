@@ -12,7 +12,8 @@ pooled but failed breadth and is weak on TRAIN. The owner decided (2026-10-02,
 and the holdout stays untouched. §27 (`ml_hold.py`) was run: REJECT (`_multi` Exp 016/017).
 **One approved run is pending:** PLAN.md §28 (`src/ml_wf.py`, walk-forward
 multi-timeframe ML on 50 coins, 1h/4h/1d, owner request 2026-10-02, `_multi`
-Exp 019). Ask before starting anything else.
+Exp 019; the first attempt aborted on zero-ATR bars, Exp 020; fixed and
+re-registered as Exp 021). Ask before starting anything else.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
