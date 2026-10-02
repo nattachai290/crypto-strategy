@@ -1794,3 +1794,125 @@ file of §28 now also records **why**:
 - the top 3 LightGBM feature contributions toward the decision.
 
 This is reported only and changes no trade or gate. Test 24 checks it.
+
+---
+
+## Exp 020 - Walk-forward multi-timeframe ML on 50 coins (PLAN.md section 28): ABORTED, the data has zero-ATR bars
+
+**Date:** 2026-10-02
+**Status:** **aborted before any result was written. There is no verdict for any
+timeframe.** No value in `src/ml_wf.py` was changed, no variant was tried,
+`--final` was not run, no holdout file was created and HOLDOUT was never read.
+**No new evaluation row** - the only file this round produced is
+`results/_multi/ml_wf/universe.json`.
+
+**Session state.** `git pull` up to date · `pip install -r requirements.txt` all
+present · `test_engine.py` -> **ALL CHECKS PASSED**, including **test 24**:
+closed-bar alignment on every timeframe pair, latest closed bar only, refits
+trained only on labels ending before their month, a planted edge -> PASS, noise
+-> REJECT. **`data/cache/_multi/perp_1d.parquet` already existed, so
+`rotation.py --build perp` was skipped.**
+
+### What happened
+
+`python src/ml_wf.py --build` finished cleanly:
+**`BUILD OK: 49 coins x ['1h', '4h', '1d']`**. (49, not 50: `universe.json`
+holds the 50 highest-volume coins survivorship-free, and one of them had no
+usable cache after the build. Recorded, not investigated further, because the
+run never reached a result.)
+
+The first launch of `python src/ml_wf.py` produced no output file, no process
+and no result file - it died silently. A second launch, **with no value changed**
+and only the log destination different, got as far as the 1h TRAIN walk-forward
+and printed this, from `src/ml_wf.py` itself:
+
+```
+RuntimeWarning: overflow encountered in divide
+  y = np.log(fut / nxt) / afrac            (ml_wf.py:251)
+  rn = np.r_[np.log(o[1:] / o[:-1]), np.nan] / np.r_[np.nan, afrac[:-1]]   (ml_wf.py:252)
+[1h] TRAIN-WF setting 0 q 0.6 flip: 21082 trades, mean -2.3055122928686997e+30
+[1h] TRAIN-WF setting 0 q 0.9 flip:  9812 trades, mean -4.9536088545231130e+30
+...  all 12 cells between -1.28e+30 and -4.95e+30
+```
+
+**A mean of -1e30 R is not a result, it is arithmetic overflow.** R is defined
+against the 8-ATR protective stop, so a single trade cannot lose 1e30 of its own
+risk under any price. Per the owner's rule for this round - stop and report on
+abnormal numbers - **the run was stopped there.** Nothing was written:
+`results/_multi/ml_wf/` contains only `universe.json`.
+
+### The cause, read out of the cache
+
+The label is `log(open[i+1+24] / open[i+1]) / (ATR14 / close)`. The denominator
+`afrac` is **exactly zero on some bars**, so the division overflows. Those bars
+exist in the newly downloaded cache:
+
+**Example, `CVCUSDT` 1h, the worst coin:**
+
+```
+       open     high     low   close  volume
+17965  0.10201  0.10201  0.10201  0.10201  0.0
+17966  0.10201  0.10201  0.10201  0.10201  0.0
+17967  0.10201  0.10201  0.10201  0.10201  0.0
+17968  0.10201  0.10201  0.10201  0.10201  0.0
+17969  0.10201  0.10201  0.10201  0.10201  0.0
+```
+
+**Stale zero-volume bars with a frozen price: open = high = low = close and
+volume 0.** A flat bar has a true range of 0, so ATR14 is 0, so the label
+divides by 0.
+
+**Blast radius, counted over the whole universe:**
+
+| timeframe | coins affected | bars with ATR14 == 0 |
+|---|---|---|
+| **1h** | **13 of 49** | **123,659** |
+| **4h** | **13 of 49** | **30,780** |
+| **1d** | **11 of 49** | **4,999** |
+
+Worst offenders, the same set on all three timeframes: **CVCUSDT** (21,554 bars
+at 1h), **RENUSDT**, **BLZUSDT**, **SRMUSDT**, **BALUSDT**, **HNTUSDT**. The
+median ATR/close on a healthy coin is about 0.011-0.016; on these bars it is
+**exactly 0**.
+
+**36 of the 49 coins are completely clean** on all three timeframes: 1INCH, AAVE,
+ADA, ALGO, ATOM, AVAX, AXS, BAND, BAT, BCH, BEL, BNB, BTC, COMP, CRV, DASH, DOGE,
+DOT, EGLD, ENJ, EOS, ETC, ETH, IOST, KAVA, LINK, NEO, ONT, QTUM, RUNE, SNX,
+THETA, UNI, XMR, XTZ, ZRX.
+
+**Why every timeframe is affected, not just 1h:** the stale bars sit inside the
+1h series and 4h and 1d aggregate the same frozen prices, so the same 13 coins
+carry zero ATR on all three clocks. **There was no clean timeframe left to
+continue to**, which is why stopping was right and not merely cautious.
+
+### What this is and is not
+
+**It is not a strategy result and must not be read as one.** Nothing about §28's
+hypothesis - monthly refits, cross-timeframe features, the model owning the exit -
+was tested, because the run never reached a judgement on any timeframe.
+
+**It is also not a judgement on the idea.** §27 (`_multi` Exp 016) is still the
+last valid ML result and still stands: REJECT on 5 of 7 gates, on a cache with no
+zero-ATR bars. **The difference between §27's data and §28's data is exactly
+this defect**, and §27's own cache (`data/cache/_multi/pool_1h`, 20 coins) was
+built by `ml_pool.py --build` before this round, so it did not carry the 13
+affected altcoins.
+
+**Two things need the owner's decision, and I am not touching either:**
+1. **Whether the stale zero-volume bars are a real Binance archive artefact or a
+   bug in `ml_wf.py --build`'s reader.** The files carry plausible prices, so
+   either Binance shipped zero-volume placeholder bars for those months or the
+   reader is picking up header/footer rows. I did not investigate further,
+   because doing so means reading `ml_wf.py`'s build code and the rule for this
+   round is not to change it.
+2. **Whether §28 may be re-run once the data is repaired.** That is a new run on
+   changed data, so it needs a fresh pre-registration, not a re-run.
+
+### Verdict
+
+**No verdict. The round is aborted, not REJECT.** The honest statement is: the
+§28 run could not be judged because 13 of 49 coins in the new cache contain
+stale zero-volume bars whose zero true range makes the ATR-normalised label
+diverge, and the 1h TRAIN walk-forward printed means of order -1e30 R across all
+24 cells. **The holdout was never opened, nothing was committed except the
+universe, and `src/ml_wf.py` is unchanged.**
