@@ -1,4 +1,42 @@
-> **Exit lab done (§18): no exit skill. Next (owner-approved 2026-10-01): ML entry model, `docs/research/PLAN.md` §19.** Run `SYMBOL=ETHUSDT python src/ml_entry.py` once (replication).
+> **ML entry model done (§19, Exp 010): REJECT, 3 of 6 gates failed — closer than
+> BTC's 5 of 6, and still REJECT. `--final` not run.**
+>
+> | | value |
+> |---|---|
+> | threshold (purged OOF) | **0.0** |
+> | TRAIN OOF mean at 0.0 / 0.05 / 0.10 / 0.20 | **−0.0869** / −0.0912 / −0.0958 / −0.1019 |
+> | VALID trades / mean R / **gross R** | **13,266 / +0.0107 / +0.0754** |
+> | 95% CI (weekly blocks) | [−0.0562, +0.0835] |
+> | long / short | +0.0477 / −0.0241 |
+> | cost ×1.5 | **−0.0217** |
+> | **one position at a time** | **824 trades, avg R −0.0027, CAGR −3.4%, maxDD 35.3%, win 45.8%, skips 0** |
+> | random shift control | mean −0.0575, p95 −0.0107 |
+> | top feature | **`vol_168` (1296)** |
+> | gates failed | `oof_mean>0`, `valid_ci_lo>0`, `stress_mean>0` |
+>
+> ETH **passes** `valid_mean>0`, `valid_trades>=300` and `beats_random_p95` — and
+> is still REJECT, because the two gates that catch it are the ones that look at
+> precision. **The OOF curve is monotone *down* here too, exactly as on BTC.**
+>
+> **What the replication settles:**
+> 1. **The sequential result is the one to hold: 824 trades, avg R −0.0027,
+>    CAGR −3.4%** — the tradable version is indistinguishable from doing nothing.
+>    On BTC the same measurement is −0.0419 / −15.4%.
+> 2. **ETH's gross is higher than BTC's (+0.0754 against +0.0479) and its net is
+>    no better (+0.0107 against −0.0299)**, because the 0.05% alt slippage is the
+>    same but ETH's cost per R is higher. **The same model finds more gross edge
+>    on ETH and achieves no more** — `LESSONS.md` §1 again.
+> 3. **`vol_168` is the top feature on both coins by a wide margin** (1296 here,
+>    1252 on BTC). The model is the same model on both: it learned to describe
+>    magnitude, not direction.
+> 4. **More data fixed the ranking, not the effect.** The pooled 20-coin model
+>    (`_multi` Exp 005, §20) has an OOF curve that is monotone **up** where both
+>    single-coin runs were monotone **down**, and a positive pooled VALID mean
+>    (+0.0601 R on 34,467 trades) — and is REJECT on the CI
+>    [−0.0373, +0.1698]. **The owner's "26,000 rows is too few" hypothesis is
+>    supported on precision and not on edge size.**
+>
+> Details: Exp 010. BTC half: BTC Exp 046. Exit lab: ETH Exp 009.
 
 > **Exit lab done (PLAN.md §18, Exp 009): REJECT — 6 fixed exits on 1h, all six
 > lose money. `--final` not run.** The replication fails with the same signature

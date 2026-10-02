@@ -1,4 +1,48 @@
-> **Exit lab done (§18): no exit skill. Next (owner-approved 2026-10-01): ML entry model, `docs/research/PLAN.md` §19.** Run `SYMBOL=BTCUSDT python src/ml_entry.py` once (primary).
+> **ML entry model done (§19, Exp 046): REJECT, 5 of 6 gates failed. `--final`
+> not run.** A LightGBM model on 26,000 TRAIN rows, 30 causal features and a
+> net-of-cost label **cannot time 1h entries better than chance on this coin** —
+> and its top feature is volatility.
+>
+> | | value |
+> |---|---|
+> | threshold (purged OOF) | **0.0** |
+> | TRAIN OOF mean at 0.0 / 0.05 / 0.10 / 0.20 | **−0.0615** / −0.0727 / −0.0843 / −0.1070 |
+> | VALID trades / mean R / **gross R** | **12,994 / −0.0299 / +0.0479** |
+> | 95% CI (weekly blocks) | [−0.1008, +0.0394] |
+> | long / short | +0.0560 / **−0.1037** |
+> | cost ×1.5 | **−0.0687** |
+> | **one position at a time** | **850 trades, avg R −0.0419, CAGR −15.4%, maxDD 44.3%, win 41.1%, skips 0** |
+> | random shift control | mean −0.0573, **p95 +0.0020** |
+> | top feature | **`vol_168` (1252)**, then `funding_last` (790) |
+> | gates failed | `oof_mean>0`, `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`, `beats_random_p95` |
+>
+> **The OOF curve is monotone *down*, measured on TRAIN before VALID was
+> touched: the stricter the threshold, the worse the out-of-fold mean.** That is
+> the opposite of a real signal and it is why this is REJECT rather than WATCH —
+> the model's top-ranked bars are its worst bars. **The top two features are
+> 168-bar volatility and the last funding rate; neither is a direction**, and the
+> legs show the trap in both directions (long +0.056, short −0.104).
+>
+> **Three things worth keeping.**
+> 1. **The structure is there and the cost is bigger.** `gross_r` **+0.0479**
+>    against `mean_r` **−0.0299** — the label was already net of fees, slippage
+>    and funding, so the model was *asked* to find bars worth more than the cost
+>    and returned +0.048 R gross and nothing after. `LESSONS.md` §1 in its
+>    clearest instance: **+0.0479 R of structure, −0.0778 R of cost.**
+> 2. **The sequential number is the tradable one and it is worse:** 850 trades,
+>    **CAGR −15.4%, maxDD 44.3%**. The every-signal figure is the research
+>    measurement; one position at a time is what an account would face.
+> 3. **Beating the random control and still losing is a gate working, not a
+>    result.** The model clears the drift-adjusted p95 by 0.028 R and is still
+>    REJECT. The control removed the "a bull market did this" objection; the
+>    other four gates are what refuse the strategy.
+>
+> **The pooled 20-coin model (§20, `_multi` Exp 005) is the closest anything here
+> has come to a PASS and is still REJECT on the CI: +0.0601 R on 34,467 VALID
+> trades, gross +0.1475, above its control p95, positive at cost x1.5, 10 of 20
+> coins beating their own control — and CI [−0.0373, +0.1698] contains zero.**
+> More data fixed the OOF curve (monotone *up*) and did not create an edge.
+> Details: Exp 046. ETH half: ETH Exp 010. Exit lab: Exp 043/044.
 
 > **Exit lab done (PLAN.md §18, Exp 043/044): 1h REJECT on both coins, and the
 > 4h cell PASSED and is a bull market. `--final` not run.**

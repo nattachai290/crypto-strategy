@@ -649,3 +649,197 @@ The download parser was checked on two real SOL files in a scratch
 directory. No research data was run.
 
 **Runs:** see PLAN.md section 20.
+
+---
+
+## Exp 005 - Pooled ML entry model on 20 coins: REJECT on the CI, with 10 of 20 coins clearing their own control
+
+**Date:** 2026-10-02
+**Status:** complete. **1 run, 20 coins. REJECT. HOLDOUT UNTOUCHED - `--final`
+not run and not a candidate.** `src/ml_pool.py` unchanged; no new feature,
+parameter, coin or exit after seeing a result. The record is
+`results/_multi/ml_pool/summary.json` and `universe.json`, plus the generated
+`journal/_multi/ml_pool.md`.
+
+**Session state.** `python src/ml_pool.py --build` -> **BUILD OK: 20 coins**
+(1h perp klines + funding, 2020-2026). `data/cache/_multi/perp_1d.parquet` was
+already present from rotation (Exp 002), so `rotation.py --build perp` was not
+needed. `test_engine.py` -> **ALL CHECKS PASSED** with **test 16** (pooled
+pipeline: universe from TRAIN only, planted edge found on every coin, noise
+rejected, **and a single planted coin out of three is REJECT on breadth**).
+
+**Design, unchanged from `PLAN.md` §20 and Exp 004:** one long model and one short
+model fitted on the rows of 20 coins together, with the **coin not a feature**.
+Model, features, labels, exit (`time_only`, 3-ATR stop, 24 bars), purged folds,
+thresholds and hyper-parameters are exactly those of §19. Costs: BTC and ETH at
+0.02% slippage, every other coin at 0.05%. Universe from TRAIN volume only.
+
+### The 20 coins (fixed at build time in `universe.json`)
+
+| # | instrument | first bar | last bar | mean daily quote volume (USDT) |
+|---|---|---|---|---|
+| 1 | **BTCUSDT** | 2020-01-01 | 2026-08-31 | 14,094,674,463 |
+| 2 | **ETHUSDT** | 2020-01-01 | 2026-08-31 | 7,560,436,851 |
+| 3 | DOGEUSDT | 2020-07-10 | 2026-08-31 | 801,320,015 |
+| 4 | ADAUSDT | 2020-01-31 | 2026-08-31 | 696,286,883 |
+| 5 | BNBUSDT | 2020-02-10 | 2026-08-31 | 668,759,111 |
+| 6 | AVAXUSDT | 2020-09-23 | 2026-08-31 | 553,336,598 |
+| 7 | MATICUSDT | 2020-10-22 | **2024-09-11** | 528,805,956 |
+| 8 | AXSUSDT | 2020-11-20 | 2026-08-31 | 528,366,391 |
+| 9 | ETCUSDT | 2020-01-16 | 2026-08-31 | 499,895,971 |
+| 10 | DOTUSDT | 2020-08-22 | 2026-08-31 | 482,569,119 |
+| 11 | LINKUSDT | 2020-01-17 | 2026-08-31 | 362,323,704 |
+| 12 | ATOMUSDT | 2020-02-07 | 2026-08-31 | 338,222,160 |
+| 13 | EOSUSDT | 2020-01-08 | **2025-05-21** | 280,679,337 |
+| 14 | CRVUSDT | 2020-09-01 | 2026-08-31 | 173,647,228 |
+| 15 | BCHUSDT | 2020-01-01 | 2026-08-31 | 155,385,859 |
+| 16 | AAVEUSDT | 2020-10-16 | 2026-08-31 | 155,304,400 |
+| 17 | ALGOUSDT | 2020-06-16 | 2026-08-31 | 143,424,966 |
+| 18 | RUNEUSDT | 2020-09-04 | 2026-08-31 | 139,121,091 |
+| 19 | XTZUSDT | 2020-02-06 | 2026-08-31 | 131,113,040 |
+| 20 | THETAUSDT | 2020-05-27 | 2026-08-31 | 126,718,206 |
+
+**Two of the 20 stopped trading inside the window and stayed in: MATICUSDT on
+2024-09-11 and EOSUSDT on 2025-05-21.** Both are in VALID, and both are in the
+beating set, so the survivorship rule did not filter out the coins that made the
+result look good. The universe is chosen on TRAIN volume (2021-07 to 2022-12)
+and no coin here is a late addition to the list.
+
+### The OOF table - and it is the only cell in the whole project that behaves correctly
+
+| threshold | TRAIN OOF trades | TRAIN OOF mean R |
+|---|---|---|
+| 0.00 | 196,717 | −0.0148 |
+| 0.05 | 137,436 | +0.0024 |
+| 0.10 | 87,275 | +0.0219 |
+| **0.20** *(chosen)* | **33,046** | **+0.0561** |
+
+**The curve is monotone UP, unlike §19's two single-coin runs where it was
+monotone down.** More data changed the sign of the relationship between the
+model's confidence and its forward R. **That is the single most interesting
+number in this entry, and it is measured out-of-fold on TRAIN before VALID was
+touched.** The model does rank better bars higher - it just ranks them at
++0.056 R out-of-fold, which is roughly the cost of a trade, and by construction
+the label is net of cost so +0.056 is meant to be after it.
+
+### VALID, pooled
+
+| | value |
+|---|---|
+| trades | **34,467** |
+| **mean R** | **+0.0601** |
+| **gross R** | **+0.1475** |
+| 95% CI (weekly blocks) | **[−0.0373, +0.1698]** |
+| long leg | **+0.1173** |
+| short leg | **+0.0420** |
+| avg hold | 20.0 bars |
+| exit mix | time 66.9% / stop 33.1% |
+| cost x1.5 | **+0.0155**, CI [−0.0819, +0.1253] |
+| pooled random shift control | mean **−0.1484**, p95 **−0.0106** |
+| last exit | 2024-12-30 21:00 UTC |
+
+**verdict REJECT. One gate failed: `valid_ci_lo>0`.** Everything else passed:
+`oof_mean>0` (+0.0561), `valid_trades>=3000` (34,467), `valid_mean>0` (+0.0601),
+`stress_mean>0` (+0.0155), `beats_random_p95` (+0.0601 against a p95 of −0.0106),
+and **breadth 0.50, exactly the minimum** (10 of 20 eligible coins beat their own
+control with a positive mean).
+
+**This is the closest anything in the project has come to a PASS, and it is still
+a REJECT: the CI lower bound is −0.0373, so the interval contains zero and the
+result is not distinguishable from nothing.**
+
+### Per coin, with each coin's own shift control
+
+| coin | VALID trades | mean R | random median | random p95 | gap to p95 | beats |
+|---|---|---|---|---|---|---|
+| ALGOUSDT | 1,244 | **+0.2168** | −0.0484 | +0.0980 | +0.1188 | **yes** |
+| AXSUSDT | 1,339 | **+0.2145** | −0.0652 | +0.0766 | +0.1379 | **yes** |
+| RUNEUSDT | 1,459 | **+0.1809** | −0.0465 | +0.1076 | +0.0733 | **yes** |
+| AVAXUSDT | 1,379 | **+0.1456** | −0.0558 | +0.0868 | +0.0588 | **yes** |
+| ETCUSDT | 2,119 | **+0.1441** | −0.0642 | +0.0576 | +0.0865 | **yes** |
+| EOSUSDT | 1,105 | **+0.1305** | −0.0669 | +0.0650 | +0.0655 | **yes** |
+| AAVEUSDT | 1,333 | **+0.1146** | −0.0750 | +0.0602 | +0.0544 | **yes** |
+| ETHUSDT | 2,588 | **+0.1080** | −0.0818 | +0.0579 | +0.0501 | **yes** |
+| MATICUSDT | 1,506 | **+0.0925** | −0.1526 | +0.0887 | +0.0038 | **yes** |
+| XTZUSDT | 1,522 | **+0.0744** | −0.0739 | +0.0563 | +0.0181 | **yes** |
+| LINKUSDT | 1,400 | +0.0736 | −0.0652 | +0.0991 | −0.0255 | no |
+| DOTUSDT | 1,680 | +0.0604 | −0.0655 | +0.0776 | −0.0172 | no |
+| ATOMUSDT | 1,866 | +0.0498 | −0.0442 | +0.1066 | −0.0568 | no |
+| THETAUSDT | 1,496 | +0.0314 | −0.0833 | +0.0698 | −0.0384 | no |
+| BTCUSDT | 3,370 | +0.0148 | −0.0721 | +0.0491 | −0.0343 | no |
+| CRVUSDT | 811 | +0.0136 | −0.0663 | +0.1289 | −0.1153 | no |
+| BCHUSDT | 1,909 | −0.0445 | −0.0755 | +0.0439 | −0.0884 | no |
+| ADAUSDT | 1,661 | −0.0473 | −0.0658 | +0.0538 | −0.1011 | no |
+| DOGEUSDT | 2,111 | −0.0547 | −0.0930 | +0.0380 | −0.0927 | no |
+| BNBUSDT | 2,569 | −0.0824 | −0.1166 | +0.0066 | −0.0890 | no |
+
+**All 20 coins cleared the 100-trade floor** (smallest is CRVUSDT at 811), so
+breadth was judged on the full set.
+
+### Breadth, stated precisely
+
+- **eligible: 20 of 20.** Every coin had at least 100 VALID trades, so the
+  `>= 10 coins with >= 100 trades` gate is comfortably met.
+- **beat their own p95 with a positive mean: 10 of 20 = 0.50**, which is
+  **exactly the pre-registered minimum, not above it.** The gate says "at least
+  half", so it passes; a 0.50 share on 20 coins is 10 successes and 10 failures
+  and carries no information beyond the threshold.
+- **16 of 20 coins have a positive mean; 4 are negative** (BNB −0.0824, DOGE
+  −0.0547, ADA −0.0473, BCH −0.0445). Median of the 16 positive: **+0.1002**.
+  Median of the 4 negative: −0.0510.
+- **The spread is the finding: the coin means run from +0.2168 to −0.0824, a
+  range of 0.30 R, on the same model and the same exit.** §9's warning about a
+  single descriptive cell on one coin is what this breadth gate exists for, and
+  here it earns exactly half its keep: **it did not fail, and the dispersion
+  behind it is enormous.**
+
+### Top features (split gain, pooled)
+
+| rank | feature | gain |
+|---|---|---|
+| 1 | **`weekday`** | **1043** |
+| 2 | **`vol_168`** | **841** |
+| 3 | `ret_168` | 659 |
+| 4 | `funding_last` | 638 |
+| 5 | `ret_96` | 603 |
+| 6 | `taker_ratio_24` | 552 |
+| 7 | `ret_48` | 532 |
+| 8 | `vol_ratio` | 527 |
+| 9 | `ema_dist_200` | 466 |
+| 10 | `range_pos_168` | 456 |
+
+**`weekday` is now the top feature, ahead of `vol_168`.** On a single coin the
+model's top feature was volatility; **with 20 coins pooled, the strongest
+feature across all of them is the day of the week**, with `vol_168` second.
+Whether a weekday effect on 1h crypto is a market structure or a fit to noise
+across 20 correlated instruments is not answerable from this run, and it is worth
+recording as **the thing the next agent should look at** rather than as a result.
+
+### Verdict
+
+`REJECT`, on **one gate**: the VALID CI lower bound is **−0.0373**.
+
+**This is the strongest result in the project and it is not a PASS.** For the
+record, plainly: **+0.0601 R per trade on 34,467 trades, gross +0.1475 R, above
+its own random control's 95th percentile, positive out-of-fold on TRAIN, positive
+at cost x1.5, and positive on 16 of 20 coins with 10 clearing their own control -
+and the 95% confidence interval still contains zero.** The only thing standing
+between this and a PASS is sampling precision, which is exactly what a holdout is
+for, and `PLAN.md` §20 reserves the holdout for a PASS.
+
+**What more data did and did not do, measured:**
+- **It fixed the OOF curve.** §19's two runs had a confidence-vs-R relationship
+  that was *monotonically wrong*; 20 coins made it *monotonically right*, and
+  the chosen threshold moved from 0.0 (both single-coin runs) to 0.20. **More
+  rows improved the ranking, which is what more rows are supposed to do.**
+- **It did not create an edge.** The pooled gross is +0.1475 R and the net
+  +0.0601 R, so cost still takes 59% of it - the same relationship as every
+  other round in this project. **The structure is bigger on 20 coins than on one,
+  and the cost is bigger too.**
+- **The owner's hypothesis that one coin's 26,000 rows were too few is supported
+  on precision and not on effect size.** The CI half-width went from ±0.07-0.08 R
+  on one coin to ±0.10 R pooled, and the mean rose from −0.03 to +0.06. Neither
+  is an edge.
+
+**Per `PLAN.md` §20: `--final` is not run. No holdout is used and none is
+warranted.** No new feature, parameter, coin or exit is tried after a result.

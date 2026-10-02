@@ -4977,3 +4977,119 @@ This keeps the counts and the clustering and breaks only the alignment with
 prices. `--final` uses the same control.
 
 Tests 15 and 16 pass. No market data has been run.
+
+---
+
+## Exp 046 - ML entry model on BTCUSDT 1h: REJECT. The model finds volatility, not direction
+
+**Date:** 2026-10-02
+**Status:** complete. **1 run (1h, primary). REJECT. HOLDOUT UNTOUCHED - `--final`
+not run and not a candidate.** `src/ml_entry.py` unchanged; no new feature,
+parameter or exit after seeing a result. BTCUSDT gains no `evaluations.csv` row
+(this tool does not use `evaluate.py`); the record is
+`results/BTCUSDT/ml_entry/summary.json` and the generated
+`journal/BTCUSDT/ml_entry.md`.
+
+**Session state.** `git pull` clean. `pip install -r requirements.txt` - pandas
+3.0.2 and lightgbm 4.7.0 already present. `test_engine.py` -> **ALL CHECKS
+PASSED**, including **test 15** (`ML entry: causal features, purge, labels,
+planted edge found, noise rejected`), which runs the whole pipeline on synthetic
+data and confirms it says **PASS +0.37 R on a planted drift-neutral edge** and
+**REJECT on pure noise**. **`datafeed.py` -> VALIDATION: OK** on both coins.
+
+**The model.** Two LightGBM regressors, one per side, predicting the **net R**
+of entering at the next 1h open with one fixed symmetric exit: `time_only`
+(3-ATR stop, out after 24 bars). Hyper-parameters fixed and untuned (300 rounds,
+lr 0.03, 15 leaves, >=200 rows per leaf, bagging/feature fraction 0.8, L2 1.0,
+seed 7). The threshold comes from **purged walk-forward OOF** on TRAIN only, and
+the final models are refit on all of TRAIN and frozen. The exit is symmetric on
+purpose: BTC Exp 045 showed a path-dependent exit turns market drift into profit.
+
+### The OOF table - the threshold choice, and why the model failed before VALID
+
+| threshold | TRAIN OOF trades | TRAIN OOF mean R |
+|---|---|---|
+| **0.00** *(chosen)* | **10,286** | **−0.0615** |
+| 0.05 | 8,903 | −0.0727 |
+| 0.10 | 7,401 | −0.0843 |
+| 0.20 | 4,890 | −0.1070 |
+
+**Every threshold loses money out-of-fold, and the stricter the threshold the
+worse it gets.** That is the opposite of what a real signal does - a model that
+had found something would concentrate trades at a high threshold and the mean
+would rise. **The OOF mean is monotonically decreasing in the threshold on both
+coins, which says the model's top-ranked bars are its worst bars.**
+
+### VALID
+
+| | value |
+|---|---|
+| trades | **12,994** |
+| **mean R** | **−0.0299** |
+| **gross R** | **+0.0479** |
+| 95% CI (weekly blocks) | **[−0.1008, +0.0394]** |
+| long leg | **+0.0560** |
+| short leg | **−0.1037** |
+| avg hold | 19.7 bars |
+| exit mix | time 66% / stop 34% |
+| cost x1.5 | **−0.0687**, CI [−0.1397, +0.0003] |
+| **one position at a time** | **850 trades, avg R −0.0419, CAGR −15.4%, maxDD 44.3%, win 41.1%, size skips 0** |
+| last exit | 2024-12-31 21:00 UTC |
+| random shift control | mean **−0.0573**, p95 **+0.0020** |
+
+**verdict REJECT. Five of six gates failed: `oof_mean>0`, `valid_mean>0`,
+`valid_ci_lo>0`, `stress_mean>0`, `beats_random_p95`.** Only `valid_trades>=300`
+passed, at 12,994 trades.
+
+### Top features (split gain)
+
+| rank | feature | gain |
+|---|---|---|
+| 1 | **`vol_168`** | **1252** |
+| 2 | **`funding_last`** | **790** |
+| 3 | `vol_ratio` | 593 |
+| 4 | `ret_168` | 586 |
+| 5 | `ret_96` | 583 |
+| 6 | `vol_24` | 567 |
+| 7 | `ema_dist_200` | 539 |
+| 8 | `taker_ratio_24` | 537 |
+
+**The top feature is 168-bar volatility, by a wide margin, and the second is the
+last funding rate.** Neither is a direction. **The model spent its capacity
+describing how much the market moves, and what it learned is that its
+highest-confidence bars are the ones right after a volatility spike - which is
+the most dangerous place to be long, and it shows up in the numbers: the short
+leg is −0.1037 and the long leg is +0.0560, a near-perfect trap in both
+directions.**
+
+### What this says
+
+1. **`gross_r` is positive (+0.0479) while `mean_r` is negative (−0.0299), so
+   the model does find bars whose expected move clears the 0.1 R of cost the
+   plan's prior said it needed to clear.** `LESSONS.md` §1 in its most precise
+   form yet: **the structure is there and the cost is bigger.** BTC Exp 045 found
+   the same thing for random entries (+0.0344 gross on the best exit); the model
+   roughly doubles the gross but not past the hurdle.
+2. **The "one position at a time" version is worse than the every-signal
+   version**: 850 trades, **avg R −0.0419, CAGR −15.4%, maxDD 44.3%**. This is the
+   number a real account would have faced, and it is the honest one. **The
+   every-signal figure is the research measurement; the sequential figure is the
+   tradable one, and the tradable one loses 15% a year.**
+3. **The random shift control is beaten and it means nothing.** The model's
+   −0.0299 beats the control's −0.0573 mean, and it is still 0.027 R *above zero*
+   of the control's p95 (+0.0020), so the model does clear the drift-adjusted
+   bar. **It clears the bar and still loses**, because the bar is a bar and not a
+   profit. A gate that can be passed by a losing strategy is a gate that has done
+   its job - the other four are what reject this.
+4. **The OOF table is the real diagnosis.** The threshold sweep is monotone
+   downward, out-of-fold, before VALID was touched. That is available evidence
+   that the model's ranking is anti-correlated with forward R, and it is the
+   reason this is REJECT rather than WATCH.
+
+### Verdict
+
+`REJECT`. **A LightGBM model given 26,000 TRAIN rows, 30 causal features and a
+frozen, cost-aware label cannot time 1h BTCUSDT entries better than chance** -
+and its top feature is volatility, which is why. The gross/net gap is the
+project's most repeated finding and this is its clearest instance: **+0.0479 R
+of structure, −0.0778 R of cost.**

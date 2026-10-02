@@ -1201,3 +1201,124 @@ the strongest form the answer can take: six fixed exits, two coins, twelve rows,
 every net mean negative, and the plan's own prior of "−0.03 to −0.1 R" correct on
 both.** Stage 2's premise - that a good exit is worth finding before training an
 entry - has no support at 1h on either coin.
+
+---
+
+## Exp 010 - ML entry model on ETHUSDT 1h: REJECT, and it is a different failure from BTC's
+
+**Date:** 2026-10-02
+**Status:** complete. **1 run (1h, replication). REJECT. HOLDOUT UNTOUCHED -
+`--final` not run and not a candidate.** `src/ml_entry.py` unchanged; same
+features, same hyper-parameters, same folds, same exit, same random shift
+control as BTC Exp 046. ETHUSDT gains no `evaluations.csv` row; the record is
+`results/ETHUSDT/ml_entry/summary.json` and the generated
+`journal/ETHUSDT/ml_entry.md`.
+
+**Session state.** `test_engine.py` -> **ALL CHECKS PASSED** with test **15** (the
+planted-edge PASS and the noise REJECT both hold on synthetic data, so the
+pipeline is sound and this is a real-data result). `datafeed.py` ->
+**VALIDATION: OK**.
+
+### The OOF table
+
+| threshold | TRAIN OOF trades | TRAIN OOF mean R |
+|---|---|---|
+| **0.00** *(chosen)* | **10,959** | **−0.0869** |
+| 0.05 | 9,680 | −0.0912 |
+| 0.10 | 8,278 | −0.0958 |
+| 0.20 | 5,533 | −0.1019 |
+
+**The same monotone shape as BTC: every threshold loses out-of-fold, and the
+stricter it is the worse it gets.** ETH's whole OOF curve sits about 0.025 R
+below BTC's, which is simply ETH's higher cost per R on the same exit.
+
+### VALID
+
+| | value |
+|---|---|
+| trades | **13,266** |
+| **mean R** | **+0.0107** |
+| **gross R** | **+0.0754** |
+| 95% CI (weekly blocks) | **[−0.0562, +0.0835]** |
+| long leg | **+0.0477** |
+| short leg | **−0.0241** |
+| avg hold | 20.1 bars |
+| exit mix | time 68.4% / stop 31.6% |
+| cost x1.5 | **−0.0217**, CI [−0.0886, +0.0503] |
+| **one position at a time** | **824 trades, avg R −0.0027, CAGR −3.4%, maxDD 35.3%, win 45.8%, size skips 0** |
+| last exit | 2024-12-31 21:00 UTC |
+| random shift control | mean **−0.0575**, p95 **−0.0107** |
+
+**verdict REJECT. Three of six gates failed: `oof_mean>0`, `valid_ci_lo>0`,
+`stress_mean>0`.** ETH passes `valid_mean>0`, `valid_trades>=300` and
+`beats_random_p95` - **so it comes closer than BTC and is still REJECT**, which is
+the more useful outcome to have measured.
+
+### Top features (split gain)
+
+| rank | feature | gain |
+|---|---|---|
+| 1 | **`vol_168`** | **1296** |
+| 2 | `ret_168` | 644 |
+| 3 | `ret_96` | 607 |
+| 4 | `funding_last` | 585 |
+| 5 | `vol_24` | 583 |
+| 6 | `vol_ratio` | 546 |
+| 7 | `atr_pct` | 537 |
+| 8 | `range_pos_168` | 488 |
+
+**`vol_168` is the top feature on both coins by a wide margin** (1296 here, 1252
+on BTC) and three of the top five on ETH are volatility or a volatility ratio.
+**The model is the same model on both coins: it learned to describe magnitude.**
+
+### The replication, and what it settles
+
+| | BTC 1h (primary) | ETH 1h (replication) |
+|---|---|---|
+| threshold chosen | 0.0 | 0.0 |
+| TRAIN OOF mean at 0.0 | −0.0615 | −0.0869 |
+| OOF curve shape | monotone **down** | monotone **down** |
+| VALID mean R | **−0.0299** | **+0.0107** |
+| VALID gross R | +0.0479 | +0.0754 |
+| VALID CI | [−0.1008, +0.0394] | [−0.0562, +0.0835] |
+| cost x1.5 | −0.0687 | −0.0217 |
+| sequential avg R | −0.0419 | **−0.0027** |
+| sequential CAGR / maxDD | −15.4% / 44.3% | **−3.4% / 35.3%** |
+| gates failed | **5 of 6** | **3 of 6** |
+| top feature | `vol_168` | `vol_168` |
+
+**1. The same failure on both coins, and the OOF curve is the diagnosis.** ETH
+passes the raw-mean gate and the random gate and still fails, because the two
+gates that catch it are the ones that look at precision: **the OOF mean is
+negative on every threshold**, and **the cost stress is negative**. `LESSONS.md`
+§3's reading of a small VALID number applies exactly - +0.0107 R is "maybe +0.0".
+
+**2. The sequential result is the one to hold.** ETH's 824 sequential trades give
+**avg R −0.0027, CAGR −3.4%** - which is to say **the tradable version is
+indistinguishable from doing nothing.** BTC's is −0.0419 / −15.4%. **On both
+coins, turning the model's signals into one position at a time turns a small
+research number into a small loss, and on ETH the loss is the cost of
+commission.**
+
+**3. Gross is comfortably positive and net is not: the same gap as BTC, and
+larger.** ETH gross **+0.0754** against net **+0.0107** - the cost eats 0.065 R,
+which is the whole edge. `LESSONS.md` §1: the structure exists at 1h and does not
+survive the cost of harvesting it. **ETH's higher gross (+0.0754 vs +0.0479) is
+the clearest single statement of why the plan's 0.05% alt slippage matters: the
+same model finds more gross edge on ETH and still does no better net, because
+the cost there is higher.**
+
+**4. The shift control is passed on both coins, and passing it is not a result.**
+BTC −0.0299 against a p95 of +0.0020; ETH +0.0107 against a p95 of −0.0107. Both
+clear the drift-adjusted bar. **Both are REJECT.** The control was pre-registered
+and it did its job - it removed the objection that a bull market did this - and
+the remaining gates are what refuse the strategy.
+
+### Verdict
+
+`REJECT`. **Stage 2 of the owner's "train the timing" request has no support at
+1h on either coin: 13,000+ signals per coin, 30 causal features, purged
+walk-forward thresholds, and the top feature is volatility on both.** The label
+was already net of fees, slippage and funding, so the model was *asked* to find
+bars worth more than the cost; it returned bars worth +0.048 and +0.075 R gross
+and nothing after costs.
