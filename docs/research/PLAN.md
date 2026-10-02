@@ -1643,3 +1643,64 @@ The grid is chosen on TRAIN only, 8 cells: `pattern` {engulfing, pin} ×
 **Prior:** low. 15m will pay ~0.3 R in cost and is expected to lose. A
 positive result must beat random entries within the same exits
 (`baseline.py`) to count.
+
+## 23. Stop diagnosis: wrong direction, or shaken out? (owner request, 2026-10-02)
+
+**The owner's question.** Do the strategies enter the wrong way, or the right
+way and then get stopped out by a fake move ("โดนลากไส้")?
+
+**How it is answered.** `src/stop_diag.py` is read-only research.
+- It reruns no strategy and tunes nothing.
+- It never reads HOLDOUT.
+- It writes only `results/<SYMBOL>/stop_diag/` and the generated
+  `journal/<SYMBOL>/stop_diag.md`. This new output folder was requested by
+  the owner (AGENTS.md rule 11).
+
+**Which trades.** Every evaluation with all of the following:
+- a VALID trade file;
+- timeframe 15m, 30m, 1h or 4h;
+- verdict PASS, WATCH or REJECT;
+- 0 size skips;
+- at least 30 VALID trades.
+
+**What is measured for each trade.** H is the idea's maximum hold in bars. R
+is the trade's exact initial stop distance.
+- **right_at_h**: was the close H bars after the fill on the trade's side?
+  This is the direction call with the stop ignored.
+- **move_h**: that move, in R.
+- **shaken**: the trade was stopped, and right_at_h is true.
+
+**Control.** Each real trade gets 20 random fills inside VALID, with the same
+side, the same stop as a fraction of price, and the same H. Drift helps the
+control exactly as much as the real trade.
+
+**Pooled reading.** Results are trade-weighted across evaluations. The 95% CI
+comes from resampling whole evaluations.
+- **direction skill** = right_at_h, real minus random.
+- **shakeout excess** = P(right_at_h | stopped), real minus random.
+- **no-stop move** = move_h, real minus random.
+
+**Verdicts:**
+- **WRONG_DIRECTION**: the direction-skill CI is below 0.
+- **SHAKEN_OUT**: the direction-skill CI is above 0 **and** the
+  shakeout-excess CI is above 0.
+- **RIGHT_NOT_SHAKEN**: the direction-skill CI is above 0 and nothing more.
+- **COIN_FLIP**: anything else.
+
+**Test 19** uses synthetic data:
+- planted momentum with tight stops gives SHAKEN_OUT (skill +10 points);
+- the same entries reversed give WRONG_DIRECTION;
+- noise gives COIN_FLIP.
+
+**Runs:**
+- `SYMBOL=BTCUSDT python src/stop_diag.py`
+- `SYMBOL=ETHUSDT python src/stop_diag.py`
+
+Run each once. A rerun gives the same numbers (the seed is fixed), so reruns
+are harmless.
+
+**Prior: COIN_FLIP.** 102 of 108 WATCH/PASS results were DRIFT against random
+entries (`LESSONS.md` §2), and widening the stop to 8 ATR in ML round 2 left
+gross at ~0. This is a diagnosis, not a strategy. A SHAKEN_OUT result would
+point to a new pre-registered idea about stop placement. It would not be a
+reason to rerun old ideas on VALID.

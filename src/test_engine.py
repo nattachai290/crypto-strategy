@@ -422,6 +422,7 @@ def main() -> None:
     test_ml_pool()
     test_ml_pool2()
     test_candle_at_level()
+    test_stop_diag()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1443,6 +1444,52 @@ def test_candle_at_level() -> None:
         broke.iloc[k, broke.columns.get_loc("low")] = 98.9
     sb = RC.t_candle_at_level(broke, None, pattern="engulfing", level="swing", pivot_len=3, near_atr=0.5)
     check("candle_at_level: a swing level closed through is dead", sb[31] == 0.0, str(np.flatnonzero(sb)))
+
+
+def test_stop_diag() -> None:
+    print("\n19. stop_diag: planted momentum + tight stops = SHAKEN_OUT, reversed = WRONG_DIRECTION, noise = COIN_FLIP")
+    import json as _json
+    import tempfile
+    import stop_diag as SD
+
+    def case(k, flip, seed):
+        bars = _momentum_bars(k, seed=seed)
+        lr = np.log(bars["close"]).diff(24).to_numpy()
+        rng = np.random.default_rng(seed)
+        o, l, h = bars["open"].to_numpy(), bars["low"].to_numpy(), bars["high"].to_numpy()
+        win = SD.valid_window()
+        lo, hi = np.searchsorted(bars.index, win[0]), np.searchsorted(bars.index, win[1]) - 30
+        H, rows_ev = 24, []
+        tmp = Path(tempfile.mkdtemp())
+        for e in range(8):  # 8 "evaluations" of 150 trades each
+            rows = []
+            for j in rng.integers(lo, hi, 150):
+                side = (1.0 if lr[j - 1] > 0 else -1.0) * (-1 if flip else 1)
+                entry, d = o[j], o[j] * 0.003  # tight 0.3% stop: noise hits it often
+                stop = entry - side * d
+                hit = (l[j:j + H] <= stop).any() if side > 0 else (h[j:j + H] >= stop).any()
+                rows.append({"entry_time": bars.index[j], "side": side, "entry_px": entry, "qty": 1.0,
+                             "net_pnl": -d, "r_multiple": -1.0, "exit_reason": "stop" if hit else "time"})
+            eid = f"e{e}"
+            pd.DataFrame(rows).to_csv(tmp / f"{eid}_valid.csv.gz", index=False)
+            rows_ev.append({"eval_id": eid, "name": f"case{e}", "tf": 60, "verdict": "REJECT",
+                            "valid_trades": 150, "valid_size_skips": 0,
+                            "chosen_params": _json.dumps({"max_hold_hours": H})})
+        per = SD.diagnose(lambda tf: bars, pd.DataFrame(rows_ev), tmp, win)
+        return SD.summarize(per)
+
+    import contextlib
+    import io
+    with contextlib.redirect_stdout(io.StringIO()):
+        good = case(0.0008, False, 51)
+        bad = case(0.0008, True, 52)
+        flat = case(0.0, False, 53)
+    check("stop_diag: right direction + tight stops -> SHAKEN_OUT", good["verdict"] == "SHAKEN_OUT",
+          f"{good['verdict']} skill {good['direction_skill']:+.3f} shake {good['shakeout_excess']:+.3f}")
+    check("stop_diag: reversed entries -> WRONG_DIRECTION", bad["verdict"] == "WRONG_DIRECTION",
+          f"{bad['verdict']} skill {bad['direction_skill']:+.3f}")
+    check("stop_diag: noise -> COIN_FLIP", flat["verdict"] == "COIN_FLIP",
+          f"{flat['verdict']} skill {flat['direction_skill']:+.3f} ci {flat['ci']['direction_skill']}")
 
 
 if __name__ == "__main__":

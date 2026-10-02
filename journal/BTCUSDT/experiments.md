@@ -5311,3 +5311,27 @@ the idea is wrong but that **the cheap clock is the illiquid clock**.
 **Verdict.** 0 PASS and 0 WATCH out of 16 evaluations. No holdout was used and
 no controls were run, both correctly. **The candle-at-level family is closed
 at these settings.** A v2 is not allowed, because nothing reached WATCH.
+
+---
+
+## Exp 051 - Stop diagnosis tooling (PLAN.md section 23), not run
+
+**Date:** 2026-10-02
+
+**Owner's question.** Were the entries in the wrong direction, or in the
+right direction and then stopped out by a fake move?
+
+**Tooling.** `src/stop_diag.py` reads the VALID trade files and the bars.
+It does three things:
+- checks where price stood at the time limit for each trade;
+- for trades that were stopped, checks whether price later went their way;
+- compares both against random fills that have the same side, stop size and
+  hold.
+
+**Test 19** (synthetic data):
+- planted momentum with tight stops gives SHAKEN_OUT;
+- the same entries reversed give WRONG_DIRECTION;
+- noise gives COIN_FLIP.
+
+The tool is read-only: no strategy is rerun or tuned, and HOLDOUT is not
+read. The research agent runs it once per coin. **Prior: COIN_FLIP.**

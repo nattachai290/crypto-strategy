@@ -5,9 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**No active work.** The candle-at-level round (§22, BTC Exp 049/050, ETH
-Exp 015/016) found 0 PASS / 0 WATCH in 16 evaluations, and the ML line (§19–21)
-is closed. Ask the owner before starting anything new.
+**Active work: stop diagnosis, `src/stop_diag.py` (`docs/research/PLAN.md`
+§23): one run on BTCUSDT and one on ETHUSDT. Read-only, no strategy is
+re-tuned.** The candle-at-level round (§22) and the ML line (§19–21) are
+closed.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
@@ -326,6 +327,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `ml_entry.py` | PLAN.md §19: LightGBM long/short models predict the net R of a fixed symmetric exit; the threshold comes from purged TRAIN walk-forward OOF; VALID gates include beating random signals with the same long/short counts; `--final` runs the holdout once. Writes `results/<SYMBOL>/ml_entry/` and the generated `journal/<SYMBOL>/ml_entry.md` |
 | `ml_pool.py` | PLAN.md §20: the §19 model fitted once on 20 coins together (universe chosen on TRAIN volume, survivorship-free). `--build` downloads 1h perp klines + funding to `data/*/_multi/pool_1h`; gates add breadth (half the coins beat their own control). Writes `results/_multi/ml_pool/` and the generated `journal/_multi/ml_pool.md` |
 | `ml_pool2.py` | PLAN.md §21: round 2 of the pooled model on the same 20 coins: 4-day hold decided every 4 h, cross-coin/BTC features, LightGBM settings tuned on TRAIN OOF, control on GROSS R, both legs must be net positive. Writes `results/_multi/ml_pool2/` and the generated `journal/_multi/ml_pool2.md` |
+| `stop_diag.py` | PLAN.md §23: from the VALID trade files, asks whether entries were on the wrong side or right and then stopped out, against random fills with the same side, stop fraction and hold. Read-only; writes `results/<SYMBOL>/stop_diag/` and the generated `journal/<SYMBOL>/stop_diag.md` |
 | `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:
