@@ -1720,3 +1720,77 @@ holdout stays untouched.**
 **Results page.** `docs/trade.html` now also shows the 20 coins' VALID ML
 trades on 1h candles. They are in their own group, marked as not passed, and
 each coin's account is computed on its own.
+
+---
+
+## Exp 018 - Owner decisions: no pairs trading; ML retraining on more coins not pursued
+
+**Date:** 2026-10-02
+**Status:** complete
+
+- **Pairs / spread trading (long one coin, short another) is out of scope.**
+  The owner declined it after it was explained (market-neutral, two legs,
+  double cost). Do not propose it again unless the owner asks.
+- **Retraining the ML model on more coins was discussed and not pursued.**
+  The VALID period has already judged five ML attempts. Exp 016's timing,
+  +0.009 R gross against 0.022 R cost, is limited by its size, not by the
+  amount of data. A frozen model never learns from new coins; any retrain is
+  a new model and would need data it has not seen.
+- Options still on the table, owner to choose:
+  - test the frozen §27 model on unseen coins (information only);
+  - a cost what-if on recorded trades (no holdout);
+  - pause.
+
+---
+
+## Exp 019 - Pre-registration: walk-forward, multi-timeframe ML on 50 coins (PLAN.md section 28)
+
+**Date:** 2026-10-02
+**Status:** pre-registered, not run
+
+### Why
+This supersedes Exp 018's second bullet. After Exp 018, the owner asked for
+this different design: monthly refits, new data at each refit, judged under the
+same holdout lock. The owner asked for three things:
+- walk-forward training on many coins;
+- the timeframes 1h, 4h and 1d only;
+- a model that looks across timeframes.
+
+§27's frozen 2020-22 model was short-biased through 2023-24. A monthly refit
+removes that staleness.
+
+### What is fixed (src/ml_wf.py, PLAN.md section 28, test 24)
+- **Universe.** 50 coins by TRAIN volume (survivorship-free); native
+  1h/4h/1d klines and funding.
+- **Features.** §19 per-coin and §21 cross-coin/BTC features on the traded
+  timeframe, plus the §19 features of the other two timeframes taken from
+  their last CLOSED bar.
+- **Label and policy.** The label is the next 24 bars in ATRs, and a
+  decision is taken at every bar. The hysteresis policy, the 8-ATR stop and
+  no clock are as in §27.
+- **Monthly refits.** Each refit uses only rows whose labels end before the
+  month starts.
+- **Choice and judgment.**
+  - The TRAIN walk-forward (2021-22) picks 1 of 24 cells per timeframe.
+  - The VALID walk-forward (2023-24) judges each timeframe against §27's
+    gates (≥ 10 trades per coin for breadth).
+- **Holdout.** Only ONE timeframe may take it: the PASS one with the best
+  TRAIN walk-forward mean.
+
+### Synthetic checks (test 24)
+- Closed-bar alignment on every timeframe pair, latest bar only.
+- Every refit trains on labels that end before its month.
+- A planted edge → PASS.
+- Noise → REJECT, with the timing gate failing. Its net mean happened to be
+  positive, which is why the other gates exist.
+
+### Verdict
+Pending the research agent's single run.
+
+**Addendum (2026-10-02, before any run).** On the owner's request, every trade
+file of §28 now also records **why**:
+- the forecast at the opening decision, and at a signal exit;
+- the entry bar at that moment;
+- the top 3 LightGBM feature contributions toward the decision.
+
+This is reported only and changes no trade or gate. Test 24 checks it.

@@ -427,6 +427,7 @@ def main() -> None:
     test_premium()
     test_premium_confirm()
     test_ml_hold()
+    test_ml_wf()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1732,6 +1733,88 @@ def test_ml_hold() -> None:
           pd.Timestamp(edge["valid_last_exit"]) < pd.Timestamp(MH.SPLITS["holdout"][0], tz="UTC")
           and "time" not in (edge["valid"].get("exit_mix") or {}),
           f"{edge['valid_last_exit']} {edge['valid'].get('exit_mix')}")
+
+
+# --------------------------------------------------------------------------
+# 24. Walk-forward, multi-timeframe ML (PLAN.md section 28)
+# --------------------------------------------------------------------------
+def _agg(b: pd.DataFrame, rule: str) -> pd.DataFrame:
+    """Synthetic higher-timeframe bars for the TEST only (research never resamples)."""
+    return b.resample(rule, label="left", closed="left").agg(
+        {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum",
+         "taker_buy_base": "sum"}).dropna()
+
+
+def test_ml_wf() -> None:
+    print("\n24. Walk-forward ML: closed-bar multi-timeframe alignment, refits use the past only, planted edge found, noise rejected")
+    import contextlib
+    import io
+    import ml_wf as WF
+    b1 = _momentum_bars(0.0, seed=81).iloc[:3000]
+    b4, bd = _agg(b1, "4h"), _agg(b1, "1D")
+    for main, tfm, other, tfo in ((b1, 60, b4, 240), (b1, 60, bd, 1440), (bd, 1440, b1, 60), (b4, 240, bd, 1440)):
+        pos = WF.asof_positions(main.index, tfm, other.index, tfo)
+        mc = main.index + pd.Timedelta(minutes=tfm)
+        oc = other.index + pd.Timedelta(minutes=tfo)
+        ok = pos >= 0
+        closed = bool((oc[pos[ok]] <= mc[ok]).all())
+        latest = bool(all(p + 1 >= len(oc) or oc[p + 1] > m for p, m in zip(pos[ok], mc[ok])))
+        check(f"ml_wf multi-timeframe: a {tfm}m bar sees only {tfo}m bars closed by its own close, and the latest one",
+              closed and latest and ok.mean() > 0.9)
+    f = WF.mtf_features(b1, 60, b4, 240)
+    i = 1000
+    j = WF.asof_positions(b1.index[i:i + 1], 60, b4.index, 240)[0]
+    import ml_entry as ME
+    part = ME.features(b4.iloc[:j + 1], None).iloc[-1]
+    check("ml_wf multi-timeframe features: the row equals the other timeframe's features computed on bars up to that closed bar",
+          np.allclose(f.iloc[i][[c for c in f.columns if c.startswith("h4_ret_")]].to_numpy(float),
+                      part[[c for c in part.index if c.startswith("ret_")]].to_numpy(float), equal_nan=True))
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+
+    def by_tf(k, seeds):
+        out = {60: {}, 240: {}}
+        for n, sd in seeds:
+            b = _momentum_bars(k, seed=sd)
+            out[60][n], out[240][n] = (b, fund), (_agg(b, "4h"), fund)
+        return out
+    with contextlib.redirect_stdout(io.StringIO()):
+        Pe = WF.prepare(by_tf(0.0008, [(f"C{i}USDT", 90 + i) for i in range(3)]), 60)
+        edge = WF.evaluate(Pe, 60, grid=WF.GRID[:1], min_coins=3, step=3, keep=True)
+        noise = WF.evaluate(WF.prepare(by_tf(0.0, [(f"N{i}USDT", 95 + i) for i in range(3)]), 60), 60,
+                            grid=WF.GRID[:1], min_coins=3, step=3)
+    past = all(pd.Timestamp(r["last_train_label_end"]) < pd.Timestamp(r["month"], tz="UTC") for r in edge["refits"])
+    check("ml_wf refits: every training label ends before the month it predicts",
+          past and len(edge["refits"]) >= 12, f"{len(edge['refits'])} refits")
+    check("ml_wf features include the other timeframe (h4_ columns) when trading 1h",
+          any(c.startswith("h4_") for c in Pe["C0USDT"]["X"].columns))
+    check("ml_wf pipeline: a planted edge is found (PASS, timing above the shifted p95)",
+          edge["verdict"] == "PASS",
+          f"{edge['verdict']} mean {edge['valid'].get('mean_r', 0):+.3f} timing {edge['valid'].get('timing')} "
+          f"p95 {edge['valid'].get('shift_p95')} failed {edge['gates_failed']}")
+    check("ml_wf pipeline: pure noise is not a PASS and its timing does not beat the shifted p95",
+          noise["verdict"] == "REJECT" and "timing_beats_shift_p95" in noise["gates_failed"],
+          f"{noise['verdict']} timing {noise['valid'].get('timing')} p95 {noise['valid'].get('shift_p95')} "
+          f"failed {noise['gates_failed']}")
+    tr = edge.get("_trades")
+    ok_why = tr is not None and len(tr) > 0
+    if ok_why:
+        import json as _json
+        e = tr.dropna(subset=["entry_why"])
+        good_side = bool(((e["side"] > 0) == (e["entry_pred"].astype(float) > 0)).all())
+        above = bool((e["entry_pred"].astype(float).abs() >= e["entry_bar"].astype(float) - 1e-9).all())
+        sig = tr[tr["reason"] == "signal"]
+        n_why = all(len(_json.loads(w)) == WF.TOP_WHY for w in e["entry_why"])
+        ok_why = len(e) > 0.9 * len(tr) and good_side and above and n_why and sig["exit_why"].notna().mean() > 0.9
+    check("ml_wf WHY: every opening decision is explained (forecast on the trade's side, past the entry bar, 3 features); signal exits too",
+          ok_why)
+    check("ml_wf: no VALID trade runs into HOLDOUT, no clock exit, one holdout timeframe by the TRAIN rule",
+          pd.Timestamp(edge["valid"]["last_exit"]) < pd.Timestamp(WF.WINDOWS["holdout"][0], tz="UTC")
+          and "time" not in (edge["valid"].get("exit_mix") or {})
+          and WF.holdout_choice({60: {"tf": 60, "verdict": "PASS", "train_wf_best": {"mean_r": 0.01}},
+                                 240: {"tf": 240, "verdict": "PASS", "train_wf_best": {"mean_r": 0.03}},
+                                 1440: {"tf": 1440, "verdict": "REJECT", "train_wf_best": {"mean_r": 0.09}}}) == 240)
 
 
 if __name__ == "__main__":
