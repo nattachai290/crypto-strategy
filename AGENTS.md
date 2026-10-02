@@ -5,10 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: stop diagnosis, `src/stop_diag.py` (`docs/research/PLAN.md`
-§23): one run on BTCUSDT and one on ETHUSDT. Read-only, no strategy is
-re-tuned.** The candle-at-level round (§22) and the ML line (§19–21) are
-closed.
+**No active work.** The stop diagnosis (§23, BTC Exp 052/053) found the
+entries about a coin flip (BTC slightly worse than random), not
+right-and-shaken-out. The candle round (§22) and the ML line (§19–21) are
+closed. Ask the owner before starting anything new.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The

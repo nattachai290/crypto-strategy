@@ -415,6 +415,28 @@ holdout runs, 5 FAILED, 0 CONFIRMED.
   edge**, and the year splits kill both (BTC 1h: 2023 -0.026, 2024 +0.091;
   ETH 4h: 2023 +0.336 on 33 trades, 2024 +0.022).
 
+## 13. Not wrong-and-unlucky, not right-and-shaken-out: about a coin flip (stop diagnosis)
+
+`PLAN.md` §23, BTC Exp 052/053, ETH Exp 017/018. The tool used every recorded
+VALID trade (BTC 44,057 trades from 138 evaluations; ETH 10,738 from 58). It
+checked whether price, H bars after the fill, was on the trade's side, and
+compared that with random fills that had the same side, stop and hold.
+
+| coin | real right | random right | direction skill (CI by idea family) | right-if-stopped excess |
+|---|---|---|---|---|
+| BTC | 49.0% | 50.5% | **−1.5 pts** [−2.7, −0.5] | +2.5 pts [+1.2, +3.7] |
+| ETH | 49.7% | 50.2% | −0.5 pts [−1.7, +0.8] | +1.2 pts [−0.2, +2.7] |
+
+- **The entries' direction calls are about as good as a coin flip.** BTC is
+  slightly worse than random, mostly because of 15m and a 15m short-breakout
+  cluster. Without 15m it is −0.4 pts.
+- **Stops throw away a little more than random**: about +2.5 pts of stopped
+  trades ended on the right side. That costs something, but the entries have
+  no edge for the stops to protect.
+- **Rule:** wider stops or "anti-fake-out" stop placement cannot fix an entry
+  that is a coin flip. Fix the entry first. Never flip a losing cluster found
+  on VALID.
+
 ## What to do with this
 
 1. **Filter out, don't fit.** Skip ideas with expected `cost_r` > 0.1 R and
