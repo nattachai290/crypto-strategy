@@ -48,11 +48,15 @@ table{border-collapse:collapse;font-size:.85rem;margin-top:6px;width:100%}
 td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
 td.n{text-align:right;font-variant-numeric:tabular-nums}
 code{font-size:.85em;overflow-wrap:anywhere}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.nav a{flex:1 1 140px;text-align:center;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem}
+.nav a:hover{background:var(--bg);color:var(--text)}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--bg);font-weight:600}
 </style>
 </head>
 <body>
 <main>
-<p class="small"><a href="./">← กลับหน้าสรุปผล</a></p>
+<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="equity.html" aria-current="page">📈 กราฟเงินทุน</a></nav>
 <h1>เงินทุน 1,000 USDT ขยับไปทางไหน</h1>
 <p class="sub">กลยุทธ์ 4 ตัวที่ผ่านสอบย่อยจนได้เข้าสอบจริง · เสี่ยงไม้ละ 1% ของพอร์ต · หักค่าธรรมเนียม slippage และ funding แล้ว</p>
 
@@ -69,7 +73,7 @@ code{font-size:.85em;overflow-wrap:anywhere}
 
 <div id="charts"></div>
 
-<p class="small">ที่มา: ไฟล์รายการเทรดใน <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> และ <code>_holdout.csv.gz</code> (คอลัมน์ <code>equity_after</code>) · SOL ใช้บัญชีวิจัย 20,000 USDT จึงย่อสเกลให้เริ่มที่ 1,000 เท่ากัน · กลยุทธ์ตัวที่ 5 (ใช้ทดสอบระบบล็อก) ไม่มีไฟล์รายการเทรดช่วงสอบจริง จึงไม่ได้แสดง</p>
+<p class="small">ที่มา: ไฟล์รายการเทรดใน <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> และ <code>_holdout.csv.gz</code> (คอลัมน์ <code>equity_after</code>) · SOL ใช้บัญชีวิจัย 20,000 USDT จึงย่อสเกลให้เริ่มที่ 1,000 เท่ากัน · holdout ครั้งที่ใช้ทดสอบระบบล็อก (กลยุทธ์ตัวอย่าง ไม่ได้ผ่านการคัดเลือก) ไม่ได้แสดง เพราะไม่มีไฟล์รายการเทรดช่วงสอบจริง</p>
 </main>
 <script>
 const DATA = 
