@@ -1496,3 +1496,180 @@ Every earlier ML round closed trades on a clock.
 
 ### Verdict
 Pending the research agent's single run.
+
+---
+
+## Exp 016 - ML decides entry AND exit, no time limit (PLAN.md section 27): REJECT, 5 of 7 gates
+
+**Date:** 2026-10-02
+**Status:** complete. **One run, exactly as pre-registered in Exp 015.** No value
+in `src/ml_hold.py` was changed, no variant was tried, `--final` was not run, no
+holdout file was created and HOLDOUT was never read. **No new evaluation row** -
+this tool writes only `results/_multi/ml_hold/`.
+
+**Session state.** `git pull` up to date · `pip install -r requirements.txt` all
+present · `test_engine.py` -> **ALL CHECKS PASSED**, including **test 23**: the
+hysteresis policy, the causal entry bar, the simulator matching `run_backtest`
+trade for trade, a planted edge -> PASS, and noise -> REJECT with the timing gate
+failing. **The 20-coin 1h cache from §20-21 was already complete (40 files), so
+no download was needed.**
+
+### Verdict
+
+**`REJECT`. Gates failed: `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`,
+`breadth>=0.5`, `both_legs>0`.**
+
+| gate | needed | measured | met |
+|---|---|---|---|
+| TRAIN OOF mean | > 0 | **+0.0379** (2,436 trades) | **yes** |
+| VALID trades | >= 300 | **1,940** | **yes** |
+| VALID net mean | > 0 | **-0.0132** | no |
+| weekly-block 95% CI lower bound | > 0 | **-0.1216** (CI [-0.1216, +0.0983]) | no |
+| net mean at cost x1.5 | > 0 | **-0.0254** | no |
+| timing vs shifted p95 | above | **+0.0050 vs p95 +0.0037** | **yes** |
+| breadth | >= 0.5 | **8 of 20 = 0.40** | no |
+| both legs | > 0 | **long -0.1316 / short +0.0245** | no |
+
+**TRAIN chose** (`num_leaves` 7, `min_data_in_leaf` 1000, `rounds` 150), entry
+quantile **q_in 0.9**, exit mode **flip** (exit when the forecast crosses zero).
+
+### VALID in full
+
+| | value |
+|---|---|
+| trades | **1,940** over 20 coins |
+| **net mean R** | **-0.0132** |
+| **95% weekly-block CI** | **[-0.1216, +0.0983]** |
+| **gross_r** | **+0.0090** (cost_r 0.0222, i.e. **cost is 2.5x the gross**) |
+| **long leg** | **-0.1316** (469 trades) |
+| **short leg** | **+0.0245** (1,471 trades) |
+| **average hold** | **56.9 h = 9.5 days** (median 36 h = 6.0 d, p90 128 h = 21.3 d, max 536 h = 89.3 d) |
+| **exit mix** | **signal 85.3%, stop 13.8%, eod 0.9%** |
+| **timing** (held return per hour in ATRs, before stops and costs) | **model +0.0050** |
+| **shifted median / p95** | **+0.0003 / +0.0037** |
+| time in market | 31.8% |
+| per year | **2023 -0.0792, 2024 +0.0564** |
+| last VALID exit | 2024-12-31 23:00 UTC |
+
+**Exit mix with the mean of each kind**, from `trades_valid.csv.gz` (1,940 rows):
+
+| exit | n | share | mean net R | mean gross R |
+|---|---|---|---|---|
+| `signal` (the model closed it) | 1,655 | **85.3%** | **+0.1461** | +0.1681 |
+| `stop` (8 ATR protective) | 267 | 13.8% | -1.0175 | -0.9935 |
+| `eod` (period end) | 18 | 0.9% | +0.2316 | +0.2453 |
+
+**Per coin:**
+
+| coin | trades | net R | avg hold h | timing | shifted median | shifted p95 |
+|---|---|---|---|---|---|---|
+| ETCUSDT | 89 | **+0.0977** | 63.0 | +0.0199 | +0.0036 | +0.0177 |
+| EOSUSDT | 93 | +0.0403 | 58.0 | +0.0103 | +0.0037 | +0.0177 |
+| DOGEUSDT | 89 | +0.0337 | 63.7 | +0.0131 | -0.0012 | +0.0125 |
+| AVAXUSDT | 96 | +0.0293 | 56.6 | +0.0130 | +0.0001 | +0.0187 |
+| ALGOUSDT | 96 | +0.0129 | 54.8 | +0.0079 | +0.0024 | +0.0161 |
+| CRVUSDT | 101 | +0.0099 | 56.4 | +0.0077 | +0.0035 | +0.0144 |
+| ATOMUSDT | 93 | +0.0090 | 57.6 | +0.0110 | +0.0063 | +0.0174 |
+| DOTUSDT | 98 | +0.0058 | 58.9 | +0.0101 | +0.0039 | +0.0178 |
+| XTZUSDT | 99 | -0.0015 | 54.0 | +0.0062 | +0.0021 | +0.0135 |
+| THETAUSDT | 101 | -0.0032 | 59.0 | +0.0050 | +0.0003 | +0.0129 |
+| ETHUSDT | 107 | -0.0095 | 54.1 | +0.0036 | -0.0016 | +0.0134 |
+| ADAUSDT | 98 | -0.0125 | 53.6 | +0.0083 | -0.0004 | +0.0144 |
+| MATICUSDT | 81 | -0.0236 | 64.0 | +0.0018 | +0.0053 | +0.0216 |
+| AXSUSDT | 95 | -0.0259 | 57.4 | +0.0039 | +0.0020 | +0.0168 |
+| BCHUSDT | 96 | -0.0449 | 57.4 | -0.0006 | -0.0014 | +0.0146 |
+| AAVEUSDT | 94 | -0.0495 | 58.4 | -0.0023 | -0.0011 | +0.0126 |
+| BNBUSDT | 105 | -0.0504 | 54.7 | -0.0009 | -0.0028 | +0.0122 |
+| BTCUSDT | 102 | -0.0708 | 55.5 | -0.0062 | -0.0091 | +0.0096 |
+| RUNEUSDT | 104 | -0.0792 | 51.0 | -0.0036 | -0.0032 | +0.0129 |
+| LINKUSDT | 103 | **-0.1041** | 53.9 | -0.0074 | -0.0019 | +0.0119 |
+
+8 of 20 coins net positive; 16 of 20 above their own shifted median; **8 of 20
+meet both** (the breadth gate needs 0.5). Trade counts are tight - 81 to 107 per
+coin, so no coin is carrying or sinking the pooled number by size.
+
+**Top features by gain:** `btc_vol_168` 303,126 · `mkt_ret_168` 239,755 ·
+`btc_ret_168` 136,066 · `btc_ret_24` 124,816 · `weekday` 95,569 ·
+`btc_ret_72` 87,722 · `mkt_ret_72` 55,486 · `mkt_ret_24` 49,125 ·
+`breadth_24` 45,598 · `vol_ratio` 34,284 · `taker_ratio_24` 15,485 ·
+`ema_dist_200` 13,117.
+
+### What the numbers say
+
+**1. The exit half of the idea works, and the entry half does not.** Trades the
+model closed on its own signal average **+0.1461 net R over 1,655 trades - 85.3%
+of all exits**, while the 267 protective stops average -1.0175 (barely worse than
+the -1 of the stop, so the 8-ATR stop is not the problem either). **The model
+knows how to leave a position in profit.** The net mean is still **-0.0132**
+because the gross over the whole book is only **+0.0090 R** while cost is
+**0.0222 R - the cost is 2.5x the gross.** Per `LESSONS.md` §1, again: a real
+structure, smaller than the price of harvesting it. **This round removed the
+clock and still could not make gross exceed cost.**
+
+**2. Long holds make cost cheap, and that is the one real gain.** Average hold
+**9.5 days** (median 6.0, max 89.3) gives `cost_r` of **0.0222 R per trade**,
+against 0.06-0.10 R for the 1h and 4h rules of §22 and §25 and about 0.09 R for
+the 4-day hold of §21. **The most expensive thing about every earlier ML round -
+churning in and out - is gone.** It was not enough, but §21's cost arithmetic
+showed the arithmetic was going the wrong way and here it went the right way.
+
+**3. The model is short-biased and its long side loses badly.** From
+`desired_valid.csv.gz` (87,050 decisions): **59,324 flat (68.1%), 23,788 short
+(27.3%), only 3,938 long (4.5%).** So the book is short three quarters of its
+trades - **1,471 short against 469 long** - and **the long leg is -0.1316 while
+the short leg is only +0.0245**. **`both_legs>0` fails, and the reason is not a
+small negative on one side: the long side is 4.5% of the book and loses 5x more
+than the profitable side gains.** §2's long-bias story in reverse: a model that
+almost never goes long, in a period when longs paid, is on the wrong side of the
+one bet that mattered.
+
+**4. The timing gate passes, and it is the first time that has happened for ML in
+this project.** Held return per hour in ATRs: **model +0.0050 against a shifted
+median of +0.0003 and a shifted p95 of +0.0037** - above the 95th percentile of
+200 circular time-shifts per coin, on a control built for variable holds. **So
+the model's desired-position path does carry timing information.** It is just
+**+0.0013 R/hour above the p95**, and `LESSONS.md` §1 is not interested in
++0.0013: converting it to R gives the +0.0090 gross that cost then eats. **A gate
+that passes on the timing statistic and fails on the money is the clearest
+statement of this project's central problem that has yet been written down.**
+
+**5. TRAIN OOF was positive (+0.0379) and VALID is negative (-0.0132), which is
+§4 exactly.** The out-of-fold run over 3 purged expanding folds picked a cell
+worth +0.0379 R per trade on 2,436 trades; the frozen cell on VALID is -0.0132.
+`LESSONS.md` §4's finding - TRAIN barely picks winners once cost is taken out -
+now also holds for a model that owns the exit. **Note the shape of the OOF table:
+all 6 cells of settings 0 and 1 (7 leaves) are positive or near zero (+0.0004 to
++0.0379) while all 12 cells of settings 2 and 3 (31 leaves) are negative
+(-0.0136 to -0.0366). The only cells that work are the most heavily regularised
+ones, i.e. the ones closest to "no model at all".**
+
+**6. The 4h clock is being used, so the model trades a lot, and it is carried by
+2024.** Per year **2023 -0.0792, 2024 +0.0564**, and at cost x1.5 **2023
+-0.0922, 2024 +0.0451**. `LESSONS.md` §2 again: what survives is the bull year.
+
+**7. Breadth 8 of 20, and the four worst coins are not small or illiquid.** LINK
+-0.1041 (103 trades), RUNE -0.0792 (104), BTC -0.0708 (102), BNB -0.0504 (105) -
+all with ~100 trades. The best, ETC +0.0977, is +0.0099 above its own p95, i.e.
+**the spread across coins is an order of magnitude and looks like noise in the
+model's forecasts, not a size effect.**
+
+### Verdict
+
+**`REJECT`, 5 of 7 gates failed. Per `PLAN.md` §27 and the pre-registration, ML on
+this data is closed: no v2, no re-run with other values, no `--final`.** The
+holdout was never opened on this run and no holdout file exists.
+
+**The honest one-paragraph version for the owner: giving the model the exit as
+well as the entry did not work either, and the reason is unusually clear. Trades
+the model closed itself average +0.146 R over 1,655 trades, so the exit side is
+fine; the book still lands at -0.0132 R net because gross is only +0.0090 R while
+cost is 0.0222 R - cost is two and a half times the gross. Long holds (9.5 days
+on average) did cut cost to roughly a third of what the earlier ML rounds paid,
+so that part worked, and the new time-shift control was passed: the model's
+timing of +0.0050 per hour in ATRs is above the 95th percentile of 200 shifted
+copies (+0.0037), which is the first time an ML timing gate has passed here. It
+is worth +0.0013 an hour, and that is what the cost eats. The model went short on
+27.3% of its decisions and long on only 4.5%, and the long leg is -0.132 against
++0.025 on the short. TRAIN out-of-fold was +0.0379 and VALID is -0.0132, and the
+only out-of-fold cells that worked were the most heavily regularised ones. The
+holdout stays untouched.**

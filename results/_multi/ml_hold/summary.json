@@ -1,0 +1,544 @@
+{
+ "coins_n": 20,
+ "step_hours": 4,
+ "horizon_h": 24,
+ "stop_atr": 8.0,
+ "setting": {
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "rounds": 150
+ },
+ "q_in": 0.9,
+ "exit_mode": "flip",
+ "oof_best": {
+  "setting": 0,
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "rounds": 150,
+  "q_in": 0.9,
+  "exit": "flip",
+  "trades": 2436,
+  "mean_r": 0.03785092553051622
+ },
+ "oof_table": [
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 6137,
+   "mean_r": 0.008121387435199823
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 7824,
+   "mean_r": 0.006613752151638077
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 4285,
+   "mean_r": 0.030875728353493597
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 5579,
+   "mean_r": 0.017742868910493755
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 2436,
+   "mean_r": 0.03785092553051622
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 2970,
+   "mean_r": 0.022668454152211477
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 6797,
+   "mean_r": 0.000391370196542053
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 8565,
+   "mean_r": 0.002580362943619622
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 4902,
+   "mean_r": 0.0056957752610302175
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 6226,
+   "mean_r": 0.005138141910522062
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 2666,
+   "mean_r": 0.007468284713662598
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 3239,
+   "mean_r": 0.014733295495053762
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 6861,
+   "mean_r": -0.018832587699513
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 8544,
+   "mean_r": -0.013621777327127882
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 4825,
+   "mean_r": -0.02644047084414149
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 6002,
+   "mean_r": -0.019974991843648815
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 2474,
+   "mean_r": -0.022530584301835282
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 2871,
+   "mean_r": -0.018121978315869185
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 7144,
+   "mean_r": -0.0304622020361887
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 8866,
+   "mean_r": -0.017591881865280726
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 5039,
+   "mean_r": -0.028824322908411987
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 6303,
+   "mean_r": -0.014453712246767952
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 2666,
+   "mean_r": -0.03663866962944187
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 3192,
+   "mean_r": -0.018334497961905092
+  }
+ ],
+ "valid": {
+  "trades": 1940,
+  "mean_r": -0.01321032049938165,
+  "ci_lo": -0.12162911892051355,
+  "ci_hi": 0.09833967090433521,
+  "gross_r": 0.008974967040696676,
+  "long_r": -0.1316207500553364,
+  "short_r": 0.024542562887255183,
+  "exit_mix": {
+   "signal": 0.853,
+   "stop": 0.138,
+   "eod": 0.009
+  },
+  "avg_bars": 56.93041237113402,
+  "avg_hold_h": 56.93041237113402,
+  "per_year": {
+   "2023": -0.07923092414391203,
+   "2024": 0.05644701131200844
+  }
+ },
+ "valid_stress": {
+  "trades": 1940,
+  "mean_r": -0.02537609015726233,
+  "ci_lo": -0.13369816426896955,
+  "ci_hi": 0.08615284009314735,
+  "gross_r": 0.009416998867739506,
+  "long_r": -0.14364930861682032,
+  "short_r": 0.012333046115703471,
+  "exit_mix": {
+   "signal": 0.853,
+   "stop": 0.138,
+   "eod": 0.009
+  },
+  "avg_bars": 56.92938144329897,
+  "avg_hold_h": 56.92938144329897,
+  "per_year": {
+   "2023": -0.09216712544532085,
+   "2024": 0.0450941123288672
+  }
+ },
+ "timing": 0.00502470137752407,
+ "shift_median": 0.0002532990163335879,
+ "shift_p95": 0.0036967775898071147,
+ "time_in_market": 0.31829799943710835,
+ "per_coin": {
+  "BTCUSDT": {
+   "trades": 102,
+   "mean_r": -0.07081835291572024,
+   "timing": -0.006187468292878935,
+   "shift_median": -0.009147437976094821,
+   "shift_p95": 0.009567387046378523,
+   "avg_hold_h": 55.450980392156865
+  },
+  "ETHUSDT": {
+   "trades": 107,
+   "mean_r": -0.009549793230242387,
+   "timing": 0.003588468325820406,
+   "shift_median": -0.0016323035776037234,
+   "shift_p95": 0.013442589042597946,
+   "avg_hold_h": 54.14018691588785
+  },
+  "DOGEUSDT": {
+   "trades": 89,
+   "mean_r": 0.03369328275274399,
+   "timing": 0.013062725551370691,
+   "shift_median": -0.0011867656204870595,
+   "shift_p95": 0.012474979802127624,
+   "avg_hold_h": 63.662921348314605
+  },
+  "ADAUSDT": {
+   "trades": 98,
+   "mean_r": -0.012489368270085021,
+   "timing": 0.008272052982981056,
+   "shift_median": -0.000396847331582461,
+   "shift_p95": 0.014407771757888679,
+   "avg_hold_h": 53.61224489795919
+  },
+  "BNBUSDT": {
+   "trades": 105,
+   "mean_r": -0.05037134607117683,
+   "timing": -0.0008967664413902782,
+   "shift_median": -0.002773918194457505,
+   "shift_p95": 0.012176050826796549,
+   "avg_hold_h": 54.714285714285715
+  },
+  "AVAXUSDT": {
+   "trades": 96,
+   "mean_r": 0.029306675750669104,
+   "timing": 0.013049414448627016,
+   "shift_median": 0.00011276123277321566,
+   "shift_p95": 0.01869155917259602,
+   "avg_hold_h": 56.59375
+  },
+  "MATICUSDT": {
+   "trades": 81,
+   "mean_r": -0.023628085891317475,
+   "timing": 0.0017560927993761695,
+   "shift_median": 0.005269002175691263,
+   "shift_p95": 0.021582894067995087,
+   "avg_hold_h": 64.01234567901234
+  },
+  "AXSUSDT": {
+   "trades": 95,
+   "mean_r": -0.025909261463278304,
+   "timing": 0.003944564573839526,
+   "shift_median": 0.0020004645213790207,
+   "shift_p95": 0.016827795673110418,
+   "avg_hold_h": 57.43157894736842
+  },
+  "ETCUSDT": {
+   "trades": 89,
+   "mean_r": 0.09772003836296438,
+   "timing": 0.019859981138781815,
+   "shift_median": 0.003593171680417143,
+   "shift_p95": 0.01768823814460125,
+   "avg_hold_h": 62.95505617977528
+  },
+  "DOTUSDT": {
+   "trades": 98,
+   "mean_r": 0.005761883984414543,
+   "timing": 0.010076955516571211,
+   "shift_median": 0.0038919903643079025,
+   "shift_p95": 0.017828983238079618,
+   "avg_hold_h": 58.88775510204081
+  },
+  "LINKUSDT": {
+   "trades": 103,
+   "mean_r": -0.10408870634611313,
+   "timing": -0.0073711606490483444,
+   "shift_median": -0.0018664556411581166,
+   "shift_p95": 0.011875481966380096,
+   "avg_hold_h": 53.9126213592233
+  },
+  "ATOMUSDT": {
+   "trades": 93,
+   "mean_r": 0.009048193910348367,
+   "timing": 0.010967648380668743,
+   "shift_median": 0.006319127291719121,
+   "shift_p95": 0.01736825406738056,
+   "avg_hold_h": 57.61290322580645
+  },
+  "EOSUSDT": {
+   "trades": 93,
+   "mean_r": 0.04033535003270388,
+   "timing": 0.010262499355183046,
+   "shift_median": 0.00368148403699968,
+   "shift_p95": 0.017725812363508838,
+   "avg_hold_h": 58.01075268817204
+  },
+  "CRVUSDT": {
+   "trades": 101,
+   "mean_r": 0.009874516116496333,
+   "timing": 0.007651454437482189,
+   "shift_median": 0.0034973362398514844,
+   "shift_p95": 0.014436578900919293,
+   "avg_hold_h": 56.415841584158414
+  },
+  "BCHUSDT": {
+   "trades": 96,
+   "mean_r": -0.04487250358908804,
+   "timing": -0.0005941032165043574,
+   "shift_median": -0.0014437697909172945,
+   "shift_p95": 0.014592977882170639,
+   "avg_hold_h": 57.354166666666664
+  },
+  "AAVEUSDT": {
+   "trades": 94,
+   "mean_r": -0.0495399096974758,
+   "timing": -0.0022789455798562478,
+   "shift_median": -0.0011373295908098013,
+   "shift_p95": 0.012622932296933455,
+   "avg_hold_h": 58.43617021276596
+  },
+  "ALGOUSDT": {
+   "trades": 96,
+   "mean_r": 0.012894153508832351,
+   "timing": 0.007853793956112992,
+   "shift_median": 0.0024372519430958684,
+   "shift_p95": 0.0161498406090617,
+   "avg_hold_h": 54.802083333333336
+  },
+  "RUNEUSDT": {
+   "trades": 104,
+   "mean_r": -0.0791803255570305,
+   "timing": -0.003566832169763105,
+   "shift_median": -0.003194147789399348,
+   "shift_p95": 0.012866223246985947,
+   "avg_hold_h": 51.03846153846154
+  },
+  "XTZUSDT": {
+   "trades": 99,
+   "mean_r": -0.0015071215299276525,
+   "timing": 0.006208880234268556,
+   "shift_median": 0.002081607470203351,
+   "shift_p95": 0.01347121244301021,
+   "avg_hold_h": 54.02020202020202
+  },
+  "THETAUSDT": {
+   "trades": 101,
+   "mean_r": -0.00323401688717737,
+   "timing": 0.004974577990690973,
+   "shift_median": 0.00025096849419251857,
+   "shift_p95": 0.012923470079107727,
+   "avg_hold_h": 59.039603960396036
+  }
+ },
+ "breadth": {
+  "eligible": 20,
+  "beat": [
+   "DOGEUSDT",
+   "AVAXUSDT",
+   "ETCUSDT",
+   "DOTUSDT",
+   "ATOMUSDT",
+   "EOSUSDT",
+   "CRVUSDT",
+   "ALGOUSDT"
+  ],
+  "share": 0.4
+ },
+ "valid_last_exit": "2024-12-31 23:00:00+00:00",
+ "verdict": "REJECT",
+ "gates_failed": [
+  "valid_mean>0",
+  "valid_ci_lo>0",
+  "stress_mean>0",
+  "breadth>=0.5",
+  "both_legs>0"
+ ],
+ "top_features_gain": [
+  [
+   "btc_vol_168",
+   303125.5
+  ],
+  [
+   "mkt_ret_168",
+   239754.6
+  ],
+  [
+   "btc_ret_168",
+   136066.4
+  ],
+  [
+   "btc_ret_24",
+   124816.0
+  ],
+  [
+   "weekday",
+   95569.2
+  ],
+  [
+   "btc_ret_72",
+   87722.4
+  ],
+  [
+   "mkt_ret_72",
+   55485.8
+  ],
+  [
+   "mkt_ret_24",
+   49124.8
+  ],
+  [
+   "breadth_24",
+   45598.4
+  ],
+  [
+   "vol_ratio",
+   34284.1
+  ],
+  [
+   "taker_ratio_24",
+   15485.2
+  ],
+  [
+   "ema_dist_200",
+   13117.4
+  ]
+ ]
+}
