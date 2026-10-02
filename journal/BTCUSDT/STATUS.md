@@ -1,5 +1,5 @@
 > **ML entry model done (§19, Exp 046): REJECT, 5 of 6 gates failed. `--final`
-> not run.** A LightGBM model on 26,000 TRAIN rows, 30 causal features and a
+> not run.** A LightGBM model on 26,000 TRAIN rows, 27 causal features (corrected, Exp 047) and a
 > net-of-cost label **cannot time 1h entries better than chance on this coin** —
 > and its top feature is volatility.
 >
@@ -32,7 +32,9 @@
 > 2. **The sequential number is the tradable one and it is worse:** 850 trades,
 >    **CAGR −15.4%, maxDD 44.3%**. The every-signal figure is the research
 >    measurement; one position at a time is what an account would face.
-> 3. **Beating the random control and still losing is a gate working, not a
+> 3. _Corrected in BTC Exp 047: the model did **not** beat the random control
+>    (−0.0299 against a p95 of +0.0020; `beats_random_p95` is in the failed list)._
+>    **Beating the random control and still losing is a gate working, not a
 >    result.** The model clears the drift-adjusted p95 by 0.028 R and is still
 >    REJECT. The control removed the "a bull market did this" objection; the
 >    other four gates are what refuse the strategy.

@@ -1322,3 +1322,26 @@ walk-forward thresholds, and the top feature is volatility on both.** The label
 was already net of fees, slippage and funding, so the model was *asked* to find
 bars worth more than the cost; it returned bars worth +0.048 and +0.075 R gross
 and nothing after costs.
+
+---
+
+## Exp 014 - Review of Exp 010 (ML entry on ETH, planner): verdict stands, two statements corrected
+
+**Date:** 2026-10-02
+**Status:** complete. REJECT stands. The holdout is untouched.
+
+**Note on numbering.** **Exp 010** was already used for the metrics round
+(see BTC `LESSONS.md` §8, "ETH Exp 009/010"). The ML results entry is the
+second Exp 010 in this file.
+
+**Corrections:**
+1. **"Why the plan's 0.05% alt slippage matters" is wrong for this run.**
+   `ml_entry.py` uses the normal 0.02% slippage on ETH. The 0.05% alt slippage
+   exists only in `ml_pool.py`, and there it applies to coins other than BTC
+   and ETH. The higher gross with no better net cannot be blamed on slippage.
+   "ETH's OOF curve sits lower because of higher cost per R" is a guess that
+   was not measured.
+2. **"Both clear the drift-adjusted bar" is wrong.** Only ETH cleared it:
+   +0.0107 against a p95 of −0.0107. BTC did not (BTC Exp 047).
+
+As in BTC Exp 047, the feature ranking is split counts, not gain.

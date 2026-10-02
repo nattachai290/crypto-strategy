@@ -843,3 +843,64 @@ for, and `PLAN.md` §20 reserves the holdout for a PASS.
 
 **Per `PLAN.md` §20: `--final` is not run. No holdout is used and none is
 warranted.** No new feature, parameter, coin or exit is tried after a result.
+
+---
+
+## Exp 006 - Review of Exp 005 (pooled ML model, planner): REJECT stands; the control flatters the model, and three statements corrected
+
+**Date:** 2026-10-02
+**Status:** complete. Record integrity checked: no `src/` change, no holdout
+lock in `results/_multi/ml_pool/`, and `--final` was correctly not run. The
+numbers in the entry match `summary.json`.
+
+**1. The control is weaker than it looks, so read "beats random" with care
+(the planner's design, not the runner's).** The time-shift control keeps the
+model's long/short counts and clustering. It does **not** keep the market
+conditions the model chose to trade in.
+- The label is net R with a 3-ATR stop, so cost in R is cost / (3 × ATR%).
+  Cost per R is lowest in high-volatility weeks.
+- `vol_168` is the model's most-used feature on every run.
+- A model that only learned "trade when volatility is high" would pay less cost
+  per R than its shifted copies, which land in average weeks. It would then
+  beat the control with no directional skill at all.
+- That fits the control's numbers. The pooled shift mean is −0.148 R and the
+  per-coin medians run −0.04 to −0.15, both well below this exit's typical
+  cost. That is what moving trades into calmer, costlier-per-R weeks would do.
+- The same mechanism can explain the **OOF curve rising with the threshold**:
+  a higher predicted R may mean higher volatility, so a smaller cost per R,
+  rather than a better direction.
+
+This was not measured. It needs the gross R of the shifted copies, and the run
+did not record it. Until it is measured, "beats its control" and "the OOF curve
+is monotone up" are **not** evidence of timing skill. A future control should
+shift only inside bars of similar volatility, or gate on gross R. **This does
+not change the verdict, which fails on the CI anyway.**
+
+**2. Corrections to Exp 005:**
+- **"Split gain".** `feature_importance()` returns split counts, not gain.
+  `weekday` being "top" means the trees split on it often. It does not mean it
+  predicts. Do **not** start a weekday idea from this: that is choosing a
+  hypothesis after looking at VALID (AGENTS.md §3 rule 3).
+- **"Supported on precision" contradicts its own numbers.** The CI half-width
+  grew from ±0.07–0.08 R (one coin) to ±0.10 R (20 coins), so precision got
+  worse. 20 crypto coins move together in the same weeks, and the CI resamples
+  weeks. 34,467 trades are about 104 independent weeks, not 34,467
+  independent draws.
+- **"The only thing standing between this and a PASS is sampling precision"**
+  overstates it. A CI of [−0.037, +0.170] means a true mean of zero fits the
+  data. Breadth sat **exactly** on its minimum (10 of 20). At cost ×1.5 the
+  mean is +0.016 and the short leg is −0.005.
+
+**3. What not to do next.** VALID 2023–24 has now been seen by this model.
+None of the following may be tried on the same data:
+- a rerun with a new threshold, coin set, feature list or control;
+- a "v2" that keeps the 10 coins that worked.
+
+The holdout stays reserved for a PASS. The only clean ways to learn more are:
+- **(a)** a new, pre-registered question whose design does not depend on what
+  was seen here; or
+- **(b)** a forward test on data after 2026-08, which nothing has seen. It
+  needs months of new bars, not weeks.
+
+**Verdict.** REJECT. Across the project there is still no holdout CONFIRMED.
+The ML stage (§19–20) is closed.

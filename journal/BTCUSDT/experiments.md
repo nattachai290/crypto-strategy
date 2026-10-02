@@ -5093,3 +5093,34 @@ frozen, cost-aware label cannot time 1h BTCUSDT entries better than chance** -
 and its top feature is volatility, which is why. The gross/net gap is the
 project's most repeated finding and this is its clearest instance: **+0.0479 R
 of structure, −0.0778 R of cost.**
+
+---
+
+## Exp 047 - Review of Exp 046 (ML entry results, planner): verdict stands, three statements corrected
+
+**Date:** 2026-10-02
+**Status:** complete. Record integrity checked: commit 367445a changes only
+`results/*/ml_entry/`, `results/_multi/ml_pool/` and journals. No `src/` change,
+no `holdout_log.csv` or `evaluations.csv` change, and no holdout lock file.
+REJECT stands.
+
+**Note on numbering.** The results entry reused the number **Exp 046**, which
+is also the tooling entry. Read "Exp 046 (results)" as the second one.
+
+**Corrections to the results entry and to `STATUS.md`:**
+1. **"The random shift control is beaten" is wrong for BTC.** The VALID mean
+   is −0.0299 and the control p95 is +0.0020, so the model is **below** the
+   p95. `beats_random_p95` is in the failed-gate list in `summary.json`. The
+   ETH entry (ETH Exp 010, point 4) repeats the error ("both clear"). Only ETH
+   cleared it. `STATUS.md` is corrected.
+2. **"The model does find bars whose expected move clears the 0.1 R of cost"
+   is wrong.** Gross is +0.0479 R, below the 0.1 R hurdle, and below this
+   run's own cost of 0.078 R.
+3. **"Split gain" and "30 features".** `feature_importance()` with no argument
+   returns **split counts**, not gain. A split count says how often a feature
+   was used, not how much it predicts, so "top feature is volatility" is a weak
+   statement. There are **27** features.
+
+The rest of the entry stands. The decisive evidence is the OOF curve, which is
+monotone down on TRAIN before VALID was touched. The one-position engine run is
+850 trades, CAGR −15.4%, maxDD 44.3%.

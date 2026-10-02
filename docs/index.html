@@ -80,11 +80,11 @@ code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
 <main>
 
 <h1>ผลวิจัยกลยุทธ์เทรดคริปโต</h1>
-<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 1 ต.ค. 2026</p>
+<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 2 ต.ค. 2026</p>
 
 <div class="card hero">
   <div class="big">สรุปสั้นๆ: ยังไม่เจอวิธีไหนที่ทำกำไรได้จริง</div>
-  <p>ทดสอบไปแล้ว 440 รายการ บน 4 เหรียญ และอีก 3 แนวทางแยก ได้แก่ ถือตามเทรนด์รายวัน หมุนเหรียญ และทดลองจุดออกไม้ มี 5 กลยุทธ์ที่ดูดีพอจนได้เข้า "สอบจริง" ทั้ง 5 ตัวสอบตก ผลที่ดูดีตอนแรกมาจากโชค หรือจากตลาดช่วงขาขึ้นเอง ไม่ได้มาจากฝีมือของกลยุทธ์</p>
+  <p>ทดสอบไปแล้ว 440 รายการ บน 4 เหรียญ และอีก 3 แนวทางแยก ได้แก่ ถือตามเทรนด์รายวัน หมุนเหรียญ ทดลองจุดออกไม้ และให้ AI (LightGBM) หัดเลือกจังหวะเข้า มี 5 กลยุทธ์ที่ดูดีพอจนได้เข้า "สอบจริง" ทั้ง 5 ตัวสอบตก ผลที่ดูดีตอนแรกมาจากโชค หรือจากตลาดช่วงขาขึ้นเอง ไม่ได้มาจากฝีมือของกลยุทธ์</p>
   <p class="muted small" style="margin:0">ผลลบแบบนี้ก็มีค่า เพราะทำให้รู้ว่าทางไหนไม่ต้องเสียเงินไปลองจริง</p>
 </div>
 
@@ -92,7 +92,7 @@ code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
   <div class="stat"><div class="n">440</div><div class="l">รายการที่ทดสอบ (BTC, ETH, SOL, BNB)</div></div>
   <div class="stat"><div class="n">5</div><div class="l">กลยุทธ์ที่ได้เข้าสอบจริง</div></div>
   <div class="stat"><div class="n" style="color:var(--bad)">0</div><div class="l">ที่สอบจริงผ่าน</div></div>
-  <div class="stat"><div class="n" style="color:var(--wait)">2</div><div class="l">งานที่กำลังรอผล (ML)</div></div>
+  <div class="stat"><div class="n">+0.06</div><div class="l">R ที่ดีที่สุดของ ML (รวม 20 เหรียญ) แต่ยังแยกจากโชคไม่ได้</div></div>
 </div>
 
 <h2>วิธีตัดสินว่า "ใช้ได้จริง" (เหมือนสอบ 3 รอบ)</h2>
@@ -147,15 +147,30 @@ code{font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:4px}
   <p class="small muted" style="margin:0">ที่มา: <code>journal/BTCUSDT/allocation.md</code>, <code>journal/ETHUSDT/allocation.md</code></p>
 </div></div>
 
-<h2>ตอนนี้กำลังทำอะไร</h2>
-<div class="card" style="border-left:6px solid var(--wait)">
-  <h3>ให้ AI (LightGBM) หัดเลือกจังหวะเข้า <span class="tag t-wait">รอผล</span></h3>
-  <p>โมเดลดูข้อมูล 27 อย่าง เช่น ราคาย้อนหลัง ความผันผวน รูปแท่งเทียน volume และ funding แล้วทำนายว่าถ้าเข้าตอนนี้ หลังหักค่าธรรมเนียมจะได้กี่ R ถ้าทำนายว่าคุ้มค่อยเข้า</p>
-  <ul style="margin:0 0 8px;padding-left:20px">
-    <li><b>รอบที่ 1:</b> เทรนแยกทีละเหรียญ BTC และ ETH (<code>src/ml_entry.py</code>)</li>
-    <li><b>รอบที่ 2:</b> เทรนรวม 20 เหรียญ ได้ข้อมูลมากขึ้นราว 20 เท่า และต้องผ่านอย่างน้อยครึ่งหนึ่งของเหรียญ (<code>src/ml_pool.py</code>)</li>
+<h2>ผล AI (LightGBM) เลือกจังหวะเข้า</h2>
+<div class="card" style="border-left:6px solid var(--bad)">
+  <h3>ไม่ผ่านทั้ง 3 แบบ <span class="tag t-bad">ไม่ผ่าน</span></h3>
+  <p>โมเดลดูข้อมูล 27 อย่าง แล้วทำนายว่าถ้าเข้าตอนนี้ หลังหักค่าธรรมเนียมจะได้กี่ R ถ้าทำนายว่าคุ้มค่อยเข้า</p>
+  <div class="scroll"><table class="tbl">
+    <tr><th>แบบ</th><th style="text-align:right">จำนวนไม้</th><th style="text-align:right">R เฉลี่ย</th><th style="text-align:right">ช่วงที่น่าจะเป็นจริง (95%)</th></tr>
+    <tr><td>BTC อย่างเดียว</td><td class="num">12,994</td><td class="num" style="color:var(--bad)">−0.030</td><td class="num">−0.101 ถึง +0.039</td></tr>
+    <tr><td>ETH อย่างเดียว</td><td class="num">13,266</td><td class="num">+0.011</td><td class="num">−0.056 ถึง +0.084</td></tr>
+    <tr><td>เทรนรวม 20 เหรียญ</td><td class="num">34,467</td><td class="num" style="color:var(--good)">+0.060</td><td class="num">−0.037 ถึง +0.170</td></tr>
+  </table></div>
+  <ul style="margin:12px 0 8px;padding-left:20px">
+    <li><b>เทรนแยกเหรียญ:</b> ยิ่งโมเดลมั่นใจ ยิ่งขาดทุนหนัก ถ้าถือทีละไม้จริงบน BTC ขาดทุนปีละ 15% และพอร์ตเคยลงสูงสุด 44%</li>
+    <li><b>เทรนรวม 20 เหรียญ:</b> ใกล้ผ่านที่สุดเท่าที่เคยมีมา แต่ช่วงที่น่าจะเป็นจริงยังครอบคลุม 0 แปลว่ายังแยกไม่ออกว่าเป็นฝีมือหรือโชค และกำไรที่เห็นอาจมาจากการ "เลือกเทรดตอนตลาดผันผวน ซึ่งค่าธรรมเนียมคิดเป็น R ได้ถูกกว่า" ไม่ใช่การทายทิศทางถูก</li>
   </ul>
-  <p class="small muted" style="margin:0">ทั้งสองรอบต้องชนะ "สัญญาณชุดเดียวกันที่ถูกเลื่อนเวลาแบบสุ่ม" ด้วย ซึ่งเป็นเกณฑ์ที่เข้มที่สุดที่โปรเจกต์นี้เคยใช้ ความหวังยังต่ำ เพราะทุกรอบที่ผ่านมาพบว่ารูปแบบในกราฟ 1 ชั่วโมงมีขนาดเล็กกว่าค่าธรรมเนียม</p>
+  <p class="small muted" style="margin:0">ห้ามปรับแต่งแล้วรันซ้ำบนข้อมูลชุดเดิม เพราะจะกลายเป็นการจูนให้เข้ากับข้อสอบ · ที่มา: <code>journal/*/ml_entry.md</code>, <code>journal/_multi/ml_pool.md</code></p>
+</div>
+
+<h2>ต่อจากนี้</h2>
+<div class="card" style="border-left:6px solid var(--wait)">
+  <p>ยังไม่มีงานที่ค้างอยู่ ทางที่ยังเปิดอยู่มีสองทาง:</p>
+  <ul style="margin:0;padding-left:20px">
+    <li>ตั้งคำถามใหม่ที่ออกแบบไว้ล่วงหน้า โดยไม่อิงจากผลที่เห็นแล้ว</li>
+    <li>รอข้อมูลใหม่หลัง ส.ค. 2026 หลายเดือน แล้วใช้ทดสอบไปข้างหน้า (forward test)</li>
+  </ul>
 </div>
 
 <footer>
@@ -178,7 +193,7 @@ const rounds = [
   {ico:"🧭", t:"ถือตอนขาขึ้น หลบตอนขาลง (รายวัน)", tag:["bad","ไม่ดีกว่าถือเฉยๆ"], d:"SMA200, golden cross, breakout 20 สัปดาห์ · BTC/ETH/BNB · spot และ perp", r:"ลด drawdown ได้บ้าง แต่ไม่มีกฎไหนดีกว่าการถือเฉยๆ อย่างชัดเจนทุกช่วงเวลา"},
   {ico:"🔄", t:"หมุนเหรียญตามโมเมนตัมรายสัปดาห์", tag:["bad","ไม่ผ่าน"], d:"ซื้อเหรียญที่แรงที่สุด 20% จากเหรียญที่มีสภาพคล่องสูงสุด 30 ตัว (รวมเหรียญที่ถูกถอดออกไปแล้ว)", r:"แบบ spot แพ้การถือทุกเหรียญเท่าๆ กัน ส่วนแบบ futures กำไรราว 3/4 มาจากการกิน funding ซึ่งไม่ใช่สิ่งที่เราต้องการ"},
   {ico:"🚪", t:"จุดออกไม้ (TP/SL/BE/trailing)", tag:["bad","ไม่มีฝีมือ"], d:"สุ่มจุดเข้า แล้วลองวิธีออก 6 แบบ · BTC/ETH", r:"กราฟ 1h ขาดทุนทุกแบบ ส่วนกราฟ 4h ที่ดูดีมาจาก trailing stop ที่บังเอิญได้ประโยชน์จากตลาดขาขึ้น"},
-  {ico:"🤖", t:"ML เลือกจังหวะเข้า", tag:["wait","รอผล"], d:"LightGBM บน BTC, ETH และเทรนรวม 20 เหรียญ", r:"เตรียมเครื่องมือและทดสอบกับข้อมูลจำลองเสร็จแล้ว รอ AI อีกตัวรันกับข้อมูลจริง"},
+  {ico:"🤖", t:"ML เลือกจังหวะเข้า", tag:["bad","ไม่ผ่าน"], d:"LightGBM บน BTC, ETH และเทรนรวม 20 เหรียญ", r:"ไม่ผ่านทั้ง 3 แบบ ตัวรวม 20 เหรียญได้ +0.06 R แต่ยังแยกจากโชคไม่ได้ (ดูด้านล่าง)"},
 ];
 
 const max = 0.3, pct = v => Math.min(Math.abs(v) / max, 1) * 50;

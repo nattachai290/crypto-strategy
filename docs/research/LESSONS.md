@@ -313,6 +313,28 @@ the engine's exact rules — **test 14 checks all six trade-for-trade against
   The first version of this bullet said the mean cancels and only the gates do
   not. The 4h mean, +0.345 R, shows the mean does not cancel either.
 
+## 11. A trained model (LightGBM) did not find timing either (3 runs)
+
+`PLAN.md` §19–20, BTC Exp 046/047, ETH Exp 010/014, `_multi` Exp 005/006:
+
+| run | VALID trades | mean R | 95% CI | gross R | gates failed |
+|---|---|---|---|---|---|
+| BTC 1h | 12,994 | −0.030 | [−0.101, +0.039] | +0.048 | 5 of 6 |
+| ETH 1h | 13,266 | +0.011 | [−0.056, +0.084] | +0.075 | 3 of 6 |
+| 20 coins pooled | 34,467 | +0.060 | [−0.037, +0.170] | +0.148 | 1 of 8 (the CI) |
+
+- On one coin, the out-of-fold curve fell as the threshold rose: the model's
+  most confident bars were its worst. Pooled, it rose, but that may be
+  "trade when volatility is high, where cost per R is low" rather than
+  direction (`_multi` Exp 006).
+- Run one position at a time on the research account, BTC returned CAGR
+  −15.4% with maxDD 44.3%, and ETH −3.4% with maxDD 35.3%.
+- **Rule:** more rows from coins that move together do not make the result
+  more precise. The CI resamples weeks, and every coin shares the same weeks.
+- **Rule:** a control that keeps counts and clustering but not volatility
+  can be beaten by volatility selection alone. Gate on gross R, or shift the
+  copies only within similar-volatility bars.
+
 ## What to do with this
 
 1. **Filter out, don't fit.** Skip ideas with expected `cost_r` > 0.1 R and
