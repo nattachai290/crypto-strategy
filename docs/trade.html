@@ -35,6 +35,11 @@ button:hover,select:hover{border-color:var(--faint)}
 .stat b{font-variant-numeric:tabular-nums;font-size:.95rem}
 .pill{font-size:.72rem;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .pill.g{border-color:var(--up);color:var(--up)} .pill.r{border-color:var(--down);color:var(--down)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:var(--panel2);color:var(--muted);padding:6px 12px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:600}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
 .up{color:var(--up)} .down{color:var(--down)}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;overflow:hidden;background:var(--panel)}
 #chart{height:560px;min-width:0;position:relative}
@@ -74,6 +79,7 @@ code{font-size:.85em;overflow-wrap:anywhere}
 
 <div class="bar">
   <select id="pick" aria-label="เลือกกลยุทธ์"></select>
+  <span class="seg" id="per" role="group" aria-label="ช่วงข้อมูล"><button type="button" data-p="valid" aria-pressed="true">สอบย่อย 2023–24</button><button type="button" data-p="holdout" aria-pressed="false">สอบจริง 2025–26</button></span>
   <span class="tk" id="tk"></span>
   <div class="stat"><span>ไม้</span><b id="sN"></b></div>
   <div class="stat"><span>ชนะ</span><b id="sW"></b></div>
@@ -102,12 +108,12 @@ code{font-size:.85em;overflow-wrap:anywhere}
 
 <div class="note">
   <b>อ่านยังไง:</b> เลือกกลยุทธ์ด้านบน กดไม้ในรายการด้านขวา (หรือปุ่ม ◀ ▶ / ลูกศรบนคีย์บอร์ด) กราฟจะพาไปที่ไม้นั้น ลากเพื่อเลื่อน หมุนล้อหรือบีบนิ้วเพื่อซูม ·
-  ทุกไม้คือของจริงที่ระบบบันทึกไว้ช่วงสอบย่อย (2023–24) หักค่าธรรมเนียม slippage และ funding แล้ว · เวลาเป็น<b>เวลาไทย</b> (UTC+7) ·
+  ทุกไม้คือของจริงที่ระบบบันทึกไว้ ช่วงสอบย่อย (2023–24) หรือช่วงสอบจริง (ม.ค. 2025–ส.ค. 2026 มีเฉพาะ 4 ตัวที่ได้เข้าสอบ) หักค่าธรรมเนียม slippage และ funding แล้ว · เวลาเป็น<b>เวลาไทย</b> (UTC+7) ·
   "R" = กำไรขาดทุนเทียบกับเงินที่เสี่ยงต่อไม้ (1R = 1% ของพอร์ต) ·
   กลยุทธ์กราฟ 5 นาที (039, 041) แสดงเป็นแท่ง 1 ชั่วโมงเพื่อให้โหลดเร็ว จุดเข้าออกจึงอยู่ในแท่งที่มีเวลานั้น ·
   ระดับ stop ที่แสดงคือ stop <b>ตอนออก</b> ถ้ากลยุทธ์เลื่อน stop ตามราคา (trailing) จะไม่ใช่ stop ตอนเข้า<br>
   <b>อย่าลืม:</b> ทั้ง 7 ตัวนี้ผ่านสอบย่อย แต่ 5 ตัวแพ้การเข้าแบบสุ่ม และ 4 ตัวที่ได้เข้าสอบจริงไม่ผ่านทั้งหมด หน้านี้มีไว้ดูภาพการเทรด ไม่ใช่หลักฐานว่ากลยุทธ์ทำกำไรได้<br>
-  <span style="font-size:.8rem">ที่มา: <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> · แท่งเทียน Binance USDT-M (ไฟล์ทางการ ไม่ได้แปลงกรอบเวลา)</span>
+  <span style="font-size:.8rem">ที่มา: <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> และ <code>_holdout.csv.gz</code> · แท่งเทียน Binance USDT-M (ไฟล์ทางการ ไม่ได้แปลงกรอบเวลา)</span>
 </div>
 </main>
 <script>
@@ -140,7 +146,7 @@ function makeChart() {
     layout: {background: {type: "solid", color: css("--panel")}, textColor: css("--muted"), fontFamily: "IBM Plex Sans Thai, system-ui, sans-serif"},
     grid: {vertLines: {color: css("--line")}, horzLines: {color: css("--line")}},
     rightPriceScale: {borderColor: css("--line")},
-    timeScale: {borderColor: css("--line"), timeVisible: true, secondsVisible: false, rightOffset: 6},
+    timeScale: {borderColor: css("--line"), timeVisible: true, secondsVisible: false, rightOffset: 6, minBarSpacing: 0.01},
     crosshair: {mode: LightweightCharts.CrosshairMode.Normal},
     localization: {locale: "en-US", timeFormatter: t => dt(t)}
   });
@@ -156,10 +162,15 @@ function barAt(t) { // index of the displayed bar containing time t
   return lo;
 }
 
+let PER = "valid", IDX = [];
 async function load(id) {
   $("load").style.display = "flex";
-  if (!cache[id]) cache[id] = await (await fetch("trades/" + id + ".json")).json();
-  D = cache[id];
+  const it = IDX.find(r => r.id === id);
+  if (PER === "holdout" && !(it && it.hasHold)) PER = "valid";
+  document.querySelectorAll("#per button").forEach(b => { b.setAttribute("aria-pressed", b.dataset.p === PER); if (b.dataset.p === "holdout") { b.disabled = !(it && it.hasHold); b.title = b.disabled ? "ตัวนี้ไม่ได้เข้าสอบจริง" : ""; } });
+  const key = id + (PER === "holdout" ? "_holdout" : "");
+  if (!cache[key]) cache[key] = await (await fetch("trades/" + key + ".json")).json();
+  D = cache[key];
   const m = D.meta, b = D.bars, dec = m.dec;
   B = b.t;
   makeChart();
@@ -169,7 +180,7 @@ async function load(id) {
   $("load").style.display = "none";
   // header
   const tr = D.trades, wins = tr.filter(x => x[7] > 0).length;
-  $("tk").textContent = `${m.sym.replace("USDT", "")}/USDT · ${tfs(m.tf)}${m.dtf !== m.tf ? " (แสดง " + tfs(m.dtf) + ")" : ""}`;
+  $("tk").textContent = `${m.sym.replace("USDT", "")}/USDT · ${tfs(m.tf)}${m.dtf !== m.tf ? " (แสดง " + tfs(m.dtf) + ")" : ""} · ${m.period === "holdout" ? "สอบจริง" : "สอบย่อย"}`;
   $("sN").textContent = tr.length;
   $("sW").textContent = (wins / tr.length * 100).toFixed(0) + "%";
   $("sR").innerHTML = `<span class="${m.mr >= 0 ? "up" : "down"}">${m.mr >= 0 ? "+" : ""}${m.mr.toFixed(2)}R</span>`;
@@ -255,11 +266,14 @@ $("theme").onclick = () => {
 (async () => {
   const idx = await (await fetch("trades/index.json")).json();
   const pick = $("pick");
+  IDX = idx;
   pick.innerHTML = idx.map(r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`).join("");
   let first = idx[0].id;
-  try { const h = location.hash.slice(1); if (idx.some(r => r.id === h)) first = h; } catch (e) {}
+  try { const h = location.hash.slice(1).split("_"); if (idx.some(r => r.id === h[0])) { first = h[0]; if (h[1] === "holdout") PER = "holdout"; } } catch (e) {}
+  const setHash = () => history.replaceState(null, "", "#" + pick.value + (PER === "holdout" ? "_holdout" : ""));
+  document.querySelectorAll("#per button").forEach(b => b.onclick = () => { if (b.disabled) return; PER = b.dataset.p; setHash(); load(pick.value); });
   pick.value = first;
-  pick.onchange = () => { history.replaceState(null, "", "#" + pick.value); load(pick.value); };
+  pick.onchange = () => { setHash(); load(pick.value); };
   load(first);
 })();
 </script>
