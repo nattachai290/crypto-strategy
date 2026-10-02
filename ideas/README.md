@@ -63,7 +63,7 @@ after it was evaluated.
 | `tp` | none | `{"type":"none"}`, `{"type":"r","r":x}`, `{"type":"atr","mult":x}` |
 | `be_at` | 0 (off) | move stop to break-even after +x R (on a bar close) |
 | `trail_at`, `trail_atr` | 0 (off) | after +`trail_at` R, trail `trail_atr` × ATR behind the close |
-| `max_hold_hours` | 4 | time stop |
+| `max_hold_hours` | 4 | time stop. **New ideas: 100000 (no time exit), owner's rule 2026-10-02 (AGENTS.md step 3b)**, plus a trailing stop, `exit_on: "opposite"` or a `tp` |
 | `cooldown_bars` | 0 | ignore new signals for N bars after one |
 | `atr_n` | 14 | ATR period for stops/TP/trail |
 

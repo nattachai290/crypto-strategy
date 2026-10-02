@@ -1428,3 +1428,34 @@ is not good enough to justify the one-time test.
 REJECT (lead closed by the owner) - the premium was the best lead found, but it
 did not pass the pre-registered confirmation (Exp 011) and the owner declined
 the exploratory holdout test.
+
+---
+
+## Exp 014 - Owner rule: no time exit in new ideas
+
+**Date:** 2026-10-02
+**Status:** complete
+
+### Decision
+Looking at the VALID trades on the new candlestick page, the owner saw winners
+closed by the clock just before large moves (e.g. 029_opening_range_tf240,
+trade 63) and ruled: **new ideas must not exit on time; a position runs until a
+price or signal exit fires.** No time cap, not even a safety cap.
+
+### How it is applied (AGENTS.md step 3b, ideas/README.md)
+- `max_hold_hours` = 100000 (the engine's 100,000-bar cap and the period-end
+  `eod` close are the only limits); never in the grid.
+- At least one exit that fires on its own besides the initial stop: trailing
+  stop, `exit_on: "opposite"`, or a `tp`.
+- New ideas only. Old ideas are not re-run with the time exit removed.
+
+### What the records already say (context, not a reason to refuse the rule)
+- The exit lab (BTC Exp 043-045) had a no-time trailing exit (`trail_2atr`) on
+  random entries: at 4h VALID it was the best exit (+0.35 R) but carried by
+  longs (+0.81 R) with shorts at -0.13 R, i.e. the 2023-24 market; at 1h every
+  exit, this one included, was negative on TRAIN and VALID on BTC and ETH.
+- Longer holds raise exposure to the market's direction, so the random-entry
+  baseline and the buy-and-hold benchmark matter more under this rule.
+
+### Verdict
+KEEP (rule recorded). No evaluation run.
