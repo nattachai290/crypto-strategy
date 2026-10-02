@@ -1563,3 +1563,135 @@ See **BTC Exp 053**.
 - COIN_FLIP stands. Clustered by idea family (18 families), the CI is
   [−1.74, +0.77] pts.
 - The shakeout CI includes 0.
+
+---
+
+## Exp 019 - Limit orders resting at support/resistance on ETHUSDT: REJECT on both clocks, and the two coins disagree on the leg
+
+**Date:** 2026-10-02
+**Status:** complete. **Two runs, one per timeframe, each once.** No code and no
+idea file was changed, no result file was deleted, `--final` was not run (nothing
+passed, and per §24 a PASS would also have needed the other coin at the same
+timeframe), HOLDOUT was never read. ETHUSDT still has **97 evaluations**.
+
+**The ETH half of BTC Exp 055.** Same tool, same seed, same grid, same gates.
+
+### The two runs
+
+**Both `REJECT`.** Gates failed:
+
+| run | gates failed |
+|---|---|
+| ETH 240m | `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`, `beats_control_p95_train`, `beats_control_p95_valid` |
+| ETH 60m | `train_mean>0`, `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`, `beats_control_p95_train`, `beats_control_p95_valid` |
+
+| run | verdict | TRAIN chose | VALID fills / orders (fill rate) | VALID mean R | 95% CI | gross_r | cost_r |
+|---|---|---|---|---|---|---|---|
+| ETH 240m | REJECT | `swing`, stop 2 ATR, tp 3R | **141 / 258 (54.7%)** | **-0.0086** | [-0.2610, +0.2510] | **+0.0157** | 0.0243 |
+| ETH 60m | REJECT | `swing`, stop 2 ATR, tp 3R | **531 / 949 (56.0%)** | **-0.1847** | [-0.3097, -0.0556] | **-0.1213** | 0.0635 |
+
+**Long and short, separately:**
+
+| run | split | mean R | gross R | long R | short R |
+|---|---|---|---|---|---|
+| ETH 240m | TRAIN | **+0.0305** | +0.0367 | **+0.1412** | -0.0728 |
+| ETH 240m | VALID | -0.0086 | +0.0157 | **-0.1874** | **+0.1677** |
+| ETH 240m | VALID cost x1.5 | -0.0224 | +0.0157 | -0.2018 | +0.1545 |
+| ETH 60m | TRAIN | -0.0589 | -0.0260 | -0.0781 | -0.0420 |
+| ETH 60m | VALID | -0.1847 | -0.1213 | **-0.2628** | -0.1081 |
+| ETH 60m | VALID cost x1.5 | -0.2168 | -0.1213 | -0.2955 | -0.1395 |
+
+**Exit mix (VALID) and holding time:**
+
+| run | stop | time | target | avg bars |
+|---|---|---|---|---|
+| ETH 240m | **65.2%** | 18.4% | 16.3% | 18.0 |
+| ETH 60m | **68.4%** | 18.3% | 13.4% | 19.0 |
+
+(TRAIN: 62.9/23.4/13.7 at 240m, 64.7/20.7/14.6 at 60m.)
+
+**The control - 200 order sets at random bars, same distances in ATR, same side
+mix, same exits:**
+
+| run | split | control median | control p95 | real mean |
+|---|---|---|---|---|
+| ETH 240m | TRAIN | -0.0109 | **+0.1971** | +0.0305 (between median and p95, far from p95) |
+| ETH 240m | VALID | -0.0131 | **+0.1905** | -0.0086 (below median) |
+| ETH 60m | TRAIN | -0.0429 | **+0.0482** | -0.0589 (below median) |
+| ETH 60m | VALID | -0.0624 | **+0.0547** | -0.1847 (below median) |
+
+**Cost x1.5 (VALID):** 240m -0.0086 -> **-0.0224** · 60m -0.1847 -> **-0.2168**.
+
+**All 8 grid cells, TRAIN mean R:**
+
+| level | 1 ATR / 2R | 1 ATR / 3R | 2 ATR / 2R | 2 ATR / 3R |
+|---|---|---|---|---|
+| `prev_day` at 240m (1,355-1,357 fills) | -0.0919 | -0.1299 | -0.0368 | **-0.0094** |
+| `swing` at 240m (205-206 fills) | -0.1314 | -0.0471 | +0.0221 | **+0.0305** |
+| `prev_day` at 60m (954-956 fills) | -0.2042 | -0.1521 | -0.0963 | -0.0685 |
+| `swing` at 60m (781-783 fills) | -0.3349 | -0.3090 | -0.0765 | **-0.0589** |
+
+### What the numbers say
+
+**1. ETH is the only place in this round where a cell came out positive on TRAIN,
+and it is 205 fills on the 4h clock - not evidence.** `swing`, 2 ATR, 3R at 240m
+scored **+0.0305** on 205 TRAIN fills (CI [-0.1656, +0.2371], i.e. the CI crosses
+0 by a wide margin) and +0.0221 on its sibling. Those two are the only positive
+cells of the 32 run on this coin, they are on the least-filled and slowest
+configuration available, and **they did not survive VALID, where the same cell
+came out at -0.0086 on 141 fills.** Per `AGENTS.md` §1 step 6 and §2 this is
+noise at the size where noise lives.
+
+**2. Everything else is negative, and the 60m book is much worse than BTC's.**
+ETH 60m VALID is **-0.1847 with gross -0.1213** - a gross loss, not a cost loss.
+BTC 60m on the same tool was -0.0957 with gross -0.0191. **On ETH the level
+limits themselves are going the wrong way; this is not a cost problem, the price
+is simply moving against the orders after they fill.** `LESSONS.md` §8's pattern
+again: ETH trades worse than BTC in this family, in this round by a factor of
+four on gross.
+
+**3. The maker entry is cheaper on ETH too, and again it is not enough.**
+`cost_r` **0.0243 R at 240m and 0.0635 R at 60m**, against BTC's 0.0304 and
+0.0766 in the same tool and the 0.075-0.082 / 0.031-0.038 that Exp 049 measured
+for ETH's market entries. **The resting limit is the cheapest entry this project
+has found on ETH, and the 240m book still lands at -0.0086.** Cheap entry with no
+structure behind it is worth nothing - the same conclusion as on BTC, and the
+reason is visible in the gross column: **+0.0157 at 240m and -0.1213 at 60m.**
+
+**4. The two coins disagree about which leg wins, and that is the most useful
+single number here.** On BTC 240m the **long** leg is the winner (+0.1038 VALID)
+and the short leg loses (-0.1542). On ETH 240m it is **reversed**: long **-0.1874**
+and short **+0.1677**. TRAIN on ETH says the same thing the other way again
+(+0.1412 / -0.0728), so on ETH the swing-limit book was positive on TRAIN
+**because of the longs** and then flipped sign on VALID. **A rule whose winning
+side changes between two coins and between two periods is not a rule - per
+`LESSONS.md` §5 and §8, a result found on one coin is not a result on another,
+and here the sign is not even stable on one coin.**
+
+**5. ETH's stop rate is high and its fills are not better than random.** The exit
+mix is **65.2% / 68.4% stopped against 16.3% / 13.4% at target**, with a 54.7% /
+56.0% fill rate, essentially identical to BTC's. And against the control, **three
+of the four splits come in below the control's median.** The control p95 at 240m
+is +0.1905, which is very wide because only 258 orders went out - **the 4h
+configuration simply cannot generate enough independent samples to be measured
+either way**, which is the §22 "cheap clock is the illiquid clock" wall again.
+
+### Verdict
+
+**`REJECT` on both clocks. Not a candidate, no `--final`, and §24's
+cross-coin rule was never close to being met: nothing passed on either coin, at
+either clock.**
+
+**The honest one-paragraph version for the owner: resting a maker limit at a
+level does not work on ETH either. All eight 60m cells were negative on TRAIN
+and the book came out at -0.1847 mean R on 531 VALID fills with gross -0.1213 -
+on ETH the orders themselves are going the wrong way, not just the cost. The 4h
+book is where the only positive TRAIN cells appear (+0.0305 on 205 fills,
++0.0221 on its sibling, CI crossing zero) and it did not hold up on VALID
+(-0.0086 on 141 fills, and 141 is far too few to measure). The entry price is
+genuinely the cheapest this project has found on ETH - 0.024 R at 4h, 0.064 R at
+1h - and it did not help, because there is no structure at the level for it to
+harvest. The two coins disagree about which side wins: BTC's long leg wins at
++0.104, ETH's loses at -0.187 while ETH's short leg wins at +0.168. About 55% of
+orders fill and 65% of fills are stopped against 15% reaching target, and three
+of the four splits land below the control's median.**

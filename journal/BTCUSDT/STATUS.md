@@ -1,3 +1,50 @@
+> **Limit orders resting at support/resistance (§24, Exp 055): `REJECT` on 1h
+> and 4h. Not a candidate, no `--final`, HOLDOUT untouched.** `src/level_limit.py`
+> rests a maker limit AT the level (previous UTC day's high/low or a live 10-bar
+> pivot), stop just beyond it, each order simulated on its own; TRAIN picks 1 of 8
+> cells; gates include beating 200 control order sets at random bars with the same
+> distance in ATR and the same side mix. BTCUSDT still has **258 evaluations** -
+> this tool writes no evaluation row.
+>
+> | run | verdict | TRAIN chose | VALID fills / orders | fill rate | mean R | 95% CI | gross_r | cost_r |
+> |---|---|---|---|---|---|---|---|---|
+> | BTC 240m | REJECT | `prev_day` 2 ATR 3R | **871 / 1313** | **66.3%** | **-0.0334** | [-0.1271, +0.0589] | **-0.0030** | 0.0304 |
+> | BTC 60m | REJECT | `swing` 2 ATR 3R | **542 / 975** | **55.6%** | **-0.0957** | [-0.2262, +0.0386] | **-0.0191** | 0.0766 |
+>
+> Gates failed on both: `train_mean>0`, `valid_mean>0`, `valid_ci_lo>0`,
+> `stress_mean>0`, `beats_control_p95_train`, `beats_control_p95_valid`.
+> Cost x1.5 (VALID): 240m -0.0334 -> **-0.0495**; 60m -0.0957 -> **-0.1348**.
+>
+> | | control median | control p95 | real mean |
+> |---|---|---|---|
+> | 240m TRAIN / VALID | -0.0161 / -0.0295 | **+0.0469 / +0.0511** | -0.0236 / -0.0334 |
+> | 60m TRAIN / VALID | -0.0505 / -0.0707 | **+0.0375 / +0.0199** | -0.0739 / -0.0957 |
+>
+> Exit mix VALID: **stop 64.6% / 64.9%**, time 19.7% / 19.9%, target 15.6% /
+> 15.1%, avg 21.6 / 19.6 bars.
+>
+> 1. **Not one of the 16 cells was positive on TRAIN** (best -0.0236, worst
+>    -0.2723). Best was 240m `prev_day` 2 ATR 3R; worst 60m `swing` 1 ATR 3R.
+> 2. **The maker entry worked and it was still not enough.** `cost_r` 0.0304 R at
+>    4h and 0.0766 at 1h, against Exp 049's 0.041 / 0.097 for wide-stop market
+>    entries on the same clocks - **the resting limit really is cheaper.** But
+>    **gross is -0.0030 and -0.0191**, i.e. zero, because a level is not better
+>    support than any other price. **Nothing for the better entry to harvest.**
+> 3. **The real orders came in below the control's median on all four splits.**
+>    A limit at yesterday's low is worth slightly *less* than a limit at the same
+>    distance at a random bar. This is the **second independent test of the §22
+>    levels with the opposite entry logic; both say the level carries nothing.**
+> 4. **The short leg loses on both clocks and both splits** (240m VALID long
+>    **+0.1038** / short **-0.1542**; 60m -0.0185 / -0.1598). Same sign, same
+>    coin as the stop diagnosis in Exp 052, independent method.
+> 5. **A resting limit cannot filter its own fills.** 55.6-66.3% of orders fill
+>    and ~65% of fills are stopped against ~15% at target: the orders that fill
+>    are the ones price ran through, and price running through the level is the
+>    stop being hit.
+>
+> Details: Exp 055. ETH half: ETH Exp 019. Per-run tables:
+> `journal/BTCUSDT/level_limit.md` (generated), `results/BTCUSDT/level_limit/`.
+
 > **Stop diagnosis (§23, Exp 052): `WRONG_DIRECTION`. Read-only - nothing was
 > re-tuned, no new evaluation, no holdout touched.** `src/stop_diag.py` re-read
 > every recorded VALID trade file (15m/30m/1h/4h, PASS/WATCH/REJECT, 0 size

@@ -1,3 +1,46 @@
+> **Limit orders resting at support/resistance (§24, Exp 019): `REJECT` on 1h
+> and 4h. Not a candidate, no `--final`, HOLDOUT untouched.** ETH half of BTC
+> Exp 055, same tool, grid and gates. ETHUSDT still has **97 evaluations**.
+>
+> | run | verdict | TRAIN chose | VALID fills / orders | fill rate | mean R | 95% CI | gross_r | cost_r |
+> |---|---|---|---|---|---|---|---|---|
+> | ETH 240m | REJECT | `swing` 2 ATR 3R | **141 / 258** | **54.7%** | **-0.0086** | [-0.2610, +0.2510] | **+0.0157** | 0.0243 |
+> | ETH 60m | REJECT | `swing` 2 ATR 3R | **531 / 949** | **56.0%** | **-0.1847** | [-0.3097, -0.0556] | **-0.1213** | 0.0635 |
+>
+> Gates failed: both `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`,
+> `beats_control_p95_train`, `beats_control_p95_valid`; 60m also
+> `train_mean>0`. Cost x1.5 (VALID): 240m -0.0086 -> **-0.0224**; 60m -0.1847 ->
+> **-0.2168**.
+>
+> | | control median | control p95 | real mean |
+> |---|---|---|---|
+> | 240m TRAIN / VALID | -0.0109 / -0.0131 | **+0.1971 / +0.1905** | +0.0305 / -0.0086 |
+> | 60m TRAIN / VALID | -0.0429 / -0.0624 | **+0.0482 / +0.0547** | -0.0589 / -0.1847 |
+>
+> Exit mix VALID: **stop 65.2% / 68.4%**, time 18.4% / 18.3%, target 16.3% /
+> 13.4%, avg 18.0 / 19.0 bars.
+>
+> 1. **The only positive TRAIN cells in the whole round, and they are noise:**
+>    240m `swing` 2 ATR scored **+0.0305** on 205 fills (CI [-0.1656, +0.2371])
+>    and +0.0221 on its sibling - then -0.0086 on 141 VALID fills. The other 14
+>    cells were negative, all eight 60m cells included.
+> 2. **60m is a gross loss, not a cost loss: -0.1847 net on gross -0.1213**
+>    against BTC's -0.0957 on gross -0.0191. On ETH the level limits themselves
+>    go the wrong way after they fill - `LESSONS.md` §8's pattern, 4x BTC.
+> 3. **The maker entry is the cheapest this project has found on ETH**
+>    (0.0243 R at 4h, 0.0635 at 1h, against 0.075-0.082 / 0.031-0.038 in Exp
+>    049) **and it did not help** - there is no structure at the level to
+>    harvest.
+> 4. **The two coins disagree on the winning leg, and ETH flips sign itself:**
+>    BTC 240m long **+0.1038** / short -0.1542; ETH 240m long **-0.1874** /
+>    short **+0.1677**, and TRAIN had said the opposite again (+0.1412 /
+>    -0.0728). **Per §5 and §8 that is not a rule.**
+> 5. ~55% of orders fill, ~65% of fills are stopped against ~15% at target, and
+>    **three of the four splits land below the control's median.** The 4h book
+>    (258 orders) is too small to measure - the §22 cheap-clock wall again.
+>
+> Details: Exp 019. BTC half: BTC Exp 055.
+
 > **Stop diagnosis (§23, Exp 017): `COIN_FLIP` - BTC's `WRONG_DIRECTION` does
 > not reproduce here. Read-only - nothing re-tuned, no new evaluation, no
 > holdout.** **58 evaluations, 10,738 VALID trades** (34 REJECT, 24 WATCH).

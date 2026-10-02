@@ -5543,3 +5543,155 @@ unchanged.
 - noise gives REJECT.
 
 **Prior:** low. The same levels did not hold in §22.
+
+---
+
+## Exp 055 - Limit orders resting at support/resistance on BTCUSDT: 4 of 8 gates failed on both clocks, REJECT
+
+**Date:** 2026-10-02
+**Status:** complete. **Two runs, one per timeframe, each once.** No code and no
+idea file was changed, no result file was deleted, `--final` was not run
+(nothing passed), HOLDOUT was never read. BTCUSDT still has **258 evaluations** -
+this tool does not produce an evaluation row.
+
+**Session state.** `git pull` fast-forward clean · `pip install -r
+requirements.txt` all present · `test_engine.py` -> **ALL CHECKS PASSED**
+(**test 20**: hand-computed fills at a level with a maker target, gap fill at the
+open, filled-and-stopped on the same bar, gap below the stop, expiry with no
+fill, causal orders for both level kinds, planted "levels hold" -> PASS, noise ->
+REJECT) · `datafeed.py` -> **VALIDATION: OK** on both coins.
+
+**Pre-registered in Exp 054.** Prior stated there was low: §22 used the same
+levels and they did not hold. The new parts were the entry price (maker, at the
+level), the maker fee and the tight stop just beyond the level.
+
+### The two runs
+
+**Both `REJECT`, both failing the same six gates:**
+`train_mean>0`, `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`,
+`beats_control_p95_train`, `beats_control_p95_valid`.
+
+| run | verdict | TRAIN chose | VALID fills / orders (fill rate) | VALID mean R | 95% CI | gross_r | cost_r |
+|---|---|---|---|---|---|---|---|
+| BTC 240m | REJECT | `prev_day`, stop 2 ATR, tp 3R | **871 / 1313 (66.3%)** | **-0.0334** | [-0.1271, +0.0589] | **-0.0030** | 0.0304 |
+| BTC 60m | REJECT | `swing`, stop 2 ATR, tp 3R | **542 / 975 (55.6%)** | **-0.0957** | [-0.2262, +0.0386] | **-0.0191** | 0.0766 |
+
+`cost_r` is `mean_r - gross_r`, derived from the two reported numbers.
+
+**Long and short, separately:**
+
+| run | split | mean R | gross? | long R | short R |
+|---|---|---|---|---|---|
+| BTC 240m | TRAIN | -0.0236 | -0.0007 | **+0.0710** | **-0.1109** |
+| BTC 240m | VALID | -0.0334 | -0.0030 | **+0.1038** | **-0.1542** |
+| BTC 240m | VALID cost x1.5 | -0.0495 | -0.0030 | +0.0884 | -0.1709 |
+| BTC 60m | TRAIN | -0.0739 | -0.0246 | -0.0640 | -0.0826 |
+| BTC 60m | VALID | -0.0957 | -0.0191 | **-0.0185** | **-0.1598** |
+| BTC 60m | VALID cost x1.5 | -0.1348 | -0.0191 | -0.0574 | -0.1991 |
+
+**Exit mix (VALID) and holding time:**
+
+| run | stop | time | target | avg bars |
+|---|---|---|---|---|
+| BTC 240m | **64.6%** | 19.7% | 15.6% | 21.6 |
+| BTC 60m | **64.9%** | 19.9% | 15.1% | 19.6 |
+
+(TRAIN: 62.8/22.9/14.3 at 240m, 65.9/17.9/16.2 at 60m - the mix is the same on
+both splits, so it is a property of the rule, not of a period.)
+
+**The control - 200 order sets at random bars, same distances from the close in
+ATR, same side mix, same exits:**
+
+| run | split | control median | control p95 | real mean vs p95 |
+|---|---|---|---|---|
+| BTC 240m | TRAIN | -0.0161 | **+0.0469** | -0.0236 (below median) |
+| BTC 240m | VALID | -0.0295 | **+0.0511** | -0.0334 (below median) |
+| BTC 60m | TRAIN | -0.0505 | **+0.0375** | -0.0739 (below median) |
+| BTC 60m | VALID | -0.0707 | **+0.0199** | -0.0957 (below median) |
+
+**Cost x1.5 (VALID):** 240m -0.0334 -> **-0.0495** · 60m -0.0957 -> **-0.1348**.
+Both were already negative, so this gate was never in play.
+
+**All 8 grid cells, TRAIN mean R** (level x stop_atr x tp_r):
+
+| level | 1 ATR / 2R | 1 ATR / 3R | 2 ATR / 2R | 2 ATR / 3R |
+|---|---|---|---|---|
+| `prev_day` at 240m (1,379-1,385 fills) | -0.0721 | -0.0970 | -0.0333 | **-0.0236** |
+| `swing` at 240m (215-216 fills) | -0.1076 | -0.0374 | -0.0418 | -0.0341 |
+| `prev_day` at 60m (960-961 fills) | -0.2253 | -0.2326 | -0.1070 | -0.1103 |
+| `swing` at 60m (800-801 fills) | **-0.2701** | -0.2723 | -0.0922 | -0.0739 |
+
+### What the numbers say
+
+**1. Every one of the 32 cell x clock x coin combinations on TRAIN is negative,
+and the control confirms the mechanism is a cost, not a wrong idea.** Not one
+cell anywhere on this coin came out positive on TRAIN. The best cell on BTC is
+-0.0236 (240m `prev_day`, 2 ATR, 3R) and the worst is -0.2723 (60m `swing`,
+1 ATR, 3R).
+
+**2. The maker entry and the tight stop did exactly what §24 hoped, and it was
+still not enough.** `cost_r` is **0.0304 R at 240m** and **0.0766 R at 60m**, and
+compare that with BTC Exp 049's measured `cost_r` for the same two clocks on a
+2.5-5 ATR stop: **0.041 R at 4h and 0.097 R at 1h.** So a resting maker limit at
+a level with a 2-3 ATR stop really is cheaper than a market entry with a wide
+stop - **0.030 vs 0.041 at the slow clock, 0.077 vs 0.097 at the fast one.** And
+**gross_r is -0.0030 and -0.0191, i.e. essentially zero.** `LESSONS.md` §1 says
+the structure this project keeps finding is around +0.02 to +0.06 R gross; here
+the resting limit at a level does not even produce that. **The level is not
+better support than any other price, so there is nothing for the better entry
+price to harvest.** That is why the design worked and the idea still failed.
+
+**3. The real orders are no better than the control, and on BTC they are slightly
+worse than the control's median on all four splits.** Real -0.0236 / -0.0334 /
+-0.0739 / -0.0957 against control medians -0.0161 / -0.0295 / -0.0505 / -0.0707.
+**A limit order at yesterday's low, or at a 10-bar pivot, is worth slightly less
+than a limit order at the same distance from the close at a random bar.** This is
+the `PLAN.md` §24 prior confirmed, and it is the same level definition §22 used,
+so this is now the second independent test of the same levels with the opposite
+entry logic. **Both say the level carries nothing.**
+
+**4. The short side is the loser again, which is the stop diagnosis showing up a
+second time.** At 240m the long leg is **+0.1038 R on VALID** while the short leg
+is **-0.1542 R**; at 60m, -0.0185 against -0.1598. TRAIN says the same thing
+(+0.0710 / -0.1109 and -0.0640 / -0.0826). **Exp 052 measured BTC's 15m
+short-breakout block at -8.67 points of direction skill and found the whole book
+about a coin flip; here the short half of a two-sided, level-based rule is the
+half that loses, on both clocks and both splits.** Same coin, same sign,
+independent method.
+
+**5. The fill rate is the price of the resting limit, and it is high.** **55.6%
+at 60m and 66.3% at 240m** of orders filled, against 24.27% of trades being
+stopped on BTC in Exp 052. **Roughly two thirds of the orders placed at a level
+do get touched, and the touch is the adverse-selection problem §24 named**: a
+move that slices through the level fills the order, a move that turns just before
+it never does. The exit mix says what happens next - **64.6% / 64.9% stopped
+against 15.6% / 15.1% reaching target.** The orders that fill are the ones price
+ran through, and price running through the level is the stop being hit. **A
+resting limit cannot filter its own fills; it takes the ones that hurt.**
+
+**6. The 4h book is bigger and slightly less bad, and it is still nowhere near
+the control's p95.** 240m produced 871 VALID fills against 542 at 60m, because
+`swing` levels get one order each and a 4h bar spans four times the distance, so
+more levels sit within 3 ATR. **More samples, same verdict, and the gap to the
+control p95 is 0.085 R** (-0.0334 against +0.0511). This is not a
+sample-size problem: the CI is [-0.1271, +0.0589] and even the top of it is
+below the control's median.
+
+### Verdict
+
+**`REJECT` on both clocks. Not a candidate, no `--final`, and per §24 a PASS on
+one coin would not have been a candidate unless the other coin at the same
+timeframe also passed.**
+
+**The honest one-paragraph version for the owner: resting a maker limit at
+yesterday's high/low or at a 10-bar pivot and stopping 2-3 ATR beyond it does
+not work, on either clock. TRAIN found no positive cell out of sixteen. The
+entry really is cheaper - 0.030 R at 4h and 0.077 R at 1h against 0.041 and 0.097
+for the wide-stop market entries of Exp 049 - but the gross is zero (-0.003 and
+-0.019 R), because a level is not better support than any other price. Against
+200 control sets at the same distance at random bars, the real orders came in
+slightly *below* the control's median on all four splits, so the level itself
+carries nothing. About two thirds of the orders fill, and 65% of the fills are
+stopped against 15% reaching target: a resting limit cannot filter its own fills.
+The short leg is the losing half on both clocks, the same sign as the stop
+diagnosis in Exp 052.**
