@@ -1673,3 +1673,50 @@ is worth +0.0013 an hour, and that is what the cost eats. The model went short o
 +0.025 on the short. TRAIN out-of-fold was +0.0379 and VALID is -0.0132, and the
 only out-of-fold cells that worked were the most heavily regularised ones. The
 holdout stays untouched.**
+
+---
+
+## Exp 017 - Review of Exp 016 (ML decides entry and exit, planner): REJECT stands; four corrections
+
+**Date:** 2026-10-02
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- `src/` is unchanged since the pre-registration (eb9a9fd).
+- No holdout file exists.
+- Recomputed from `trades_valid.csv.gz` and matching `summary.json`:
+  - 1,940 trades, net mean -0.0132, gross +0.0090, cost 0.0222 per trade;
+  - long 469 at -0.132, short 1,471 at +0.025;
+  - exits: signal 85.3%, stop 13.8%, eod 0.9%;
+  - per year: 2023 -0.079, 2024 +0.056.
+- 16 of 20 coins have timing above their own shifted median; 2 of 20 are above
+  their own p95.
+- The verdict REJECT and the closing of ML on this data stand.
+
+**Corrections to Exp 016.**
+1. **"The exit half works; the model knows how to leave in profit"
+   (+0.146 R on signal exits) is not evidence.** The split conditions on the
+   outcome. Every trade that went far enough against the position ended at
+   the stop (-1.02 R), so the trades that ended any other way are positive on
+   average by construction. Random exits with the same stop would show the same
+   shape. The whole book's gross (+0.009 R) is the measure, and it is below cost.
+2. **"Carried by 2024 ... what survives is the bull year" is wrong framing.**
+   2023 was also a strong up year. The split shows instability between years,
+   not a bull-versus-bear effect.
+3. **"The long side is 4.5% of the book" mixes two counts.** 4.5% is the share
+   of decisions that wanted long. Long trades are 469 of 1,940 = 24% of trades.
+   Per trade, the long leg lost about 5× what the short leg made.
+4. **Units.** The timing statistic is held return per hour in ATR units, not R:
+   "+0.0013 R/hour" should read "+0.0013 ATR per held hour above the p95".
+
+**What it adds to LESSONS.**
+- This is the first ML timing control that passed (the model is above the
+  shifted p95).
+- That timing was still worth only +0.009 R gross per trade against 0.022 R
+  of cost, even with 9.5-day average holds.
+- No clock and long holds lowered cost. They did not create an edge large
+  enough to pay for it.
+
+**Results page.** `docs/trade.html` now also shows the 20 coins' VALID ML
+trades on 1h candles. They are in their own group, marked as not passed, and
+each coin's account is computed on its own.

@@ -112,7 +112,7 @@ code{font-size:.85em;overflow-wrap:anywhere}
   "R" = กำไรขาดทุนเทียบกับเงินที่เสี่ยงต่อไม้ (1R = 1% ของพอร์ต) ·
   กลยุทธ์กราฟ 5 นาที (039, 041) แสดงเป็นแท่ง 1 ชั่วโมงเพื่อให้โหลดเร็ว จุดเข้าออกจึงอยู่ในแท่งที่มีเวลานั้น ·
   ระดับ stop ที่แสดงคือ stop <b>ตอนออก</b> ถ้ากลยุทธ์เลื่อน stop ตามราคา (trailing) จะไม่ใช่ stop ตอนเข้า<br>
-  <b>อย่าลืม:</b> ทั้ง 7 ตัวนี้ผ่านสอบย่อย แต่ 5 ตัวแพ้การเข้าแบบสุ่ม และ 4 ตัวที่ได้เข้าสอบจริงไม่ผ่านทั้งหมด หน้านี้มีไว้ดูภาพการเทรด ไม่ใช่หลักฐานว่ากลยุทธ์ทำกำไรได้<br>
+  <b>กลุ่ม ML (20 เหรียญ):</b> ไม้จาก ML รอบล่าสุดที่ตัดสินทั้งเข้าและออกเอง (PLAN §27) ช่วงสอบย่อย ผลรวมไม่ผ่าน ทุนของแต่ละเหรียญคิดแยกกัน<br><b>อย่าลืม:</b> กลยุทธ์ PASS ทั้ง 7 ตัวผ่านสอบย่อย แต่ 5 ตัวแพ้การเข้าแบบสุ่ม และ 4 ตัวที่ได้เข้าสอบจริงไม่ผ่านทั้งหมด หน้านี้มีไว้ดูภาพการเทรด ไม่ใช่หลักฐานว่ากลยุทธ์ทำกำไรได้<br>
   <span style="font-size:.8rem">ที่มา: <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> และ <code>_holdout.csv.gz</code> · แท่งเทียน Binance USDT-M (ไฟล์ทางการ ไม่ได้แปลงกรอบเวลา)</span>
 </div>
 </main>
@@ -124,9 +124,10 @@ const DESC = {
   "029_opening_range_tf240": "ดูกรอบราคาช่วงต้นวัน (หลัง 07:00 น. เวลาไทย) แล้วเข้าตามทางที่ราคาปิดทะลุกรอบ <b>ทั้ง Long และ Short</b> · stop 4% · ถือไม่เกิน 48 ชม.",
   "038_opening_range_both_sides": "ดูกรอบราคาชั่วโมงแรกหลัง 07:00 น. เวลาไทย แล้วเข้าตามทางที่ทะลุ <b>ทั้ง Long และ Short</b> · stop 5% · เลื่อน stop ตามเมื่อกำไร 2R · ถือไม่เกิน 96 ชม.",
   "039_breakout_flow_confirm_tf5_time": "เข้าเมื่อราคาทะลุจุดสูง/ต่ำ 80 ชม. พร้อม volume สูงและแรงซื้อขายเชิงรุกไปทางเดียวกัน <b>ทั้ง Long และ Short</b> · stop 6% · ถือไม่เกิน 96 ชม.",
+  "ml_hold (PLAN §27)": "<b>ML ตัดสินทั้งเข้าและออกเอง ไม่จำกัดเวลา</b> · ทุก 4 ชม. โมเดลทำนายว่าอีก 24 ชม. ราคาจะไปทางไหน เข้าเมื่อคำทำนายแรงกว่า 90% ของ 30 วันที่ผ่านมา ถือไปจนคำทำนายกลับทิศ (ออกด้วยสัญญาณ) · stop กันพัง 8 ATR · <b>ทั้ง Long และ Short</b> · โมเดลเดียวเทรน 20 เหรียญรวมกัน · ผลรวม: ไม่ผ่าน (−0.013R/ไม้ ค่าธรรมเนียมกินกำไรก่อนหักทั้งหมด) · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
   "041_impulse_not_crowded_tf5_time": "เข้าตามแรงพุ่งของราคาใน 24 ชม. เมื่อ volume สูงและ funding บอกว่าคนยังไม่แห่ไปฝั่งเดียวกัน <b>ทั้ง Long และ Short</b> · stop 6% · ถือไม่เกิน 96 ชม."
 };
-const REASON = {stop: "โดน stop", time: "หมดเวลาถือ", eod: "จบช่วงทดสอบ", tp: "ถึงเป้า", signal: "สัญญาณกลับ"};
+const REASON = {stop: "โดน stop", time: "หมดเวลาถือ", eod: "จบช่วงทดสอบ", tp: "ถึงเป้า", signal: "สัญญาณออก"};
 const TZ = 7 * 3600;
 const th = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const dt = s => { const d = new Date(s * 1000); return `${d.getUTCDate()} ${th[d.getUTCMonth()]} ${String(d.getUTCFullYear()).slice(2)} ${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`; };
@@ -163,7 +164,7 @@ function barAt(t) { // index of the displayed bar containing time t
 }
 
 let PER = "valid", IDX = [];
-const VER = "2";   // bump when docs/trades/ changes, so browsers do not keep an old copy
+const VER = "3";   // bump when docs/trades/ changes, so browsers do not keep an old copy
 async function load(id) {
   $("load").style.display = "flex";
   const it = IDX.find(r => r.id === id);
@@ -186,7 +187,7 @@ async function load(id) {
   $("sW").textContent = (wins / tr.length * 100).toFixed(0) + "%";
   $("sR").innerHTML = `<span class="${m.mr >= 0 ? "up" : "down"}">${m.mr >= 0 ? "+" : ""}${m.mr.toFixed(2)}R</span>`;
   $("sE").innerHTML = `<span class="${m.end >= 1000 ? "up" : "down"}">${Math.round(m.end).toLocaleString("en-US")} (${m.end >= 1000 ? "+" : ""}${((m.end / 1000 - 1) * 100).toFixed(1)}%)</span>`;
-  $("pills").innerHTML = `<span class="pill g">PASS</span>` +
+  $("pills").innerHTML = m.pills ? m.pills.map(([k, t]) => `<span class="pill ${k}">${t}</span>`).join("") : `<span class="pill g">PASS</span>` +
     (m.base === "SKILL" ? `<span class="pill g">ชนะสุ่ม</span>` : `<span class="pill">แพ้สุ่ม</span>`) +
     (m.hold ? `<span class="pill r">สอบจริง: ไม่ผ่าน</span>` : `<span class="pill">ไม่ได้เข้าสอบจริง</span>`);
   $("desc").innerHTML = `<b>${m.name}</b> — ${DESC[m.name] || ""}`;
@@ -269,9 +270,11 @@ $("theme").onclick = () => {
   idx.forEach(r => { if (r.hasHold === undefined) r.hasHold = !!r.hold; });
   const pick = $("pick");
   IDX = idx;
-  pick.innerHTML = idx.map(r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`).join("");
+  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.group === "ml" ? "ML เข้า-ออกเอง · " + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
+  pick.innerHTML = `<optgroup label="กลยุทธ์ที่ผ่านสอบย่อย (PASS)">${idx.filter(r => r.group !== "ml").map(opt).join("")}</optgroup>` +
+    `<optgroup label="ML ตัดสินเข้า-ออกเอง (รอบ §27, ไม่ผ่าน) · 20 เหรียญ">${idx.filter(r => r.group === "ml").map(opt).join("")}</optgroup>`;
   let first = idx[0].id;
-  try { const h = location.hash.slice(1).split("_"); if (idx.some(r => r.id === h[0])) { first = h[0]; if (h[1] === "holdout") PER = "holdout"; } } catch (e) {}
+  try { let h = location.hash.slice(1); const ho = h.endsWith("_holdout"); if (ho) h = h.slice(0, -8); if (idx.some(r => r.id === h)) { first = h; if (ho) PER = "holdout"; } } catch (e) {}
   const setHash = () => history.replaceState(null, "", "#" + pick.value + (PER === "holdout" ? "_holdout" : ""));
   document.querySelectorAll("#per button").forEach(b => b.onclick = () => { if (b.disabled) return; PER = b.dataset.p; setHash(); load(pick.value); });
   pick.value = first;
