@@ -689,6 +689,29 @@ def t_smart_divergence(b, f, z_n=720, k=2.0):
     return _side(_cross_up(d, float(k)), _cross_dn(d, -float(k)))
 
 
+def _premium(b: pd.DataFrame, col: str) -> pd.Series:
+    if col not in b.columns:
+        raise ValueError(f"bars have no '{col}' column: the Coinbase premium is not loaded. "
+                         f"Run: python src/datafeed.py --premium (PLAN.md section 25; "
+                         f"cb_prem_btc needs SYMBOL=BTCUSDT's cache)")
+    return b[col].astype(float)
+
+
+def t_premium_cross(b, f, col="cb_prem", n=168, z=2.0):
+    """Coinbase premium (PLAN.md section 25): the premium's z-score against its
+    own last n bars crosses above +z (US spot buyers paying up: long) or below
+    -z (US spot sellers: short). col = cb_prem (own coin) or cb_prem_btc."""
+    zz = _zscore(_premium(b, col), n)
+    return _side(_edge(zz > z), _edge(zz < -z))
+
+
+def f_premium_side(b, f, col="cb_prem", n=168, z=0.0):
+    """Long only while the premium's z-score (last n bars) is above z, short
+    only while it is below -z (PLAN.md section 25)."""
+    zz = _zscore(_premium(b, col), n)
+    return (zz > z).fillna(False).to_numpy(), (zz < -z).fillna(False).to_numpy()
+
+
 def f_oi_rising(b, f, n=24, min_pct=0.0):
     """Open interest grew by more than min_pct over the last n bars (new
     positions are being opened, not closed). Allows both sides."""
@@ -721,6 +744,7 @@ TRIGGERS = {
     "super_scalper": t_super_scalper,
     "liquidity_sweep": t_liquidity_sweep,
     "candle_at_level": t_candle_at_level,
+    "premium_cross": t_premium_cross,
     "oi_flush": t_oi_flush,
     "crowd_fade": t_crowd_fade,
     "smart_divergence": t_smart_divergence,
@@ -861,6 +885,7 @@ FILTERS = {
     "hours": f_hours,
     "weekdays": f_weekdays,
     "oi_rising": f_oi_rising,
+    "premium_side": f_premium_side,
 }
 
 NEEDS_FUNDING_BLOCKS = {"funding_extreme", "funding_not_crowded"}

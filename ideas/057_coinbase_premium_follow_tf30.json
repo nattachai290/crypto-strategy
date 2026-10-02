@@ -1,0 +1,53 @@
+{
+  "name": "057_coinbase_premium_follow_tf30",
+  "hypothesis": "Coinbase is where US institutions and ETF-related flow buy spot; Binance is mostly offshore retail and derivatives. When US spot buyers pay up, the coin trades at a premium on Coinbase relative to Binance, and that buying is persistent (large orders are worked over hours to days), so price on Binance follows. When the premium jumps (its z-score against its own last n bars crosses above +z) go long on the Binance perp; when it collapses (below -z), go short. Counterparty: offshore traders who have not yet seen the US flow. Pre-registered in PLAN.md section 25: z threshold, lookback and target are chosen on TRAIN only; ATR 3 stop, out after 48 h, 4-bar cooldown. Prior: low to medium-low; this is the first data source in the project that comes from outside Binance. [Timeframe variant of 057_coinbase_premium_follow, 60m -> 30m, mode chart: same bar counts and ATR multiples, hold x0.5, pct stop x0.707.]",
+  "strategy": "recipe",
+  "tf": 30,
+  "params": {
+    "triggers": [
+      {
+        "type": "premium_cross",
+        "col": "cb_prem",
+        "n": 168,
+        "z": 2.0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "atr",
+      "mult": 3.0
+    },
+    "tp": {
+      "type": "r",
+      "r": 2.0
+    },
+    "be_at": 0,
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 24.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.z": [
+      1.5,
+      2.5
+    ],
+    "triggers.0.n": [
+      72,
+      336
+    ],
+    "tp.r": [
+      2.0,
+      4.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "057_coinbase_premium_follow",
+  "variant_mode": "chart"
+}

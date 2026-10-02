@@ -5743,3 +5743,35 @@ price. That is now shown both for waiting for a confirming candle (§22) and
 for resting an order in advance (§24).
 
 **Verdict.** REJECT on all 4 runs. No holdout. `LESSONS.md` §14 is added.
+
+---
+
+## Exp 057 - Coinbase premium, pre-registration (PLAN.md section 25)
+
+**Date:** 2026-10-02
+**Status:** tooling ready, not run. The research agent runs it.
+
+**Why.** This is the first data source from outside Binance. The premium is
+Coinbase USD close / Binance spot USDT close − 1, so it shows when US spot
+buyers pay up. Every Binance-only entry tested so far was about a coin flip
+(Exp 052/053).
+
+**Tooling:**
+- `datafeed.py --premium` downloads Coinbase hourly candles and Binance spot
+  1h klines, merges them on the hour, and validates coverage.
+- `experiment.attach_premium` makes hour H available only at H + 1h + 2 min.
+- `get_bars` attaches `cb_prem` and `cb_prem_btc`.
+- Blocks: `premium_cross` and `premium_side`.
+
+**Checks:**
+- Test 21: parse, causal attach, the NaN rule for stale values, a jump giving
+  one signal, and refusal without the column.
+- Test 7: causality.
+- A one-month build (March 2023) in a scratch directory gave 740 hours with a
+  premium of +0.10% median. No research run was made.
+
+**Ideas:**
+- `057_coinbase_premium_follow` (own premium): BTC and ETH.
+- `058_btc_premium_follow_eth` (BTC's premium as the signal): ETH only.
+
+Each has 4 timeframes and an 8-cell TRAIN grid.
