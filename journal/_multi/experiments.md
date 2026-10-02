@@ -904,3 +904,39 @@ The holdout stays reserved for a PASS. The only clean ways to learn more are:
 
 **Verdict.** REJECT. Across the project there is still no holdout CONFIRMED.
 The ML stage (§19–20) is closed.
+
+---
+
+## Exp 007 - Pooled ML model round 2, pre-registration (PLAN.md section 21)
+
+**Date:** 2026-10-02
+**Status:** tooling ready, not run. The research agent runs it.
+
+**Why.** Round 1 (Exp 005) failed only on its CI, and the review (Exp 006)
+found the control could be beaten by volatility selection alone. The owner
+asked to train smarter on the same data. Round 2 changes four things, all
+fixed before the run:
+- a 4-day hold, decided every 4 hours;
+- cross-coin and BTC features;
+- LightGBM settings tuned on TRAIN out-of-fold only;
+- the control compared on **gross** R.
+
+Gates are stricter than round 1: both legs must be net positive, and breadth
+is now judged on gross R against each coin's own shifted copies.
+
+**Honest framing for the record:**
+- This is the 4th ML attempt on the same VALID 2023–24.
+- A PASS here is weaker evidence than a first-try PASS would be.
+- The holdout (unused by any ML run) is what decides.
+- Nothing was chosen from a VALID number: the hold length follows
+  `LESSONS.md` §1, which is TRAIN-consistent, and the control change follows
+  a design flaw, not a result.
+
+**Tests (17), synthetic data:**
+- cross features are causal;
+- labels match the simulated trade;
+- a planted edge gives PASS;
+- noise gives REJECT and does not beat the gross control;
+- VALID trades end before the holdout.
+
+No market data was run.

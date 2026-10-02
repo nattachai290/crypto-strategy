@@ -420,6 +420,7 @@ def main() -> None:
     test_exit_lab()
     test_ml_entry()
     test_ml_pool()
+    test_ml_pool2()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1355,6 +1356,47 @@ def test_ml_pool() -> None:
           str(edge["valid_last_exit"]))
     check("ml_pool: alt slippage for alts, the normal one for BTC/ETH",
           MP.slippage("BTCUSDT") == C.SLIPPAGE and MP.slippage("C0USDT") == MP.ALT_SLIPPAGE)
+
+
+def test_ml_pool2() -> None:
+    print("\n17. Pooled ML round 2: cross features causal, 4-day labels, gross control, planted edge found, noise rejected")
+    import contextlib
+    import io
+    import ml_pool2 as M2
+    import exit_lab as XL
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    coins = {f"C{i}USDT": (_momentum_bars(0.0008, seed=30 + i), fund) for i in range(3)}
+    full = M2.cross_features(coins)["C0USDT"]
+    cut = 20000
+    part = M2.cross_features({c: (b.iloc[:cut], f) for c, (b, f) in coins.items()})["C0USDT"]
+    check("ml_pool2 cross features are causal (full run == truncated run on the prefix)",
+          np.allclose(full.iloc[:cut].to_numpy(float), part.to_numpy(float), equal_nan=True))
+    b = coins["C0USDT"][0]
+    lab = M2.labels(b.iloc[:3000], fund, C.SLIPPAGE)
+    i = int(np.flatnonzero(M2.decision_mask(b.index[:3000]))[200])
+    side = np.zeros(3000); side[i] = -1.0
+    one = XL.simulate(b.iloc[:3000], side, M2.EXIT, fund)
+    check("ml_pool2 labels: decision bars only, net and gross = the simulated 4-day trade",
+          np.isclose(lab["short"].iloc[i], one["net_r"].iloc[0])
+          and np.isclose(lab["g_short"].iloc[i], one["gross_r"].iloc[0])
+          and lab["long"].iloc[i + 1:i + M2.STEP].isna().all(),
+          f"{lab['short'].iloc[i]} {one['net_r'].iloc[0]}")
+    with contextlib.redirect_stdout(io.StringIO()):
+        edge = M2.evaluate(M2.prepare(coins), grid=M2.GRID[:2], min_coins=3)
+        noise = M2.evaluate(M2.prepare({f"N{i}USDT": (_momentum_bars(0.0, seed=40 + i), fund)
+                                        for i in range(3)}), grid=M2.GRID[:2], min_coins=3)
+    check("ml_pool2 pipeline: a planted edge is found (PASS, gross above the shifted p95)",
+          edge["verdict"] == "PASS",
+          f"{edge['verdict']} mean {edge['valid'].get('mean_r', 0):+.3f} gross {edge['valid'].get('gross_r', 0):+.3f} "
+          f"p95 {edge['shift_gross_p95']} failed {edge['gates_failed']}")
+    check("ml_pool2 pipeline: pure noise is not a PASS and its gross does not beat the shifted p95",
+          noise["verdict"] == "REJECT" and "gross_beats_shift_p95" in noise["gates_failed"],
+          f"{noise['verdict']} gross {noise['valid'].get('gross_r', 0):+.3f} p95 {noise['shift_gross_p95']} "
+          f"failed {noise['gates_failed']}")
+    check("ml_pool2: no VALID trade runs into HOLDOUT",
+          pd.Timestamp(edge["valid_last_exit"]) <= pd.Timestamp(M2.SPLITS["holdout"][0], tz="UTC"),
+          str(edge["valid_last_exit"]))
 
 
 if __name__ == "__main__":
