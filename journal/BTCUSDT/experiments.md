@@ -5254,3 +5254,84 @@ and out is between 0.04 and 0.21 R. The one clock where cost is cheap enough
 (4h, 0.041 R) cannot produce 100 VALID trades.** That is the same wall as
 every other round here, reached by a different road: this time it is not that
 the idea is wrong but that **the cheap clock is the illiquid clock**.
+
+---
+
+## Exp 050 - Review of Exp 049 / ETH Exp 015 (candle at a level, planner): verdicts stand, the "information" reading is withdrawn
+
+**Date:** 2026-10-02
+**Status:** complete.
+
+**Integrity.**
+- No `src/` or idea file changed, and `holdout_log.csv` is untouched.
+- `evaluations.csv` has 8 rows appended on each coin. Its last old row was
+  re-written with floats rounded in the last digit, and every old value is
+  equal to within 1e-12. The cause is `evaluate._append_csv`, which reads the
+  whole file and writes it back (pandas float formatting). It is harmless
+  here. It is recorded because the file is meant to be append-only.
+
+**Corrections (to Exp 049, ETH Exp 015 and `LESSONS.md` §12):**
+
+1. **"The pattern really does carry information" is withdrawn.**
+   - The evidence offered was the largest gross numbers out of 16 rows:
+     BTC 055 1h +0.129, ETH 055 4h +0.224 (63 trades), ETH 054 4h +0.105.
+     Picking the maximum of 16 noisy rows is the selection effect
+     `LESSONS.md` §3 warns about.
+   - Across all 16 rows, only **5 are gross-positive** (BTC 2 of 8, ETH 3 of
+     8). The mean gross is −0.004 R on BTC and +0.014 R on ETH.
+   - No gross figure has a CI, and no random control was run.
+   - Conclusion: the round shows **no evidence** that a candle at a level
+     predicts direction. The cost finding (`cost_r` by clock) stands.
+2. **"Both legs lose on every row / not §2's shape" is wrong for the rows
+   that matter.** The legs, recomputed from `eval_trades/*_valid.csv.gz`
+   (mean R, long / short):
+
+   | coin | file | long | short |
+   |---|---|---|---|
+   | BTC | 054 4h | **+0.299** | −0.216 |
+   | BTC | 055 1h | **+0.075** | −0.029 |
+   | ETH | 054 4h | +0.107 | +0.050 |
+   | ETH | 055 4h | +0.206 | +0.162 |
+
+   - On BTC, the two rows with a positive net are carried by the long leg in
+     the 2023–24 bull market. That **is** §2's shape.
+   - The trade counts are balanced. The results are not.
+   - Both legs lose only on the 15m and 30m rows.
+3. **ETH: the 4h swing row is INCONCLUSIVE because no TRAIN cell had 100
+   trades** (`n_eligible` 0, 98 TRAIN trades), not because of size skips.
+   - One TRAIN skip also occurs on four ETH 1h/30m REJECT rows, which stay
+     REJECT.
+   - Only `054_prev_day` 4h is UNSIZABLE.
+4. **"The cheap clock is the illiquid clock" is the wrong word.**
+   - The 4h rows do not lack liquidity. They lack signals: 61–63 VALID trades
+     against the 100-trade floor.
+   - The real trade-off is between cost per trade and sample size, and it was
+     visible before the run (PLAN.md §22 prior).
+
+**Verdict.** 0 PASS and 0 WATCH out of 16 evaluations. No holdout was used and
+no controls were run, both correctly. **The candle-at-level family is closed
+at these settings.** A v2 is not allowed, because nothing reached WATCH.
+
+---
+
+## Exp 051 - Stop diagnosis tooling (PLAN.md section 23), not run
+
+**Date:** 2026-10-02
+
+**Owner's question.** Were the entries in the wrong direction, or in the
+right direction and then stopped out by a fake move?
+
+**Tooling.** `src/stop_diag.py` reads the VALID trade files and the bars.
+It does three things:
+- checks where price stood at the time limit for each trade;
+- for trades that were stopped, checks whether price later went their way;
+- compares both against random fills that have the same side, stop size and
+  hold.
+
+**Test 19** (synthetic data):
+- planted momentum with tight stops gives SHAKEN_OUT;
+- the same entries reversed give WRONG_DIRECTION;
+- noise gives COIN_FLIP.
+
+The tool is read-only: no strategy is rerun or tuned, and HOLDOUT is not
+read. The research agent runs it once per coin. **Prior: COIN_FLIP.**

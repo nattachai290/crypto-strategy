@@ -1436,3 +1436,19 @@ is either unsizable, under 100 trades, or eaten by cost.** `LESSONS.md` §1: the
 structure is real and the cost of harvesting it is the same size. The one clock
 where cost would be cheap enough is 4h, and 4h cannot be traded from a 1,000 USDT
 account at these stop widths or cannot produce 100 VALID trades.
+
+---
+
+## Exp 016 - Review of Exp 015 (candle at a level on ETH, planner)
+
+See **BTC Exp 050**. In short:
+- **"The pattern carries information" is withdrawn.** It rested on the largest
+  of 16 gross numbers. Only 3 of 8 ETH rows are gross-positive, and the mean
+  gross is +0.014 R.
+- **"Both legs lose" is wrong on the 4h rows.** 054 4h is long +0.107 /
+  short +0.050, and 055 4h is +0.206 / +0.162. Both rows are too small or
+  unsizable to count.
+- **The 4h swing row is INCONCLUSIVE** for `n_eligible` 0 (98 TRAIN trades),
+  not because of size skips.
+
+The verdicts stand.

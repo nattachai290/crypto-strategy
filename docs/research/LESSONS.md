@@ -359,7 +359,17 @@ The shifted copies' gross median is +0.003 and their 95th percentile is +0.139.
   pre-registered test and failed. Three ML runs and one tuned rerun found no
   timing skill at 1h–4 days on 20 coins after VIP0 costs.
 
-## 12. Candle patterns at a level carry information, and cost eats it (16 evaluations)
+## 12. Candle patterns at a level: no evidence of information, and cost eats what there is (16 evaluations)
+
+> **Correction (planner, BTC Exp 050).** The first two claims below are
+> withdrawn.
+> - "The pattern really does carry information" rested on the largest gross
+>   numbers out of 16 rows. Only 5 of the 16 rows are gross-positive. The mean
+>   gross is −0.004 R on BTC and +0.014 R on ETH. No control was run.
+> - "Both legs lose / not §2's shape" is wrong for the rows with a positive
+>   net. BTC 054 4h is long +0.299 / short −0.216, and BTC 055 1h is +0.075 /
+>   −0.029: the long leg in a bull market, which is §2.
+> - The cost-by-clock measurements below stand.
 
 PLAN.md §22 (the owner's "candle pattern + location + support and resistance"),
 BTC Exp 049 and ETH Exp 015: the new block `recipes.candle_at_level` (engulfing
