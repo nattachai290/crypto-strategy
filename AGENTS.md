@@ -5,10 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**No active work.** The ML entry model (§19, BTC Exp 046, ETH Exp 010) and the
-pooled 20-coin model (§20, `_multi` Exp 005, review Exp 006) are REJECT, and
-their VALID data is now seen: do not rerun them with a changed feature,
-threshold, coin set or control. Ask the owner before starting anything new. The exit
+**Active work: pooled ML round 2, `src/ml_pool2.py` (`docs/research/PLAN.md`
+§21): one run on the 20 cached coins, then stop.** The ML entry model (§19)
+and pooled round 1 (§20) are REJECT and must not be rerun with changes.
+The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
 TradingView ports are closed (§13, BTC Exp 033/034); a new port needs Pine
@@ -325,6 +325,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `exit_lab.py` | PLAN.md §18: six fixed exits on random entries (p 0.25, seed 18), each trade simulated on its own with the engine's exact rules (test 14). TRAIN chooses the exit, VALID gives PASS/REJECT, `--final` runs the holdout once. Writes `results/<SYMBOL>/exit_lab/` and the generated `journal/<SYMBOL>/exit_lab.md` |
 | `ml_entry.py` | PLAN.md §19: LightGBM long/short models predict the net R of a fixed symmetric exit; the threshold comes from purged TRAIN walk-forward OOF; VALID gates include beating random signals with the same long/short counts; `--final` runs the holdout once. Writes `results/<SYMBOL>/ml_entry/` and the generated `journal/<SYMBOL>/ml_entry.md` |
 | `ml_pool.py` | PLAN.md §20: the §19 model fitted once on 20 coins together (universe chosen on TRAIN volume, survivorship-free). `--build` downloads 1h perp klines + funding to `data/*/_multi/pool_1h`; gates add breadth (half the coins beat their own control). Writes `results/_multi/ml_pool/` and the generated `journal/_multi/ml_pool.md` |
+| `ml_pool2.py` | PLAN.md §21: round 2 of the pooled model on the same 20 coins: 4-day hold decided every 4 h, cross-coin/BTC features, LightGBM settings tuned on TRAIN OOF, control on GROSS R, both legs must be net positive. Writes `results/_multi/ml_pool2/` and the generated `journal/_multi/ml_pool2.md` |
 | `meta_lessons.py` | reads every coin's recorded results (no backtest) and writes `journal/_multi/meta_lessons.md` + `results/_multi/meta_lessons/`; lessons summarised by hand in `docs/research/LESSONS.md` |
 
 Engine facts to remember:

@@ -1511,3 +1511,77 @@ or exit after a result.
 **Prior:** low. More rows make the model's estimates less noisy. They cannot
 make a pattern bigger than it is, and every round so far found the 1h pattern
 smaller than one round-trip cost.
+
+## 21. Pooled ML model, round 2: smarter training on the same data (owner-approved 2026-10-02)
+
+**Why.** Round 1 (§20, `_multi` Exp 005) failed only on its CI: +0.060 R,
+CI [−0.037, +0.170]. The owner asked whether the same data could train a
+smarter model. It can, on one condition: **every choice is made on TRAIN
+(2020–22) out-of-fold, and VALID is looked at once.** VALID has already been
+seen three times by this line of work, so round 2's gates are stricter than
+round 1's.
+
+**What changes (`src/ml_pool2.py`, `_multi` Exp 007).** Each change was
+chosen from lessons that hold on TRAIN, or from a design flaw. None was
+chosen from a VALID number.
+
+1. **Longer hold, so cost is a smaller share of each trade** (`LESSONS.md` §1).
+   - A decision every 4 hours.
+   - Symmetric exit: an 8 × 1h-ATR stop, closed after 96 bars (4 days).
+2. **Cross-coin features**, all taken at the same bar close:
+   - the equal-weight market return over 24/72/168 h;
+   - the coin's return relative to the market;
+   - market breadth: the share of coins up over 24 h;
+   - BTC's return over 24/72/168 h, and BTC's 168 h volatility.
+3. **Hyper-parameters tuned on TRAIN only.**
+   - 8 LightGBM settings: leaves {7, 31} × minimum leaf {300, 3000} ×
+     rounds {150, 500}, each × 4 thresholds.
+   - The cell is chosen by the best out-of-fold net mean over 3 purged,
+     expanding folds, with ≥ 2,000 OOF trades.
+4. **A fairer control** (the flaw found in `_multi` Exp 006).
+   - The model's **gross** R (price move only, before every cost) is compared
+     with the gross R of 200 circular time-shifts of its own decision
+     sequence.
+   - Picking high-volatility bars lowers cost per R. It cannot raise gross R
+     by itself, so this comparison no longer rewards it.
+
+**Unchanged:**
+- the same 20 coins (`results/_multi/ml_pool/universe.json`) and the same
+  cache, so no download is needed;
+- the 0.05% alt slippage, and 0.02% for BTC/ETH;
+- the coin is not a feature;
+- folds and split dates.
+
+**Gates on VALID** (PASS needs all):
+- TRAIN OOF mean > 0;
+- ≥ 2,000 trades;
+- net mean > 0, and weekly-block CI lower bound > 0;
+- net mean > 0 at cost ×1.5;
+- pooled gross above the 95th percentile of the shifted copies' gross;
+- ≥ 10 coins with ≥ 50 trades;
+- at least half of those coins with a positive net mean **and** a gross mean
+  above their own shifted 95th percentile;
+- **both legs net > 0**, so a long-only bull-market result cannot pass.
+
+**`--final`** runs the holdout once, and only after PASS. CONFIRMED needs all of:
+- net mean > 0, and CI lower bound > 0;
+- gross above the shifted median;
+- at least half of the coins above their own shifted median.
+
+**Test 17** (synthetic data):
+- cross features are causal;
+- labels are the simulated 4-day trades, net and gross, on decision bars only;
+- a planted edge on 3 coins gives **PASS**;
+- noise gives **REJECT**, and noise does not beat the gross control;
+- no VALID trade reaches the holdout.
+
+**Run:** `python src/ml_pool2.py`, once.
+- It needs `results/_multi/ml_pool/universe.json` and
+  `data/cache/_multi/pool_1h/`. If the cache is missing, run
+  `python src/ml_pool.py --build`; the universe file is reused.
+- After a result, do not change any setting, coin, feature or gate.
+
+**Prior:** low to medium-low.
+- The longer hold attacks the main cost problem directly.
+- A wide CI on 104 VALID weeks is likely to stay wide.
+- The both-legs gate is strict in a bull-market VALID.
