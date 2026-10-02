@@ -1963,3 +1963,164 @@ Every other value of §28 is unchanged. The run is new because its data and
 universe changed. No result existed, so nothing is being re-run until it
 passes. The prompt for the research agent is the same as for Exp 019, plus
 `--build` again: it downloads only the coins that are new to v2.
+
+---
+
+## Exp 022 - Walk-forward multi-timeframe ML on 47 coins (PLAN.md section 28, Exp 021 run): REJECT on all three timeframes
+
+**Date:** 2026-10-02
+**Status:** complete. **One run, all three timeframes, exactly as re-registered in
+Exp 021.** No value in `src/ml_wf.py` was changed, no variant was tried,
+`--final` was not run (nothing passed), no holdout file was created and HOLDOUT
+was never read. **No new evaluation row.**
+
+**Session state.** `git pull` up to date · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED**, and test 24 now also covers the Exp 020
+defect: **"zero-volume bars: dead tail cut, no label touches a dead bar, all
+labels finite, no entry on a dead bar, every trade's R bounded"** (max |R| 7.39 on
+the synthetic coin) · `data/cache/_multi/perp_1d.parquet` already existed, so
+`rotation.py --build perp` was skipped.
+
+**`ml_wf.py --build` -> `BUILD OK: 47 coins x ['1h', '4h', '1d']`.** The universe is
+re-chosen with zero-volume days removed, so **`universe_v2.json` holds 47 coins,
+not the 50 of `PLAN.md` §28's title and not the 49 of v1.** Two coins dropped out
+because they were frozen at the last TRAIN day; `universe.json` stays as Exp 020's
+record. **This is the second defect Exp 021 found and it is now fixed**, and the
+run below is on clean data: no overflow, no inf, no nan anywhere.
+
+### Verdict: REJECT on 1h, 4h and 1d
+
+| timeframe | verdict | VALID trades | mean R | 95% weekly-block CI | gross_r | cost_r | gates failed |
+|---|---|---|---|---|---|---|---|
+| **1h** | **REJECT** | 9,276 | **-0.000019** | [-0.0325, +0.0330] | +0.0219 | 0.0220 | `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`, `both_legs>0` |
+| **4h** | **REJECT** | 2,465 | **+0.0096** | [-0.1014, +0.1346] | +0.0176 | 0.0080 | `valid_ci_lo>0`, `breadth>=0.5`, `both_legs>0` |
+| **1d** | **REJECT** | 845 | **+0.0234** | [-0.0965, +0.1353] | +0.0304 | 0.0070 | `valid_ci_lo>0`, `both_legs>0` |
+
+**No timeframe passes, so the holdout rule never engaged and there is no
+timeframe to take the real exam.** `PLAN.md` §28's own sentence covers this round:
+a REJECT on all three closes ML in this project.
+
+**TRAIN walk-forward (2021-22) chose, per timeframe, out of 24 cells:**
+
+| tf | setting | q_in | exit | TRAIN trades | TRAIN mean R |
+|---|---|---|---|---|---|
+| 1h | leaves 7, leaf 1000, 150 rounds | **0.9** | **half** | 12,747 | **+0.0148** |
+| 4h | leaves 7, leaf 1000, 150 rounds | **0.75** | **flip** | 3,320 | **+0.1171** |
+| 1d | leaves 7, leaf 1000, 150 rounds | **0.75** | **flip** | 320 | **+0.3674** |
+
+**48 monthly refits per timeframe** (2021-01 -> 2024-12), each trained only on
+labels ending before its month; the 1h file records the last training label end
+for every month and it is always the last bar of the previous month.
+
+**The rest of each VALID picture:**
+
+| | 1h | 4h | 1d |
+|---|---|---|---|
+| long leg | **+0.0110** (2,793 trades) | **+0.1513** (700) | **-0.0117** (520) |
+| short leg | **-0.0047** (6,483) | **-0.0466** (1,765) | **+0.0795** (325) |
+| cost x1.5 | -0.0116 | **+0.0043** | **+0.0215** |
+| average hold | 20.4 bars | 46.6 bars | 17.2 bars |
+| exits signal / stop / eod | 96.8 / 3.2 / 0.1% | 84.3 / 14.0 / 1.7% | 92.0 / 3.0 / 5.1% |
+| mean R of a signal exit | +0.0335 | **+0.1783** | +0.0367 |
+| mean R of a stop exit | -1.0241 | -1.0105 | -1.0517 |
+| **timing** (held return per bar, ATRs, before stops and costs) | **+0.0092** | **+0.0050** | **+0.0169** |
+| shifted median | +0.0005 | -0.0001 | -0.0001 |
+| **shifted p95** | **+0.0029** | **+0.0032** | **+0.0101** |
+| time in market | 23.8% | 57.8% | 43.8% |
+| per year 2023 / 2024 | **-0.0114 / +0.0103** | **-0.0451 / +0.0661** | **+0.1814 / -0.0749** |
+| coins with >= 10 trades, net > 0 | **26 of 47 = 0.55** | **21 of 46 = 0.46** | **30 of 45 = 0.67** |
+
+**Desired position mix** (from the `desired_valid_tf*.csv.gz` files):
+
+| tf | decisions | flat | long | short |
+|---|---|---|---|---|
+| 1h | 788,600 | 76.0% | **5.1%** | 19.0% |
+| 4h | 197,161 | 41.7% | 15.2% | **43.0%** |
+| 1d | 32,859 | 56.5% | 19.7% | 23.8% |
+
+**The 1d timing gate passes with the largest margin of the three** (+0.0169 against
+a p95 of +0.0101), and 1d is also the only clock whose stress survives (+0.0215).
+It still fails `valid_ci_lo>0` and `both_legs>0`.
+
+### What the numbers say
+
+**1. The timing gate passes on all three timeframes, and that is now a repeated
+result, not a fluke.** §27 passed it on 20 coins with a frozen model (+0.0050
+against a p95 of +0.0037); here it passes at 1h (+0.0092 vs +0.0029), 4h
+(+0.0050 vs +0.0032) and 1d (+0.0169 vs +0.0101). **The model's desired-position
+path does carry information about where price goes next, on 47 coins, refit
+monthly, judged by a control built for variable holds.** This is the one thing
+ML has produced in this project that survives a fair control.
+
+**2. And it is still smaller than the cost, which is why every clock is REJECT.**
+1h: gross **+0.0219** against cost **0.0220** - cost is 100% of the gross and the
+net is **-0.000019, i.e. zero to five decimal places.** 4h: gross +0.0176 against
+0.0080, net +0.0096, CI [-0.1014, +0.1346]. 1d: gross +0.0304 against 0.0070, net
++0.0234, CI [-0.0965, +0.1353]. **`LESSONS.md` §1 in its sharpest form yet: a
+timing signal that beats 200 time-shifted copies of itself, and cannot pay the
+0.7-2.2 cents of cost per trade to collect it.** The gap is not a matter of
+tuning; it is the same gap as §22, §24, §25 and §27.
+
+**3. Cost per trade falls with the clock and the hold gets longer, and it is not
+enough.** 1h holds 20.4 bars for 0.0220 R of cost; 4h holds 46.6 bars for 0.0080;
+1d holds 17.2 bars for 0.0070. The 4h book is the cheapest per unit of exposure
+and the only one whose stress stays positive (+0.0043) - but its CI is
+[-0.1014, +0.1346], four times wider than the mean.
+
+**4. Both legs fail on two of three clocks, and the losing side flips with the
+clock.** 1h: long +0.0110, short -0.0047. 4h: long **+0.1513**, short
+**-0.0466**. 1d: long **-0.0117**, short **+0.0795**. **A rule whose winning side
+changes with the timeframe is not a directional edge.** `both_legs>0` fails at 1h
+and 1d outright and at 4h because the short leg is negative.
+
+**5. The short bias of §27 is partly fixed, and the model still leans short.**
+§27's frozen model went long on only 4.5% of its decisions. Here: **1h 5.1%
+long** - still extreme - but **4h 15.2% long against 43.0% short** and **1d
+19.7% long against 23.8% short** are much closer to balanced. **The monthly
+refits did what they were meant to do to the side imbalance, and it did not
+change the verdict.** The 1h leg mix (5.1% long vs 19.0% short, 76% flat) is the
+clearest remaining artefact of §27.
+
+**6. The signal exits are where the money is, at every clock.** Signal exits are
+96.8% / 84.3% / 92.0% of all exits and average +0.0335 / **+0.1783** / +0.0367 R;
+stop exits are 3.2% / 14.0% / 3.0% and average -1.02 / -1.01 / -1.05. **The model
+owns the exit and closes winners at a profit, exactly as §27 found.** What it
+cannot do is pick entries that are worth the closing.
+
+**7. 2023 and 2024 disagree, and in opposite directions on different clocks.**
+1h and 4h are negative in 2023 and positive in 2024 (-0.0114/+0.0103 and
+-0.0451/+0.0661). **1d is the reverse: +0.1814 in 2023 and -0.0749 in 2024.** A
+24-day horizon on altcoins paid in 2023 and not in 2024; an 8-day and a 1-day
+horizon paid in 2024. `LESSONS.md` §2 and §3 at once: a regime effect, not an
+edge.
+
+**8. Breadth: 0.55 at 1h, 0.46 at 4h, 0.67 at 1d on the net-positive share.**
+The gate needs half of the coins with >= 10 trades to be both net positive **and**
+above their own shifted median, so the gate's own measure is stricter than this
+proxy; it failed at 4h (0.46) and passed at 1h and 1d. **The spread across coins
+is enormous and looks like noise, not size:** at 4h BLZ is +0.4108 and AAVE is
+-0.1437, and HNT has 6 trades at -0.3360. **The
+thin books are thin now for a legitimate reason:** the dead-tail cut shortened the coins that
+stopped trading - HNT 1h prepared rows fell from 32,112 (Exp 020) to 21,674 and
+TOMO from 31,776 to 27,073 - so they are shorter, not frozen.
+
+### Verdict
+
+**REJECT on 1h, 4h and 1d. Per `PLAN.md` §28 this closes ML in this project:**
+no variant of `ml_wf.py`, no other cell, no other universe, and no holdout. The
+holdout stays untouched (BTC 4 runs, SOL 1 run, 5 FAILED, 0 CONFIRMED).
+
+**The honest one-paragraph version for the owner: walk-forward, 47 coins, three
+timeframes, refit every month - all three REJECT. The one thing that works is the
+timing: on every clock the model's desired-position path beat the 95th percentile
+of 200 circular time-shifts of itself, which is the second ML round in a row to
+pass that control and the strongest timing result in the project. It is still
+smaller than the cost. At 1h the gross is +0.0219 R and the cost is 0.0220 R, so
+the net is -0.00002, indistinguishable from zero; at 4h and 1d the net is +0.0096
+and +0.0234 with confidence intervals ten times wider than the mean. The model
+closes winners well (signal exits average +0.18 R at 4h) and picks entries that do
+not pay for it. The monthly refits did fix §27's absurd 4.5% long bias at the slow
+clocks (4h is now 15.2% long, 43.0% short) and did not change the verdict. Both
+legs fail on two of three clocks, and the winning side flips with the clock.
+2023 and 2024 disagree in opposite directions on different clocks. Nothing goes to
+the holdout.**
