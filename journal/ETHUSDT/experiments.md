@@ -1707,3 +1707,172 @@ See **BTC Exp 056**.
   the control median (−0.062). Orders that fill at a level are worse than
   orders at random prices the same distance away (adverse selection).
 - REJECT stands.
+
+---
+
+## Exp 021 - Coinbase premium on ETHUSDT: the coin's own premium works, BTC's premium does not
+
+**Date:** 2026-10-02
+**Status:** complete. Eight idea files, one evaluation each (057 x 4 timeframes,
+058 x 4 timeframes, both ETHUSDT only - 058 was deliberately not run on BTC).
+No code and no idea file was changed, `--final` was not run (nothing passed),
+HOLDOUT was never read. ETHUSDT now has **105 evaluations**.
+
+**The ETH half of BTC Exp 058.** `PLAN.md` §25: `057_coinbase_premium_follow`
+(own premium) on BTCUSDT and ETHUSDT, `058_btc_premium_follow_eth` (BTC's premium
+as the signal for ETH) on ETHUSDT only, same exits and same 8-cell TRAIN grid.
+
+### Data check first
+
+`SYMBOL=ETHUSDT python src/datafeed.py --premium` -> **PREMIUM VALIDATION: OK**:
+58,393 rows, 2020-01-01 .. 2026-08-31 UTC, coverage 99.8-100.0% every year,
+median abs premium 0.028-0.078% per year against a 0.5% limit. Full year table
+is in BTC Exp 058; the ETH column is the same file's second series.
+
+### The eight evaluations
+
+| idea file | tf | verdict | VALID trades | gross_r | cost_r | mean R | 95% CI | long/short | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `057` own | 15m | **REJECT** | 318 | +0.1360 | 0.1118 | **+0.0241** | [-0.1190, +0.1761] | 144/174 | +2.4% | 27.5% |
+| `057` own | 30m | **WATCH** | 191 | +0.2060 | 0.0826 | **+0.1235** | [-0.0722, +0.3207] | 91/100 | +11.5% | 25.0% |
+| `057` own | 1h | **UNSIZABLE** | 253 | +0.2085 | 0.0628 | +0.1457 | [-0.0229, +0.3252] | 118/135 | +18.7% | 19.9% |
+| **`057` own** | **4h** | **UNSIZABLE** | **86** | **+0.4276** | **0.0395** | **+0.3881** | **[+0.0557, +0.7407]** | **47/39** | **+17.4%** | **9.6%** |
+| `058` BTC's | 15m | **REJECT** | 336 | +0.1257 | 0.1124 | +0.0134 | [-0.1251, +0.1586] | 148/188 | +0.8% | 19.0% |
+| `058` BTC's | 30m | **REJECT** | 216 | +0.0937 | 0.0796 | +0.0141 | [-0.1314, +0.1620] | 100/116 | +0.8% | 21.9% |
+| `058` BTC's | 1h | **UNSIZABLE** | 212 | +0.1299 | 0.0608 | +0.0691 | [-0.1077, +0.2565] | 93/119 | +6.6% | 19.3% |
+| `058` BTC's | 4h | **UNSIZABLE** | 81 | +0.2910 | 0.0333 | +0.2577 | [-0.0163, +0.5403] | 44/37 | +10.5% | 7.9% |
+
+Cost x1.5 (VALID): `057` 15m +0.0241 -> **-0.0398** · 30m +0.1235 -> **+0.0807** ·
+1h +0.1457 -> **+0.1154** · **4h +0.3881 -> +0.3746**; `058` 15m +0.0134 ->
+**-0.0443** · 30m +0.0141 -> **-0.0324** · 1h +0.0691 -> **+0.0412** · 4h +0.2577
+-> **+0.2441**.
+
+Gates failed: `057` 15m `valid_ci_lo>0`, `stress_mean_r>0`, `valid_max_dd<=20%`;
+30m `valid_ci_lo>0`, `valid_max_dd<=20%`; 1h `valid_ci_lo>0`, **`size_skips==0`**;
+**4h `valid_trades>=100`, `size_skips==0`**. `058` 15m `valid_ci_lo>0`,
+`stress_mean_r>0`; 30m `valid_ci_lo>0`, `stress_mean_r>0`,
+`valid_max_dd<=20%`; 1h `valid_ci_lo>0`, **`size_skips==0`**; 4h
+**`valid_trades>=100`**, `valid_ci_lo>0`, **`size_skips==0`**.
+
+**`size_skips` is 1 on TRAIN for `057` 1h and `057` 4h and 2 for `058` 4h.** Per
+`AGENTS.md` §1 step 6 that makes those four rows **UNSIZABLE: no evidence in
+either direction**, so ETH's two best-looking numbers (+0.1457 and +0.3881) are
+not admissible evidence at all. Valid skips are 0 everywhere.
+
+**TRAIN chose:** `057` 15m z 2.5/n 336/4R · 30m z 2.5/n 336/4R · 1h z 1.5/n 336/4R
+· 4h z 1.5/n 72/4R. `058` 15m z 2.5/n 336/4R · 30m z 2.5/n 336/**2R** · 1h
+z 2.5/n 72/4R · 4h z 1.5/n 336/2R.
+
+**TRAIN cell breadth** (`train_positive_share`): `057` 15m **8 of 8** · 30m **8 of
+8** · 1h **8 of 8** · 4h **2 of 4 eligible**. `058` 15m **6 of 8** · 30m **8 of 8**
+· 1h **8 of 8** · 4h **4 of 4 eligible**.
+
+**Exit mix (VALID):** `057` 15m stop 39.0 / time 55.0 / target 6.0 · 30m
+38.2 / 56.0 / 5.8 · 1h 38.3 / 55.7 / 5.5 · **4h 39.5 / 51.2 / 8.1**. `058` 15m
+38.7 / 56.0 / 5.4 · 30m 37.0 / 46.3 / **16.7** · 1h 40.1 / 53.8 / 5.7 · 4h
+42.0 / 25.9 / **30.9**. Average hold 8.9 / 18.3 / 36.1 / **142.2** h for `057` and
+8.8 / 16.9 / 35.1 / 109.8 h for `058`.
+
+**Long and short, separately (VALID, mean R):**
+
+| file | tf | long | short |
+|---|---|---|---|
+| `057` own | 15m (144/174) | +0.0264 | +0.0222 |
+| `057` own | 30m (91/100) | **+0.1720** | +0.0793 |
+| `057` own | 1h (118/135) | **+0.2384** | +0.0646 |
+| `057` own | 4h (47/39) | **+0.6558** | +0.0656 |
+| `058` BTC's | 15m (148/188) | +0.1499 | -0.0941 |
+| `058` BTC's | 30m (100/116) | +0.0638 | -0.0287 |
+| `058` BTC's | 1h (93/119) | **+0.1858** | -0.0222 |
+| `058` BTC's | 4h (44/37) | **+0.4311** | +0.0514 |
+
+**Per-year VALID (mean R, trades):** `057` 15m 2023 +0.053 (154), 2024 -0.003
+(164) · 30m +0.149 (96), +0.097 (95) · 1h +0.034 (123), +0.251 (130) · **4h
++0.356 (41), +0.417 (45)**. `058` 15m -0.025 (169), +0.052 (167) · 30m -0.061
+(109), +0.090 (107) · 1h -0.064 (105), +0.199 (107) · 4h +0.055 (39), +0.446
+(42).
+
+**Controls on the one WATCH row** (`057` 30m): baseline **SKILL** - idea TRAIN
++0.1812 vs random TRAIN p95 **+0.1015**, idea VALID +0.1235 vs random VALID p95
+**+0.0439** (median -0.0985), so it beats both modes on both splits. Benchmark
+**NO_EDGE**: alpha +0.1205/yr, CI **[-0.1090, +0.3239]** crosses 0; Sharpe 0.85
+against buy-and-hold 1.18; CAGR +11.5% against +66.8%.
+
+### What the numbers say
+
+**1. ETH confirms BTC's headline shape, and its 4h row is the same story.** ETH
+`057` 4h: **gross +0.4276 R against cost 0.0395 R, net +0.3881 R, CI
+[+0.0557, +0.7407], positive in both years (+0.356 on 41 trades, +0.417 on 45),
+profit factor 1.83, median trade -0.0921, win rate 46.5%.** BTC's is +0.4603 /
+0.0370 / +0.4233 / [+0.0404, +0.8236] / +0.301 and +0.527 / PF 1.83 / median
++0.2557. **Two coins, two clocks, two independent samples, the same answer.** And
+per §5 the direction agrees, which is what the plan asked for. **But ETH's row is
+UNSIZABLE (1 TRAIN size skip) and short of 100 trades, so by `AGENTS.md` §1 step 6
+it is not evidence either way** - the agreement is suggestive, not admissible.
+
+**2. The coin's own premium is a real signal and BTC's premium is a weaker one,
+on every clock.** Mean R, `057` own against `058` BTC's: 15m +0.0241 / +0.0134 ·
+30m **+0.1235 / +0.0141** · 1h +0.1457 / +0.0691 · 4h +0.3881 / +0.2577. The
+same ordering on gross (30m: +0.2060 vs +0.0937; 4h: +0.4276 vs +0.2910). **So
+"US demand shows up first in BTC and the rest of the market follows BTC" is not
+what the data says here - ETH's own Coinbase premium is the better signal for
+ETH.** And the direction split shows why the hypothesis looked attractive and
+is not: `058` has a **negative short leg at all four clocks** (-0.0941, -0.0287,
+-0.0222, and only +0.0514 at 4h) while `057`'s short leg is positive everywhere
+(+0.0222, +0.0793, +0.0646, +0.0656). **BTC's premium says "the market is risk-on
+or risk-off" and ETH does not always follow; ETH's own premium says something
+about ETH.**
+
+**3. On ETH both legs of the own-premium rule are positive at every clock, which
+BTC could not say.** `057` long +0.0264 / +0.1720 / +0.2384 / +0.6558 and short
++0.0222 / +0.0793 / +0.0646 / +0.0656. **A two-sided rule with both legs
+positive is not the §2 long-in-a-bull-market shape.** That is the single most
+interesting difference between the two coins in this round - and it is on a
+UNSIZABLE 4h row, so it is a lead, not a result.
+
+**4. Only 4h survives the cost, on both coins, for the same reason.** 15m: gross
++0.1360 against cost 0.1118 - gross wins by 0.024 and the mean is +0.0241, which
+the x1.5 stress turns to **-0.0398**. 30m gross +0.2060 against cost 0.0826 keeps
++0.0807 at x1.5. 4h keeps +0.3746. **The premium needs days, exactly as §25's
+prior said, and the 4h clock is the only one where the cost does not eat it.**
+
+**5. The 100-trade floor is unreachable on the clock where the signal is worth
+anything, on both coins.** At 4h only 4 of the 8 grid cells produce 100 TRAIN
+trades, and the loosest cell TRAIN chose anywhere in the round gave **86 VALID
+trades on ETH** and **72 on BTC**. `z=1.5` fires more often than `z=2.5` and the
+grids have no looser option. **This is not a sample-size accident that more
+compute would fix; it is the signal's natural frequency at a 4-hour clock over
+two years.** §22's "cheap clock is the illiquid clock" in its purest form.
+
+**6. The 2023/2024 split is the reason to be careful, and it cuts both ways.**
+`057` 4h is the only ETH row positive in both years (+0.356, +0.417) but it is
+UNSIZABLE. Everything admissible is mixed: `057` 15m 2024 -0.003, `058` 30m 2023
+-0.061, `058` 1h 2023 -0.064. **Six of the eight rows are carried mostly by 2024.**
+
+**7. I verified the entries are not a look-ahead artefact, all 1,754 of them.**
+`test_engine.py` test 21 (parse, causal attach from H + 1 h 2 min, staleness to
+NaN, one crossing = one long) and test 7 pass, and `test_engine.py` ends **ALL
+CHECKS PASSED**. Independently, I rebuilt `premium_cross` from each trade file and
+checked that every fill sits on the bar immediately after a signal bar of the
+same side, with a live premium on that bar: **253 + 318 + 191 + 86 + 212 + 336 +
+216 + 81 = 1,753 of 1,753, zero mismatches**, and each row's mean of `r_multiple`
+equals its reported mean R. (An earlier pass reported mismatches; that was my
+own script loading BTCUSDT bars with `SYMBOL` unset, not a defect in the repo -
+re-run with the coin set, everything reproduced.)
+
+### Verdict
+
+**1 WATCH, 3 REJECT, 4 UNSIZABLE. No PASS, no holdout, no v2, and `--final` is
+not available because nothing passed.**
+
+**The honest one-paragraph version for the owner: on ETH the Coinbase premium
+reproduces BTC's shape - the 4h book came out at gross +0.4276 R against cost
+0.0395 R, net +0.3881 R, positive in both 2023 and 2024 - but that row is
+UNSIZABLE (one TRAIN size skip) and short of the 100-trade floor, so it is not
+evidence. ETH's own premium is clearly a better signal for ETH than BTC's
+premium is (+0.1235 against +0.0141 at 30m, +0.3881 against +0.2577 at 4h), and
+unlike BTC both legs of the own-premium rule are positive at every clock, which
+is the first two-sided positive result in this project. The one admissible WATCH
+is 30m, mean +0.1235 R, CI [-0.0722, +0.3207], random-entry control **SKILL** on
+both splits, but against buy-and-hold **NO_EDGE** with the alpha CI crossing zero.
+Nothing is a candidate.**

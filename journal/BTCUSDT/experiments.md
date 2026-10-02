@@ -5775,3 +5775,176 @@ buyers pay up. Every Binance-only entry tested so far was about a coin flip
 - `058_btc_premium_follow_eth` (BTC's premium as the signal): ETH only.
 
 Each has 4 timeframes and an 8-cell TRAIN grid.
+
+---
+
+## Exp 058 - Coinbase premium on BTCUSDT: the largest gross R in the project, and still not a candidate
+
+**Date:** 2026-10-02
+**Status:** complete. Four idea files, one evaluation each. No code and no idea
+file was changed, `--final` was not run (nothing passed), HOLDOUT was never read.
+BTCUSDT now has **262 evaluations**.
+
+**Pre-registered in Exp 057.** `PLAN.md` §25 stated the prior as low to
+medium-low and noted this is the only new information source the project has
+tested. Grid of 8 cells chosen on TRAIN only: z {1.5, 2.5} x n {72, 336} x target
+{2R, 4R}; exits ATR 3 stop, out after 48 h, 4-bar cooldown.
+
+### Data check first
+
+`python src/datafeed.py --premium` -> **PREMIUM VALIDATION: OK** on both coins.
+Coinbase `{BASE}-USD` hourly vs Binance spot, premium = cb_close/bn_close - 1.
+Both coins: **58,393 rows, 2020-01-01 00:00 .. 2026-08-31 23:00 UTC.**
+
+| year | BTC hours | BTC coverage | BTC median abs premium | ETH hours | ETH coverage | ETH median abs premium |
+|---|---|---|---|---|---|---|
+| 2020 | 8,764 | **99.8%** | 0.076% | 8,764 | **99.8%** | 0.078% |
+| 2021 | 8,747 | **99.9%** | 0.051% | 8,747 | **99.9%** | 0.051% |
+| 2022 | 8,760 | **100.0%** | 0.033% | 8,760 | **100.0%** | 0.032% |
+| 2023 | 8,756 | **100.0%** | 0.029% | 8,756 | **100.0%** | 0.028% |
+| 2024 | 8,784 | **100.0%** | 0.037% | 8,784 | **100.0%** | 0.036% |
+| 2025 | 8,755 | **99.9%** | 0.030% | 8,755 | **99.9%** | 0.030% |
+| 2026 | 5,827 | **99.9%** | 0.063% | 5,827 | **99.9%** | 0.062% |
+
+The gate is >= 97% coverage per year and median abs premium < 0.5%; the observed
+median is 0.028-0.078%, an order of magnitude inside it, and the p99 of abs
+premium is 0.14-0.47% (the March 2023 USDC depeg is inside that tail). **The
+data is the cleanest external source this project has used.**
+
+### The four evaluations
+
+| idea file | tf | verdict | VALID trades | gross_r | cost_r | mean R | 95% CI | long/short | CAGR | maxDD |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `057` | 15m | **REJECT** | 328 | +0.1107 | 0.1254 | **-0.0147** | [-0.1517, +0.1267] | 146/182 | -3.8% | 24.4% |
+| `057` | 30m | **WATCH** | 207 | +0.1501 | 0.0906 | **+0.0595** | [-0.1123, +0.2409] | 99/108 | +5.3% | 18.1% |
+| `057` | 1h | **REJECT** | 220 | +0.0830 | 0.0660 | **+0.0171** | [-0.1621, +0.2003] | 98/122 | +1.0% | 23.0% |
+| **`057`** | **4h** | **WATCH** | **72** | **+0.4603** | **0.0370** | **+0.4233** | **[+0.0404, +0.8236]** | **37/35** | **+13.6%** | **7.0%** |
+
+Cost x1.5 (VALID): 15m -0.0147 -> **-0.0800** · 30m +0.0595 -> **+0.0173** ·
+1h +0.0171 -> **-0.0142** · **4h +0.4233 -> +0.4074**.
+
+Gates failed: 15m `valid_mean_r>0`, `valid_ci_lo>0`, `stress_mean_r>0`,
+`valid_max_dd<=20%`; 30m **`valid_ci_lo>0` only**; 1h `valid_ci_lo>0`,
+`stress_mean_r>0`, `valid_max_dd<=20%`; **4h `valid_trades>=100` only**.
+`size_skips` is 0 on every row.
+
+**TRAIN chose:** 15m z 2.5 / n 336 / 4R · 30m z 2.5 / n 336 / 4R ·
+1h z 2.5 / n 72 / 4R · **4h z 1.5 / n 336 / 4R**.
+
+**TRAIN cell breadth** (`train_positive_share`, the share of eligible cells that
+were positive on TRAIN): 15m **4 of 8** · 30m **8 of 8** · 1h **8 of 8** · 4h
+**4 of 4 eligible** (only 4 of 8 cells reach 100 TRAIN trades at that clock).
+
+**Exit mix (VALID):** 15m stop 36.3% / time 58.5% / target 5.2% · 30m 37.7 /
+57.5 / 4.8 · 1h 42.3 / 51.8 / 5.9 · **4h 44.4 / 41.7 / 12.5**. Average hold 9.0 /
+18.6 / 35.0 / **131.0** hours.
+
+**Long and short, separately (VALID, mean R):**
+
+| tf | long | short |
+|---|---|---|
+| 15m (146/182) | **+0.1168** | **-0.1202** |
+| 30m (99/108) | **+0.1268** | -0.0022 |
+| 1h (98/122) | **+0.2552** | **-0.1742** |
+| 4h (37/35) | **+0.7047** | **+0.1260** |
+
+**Per-year VALID (mean R, trades):** 15m 2023 -0.050 (165), 2024 +0.021 (163) ·
+30m 2023 -0.007 (106), 2024 +0.129 (101) · 1h 2023 -0.091 (110), 2024 +0.126
+(110) · **4h 2023 +0.301 (33), 2024 +0.527 (38)**.
+
+**Controls on the three WATCH rows:**
+
+| row | baseline | idea VALID | random median | random p95 | benchmark |
+|---|---|---|---|---|---|
+| `057` 4h | **DRIFT** | +0.4233 | +0.0517 | **+0.2908** | **NO_EDGE** |
+| `057` 30m | **SKILL** | +0.0595 | -0.1013 | +0.0255 | **NO_EDGE** |
+
+Full control detail: 4h TRAIN idea **+0.2109** against random TRAIN p95
+**+0.2338** - **6.5% of random sets beat the idea on TRAIN**, which is why
+baseline says DRIFT and not SKILL, even though on VALID the idea (+0.4233) beats
+the VALID p95 (+0.2908). 30m: idea TRAIN +0.1383 > p95 +0.0768 and VALID +0.0595
+> p95 +0.0255, so SKILL on both halves.
+
+Benchmark, 4h VALID: alpha **+0.1138/yr**, CI **[-0.0098, +0.2533]** - includes
+0; Sharpe **1.60** against buy-and-hold **2.01**; CAGR +13.6% against +137.3%.
+30m VALID: alpha +0.0468, CI [-0.1333, +0.2012]; Sharpe 0.47 against 2.01.
+**NO_EDGE on both.**
+
+### What the numbers say
+
+**1. This is the first round in the project where gross beats cost on the cheap
+clock, and it produces the largest gross R ever recorded here.** BTC 4h:
+**gross +0.4603 R against cost 0.0370 R.** For comparison, §22's best was
++0.2240 gross at 0.0376 cost and it was unsizable, and the pooled ML round 1's
+best was +0.1475. **The four clocks cost 0.1254 / 0.0906 / 0.0660 / 0.0370 and
+the gross is 0.1107 / 0.1501 / 0.0830 / 0.4603 - so at 4h the gross is 12x the
+cost, where every previous round had gross below or near cost.** The premium is
+the only signal found so far that is worth more than it costs to trade.
+
+**2. That number is not a look-ahead artefact, and I checked it three ways.**
+`test_engine.py` test 21 covers parsing, the causal attach (hour H usable only
+from H + 1 h 2 min), staleness to NaN, and one crossing giving exactly one long;
+test 7 checks block causality; `test_engine.py` ends **ALL CHECKS PASSED**. On top
+of that I rebuilt the signal independently from each trade file: **every one of
+the 220 + 207 + 72 VALID fills on this coin sits on the bar immediately after a
+bar where `premium_cross` equalled that trade's side - 499 of 499, zero
+mismatches - and every signal bar carried a live, non-stale premium value.** The
+trade file also reproduces the reported mean exactly (mean of `r_multiple` = the
+reported mean R in each row).
+
+**3. The distribution is not one lucky outlier.** 4h: median trade **+0.2557**,
+win rate **52.8%**, profit factor **1.83**, 38 of 72 trades positive, entries
+spread evenly (34 in 2023, 38 in 2024, median 224 h between entries, span
+2023-01-16 to 2024-12-31), **both years positive** (+0.301 and +0.527), and the
+time exits alone average **+0.9312** over 30 trades. The 9 target hits do exceed
+the total R on their own (35.6 R against a total of 30.5 R), so the target rate
+matters - but the median trade making money is what a real edge looks like, and
+`AGENTS.md` §9's "mean R > 0.3" warning was checked against the trade list
+rather than assumed away.
+
+**4. It still fails, and it fails on the count and on the controls, not on the
+sign.** The only gate the 4h row fails is **`valid_trades>=100`: 72 trades
+against the floor**, on 72 VALID trades from 106 TRAIN. And it is not
+straightforward to reach 100: at 4h only 4 of the 8 grid cells produce 100 TRAIN
+trades at all, and the loosest cell TRAIN chose anywhere in the round gave 86
+VALID trades on ETH. Meanwhile **baseline says DRIFT** (the idea is beaten by
+6.5% of random-entry sets on TRAIN) and **benchmark says NO_EDGE** (VALID alpha
+CI crosses 0, Sharpe below buy-and-hold). **`LESSONS.md` §2's reading applies:
+most of what survives at 4h is being long in a bull market.**
+
+**5. The long leg is the winner at every clock and the short leg loses at three
+of four.** +0.1168 / +0.1268 / +0.2552 / **+0.7047** long against -0.1202 /
+-0.0022 / -0.1742 / +0.1260 short. **VALID 2023-2024 is a bull market, so a
+two-sided rule that nets long will look like this.** On BTC the short leg is
+negative or flat everywhere except 4h - the same "short side is the losing half"
+shape as §23 (WRONG_DIRECTION, -8.67 pts on the short-breakout block) and §24.
+
+**6. The signal is strongest where it is slowest, which inverts every earlier
+round.** 15m is the worst clock (-0.0147) and 4h the best (+0.4233). `LESSONS.md`
+§1 has said for 460-odd evaluations that faster is more expensive and never
+better. **Here the cost ordering is the same but the gross ordering is reversed,
+and at 4h the gross is large enough to win.** §25's prior said the 4h variants
+matter most because published accounts of the premium describe it over days, not
+hours - **that turned out to be right.**
+
+**7. The faster clocks die exactly where `LESSONS.md` §1 says they will.** 15m
+gross +0.1107 against cost 0.1254 - cost wins. 1h gross +0.0830 against cost
+0.0660 - gross wins by a little, and the mean is +0.0171, which the x1.5 stress
+takes to **-0.0142**. Only 4h has a margin that survives worse execution.
+
+### Verdict
+
+**2 WATCH, 2 REJECT. No PASS, no holdout, no v2 (v2 is only allowed after a WATCH
+and the owner has forbidden editing idea files this session), and `--final` is
+not available because nothing passed.**
+
+**The honest one-paragraph version for the owner: the Coinbase premium is the
+first signal in this project that is worth more than it costs to trade, and on
+BTC at 4h it produced gross +0.4603 R against cost 0.0370 R - net +0.4233 R on
+72 VALID trades, CI [+0.0404, +0.8236], positive in both 2023 and 2024, with
+every one of the 499 fills verified to sit immediately after its signal bar. It
+is not a candidate: 72 trades is under the 100 floor, the random-entry control
+beats it on TRAIN (DRIFT), and against buy-and-hold the alpha CI crosses zero
+(NO_EDGE) - most of what survives is being long in a bull market. The faster
+clocks are the classic cost wall: 15m gross +0.1107 against cost 0.1254. ETH's
+half is in ETH Exp 021.**

@@ -1,3 +1,61 @@
+> **Coinbase premium (§25, Exp 058): 2 WATCH, 2 REJECT. The largest gross R in
+> the project, and still not a candidate.** The first data from outside Binance
+> (`python src/datafeed.py --premium`, **PREMIUM VALIDATION: OK**, 58,393 hourly
+> rows per coin, coverage 99.8–100.0% every year, median abs premium
+> 0.028–0.078%), read by the new block `premium_cross` (the premium's z-score
+> against its own last n bars crosses ±z). 8-cell grid on TRAIN, ATR 3 stop,
+> out after 48 h. BTCUSDT now has **262 evaluations**.
+>
+> | tf | verdict | trades | gross_r | cost_r | mean R | 95% CI | long/short | CAGR | maxDD |
+> |---|---|---|---|---|---|---|---|---|---|
+> | 15m | REJECT | 328 | +0.1107 | 0.1254 | **-0.0147** | [-0.1517, +0.1267] | 146/182 | -3.8% | 24.4% |
+> | 30m | **WATCH** | 207 | +0.1501 | 0.0906 | **+0.0595** | [-0.1123, +0.2409] | 99/108 | +5.3% | 18.1% |
+> | 1h | REJECT | 220 | +0.0830 | 0.0660 | +0.0171 | [-0.1621, +0.2003] | 98/122 | +1.0% | 23.0% |
+> | **4h** | **WATCH** | **72** | **+0.4603** | **0.0370** | **+0.4233** | **[+0.0404, +0.8236]** | **37/35** | **+13.6%** | **7.0%** |
+>
+> Cost x1.5: 15m -0.0800 · 30m **+0.0173** · 1h -0.0142 · **4h +0.4074**.
+> `size_skips` 0 on every row. TRAIN chose 4h **z 1.5 / n 336 / 4R**.
+> TRAIN breadth: **8 of 8 cells positive on TRAIN at 30m and 1h**, 4 of 4
+> eligible at 4h, 4 of 8 at 15m. Exits VALID 4h: stop 44.4% / time 41.7% /
+> target 12.5%, avg hold 131 h.
+>
+> | row | baseline | benchmark |
+> |---|---|---|
+> | 057 4h | **DRIFT** (idea TRAIN +0.2109 < random TRAIN p95 +0.2338; 6.5% of random sets beat it) | **NO_EDGE** (alpha +0.1138, CI [-0.0098, +0.2533]; Sharpe 1.60 vs 2.01) |
+> | 057 30m | **SKILL** (TRAIN +0.1383 > p95 +0.0768; VALID +0.0595 > p95 +0.0255) | **NO_EDGE** (alpha CI [-0.1333, +0.2012]) |
+>
+> 1. **THE FIRST SIGNAL HERE THAT IS WORTH MORE THAN IT COSTS.** BTC 4h **gross
+>    +0.4603 R against cost 0.0370 R** — 12x. §22's best was +0.2240 gross at
+>    0.0376 cost and was unsizable; pooled ML round 1's best was +0.1475. Cost by
+>    clock 0.1254 / 0.0906 / 0.0660 / 0.0370 against gross 0.1107 / 0.1501 /
+>    0.0830 / **0.4603**.
+> 2. **Not a look-ahead artefact, checked three ways.** Test 21 (parse, causal
+>    attach from H + 1 h 2 min, staleness to NaN, one crossing = one long) and
+>    test 7 pass; **ALL CHECKS PASSED**. Independently, rebuilding `premium_cross`
+>    from each trade file: **499 of 499 BTC fills sit on the bar immediately after
+>    a signal bar of the same side, with a live premium on that bar**, and each
+>    row's mean of `r_multiple` equals its reported mean R.
+> 3. **The distribution is not one lucky outlier.** 4h median trade **+0.2557**,
+>    win rate **52.8%**, PF **1.83**, 38 of 72 positive, entries spread evenly
+>    (34 in 2023, 38 in 2024, median 224 h apart), **both years positive**
+>    (+0.301, +0.527), time exits alone averaging **+0.9312** over 30 trades.
+>    `AGENTS.md` §9's "mean R > 0.3" warning was checked against the trade list,
+>    not assumed away.
+> 4. **It fails on the count and the controls, not the sign.** The only gate the
+>    4h row fails is **`valid_trades>=100`** — 72 against the floor — and 100 is
+>    not reachable here: at 4h only 4 of 8 cells produce 100 TRAIN trades, and
+>    the loosest cell TRAIN chose anywhere in the round gave 86 VALID trades on
+>    ETH. **DRIFT and NO_EDGE both stand.**
+> 5. **The long leg wins at every clock and the short leg loses at three of four**
+>    (+0.1168 / +0.1268 / +0.2552 / **+0.7047** against -0.1202 / -0.0022 /
+>    -0.1742 / +0.1260) — §2's bull-market reading, and the same "short is the
+>    losing half" shape as §23 and §24.
+> 6. **The signal is strongest where it is slowest, which inverts every earlier
+>    round.** 15m is the worst clock, 4h the best. §25's prior said the 4h
+>    variants matter most because the premium is described over days — right.
+>
+> Details: Exp 058. ETH half: ETH Exp 021.
+
 > **Limit orders resting at support/resistance (§24, Exp 055): `REJECT` on 1h
 > and 4h. Not a candidate, no `--final`, HOLDOUT untouched.** `src/level_limit.py`
 > rests a maker limit AT the level (previous UTC day's high/low or a live 10-bar

@@ -1,3 +1,63 @@
+> **Coinbase premium (§25, Exp 021): 1 WATCH, 3 REJECT, 4 UNSIZABLE. Not a
+> candidate.** The ETH half of BTC Exp 058, `057_coinbase_premium_follow` (own
+> premium) and `058_btc_premium_follow_eth` (BTC's premium as the ETH signal,
+> **ETHUSDT only, never run on BTC**), 4 timeframes each. `datafeed.py --premium`
+> -> **PREMIUM VALIDATION: OK**, 58,393 hourly rows, coverage 99.8–100.0% every
+> year, median abs premium 0.028–0.078%. ETHUSDT now has **105 evaluations**.
+>
+> | idea | tf | verdict | trades | gross_r | cost_r | mean R | 95% CI | long/short | CAGR | maxDD |
+> |---|---|---|---|---|---|---|---|---|---|---|
+> | 057 own | 15m | REJECT | 318 | +0.1360 | 0.1118 | +0.0241 | [-0.1190, +0.1761] | 144/174 | +2.4% | 27.5% |
+> | 057 own | 30m | **WATCH** | 191 | +0.2060 | 0.0826 | **+0.1235** | [-0.0722, +0.3207] | 91/100 | +11.5% | 25.0% |
+> | 057 own | 1h | UNSIZABLE | 253 | +0.2085 | 0.0628 | +0.1457 | [-0.0229, +0.3252] | 118/135 | +18.7% | 19.9% |
+> | **057 own** | **4h** | **UNSIZABLE** | **86** | **+0.4276** | **0.0395** | **+0.3881** | **[+0.0557, +0.7407]** | **47/39** | **+17.4%** | **9.6%** |
+> | 058 BTC's | 15m | REJECT | 336 | +0.1257 | 0.1124 | +0.0134 | [-0.1251, +0.1586] | 148/188 | +0.8% | 19.0% |
+> | 058 BTC's | 30m | REJECT | 216 | +0.0937 | 0.0796 | +0.0141 | [-0.1314, +0.1620] | 100/116 | +0.8% | 21.9% |
+> | 058 BTC's | 1h | UNSIZABLE | 212 | +0.1299 | 0.0608 | +0.0691 | [-0.1077, +0.2565] | 93/119 | +6.6% | 19.3% |
+> | 058 BTC's | 4h | UNSIZABLE | 81 | +0.2910 | 0.0333 | +0.2577 | [-0.0163, +0.5403] | 44/37 | +10.5% | 7.9% |
+>
+> Cost x1.5: 057 15m **-0.0398** · 30m **+0.0807** · 1h +0.1154 · **4h +0.3746**;
+> 058 15m **-0.0443** · 30m **-0.0324** · 1h +0.0412 · 4h +0.2441.
+> **`size_skips` is 1 on TRAIN for 057 1h and 4h and 2 for 058 4h** — per
+> `AGENTS.md` §1 step 6 those four rows are **UNSIZABLE, no evidence in either
+> direction**, including both of ETH's best-looking numbers. Valid skips 0.
+> TRAIN breadth: 057 **8 of 8** positive cells at 15m/30m/1h, 2 of 4 at 4h;
+> 058 6 of 8, 8 of 8, 8 of 8, 4 of 4.
+>
+> Controls on the one WATCH (057 30m): baseline **SKILL** (idea TRAIN +0.1812 >
+> random TRAIN p95 +0.1015; VALID +0.1235 > p95 +0.0439; median -0.0985) ·
+> benchmark **NO_EDGE** (alpha +0.1205, CI [-0.1090, +0.3239] crosses 0; Sharpe
+> 0.85 vs buy-and-hold 1.18).
+>
+> 1. **ETH reproduces BTC's shape at 4h** — gross **+0.4276** against cost
+>    **0.0395**, net +0.3881, CI [+0.0557, +0.7407], positive in **both** years
+>    (+0.356 on 41, +0.417 on 45), PF 1.83. Two coins, two clocks, same answer —
+>    **but UNSIZABLE and short of 100 trades, so suggestive, not admissible.**
+> 2. **ETH's own premium beats BTC's premium on every clock** (+0.1235 vs
+>    +0.0141 at 30m, +0.3881 vs +0.2577 at 4h). §25's "US demand shows up first
+>    in BTC and the rest follows" is **not** what the data says: BTC's premium
+>    has a **negative short leg at all four clocks** (-0.0941, -0.0287, -0.0222,
+>    +0.0514) while ETH's own premium is positive on both legs everywhere.
+> 3. **Both legs of the own-premium rule are positive at every clock** (+0.0264 /
+>    +0.1720 / +0.2384 / **+0.6558** long; +0.0222 / +0.0793 / +0.0646 / +0.0656
+>    short) — **the first two-sided positive result in this project**, and
+>    therefore not §2's bull-market shape. It sits on an UNSIZABLE row, so it is
+>    a lead, not a result.
+> 4. **Only 4h survives the cost, for §25's stated reason** — the premium is a
+>    days-long phenomenon and the 4h clock is the only one where cost does not
+>    eat it (0.0395 against gross 0.4276).
+> 5. **The 100-trade floor is unreachable where the signal is worth anything.**
+>    At 4h only 4 of 8 cells make 100 TRAIN trades and the loosest cell gave
+>    **86 VALID trades on ETH, 72 on BTC**. Not a compute problem; the signal's
+>    natural frequency at a 4h clock over two years.
+> 6. **Verified: 1,753 of 1,753 ETH fills sit on the bar immediately after a
+>    signal bar of the same side, with a live premium** — rebuilt from the trade
+>    files, plus tests 21 and 7, plus **ALL CHECKS PASSED**. (An earlier pass
+>    reported mismatches; that was my own script reading BTCUSDT bars with
+>    `SYMBOL` unset, not a repo defect.)
+>
+> Details: Exp 021. BTC half: BTC Exp 058.
+
 > **Limit orders resting at support/resistance (§24, Exp 019): `REJECT` on 1h
 > and 4h. Not a candidate, no `--final`, HOLDOUT untouched.** ETH half of BTC
 > Exp 055, same tool, grid and gates. ETHUSDT still has **97 evaluations**.
