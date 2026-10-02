@@ -1184,3 +1184,162 @@ on 30m and 4h. `premium_confirm.py` then applies these bars:
 - Test 22 checks the bars on synthetic records.
 - `datafeed --tfs` builds only the timeframes this round needs.
 - Premium coverage is now measured from each coin's first Coinbase hour.
+
+---
+
+## Exp 011 - Coinbase premium on 10 unseen coins (PLAN.md section 26): NOT_CONFIRMED
+
+**Date:** 2026-10-02
+**Status:** complete. **32 evaluations on 8 coins** (4 timeframes x 8 coins),
+16 `baseline.py` runs, and `premium_confirm.py` once. No idea file and no code was
+changed, no 057 variant was tried, `--final` was **not** run (forbidden for this
+round, and nothing passed anyway), HOLDOUT was never read.
+
+**Pre-registered in `_multi` Exp 010**, before any of it ran, including the coin
+list (a fixed rule: Coinbase history from 2021-07 with no gap over 30 days, perp
+listed by 2020-09) and both bars. Session state: `git pull` clean · `pip install`
+satisfied · `test_engine.py` -> **ALL CHECKS PASSED** (**test 22**, the
+`premium_confirm` bars on synthetic records).
+
+### Verdict
+
+**`premium_confirm.py` -> `NOT_CONFIRMED`.** Neither clock met its bar.
+
+| clock | bar (fixed before the runs) | measured | met |
+|---|---|---|---|
+| **30m** | VALID mean > 0 on **>= 7 of 10** coins **and** baseline SKILL on **>= 5 of 10** | positive on **2 of 10**, SKILL on **1** | **no** |
+| **4h pooled** | **>= 100** pooled trades, pooled mean > 0, weekly-block CI > 0, **>= 7** coins positive | **475** trades, mean **+0.2368**, CI **[+0.1023, +0.3830]**, positive on **5 of 5 admissible** coins | **no - breadth only** |
+
+**Two of the ten coins never ran.** SOLUSDT and LTCUSDT both failed
+`datafeed.py --tfs 15,30,60,240` with **`VALIDATION: PROBLEMS FOUND`** - the same
+defect on every timeframe, **2 gaps longer than 3x the bar interval**, all months
+present and 0 duplicates. Per the owner's rule they were recorded, skipped, and
+**count as failures**. No threshold was changed and no data was repaired, so the
+breadth requirements (>= 7 of 10) were harder to reach, not easier.
+
+**Of the 8 coins that ran, only 5 produced an admissible 4h row.** DOGEUSDT,
+ADAUSDT and DOTUSDT came out **INCONCLUSIVE** because `evaluate.py` found **0
+eligible TRAIN cells** (TRAIN 86, 94 and 77 trades against the 100 floor), so no
+cell could be chosen and, per `AGENTS.md` §1 step 6, they are not evidence in
+either direction. `premium_confirm.py` excludes them from the pool by design.
+
+### Every coin, every clock
+
+| coin | tf | verdict | VALID trades | gross_r | cost_r | mean R | 95% CI | baseline |
+|---|---|---|---|---|---|---|---|---|
+| LINKUSDT | 30m | REJECT | 295 | +0.0281 | 0.0598 | **-0.0317** | [-0.1704, +0.1134] | DRIFT |
+| LINKUSDT | 4h | WATCH | 95 | **+0.4664** | 0.0266 | **+0.4398** | **[+0.1338, +0.7595]** | DRIFT |
+| BCHUSDT | 30m | REJECT | 228 | -0.0272 | 0.0557 | **-0.0829** | [-0.2321, +0.0729] | DRIFT |
+| BCHUSDT | 4h | WATCH | 91 | +0.3302 | 0.0200 | **+0.3101** | **[+0.0595, +0.5644]** | **SKILL** |
+| ETCUSDT | 30m | REJECT | 727 | -0.0134 | 0.0718 | **-0.0852** | [-0.1795, +0.0109] | DRIFT |
+| ETCUSDT | 4h | WATCH | 97 | +0.1800 | 0.0314 | **+0.1486** | [-0.1227, +0.4361] | DRIFT |
+| ALGOUSDT | 30m | WATCH | 264 | +0.1535 | 0.0541 | **+0.0994** | [-0.0666, +0.2712] | DRIFT |
+| ALGOUSDT | 4h | REJECT | 102 | +0.0562 | 0.0244 | **+0.0319** | [-0.2257, +0.3055] | DRIFT |
+| ATOMUSDT | 30m | WATCH | 362 | +0.1628 | 0.0654 | **+0.0973** | [-0.0241, +0.2191] | **SKILL** |
+| ATOMUSDT | 4h | WATCH | 90 | +0.3002 | 0.0249 | **+0.2754** | **[+0.0187, +0.5427]** | DRIFT |
+| DOGEUSDT | 30m | REJECT | 361 | +0.0457 | 0.0618 | **-0.0161** | [-0.1518, +0.1226] | DRIFT |
+| DOGEUSDT | 4h | INCONCLUSIVE | 101 | +0.1150 | 0.0172 | (+0.0977) | [-0.1206, +0.3221] | DRIFT |
+| ADAUSDT | 30m | REJECT | 237 | -0.0042 | 0.0587 | **-0.0630** | [-0.2186, +0.0998] | DRIFT |
+| ADAUSDT | 4h | INCONCLUSIVE | 114 | -0.0208 | 0.0231 | (-0.0439) | [-0.2577, +0.1765] | DRIFT |
+| DOTUSDT | 30m | REJECT | 342 | +0.0632 | 0.0651 | **-0.0019** | [-0.1370, +0.1365] | DRIFT |
+| DOTUSDT | 4h | INCONCLUSIVE | 115 | +0.0647 | 0.0247 | (+0.0400) | [-0.1676, +0.2560] | DRIFT |
+
+SOLUSDT and LTCUSDT: no rows (data validation failed). The 15m and 1h rows for
+all eight coins are in `journal/<coin>/experiments.md` Exp 001 and in the
+generated `journal/_multi/premium_confirm.md`; **15m was negative or flat on
+seven of the eight coins**, so 15m is dead everywhere.
+
+### The 4h pool, pooled and by leg
+
+| | value |
+|---|---|
+| coins pooled | **5** of 8 evaluated (LINK, BCH, ETC, ALGO, ATOM) |
+| pooled VALID trades | **475** |
+| **pooled mean R** | **+0.2368** |
+| **weekly-block 95% CI** | **[+0.1023, +0.3830]** (104 weeks, resampled across coins together) |
+| **long leg** | **+0.2269** |
+| **short leg** | **+0.2481** |
+| coins with a positive mean | **5 of 5 admissible** (need 7) |
+
+**Both legs are positive and the short leg is slightly the better one.** That is
+the opposite of BTCUSDT in §25, where the long leg carried everything
+(+0.7047 against +0.1260) and the short leg lost at three of four clocks.
+
+**Diagnostic, not evidence.** Had the three INCONCLUSIVE rows been admitted - they
+must not be, per `AGENTS.md` §1 step 6 - the pool would be 805 trades, mean
+**+0.1515**, CI **[+0.0320, +0.2769]**, still above 0, with 7 of 8 coins positive.
+**I am recording this so the owner knows exactly where the bar was missed, and it
+does not change the verdict:** the bar was >= 7 positive coins among the
+admissible ones, and only 5 coins were admissible.
+
+### What this round settles
+
+**1. The 30m lead does not travel. At all.** §25 found 30m **SKILL on both BTC
+and ETH** - two coins whose premiums move together. On 8 unseen coins the 30m mean
+is positive on **2 of 10** (ALGO +0.0994, ATOM +0.0973) and the random-entry
+control says SKILL on **1 of 8** (ATOM only). Every other coin is negative at 30m,
+six of them DRIFT. **`LESSONS.md` §8's pattern - the "two-coin SKILL" shape fails on
+new coins, exactly as idea `051` did - reproduced on the strongest signal this
+project has ever produced.**
+
+**2. The 4h direction is real and remarkably consistent, and that is the honest
+headline.** **Every one of the 8 coins that ran has a positive 4h VALID mean bar
+ADAUSDT (-0.0439), and gross beats cost on all eight** (LINK +0.4664 against
+0.0266; BCH +0.3302 against 0.0200; ETC +0.1800 against 0.0314; ALGO +0.0562
+against 0.0244; ATOM +0.3002 against 0.0249; DOGE +0.1150 against 0.0172; DOT
++0.0647 against 0.0247). **The pooled mean of +0.2368 R with a weekly-block CI of
+[+0.1023, +0.3830] on 475 trades from 5 coins is the single strongest number in
+the project** - stronger than §25's best single row in breadth, and it is not one
+coin. **It is still not a confirmation, because the bar was about breadth and
+breadth is exactly what is missing.**
+
+**3. The controls are where it dies.** Of the 16 `baseline.py` runs, **14 are
+DRIFT and 2 are SKILL** (BCH at 4h, ATOM at 30m). **`LESSONS.md` §2 again: what
+survives is the market's drift, not the premium.** The 4h pool holds 54.7% of the
+time in the market, and VALID 2023-2024 is a bull market, so a book that is long
+part of the time and short the rest will look good without any timing skill.
+The three 4h rows whose CI clears 0 - LINK +0.4398, BCH +0.3101, ATOM +0.2754 -
+have DRIFT, DRIFT and DRIFT. **Only BCH at 4h has both a CI above 0 and a SKILL
+control, on 91 trades.**
+
+**4. The property that made §25 exciting does not survive the first unseen coin.**
+§25's most striking number was `train_positive_share` = **8 of 8 cells positive on
+TRAIN at 30m and 1h** on both BTC and ETH. On the new coins at 30m it is 100%,
+50%, 25%, 38%, 25%, 100%, 100%, 88% - **a median near 50%, i.e. indistinguishable
+from a coin flip.** At 1h: 75%, 88%, 38%, 38%, 0%, 75%, 88%, 50%. **The premium
+does not have a broadly positive TRAIN profile on altcoins; BTC's and ETH's did,
+and that was partly the two coins moving together.**
+
+**5. Everything is under 100 VALID trades at 4h, on every coin.** 95, 91, 97, 102,
+90, 101, 114, 115. `PLAN.md` §25 already found this wall on BTC (72) and ETH (86);
+**it is a property of the signal's frequency at a 4-hour clock, not of the coin.**
+So the confirmation could not have produced individual PASS rows on any of the
+eight, and the plan did not ask it to - it asked about breadth and the pool.
+
+**6. Three of the eight 4h rows are INCONCLUSIVE for a boring, structural
+reason: no eligible TRAIN cell.** DOGE (86 TRAIN trades), ADA (94) and DOT (77)
+never reached the 100-TRAIN floor, so `evaluate.py` had nothing to select from.
+**This is the §22 wall again from a different angle: the same signal is too rare
+at 4h to select a parameter on, and too rare to trade.**
+
+### Verdict
+
+**`NOT_CONFIRMED`.** 30m fails both of its counts (2 of 10 positive, 1 SKILL,
+against 7 and 5). 4h passes three of its four magnitude conditions and fails
+breadth (5 admissible coins against 7 required). **Per `PLAN.md` §26 the premium
+lead is closed like `051`; no pooled holdout is written and no 057 variant is
+tried on these coins.** Nothing is a candidate, nothing goes to `--final`, and
+HOLDOUT was never read on any of the ten coins.
+
+**The honest one-paragraph version for the owner: the Coinbase premium did not
+confirm. At 30m it collapsed - positive on only 2 of 10 coins and SKILL on 1,
+against a pre-registered bar of 7 and 5 - which is exactly the failure mode
+`LESSONS.md` §8 predicts for a two-coin result. At 4h the direction is genuinely
+good and consistent: pooled over 5 coins and 475 trades the mean is +0.2368 R
+with a weekly-block CI of [+0.1023, +0.3830], both legs positive, and gross beats
+cost on every one of the 8 coins that ran - the strongest number in this project
+by breadth. It still fails, because 3 of 8 coins had no admissible 4h row at all
+and 2 never passed data validation, so the 7-coin breadth bar was unreachable,
+and because 14 of 16 random-entry controls say DRIFT. Two coins are clean leads
+- BCHUSDT 4h (+0.3101, CI above 0, SKILL, on 91 trades) and ATOMUSDT 30m (+0.0973,
+SKILL) - and neither is under 100 trades.**

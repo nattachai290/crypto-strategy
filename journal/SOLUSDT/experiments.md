@@ -965,3 +965,33 @@ M2 **with no variant tried.** No `--final` was run and none is warranted.
 **Status:** refused by the script. No result.
 
 `SYMBOL=SOLUSDT python src/allocation.py` stopped with `[perp] 5 missing days in the daily klines: ['2022-02-26', '2022-02-27', '2022-02-28', '2022-04-01', '2022-04-02']`. The fix tolerates at most 3 missing days; the planner expected 2 (the two 2022 intraday gaps, Exp 001), but the daily file is missing 5 days. No `results/SOLUSDT/allocation/` or `allocation.md` was written. The script and its limit were not changed. Options for the owner: raise the tolerance for SOL (a code change) or leave SOL out (SOL spot starts 2020-08, so it has no 2018 anyway).
+
+
+---
+
+## Exp 010 - Coinbase premium (PLAN.md section 26): data validation failed, coin skipped
+
+**Date:** 2026-10-02
+**Status:** skipped by the owner's rule. **No evaluation was run on this coin**,
+no idea file or code was changed, `--final` was not run, HOLDOUT was never read.
+**This coin counts as a failure in the pre-registered bars.**
+
+**Why it was skipped.** `SYMBOL=SOLUSDT python src/datafeed.py --tfs
+15,30,60,240` printed **`VALIDATION: PROBLEMS FOUND`**. The four timeframes all
+carry the same defect: **2 gaps longer than 3x the bar interval** (15m 206,976
+rows / 30m 103,488 / 1h 51,744 / 4h 12,936, 2020-10-01 .. 2026-08-31, 71 of 71
+months present, 0 duplicates). **Per the owner's rule for this round, a coin
+whose validation does not pass is recorded and skipped and counts as a failure
+in the pre-registered bars. No threshold was changed and no data was repaired.**
+**No evaluation was run on this coin, so this is not a result - SOLUSDT simply
+does not appear in the confirmation.**
+
+**What this means for the round.** SOL was the only coin the plan listed as
+"Coinbase only from mid-2021" that was already configured, so losing it removes
+one of the four late-start coins. The 30m bar needs 7 of 10 positive and the 4h
+bar needs 7 positive coins; with SOL and LTC both out, **at most 8 coins can
+contribute and the breadth requirements are harder to reach, not easier.**
+
+**Files.** none for this coin. The round's summary is
+`journal/_multi/experiments.md` Exp 011, `journal/_multi/premium_confirm.md`
+(generated), `results/_multi/premium_confirm/`.

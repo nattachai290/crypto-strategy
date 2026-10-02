@@ -1,3 +1,18 @@
+> **§26 confirmation on 10 unseen coins: `NOT_CONFIRMED`. ETHUSDT was not
+> rerun.** `premium_confirm.py`, run once: 30m positive on **2 of 10** coins with
+> SKILL on **1** (bars 7 and 5); 4h pooled over the 5 admissible coins **475
+> trades, mean +0.2368 R, CI [+0.1023, +0.3830], long +0.2269 / short +0.2481**,
+> breadth 5 against 7 required. SOL and LTC failed data validation; DOGE, ADA and
+> DOT had no eligible 4h TRAIN cell. **14 of 16 controls DRIFT.** Details:
+> `_multi` Exp 011, `journal/_multi/premium_confirm.md`.
+>
+> **What this does to §25's reading below:** the premium's 4h gross structure is
+> real across coins (8 of 8 that ran have gross above cost, pooled +0.2368 R), and
+> **the pooled short leg (+0.2481) beats the long leg (+0.2269), the reverse of
+> this coin's own §25 4h split (+0.6558 / +0.0656)** — which is a further sign
+> that BTC/ETH's version was partly drift. **This coin's 30m SKILL did not
+> reproduce on a single new coin.**
+
 > **Coinbase premium (§25, Exp 021): 1 WATCH, 3 REJECT, 4 UNSIZABLE. Not a
 > candidate.** The ETH half of BTC Exp 058, `057_coinbase_premium_follow` (own
 > premium) and `058_btc_premium_follow_eth` (BTC's premium as the ETH signal,

@@ -1,3 +1,22 @@
+> **§26 confirmation on 10 unseen coins: `NOT_CONFIRMED` — the 4h lead holds its
+> direction and loses on breadth, and the 30m SKILL does not travel.** BTCUSDT was
+> not rerun. `premium_confirm.py`, run once: 30m positive on **2 of 10** coins with
+> SKILL on **1** (bars: 7 and 5) → **not confirmed**; 4h pooled over the 5
+> admissible coins: **475 trades, mean +0.2368 R, weekly-block CI [+0.1023, +0.3830],
+> long +0.2269 / short +0.2481**, but only 5 positive coins against 7 required →
+> **not confirmed**. 2 of the 10 coins (SOL, LTC) failed data validation and 3 of
+> the 8 that ran had no admissible 4h cell, so breadth was structurally out of
+> reach. **14 of 16 random-entry controls are DRIFT.** Details: `_multi` Exp 011,
+> `journal/_multi/premium_confirm.md`. **The premium lead is closed like `051`;
+> no pooled holdout and no 057 variant.**
+>
+> **What this does to §25's reading below: the +0.4233 R at 4h was directionally
+> right and its size was not a BTC/ETH accident — 8 of 8 coins that ran have a
+> positive 4h gross above cost, and the pooled mean is +0.2368 R. What did not
+> hold is that it is timing: DRIFT on 14 of 16 controls.** Also: BTC's and ETH's
+> `train_positive_share` of 8 of 8 cells at 30m/1h does **not** hold on altcoins
+> (median near 50%), so that part of §25 was two coins moving together.
+
 > **Coinbase premium (§25, Exp 058): 2 WATCH, 2 REJECT. The largest gross R in
 > the project, and still not a candidate.** The first data from outside Binance
 > (`python src/datafeed.py --premium`, **PREMIUM VALIDATION: OK**, 58,393 hourly

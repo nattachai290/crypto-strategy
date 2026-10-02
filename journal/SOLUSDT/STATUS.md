@@ -1,3 +1,12 @@
+
+> **PLAN.md §26 (Exp 010): this coin was SKIPPED, no evaluation was run.**
+> `SYMBOL=SOLUSDT python src/datafeed.py --tfs 15,30,60,240` printed
+> **`VALIDATION: PROBLEMS FOUND`** - all four timeframes carry **2 gaps longer than
+> 3x the bar interval**, all months present, 0 duplicates. Per the owner's rule
+> the coin is recorded, skipped, and **counts as a failure** in the pre-registered
+> bars; no threshold was changed and no data was repaired. **`premium_confirm.py`
+> -> `NOT_CONFIRMED`.** Details: `journal/_multi/experiments.md` Exp 011.
+
 > **Next (owner-approved 2026-10-01): the allocation test, `docs/research/PLAN.md` §16.** Run `SYMBOL=SOLUSDT python src/allocation.py` once. Do trend rules (200-day average, golden cross, 20-week breakout) cut buy-and-hold's drawdowns on daily spot (from 2017) and perp bars? Secondary coin.
 
 > **Exp 007 — the `051_retail_crowd_fade_tf30` replication is DONE on this coin

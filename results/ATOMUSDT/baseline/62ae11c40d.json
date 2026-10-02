@@ -1,0 +1,41 @@
+{
+  "eval_id": "62ae11c40d",
+  "name": "057_coinbase_premium_follow_tf240",
+  "tf": 240,
+  "n_per_mode": 200,
+  "timestamp": "2026-10-02 05:52 UTC",
+  "idea_valid_mean_r": 0.2753709654993246,
+  "idea_valid_trades": 90,
+  "idea_train_mean_r": 0.057620805156295835,
+  "idea_train_trades": 106,
+  "A": {
+    "label": "random entries, any time",
+    "p": 0.07380545434520465,
+    "valid_median": 0.006037253058139848,
+    "valid_p95": 0.22216167468569983,
+    "share_random_ge_idea": 0.02,
+    "valid_trades_median": 102.0,
+    "train_median": -0.036070554436639986,
+    "train_p95": 0.10315408422876446,
+    "train_share_random_ge_idea": 0.14,
+    "idea_beats_p95_valid": true,
+    "idea_beats_p95_train": false,
+    "idea_beats_p95": false
+  },
+  "B": {
+    "label": "random entries, same filters",
+    "p": 0.07380545434520465,
+    "valid_median": 0.006037253058139848,
+    "valid_p95": 0.22216167468569983,
+    "share_random_ge_idea": 0.02,
+    "valid_trades_median": 102.0,
+    "train_median": -0.036070554436639986,
+    "train_p95": 0.10315408422876446,
+    "train_share_random_ge_idea": 0.14,
+    "idea_beats_p95_valid": true,
+    "idea_beats_p95_train": false,
+    "idea_beats_p95": false
+  },
+  "verdict": "DRIFT",
+  "rule": "idea > 95th pct of modes A and B on TRAIN and VALID (Exp 019)"
+}

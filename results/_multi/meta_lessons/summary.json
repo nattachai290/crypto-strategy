@@ -1,26 +1,34 @@
 {
  "overview": {
-  "evaluations": 452,
-  "ideas": 57,
+  "evaluations": 496,
+  "ideas": 59,
   "by_symbol": {
+   "ADAUSDT": 4,
+   "ALGOUSDT": 4,
+   "ATOMUSDT": 4,
+   "BCHUSDT": 4,
    "BNBUSDT": 50,
-   "BTCUSDT": 255,
-   "ETHUSDT": 97,
+   "BTCUSDT": 259,
+   "DOGEUSDT": 4,
+   "DOTUSDT": 4,
+   "ETCUSDT": 4,
+   "ETHUSDT": 105,
+   "LINKUSDT": 4,
    "SOLUSDT": 50
   },
   "verdicts": {
-   "REJECT": 251,
-   "WATCH": 117,
-   "INCONCLUSIVE": 76,
+   "REJECT": 274,
+   "WATCH": 131,
+   "INCONCLUSIVE": 79,
    "PASS": 7,
-   "UNSIZABLE": 1
+   "UNSIZABLE": 5
   },
   "baseline": {
-   "DRIFT": 114,
-   "SKILL": 12
+   "DRIFT": 129,
+   "SKILL": 16
   },
   "benchmark": {
-   "NO_EDGE": 119,
+   "NO_EDGE": 122,
    "ALPHA": 7
   },
   "holdouts": 5,
@@ -29,48 +37,48 @@
   }
  },
  "cost": {
-  "gross_pos_share": 0.665929203539823,
-  "net_pos_share": 0.46017699115044247,
-  "gross_pos_net_neg_share": 0.20575221238938052,
-  "median_cost_r": 0.022946151857342452
+  "gross_pos_share": 0.6834677419354839,
+  "net_pos_share": 0.47580645161290325,
+  "gross_pos_net_neg_share": 0.20766129032258066,
+  "median_cost_r": 0.02710013610587325
  },
  "luck": {
-  "n": 452,
-  "z_gt_1_96": 17,
-  "expected_if_no_edge": 11.3,
-  "z_mean": -1.4924524648437552,
-  "z_sd": 4.478075763289081,
-  "low_cost_n": 247,
-  "low_cost_z_gt_1_96": 13,
-  "low_cost_ideas": 27
+  "n": 496,
+  "z_gt_1_96": 22,
+  "expected_if_no_edge": 12.4,
+  "z_mean": -1.3197805390795283,
+  "z_sd": 4.323661679061893,
+  "low_cost_n": 254,
+  "low_cost_z_gt_1_96": 16,
+  "low_cost_ideas": 28
  },
  "train_predicts_valid": {
   "all": {
-   "n": 452,
-   "spearman": 0.5283704721241081
+   "n": 496,
+   "spearman": 0.5180416811720764
   },
   "BNBUSDT": {
    "n": 50,
    "spearman": 0.37181272509003604
   },
   "BTCUSDT": {
-   "n": 255,
-   "spearman": 0.6792995889300603
+   "n": 259,
+   "spearman": 0.6807005062819016
   },
   "ETHUSDT": {
-   "n": 97,
-   "spearman": 0.3018225331369661
+   "n": 105,
+   "spearman": 0.34135392908977813
   },
   "SOLUSDT": {
    "n": 50,
    "spearman": 0.2888355342136854
   },
   "low_cost": {
-   "n": 247,
-   "spearman": 0.28076254152903285
+   "n": 254,
+   "spearman": 0.2728239358361999
   },
-  "valid_pos_share_if_train_pos": 0.6404494382022472,
-  "valid_pos_share_if_train_neg": 0.2
+  "valid_pos_share_if_train_pos": 0.639344262295082,
+  "valid_pos_share_if_train_neg": 0.21465968586387435
  },
  "cross_coin": {
   "BNBUSDT-BTCUSDT": {
@@ -89,9 +97,9 @@
    "same_sign_share": 0.4
   },
   "BTCUSDT-ETHUSDT": {
-   "n": 97,
-   "spearman": 0.35327687776141375,
-   "same_sign_share": 0.6701030927835051
+   "n": 101,
+   "spearman": 0.36142108328479905,
+   "same_sign_share": 0.6732673267326733
   },
   "BTCUSDT-SOLUSDT": {
    "n": 50,
@@ -147,54 +155,54 @@
    },
    {
     "tf": 15,
-    "rows": 87,
-    "ideas": 54,
-    "train_mean": 0.024775754605259444,
-    "valid_mean": -0.03820212064102711,
-    "valid_median": -0.0605115926329386,
-    "valid_pos_share": 0.3448275862068966,
-    "idea_mean": -0.05127219589652405,
-    "cost_r": 0.071024304842924,
+    "rows": 98,
+    "ideas": 56,
+    "train_mean": 0.02847953928896813,
+    "valid_mean": -0.03550270153829217,
+    "valid_median": -0.054401285894178905,
+    "valid_pos_share": 0.3469387755102041,
+    "idea_mean": -0.04950446622827625,
+    "cost_r": 0.0782903345440428,
     "pass_watch": 17,
     "robust": ""
    },
    {
     "tf": 30,
-    "rows": 76,
-    "ideas": 41,
-    "train_mean": 0.055948031446097335,
-    "valid_mean": 0.008971380666143803,
-    "valid_median": 0.00010769861344445,
-    "valid_pos_share": 0.5,
-    "idea_mean": 0.006845462326073225,
-    "cost_r": 0.04273750130733725,
-    "pass_watch": 32,
+    "rows": 87,
+    "ideas": 43,
+    "train_mean": 0.06193235620122121,
+    "valid_mean": 0.009137474428593976,
+    "valid_median": -0.0019099250133903,
+    "valid_pos_share": 0.4942528735632184,
+    "idea_mean": 0.007085860610897399,
+    "cost_r": 0.0556692947927815,
+    "pass_watch": 36,
     "robust": "yes"
    },
    {
     "tf": 60,
-    "rows": 72,
-    "ideas": 39,
-    "train_mean": 0.08394951431651479,
-    "valid_mean": -0.0020078739353755594,
-    "valid_median": 0.00220381895170305,
-    "valid_pos_share": 0.5277777777777778,
-    "idea_mean": -0.000998896777445414,
-    "cost_r": 0.029054966644758,
-    "pass_watch": 27,
-    "robust": ""
+    "rows": 83,
+    "ideas": 41,
+    "train_mean": 0.09165278843003155,
+    "valid_mean": 0.005419493837134577,
+    "valid_median": 0.0084217962853432,
+    "valid_pos_share": 0.5662650602409639,
+    "idea_mean": 0.002015560796777843,
+    "cost_r": 0.0389839990402429,
+    "pass_watch": 32,
+    "robust": "yes"
    },
    {
     "tf": 240,
-    "rows": 72,
-    "ideas": 39,
-    "train_mean": 0.0827876860361484,
-    "valid_mean": 0.09244429358289823,
-    "valid_median": 0.059463770516596896,
-    "valid_pos_share": 0.7083333333333334,
-    "idea_mean": 0.10126816188427396,
-    "cost_r": 0.019229917015394497,
-    "pass_watch": 19,
+    "rows": 83,
+    "ideas": 41,
+    "train_mean": 0.08492718332774715,
+    "valid_mean": 0.10873212485225264,
+    "valid_median": 0.0699918343271299,
+    "valid_pos_share": 0.7349397590361446,
+    "idea_mean": 0.10776200571839915,
+    "cost_r": 0.020043528077527,
+    "pass_watch": 24,
     "robust": "yes"
    }
   ],
@@ -214,81 +222,81 @@
    },
    {
     "hold_bucket": "4-24h",
-    "rows": 86,
-    "ideas": 44,
-    "train_mean": 0.00014863289736309206,
-    "valid_mean": -0.0537294819565397,
-    "valid_median": -0.0618886438450499,
-    "valid_pos_share": 0.313953488372093,
-    "idea_mean": -0.047166239548262226,
-    "cost_r": 0.07884248896917864,
-    "pass_watch": 14,
+    "rows": 108,
+    "ideas": 46,
+    "train_mean": 0.016521770633679433,
+    "valid_mean": -0.04317852183874945,
+    "valid_median": -0.05214438291583735,
+    "valid_pos_share": 0.3333333333333333,
+    "idea_mean": -0.044892962605637625,
+    "cost_r": 0.07932345786913306,
+    "pass_watch": 18,
     "robust": ""
    },
    {
     "hold_bucket": "1-3d",
-    "rows": 189,
-    "ideas": 39,
-    "train_mean": 0.05493828719483895,
-    "valid_mean": -0.0008142843908044528,
-    "valid_median": 0.0006618509065061,
-    "valid_pos_share": 0.5026455026455027,
-    "idea_mean": 0.025676137949590158,
-    "cost_r": 0.0196028854450873,
-    "pass_watch": 50,
-    "robust": ""
+    "rows": 200,
+    "ideas": 41,
+    "train_mean": 0.05973076344364058,
+    "valid_mean": 0.002202425809835843,
+    "valid_median": 0.00499888082838115,
+    "valid_pos_share": 0.52,
+    "idea_mean": 0.02738937431761656,
+    "cost_r": 0.019990337326746,
+    "pass_watch": 55,
+    "robust": "yes"
    },
    {
     "hold_bucket": ">3d",
-    "rows": 125,
-    "ideas": 28,
-    "train_mean": 0.09563933452395082,
-    "valid_mean": 0.07536072171690403,
-    "valid_median": 0.0583963569242386,
-    "valid_pos_share": 0.688,
-    "idea_mean": 0.13060846550158403,
-    "cost_r": 0.0188670082796469,
-    "pass_watch": 60,
+    "rows": 136,
+    "ideas": 30,
+    "train_mean": 0.095905585566869,
+    "valid_mean": 0.08668284881898014,
+    "valid_median": 0.0632435977040966,
+    "valid_pos_share": 0.7058823529411765,
+    "idea_mean": 0.1375273651670678,
+    "cost_r": 0.01896186509418025,
+    "pass_watch": 65,
     "robust": "yes"
    }
   ],
   "cost per trade": [
    {
     "cost_bucket": "<0.03R",
-    "rows": 247,
-    "ideas": 27,
-    "train_mean": 0.06197153588565907,
-    "valid_mean": 0.01872244841032384,
-    "valid_median": 0.0171996870254007,
-    "valid_pos_share": 0.5708502024291497,
-    "idea_mean": 0.037332521557045924,
-    "cost_r": 0.0188086433448931,
-    "pass_watch": 94,
+    "rows": 254,
+    "ideas": 28,
+    "train_mean": 0.061804387241968635,
+    "valid_mean": 0.022737998572677876,
+    "valid_median": 0.0188363214359313,
+    "valid_pos_share": 0.5787401574803149,
+    "idea_mean": 0.04187170129791772,
+    "cost_r": 0.0188320653459194,
+    "pass_watch": 97,
     "robust": "yes"
    },
    {
     "cost_bucket": "0.03-0.1R",
-    "rows": 121,
-    "ideas": 40,
-    "train_mean": 0.04439745319697093,
-    "valid_mean": 0.017158283459570756,
-    "valid_median": -0.0196961365350739,
-    "valid_pos_share": 0.4793388429752066,
-    "idea_mean": -0.00518284765247187,
-    "cost_r": 0.0620395745224086,
-    "pass_watch": 25,
+    "rows": 153,
+    "ideas": 42,
+    "train_mean": 0.05915256749251465,
+    "valid_mean": 0.025018382478492023,
+    "valid_median": 0.0004762464726547,
+    "valid_pos_share": 0.5032679738562091,
+    "idea_mean": -0.001072489598292976,
+    "cost_r": 0.0617113236713194,
+    "pass_watch": 36,
     "robust": ""
    },
    {
     "cost_bucket": "0.1-0.3R",
-    "rows": 64,
-    "ideas": 31,
-    "train_mean": -0.016586541831440847,
-    "valid_mean": -0.09252625639392115,
-    "valid_median": -0.12837460046745186,
-    "valid_pos_share": 0.140625,
-    "idea_mean": -0.09367910593261365,
-    "cost_r": 0.14418514949688996,
+    "rows": 69,
+    "ideas": 33,
+    "train_mean": -0.010268212067647511,
+    "valid_mean": -0.08556130845865774,
+    "valid_median": -0.1256914616196532,
+    "valid_pos_share": 0.17391304347826086,
+    "idea_mean": -0.08756215171457073,
+    "cost_r": 0.1414850239228452,
     "pass_watch": 5,
     "robust": ""
    },
@@ -357,6 +365,19 @@
     "idea_mean": 0.08904478642034684,
     "cost_r": 0.017939770232504752,
     "pass_watch": 19,
+    "robust": ""
+   },
+   {
+    "trigger": "premium_cross",
+    "rows": 44,
+    "ideas": 2,
+    "train_mean": 0.10051427340381903,
+    "valid_mean": 0.06637766423352226,
+    "valid_median": 0.03572392412460995,
+    "valid_pos_share": 0.6363636363636364,
+    "idea_mean": 0.07635692606054485,
+    "cost_r": 0.05927872414070805,
+    "pass_watch": 14,
     "robust": ""
    },
    {
@@ -662,15 +683,15 @@
   "direction": [
    {
     "direction": "both",
-    "rows": 378,
-    "ideas": 38,
-    "train_mean": 0.03961078373661295,
-    "valid_mean": -0.014443278270657745,
-    "valid_median": -0.0127376694119255,
-    "valid_pos_share": 0.46825396825396826,
-    "idea_mean": -0.04119000787237774,
-    "cost_r": 0.02070342174091875,
-    "pass_watch": 106,
+    "rows": 422,
+    "ideas": 40,
+    "train_mean": 0.04596091062134533,
+    "valid_mean": -0.006016450142259832,
+    "valid_median": -0.0055598796712766005,
+    "valid_pos_share": 0.48578199052132703,
+    "idea_mean": -0.035312661175731605,
+    "cost_r": 0.0222364584049756,
+    "pass_watch": 120,
     "robust": ""
    },
    {
@@ -703,15 +724,15 @@
   "stop type": [
    {
     "stop_type": "atr",
-    "rows": 18,
-    "ideas": 6,
-    "train_mean": -0.0636449777121608,
-    "valid_mean": -0.15544730280536723,
-    "valid_median": -0.0722627647624248,
-    "valid_pos_share": 0.2777777777777778,
-    "idea_mean": -0.07682662403811154,
-    "cost_r": 0.1684570852053633,
-    "pass_watch": 0,
+    "rows": 62,
+    "ideas": 8,
+    "train_mean": 0.052855135983050694,
+    "valid_mean": 0.0019768673512640176,
+    "valid_median": 0.01373945086703735,
+    "valid_pos_share": 0.532258064516129,
+    "idea_mean": -0.03853073651344744,
+    "cost_r": 0.0656926855620525,
+    "pass_watch": 14,
     "robust": ""
    },
    {
@@ -744,15 +765,15 @@
   "exits": [
    {
     "exits": "TP",
-    "rows": 54,
-    "ideas": 10,
-    "train_mean": -0.039593349153224176,
-    "valid_mean": -0.08794237575088905,
-    "valid_median": -0.09796998061496826,
-    "valid_pos_share": 0.25925925925925924,
-    "idea_mean": -0.07125875948583418,
-    "cost_r": 0.0984766462005792,
-    "pass_watch": 3,
+    "rows": 98,
+    "ideas": 12,
+    "train_mean": 0.02331211403565237,
+    "valid_mean": -0.018655827186459487,
+    "valid_median": -0.01979740706761035,
+    "valid_pos_share": 0.42857142857142855,
+    "idea_mean": -0.04665614522810433,
+    "cost_r": 0.0727007384330374,
+    "pass_watch": 17,
     "robust": ""
    },
    {
@@ -798,53 +819,53 @@
   "exit mix": [
    {
     "exit_mix": "mixed",
-    "rows": 14,
-    "ideas": 4,
-    "train_mean": -0.02390763623063507,
-    "valid_mean": -0.10594965863228269,
-    "valid_median": -0.11809633823398219,
-    "valid_pos_share": 0.2857142857142857,
-    "idea_mean": -0.15222177444697596,
-    "cost_r": 0.1313407204202964,
-    "pass_watch": 2,
+    "rows": 32,
+    "ideas": 6,
+    "train_mean": 0.03581912343453993,
+    "valid_mean": -0.005000709433900017,
+    "valid_median": -0.0096559761832042,
+    "valid_pos_share": 0.46875,
+    "idea_mean": -0.08629188525216024,
+    "cost_r": 0.0636158797556597,
+    "pass_watch": 9,
     "robust": ""
    },
    {
     "exit_mix": "mostly stop",
-    "rows": 82,
-    "ideas": 21,
-    "train_mean": 0.07609173861770839,
-    "valid_mean": -0.01698926759560413,
+    "rows": 84,
+    "ideas": 22,
+    "train_mean": 0.07529381895114301,
+    "valid_mean": -0.016727986266446223,
     "valid_median": -0.036453642154226445,
-    "valid_pos_share": 0.4634146341463415,
-    "idea_mean": -0.021518014496113978,
-    "cost_r": 0.0754385330263042,
+    "valid_pos_share": 0.4642857142857143,
+    "idea_mean": -0.020813352554062078,
+    "cost_r": 0.07508177836893984,
     "pass_watch": 20,
     "robust": ""
    },
    {
     "exit_mix": "mostly time",
-    "rows": 349,
-    "ideas": 45,
-    "train_mean": 0.02629859425495172,
-    "valid_mean": -0.018643233892105815,
-    "valid_median": -0.0123103825081406,
-    "valid_pos_share": 0.4670487106017192,
-    "idea_mean": -0.04139284685422828,
-    "cost_r": 0.0203213632960428,
-    "pass_watch": 102,
+    "rows": 372,
+    "ideas": 47,
+    "train_mean": 0.03183263892049368,
+    "valid_mean": -0.013856953148854538,
+    "valid_median": -0.0076086568932579,
+    "valid_pos_share": 0.478494623655914,
+    "idea_mean": -0.03746869433118146,
+    "cost_r": 0.0211490008457842,
+    "pass_watch": 109,
     "robust": ""
    },
    {
     "exit_mix": "tp often",
-    "rows": 7,
-    "ideas": 2,
-    "train_mean": -0.09633599120709371,
-    "valid_mean": 0.034468771293005074,
-    "valid_median": -0.0733517112230718,
-    "valid_pos_share": 0.42857142857142855,
-    "idea_mean": 0.04109005609952959,
-    "cost_r": 0.0408762256394043,
+    "rows": 8,
+    "ideas": 3,
+    "train_mean": -0.060166659313151134,
+    "valid_mean": 0.06236936911621999,
+    "valid_median": 0.0016303222316575022,
+    "valid_pos_share": 0.5,
+    "idea_mean": 0.1132845553592612,
+    "cost_r": 0.039244990508199754,
     "pass_watch": 0,
     "robust": ""
    }
@@ -852,15 +873,15 @@
   "number of filters": [
    {
     "n_filters": 1,
-    "rows": 360,
-    "ideas": 37,
-    "train_mean": 0.02940313000680241,
-    "valid_mean": -0.027655902240348917,
-    "valid_median": -0.0335217377772985,
-    "valid_pos_share": 0.4222222222222222,
-    "idea_mean": -0.04253171190145165,
-    "cost_r": 0.0241745262519064,
-    "pass_watch": 84,
+    "rows": 404,
+    "ideas": 39,
+    "train_mean": 0.03714790800053689,
+    "valid_mean": -0.01741462272339265,
+    "valid_median": -0.022847701215740798,
+    "valid_pos_share": 0.44554455445544555,
+    "idea_mean": -0.03643485867263132,
+    "cost_r": 0.031733267008511,
+    "pass_watch": 98,
     "robust": ""
    },
    {
@@ -892,6 +913,58 @@
   ],
   "symbol": [
    {
+    "symbol": "ADAUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": 0.10534330267809212,
+    "valid_mean": -0.0036505622038448485,
+    "valid_median": -0.0352079802541718,
+    "valid_pos_share": 0.25,
+    "idea_mean": -0.0036505622038448485,
+    "cost_r": 0.051881320953743607,
+    "pass_watch": 1,
+    "robust": ""
+   },
+   {
+    "symbol": "ALGOUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": -0.0028023020619713495,
+    "valid_mean": 0.03418118901187453,
+    "valid_median": 0.06202235571542875,
+    "valid_pos_share": 0.75,
+    "idea_mean": 0.03418118901187453,
+    "cost_r": 0.04656381925975025,
+    "pass_watch": 2,
+    "robust": ""
+   },
+   {
+    "symbol": "ATOMUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": 0.01801587100172845,
+    "valid_mean": 0.13799401182764665,
+    "valid_median": 0.0958092503058881,
+    "valid_pos_share": 1.0,
+    "idea_mean": 0.13799401182764665,
+    "cost_r": 0.05483828070169615,
+    "pass_watch": 2,
+    "robust": ""
+   },
+   {
+    "symbol": "BCHUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": 0.09400200298106826,
+    "valid_mean": 0.05123796533104535,
+    "valid_median": -0.011164993581184553,
+    "valid_pos_share": 0.5,
+    "idea_mean": 0.05123796533104535,
+    "cost_r": 0.0511336326779607,
+    "pass_watch": 2,
+    "robust": ""
+   },
+   {
     "symbol": "BNBUSDT",
     "rows": 50,
     "ideas": 8,
@@ -906,28 +979,80 @@
    },
    {
     "symbol": "BTCUSDT",
-    "rows": 255,
-    "ideas": 57,
-    "train_mean": 0.0006755647164180019,
-    "valid_mean": -0.031145452614134456,
-    "valid_median": -0.0317072026759207,
-    "valid_pos_share": 0.43137254901960786,
-    "idea_mean": -0.028708632773881197,
-    "cost_r": 0.0480887643766895,
-    "pass_watch": 57,
+    "rows": 259,
+    "ideas": 58,
+    "train_mean": 0.0030905894256183708,
+    "valid_mean": -0.02879105710291426,
+    "valid_median": -0.0291047683256043,
+    "valid_pos_share": 0.4362934362934363,
+    "idea_mean": -0.026122248471963014,
+    "cost_r": 0.0489646794695573,
+    "pass_watch": 59,
+    "robust": ""
+   },
+   {
+    "symbol": "DOGEUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": 0.10030952236755662,
+    "valid_mean": 0.0205180428548042,
+    "valid_median": 0.01807410560740015,
+    "valid_pos_share": 0.5,
+    "idea_mean": 0.0205180428548042,
+    "cost_r": 0.052864106193584254,
+    "pass_watch": 1,
+    "robust": ""
+   },
+   {
+    "symbol": "DOTUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": 0.10609776336183227,
+    "valid_mean": 0.020987870818767823,
+    "valid_median": 0.02294258232074575,
+    "valid_pos_share": 0.75,
+    "idea_mean": 0.020987870818767823,
+    "cost_r": 0.056840808489961245,
+    "pass_watch": 1,
+    "robust": ""
+   },
+   {
+    "symbol": "ETCUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": 0.040343139929681374,
+    "valid_mean": 0.01103501872692483,
+    "valid_median": -0.0096559761832042,
+    "valid_pos_share": 0.25,
+    "idea_mean": 0.01103501872692483,
+    "cost_r": 0.060599544447046294,
+    "pass_watch": 1,
     "robust": ""
    },
    {
     "symbol": "ETHUSDT",
-    "rows": 97,
-    "ideas": 19,
-    "train_mean": 0.08024388598571969,
-    "valid_mean": -0.011256351079825987,
-    "valid_median": 0.0131324090934043,
-    "valid_pos_share": 0.5360824742268041,
-    "idea_mean": -0.02559675372790298,
-    "cost_r": 0.0222210759069813,
-    "pass_watch": 36,
+    "rows": 105,
+    "ideas": 21,
+    "train_mean": 0.08804558685158775,
+    "valid_mean": -0.0005356289792513896,
+    "valid_median": 0.017601074514798,
+    "valid_pos_share": 0.5714285714285714,
+    "idea_mean": -0.010830098469034547,
+    "cost_r": 0.0313386583527393,
+    "pass_watch": 37,
+    "robust": ""
+   },
+   {
+    "symbol": "LINKUSDT",
+    "rows": 4,
+    "ideas": 1,
+    "train_mean": 0.12201687284640352,
+    "valid_mean": 0.0776428604837216,
+    "valid_median": -0.0246807745580024,
+    "valid_pos_share": 0.25,
+    "idea_mean": 0.0776428604837216,
+    "cost_r": 0.05133262549712375,
+    "pass_watch": 1,
     "robust": ""
    },
    {
@@ -947,6 +1072,70 @@
  },
  "side": [
   {
+   "symbol": "ADAUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 859,
+   "mean_r": -0.011311000402134515,
+   "pos_share": 0.25
+  },
+  {
+   "symbol": "ADAUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 946,
+   "mean_r": 0.003001136266150334,
+   "pos_share": 0.25
+  },
+  {
+   "symbol": "ALGOUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 621,
+   "mean_r": -0.02899855016297801,
+   "pos_share": 0.5
+  },
+  {
+   "symbol": "ALGOUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 633,
+   "mean_r": 0.09420663258382275,
+   "pos_share": 0.75
+  },
+  {
+   "symbol": "ATOMUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 542,
+   "mean_r": 0.025036728283080692,
+   "pos_share": 0.75
+  },
+  {
+   "symbol": "ATOMUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 540,
+   "mean_r": 0.2517524272428848,
+   "pos_share": 1.0
+  },
+  {
+   "symbol": "BCHUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 963,
+   "mean_r": 0.04879505896095242,
+   "pos_share": 0.5
+  },
+  {
+   "symbol": "BCHUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 997,
+   "mean_r": 0.05118761146526352,
+   "pos_share": 0.5
+  },
+  {
    "symbol": "BNBUSDT",
    "side": "long",
    "evals": 50,
@@ -965,34 +1154,98 @@
   {
    "symbol": "BTCUSDT",
    "side": "long",
-   "evals": 240,
-   "trades": 97796,
-   "mean_r": 0.043770068924882305,
-   "pos_share": 0.5916666666666667
+   "evals": 244,
+   "trades": 98176,
+   "mean_r": 0.04798491366216806,
+   "pos_share": 0.5983606557377049
   },
   {
    "symbol": "BTCUSDT",
    "side": "short",
-   "evals": 184,
-   "trades": 40642,
-   "mean_r": -0.12626687504588183,
-   "pos_share": 0.14130434782608695
+   "evals": 188,
+   "trades": 41089,
+   "mean_r": -0.12448827289616848,
+   "pos_share": 0.14361702127659576
+  },
+  {
+   "symbol": "DOGEUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 531,
+   "mean_r": 0.02966429687763964,
+   "pos_share": 0.75
+  },
+  {
+   "symbol": "DOGEUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 599,
+   "mean_r": 0.012680690617262708,
+   "pos_share": 0.5
+  },
+  {
+   "symbol": "DOTUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 942,
+   "mean_r": -0.056046363715414646,
+   "pos_share": 0.0
+  },
+  {
+   "symbol": "DOTUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 1013,
+   "mean_r": 0.095245346932003,
+   "pos_share": 1.0
+  },
+  {
+   "symbol": "ETCUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 1287,
+   "mean_r": -0.041409556778488295,
+   "pos_share": 0.25
+  },
+  {
+   "symbol": "ETCUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 1239,
+   "mean_r": 0.0634296718393846,
+   "pos_share": 0.75
   },
   {
    "symbol": "ETHUSDT",
    "side": "long",
-   "evals": 97,
-   "trades": 8412,
-   "mean_r": 0.046388836682217716,
-   "pos_share": 0.5670103092783505
+   "evals": 105,
+   "trades": 9197,
+   "mean_r": 0.06117112094153091,
+   "pos_share": 0.6
   },
   {
    "symbol": "ETHUSDT",
    "side": "short",
-   "evals": 93,
-   "trades": 7771,
-   "mean_r": -0.06118712605320505,
-   "pos_share": 0.3548387096774194
+   "evals": 101,
+   "trades": 8679,
+   "mean_r": -0.054972868679933895,
+   "pos_share": 0.37623762376237624
+  },
+  {
+   "symbol": "LINKUSDT",
+   "side": "long",
+   "evals": 4,
+   "trades": 468,
+   "mean_r": 0.1082930554634681,
+   "pos_share": 0.5
+  },
+  {
+   "symbol": "LINKUSDT",
+   "side": "short",
+   "evals": 4,
+   "trades": 422,
+   "mean_r": 0.0406155055502845,
+   "pos_share": 0.25
   },
   {
    "symbol": "SOLUSDT",
@@ -1013,6 +1266,70 @@
  ],
  "year": [
   {
+   "symbol": "ADAUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 900,
+   "mean_r": -0.011387853900340417,
+   "pos_share": 0.25
+  },
+  {
+   "symbol": "ADAUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 905,
+   "mean_r": 0.007042661190803642,
+   "pos_share": 0.5
+  },
+  {
+   "symbol": "ALGOUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 597,
+   "mean_r": 0.06967298930075,
+   "pos_share": 0.75
+  },
+  {
+   "symbol": "ALGOUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 657,
+   "mean_r": 0.007642788725904508,
+   "pos_share": 0.5
+  },
+  {
+   "symbol": "ATOMUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 508,
+   "mean_r": 0.11629367485869524,
+   "pos_share": 0.75
+  },
+  {
+   "symbol": "ATOMUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 574,
+   "mean_r": 0.15028819160449572,
+   "pos_share": 1.0
+  },
+  {
+   "symbol": "BCHUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 940,
+   "mean_r": 0.08060788425853267,
+   "pos_share": 0.25
+  },
+  {
+   "symbol": "BCHUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 1020,
+   "mean_r": 0.027768722798002625,
+   "pos_share": 0.5
+  },
+  {
    "symbol": "BNBUSDT",
    "year": 2023,
    "evals": 50,
@@ -1031,34 +1348,98 @@
   {
    "symbol": "BTCUSDT",
    "year": 2023,
-   "evals": 255,
-   "trades": 91749,
-   "mean_r": -0.019266665566828413,
-   "pos_share": 0.403921568627451
+   "evals": 259,
+   "trades": 92164,
+   "mean_r": -0.018523049470366034,
+   "pos_share": 0.4015444015444015
   },
   {
    "symbol": "BTCUSDT",
    "year": 2024,
-   "evals": 241,
-   "trades": 46689,
-   "mean_r": -0.02615942702335809,
-   "pos_share": 0.43568464730290457
+   "evals": 245,
+   "trades": 47101,
+   "mean_r": -0.022296520833342645,
+   "pos_share": 0.4448979591836735
+  },
+  {
+   "symbol": "DOGEUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 546,
+   "mean_r": -0.08370823198908085,
+   "pos_share": 0.0
+  },
+  {
+   "symbol": "DOGEUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 584,
+   "mean_r": 0.1208931806435851,
+   "pos_share": 0.75
+  },
+  {
+   "symbol": "DOTUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 979,
+   "mean_r": -0.037508256696583545,
+   "pos_share": 0.0
+  },
+  {
+   "symbol": "DOTUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 976,
+   "mean_r": 0.08049970426130575,
+   "pos_share": 1.0
+  },
+  {
+   "symbol": "ETCUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 1282,
+   "mean_r": -0.039487502882250294,
+   "pos_share": 0.25
+  },
+  {
+   "symbol": "ETCUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 1244,
+   "mean_r": 0.06502245528144415,
+   "pos_share": 0.75
   },
   {
    "symbol": "ETHUSDT",
    "year": 2023,
-   "evals": 97,
-   "trades": 7980,
-   "mean_r": -0.025260059727851565,
-   "pos_share": 0.38144329896907214
+   "evals": 105,
+   "trades": 8820,
+   "mean_r": -0.019194525749347185,
+   "pos_share": 0.4
   },
   {
    "symbol": "ETHUSDT",
    "year": 2024,
-   "evals": 97,
-   "trades": 8203,
-   "mean_r": 0.016738534181302927,
-   "pos_share": 0.5773195876288659
+   "evals": 105,
+   "trades": 9056,
+   "mean_r": 0.030955167362587976,
+   "pos_share": 0.6
+  },
+  {
+   "symbol": "LINKUSDT",
+   "year": 2023,
+   "evals": 4,
+   "trades": 491,
+   "mean_r": -0.06890509648900488,
+   "pos_share": 0.25
+  },
+  {
+   "symbol": "LINKUSDT",
+   "year": 2024,
+   "evals": 4,
+   "trades": 399,
+   "mean_r": 0.2637164271070431,
+   "pos_share": 1.0
   },
   {
    "symbol": "SOLUSDT",
@@ -1078,7 +1459,7 @@
   }
  ],
  "controls": {
-  "evaluated": 126,
+  "evaluated": 145,
   "baseline_x_benchmark": [
    {
     "baseline": "DRIFT",
@@ -1088,7 +1469,7 @@
    {
     "baseline": "DRIFT",
     "benchmark": "NO_EDGE",
-    "n": 108
+    "n": 109
    },
    {
     "baseline": "SKILL",
@@ -1098,7 +1479,7 @@
    {
     "baseline": "SKILL",
     "benchmark": "NO_EDGE",
-    "n": 11
+    "n": 13
    }
   ]
  },

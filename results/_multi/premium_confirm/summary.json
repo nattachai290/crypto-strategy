@@ -1,0 +1,307 @@
+{
+ "coins": [
+  "SOLUSDT",
+  "LTCUSDT",
+  "LINKUSDT",
+  "BCHUSDT",
+  "ETCUSDT",
+  "ALGOUSDT",
+  "ATOMUSDT",
+  "DOGEUSDT",
+  "ADAUSDT",
+  "DOTUSDT"
+ ],
+ "per_coin": {
+  "SOLUSDT": {},
+  "LTCUSDT": {},
+  "LINKUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 308,
+    "valid_mean_r": -0.0176364056706681,
+    "valid_ci_lo": -0.1496919807642412,
+    "valid_ci_hi": 0.1190754752079542,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "REJECT",
+    "valid_trades": 295,
+    "valid_mean_r": -0.0317251434453367,
+    "valid_ci_lo": -0.1703877916269883,
+    "valid_ci_hi": 0.1133951168770956,
+    "baseline": "DRIFT"
+   },
+   "60": {
+    "verdict": "REJECT",
+    "valid_trades": 192,
+    "valid_mean_r": -0.0799046208117571,
+    "valid_ci_lo": -0.2376173764520061,
+    "valid_ci_hi": 0.0895039027186071,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "WATCH",
+    "valid_trades": 95,
+    "valid_mean_r": 0.4398376118626483,
+    "valid_ci_lo": 0.1337602380798456,
+    "valid_ci_hi": 0.7594501021412466,
+    "baseline": "DRIFT"
+   }
+  },
+  "BCHUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 1289,
+    "valid_mean_r": -0.0759685301914708,
+    "valid_ci_lo": -0.1437746660585145,
+    "valid_ci_hi": -0.0088351934470172,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "REJECT",
+    "valid_trades": 228,
+    "valid_mean_r": -0.0828649998421657,
+    "valid_ci_lo": -0.2320983810517802,
+    "valid_ci_hi": 0.0728865282810527,
+    "baseline": "DRIFT"
+   },
+   "60": {
+    "verdict": "WATCH",
+    "valid_trades": 352,
+    "valid_mean_r": 0.0536385430291017,
+    "valid_ci_lo": -0.0872297669773742,
+    "valid_ci_hi": 0.198880555673109,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "WATCH",
+    "valid_trades": 91,
+    "valid_mean_r": 0.3101468483287162,
+    "valid_ci_lo": 0.0595117553392346,
+    "valid_ci_hi": 0.5644071065335206,
+    "baseline": "SKILL"
+   }
+  },
+  "ETCUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 1337,
+    "valid_mean_r": -0.0110973272978957,
+    "valid_ci_lo": -0.0733338987519103,
+    "valid_ci_hi": 0.0521523768054593,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "REJECT",
+    "valid_trades": 727,
+    "valid_mean_r": -0.0851549546922676,
+    "valid_ci_lo": -0.1795351852176075,
+    "valid_ci_hi": 0.0109402124806439,
+    "baseline": "DRIFT"
+   },
+   "60": {
+    "verdict": "REJECT",
+    "valid_trades": 365,
+    "valid_mean_r": -0.0082146250685127,
+    "valid_ci_lo": -0.142439690523225,
+    "valid_ci_hi": 0.1294885931946225,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "WATCH",
+    "valid_trades": 97,
+    "valid_mean_r": 0.1486069819663753,
+    "valid_ci_lo": -0.122668522064221,
+    "valid_ci_hi": 0.4361159588622239,
+    "baseline": "DRIFT"
+   }
+  },
+  "ALGOUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 439,
+    "valid_mean_r": -0.0867093761666621,
+    "valid_ci_lo": -0.187264513905198,
+    "valid_ci_hi": 0.0177253653706651,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "WATCH",
+    "valid_trades": 264,
+    "valid_mean_r": 0.0993894207833027,
+    "valid_ci_lo": -0.0665587763251948,
+    "valid_ci_hi": 0.2712434038902655,
+    "baseline": "DRIFT"
+   },
+   "60": {
+    "verdict": "WATCH",
+    "valid_trades": 449,
+    "valid_mean_r": 0.0921801500719242,
+    "valid_ci_lo": -0.0177073728489319,
+    "valid_ci_hi": 0.201247722060388,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "REJECT",
+    "valid_trades": 102,
+    "valid_mean_r": 0.0318645613589333,
+    "valid_ci_lo": -0.2257139761377722,
+    "valid_ci_hi": 0.3055364600735046,
+    "baseline": "DRIFT"
+   }
+  },
+  "ATOMUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 387,
+    "valid_mean_r": 0.0849865811994858,
+    "valid_ci_lo": -0.0481813568827027,
+    "valid_ci_hi": 0.2208010169015475,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "WATCH",
+    "valid_trades": 362,
+    "valid_mean_r": 0.0973437382794043,
+    "valid_ci_lo": -0.0241287533056459,
+    "valid_ci_hi": 0.2190652203344856,
+    "baseline": "SKILL"
+   },
+   "60": {
+    "verdict": "REJECT",
+    "valid_trades": 243,
+    "valid_mean_r": 0.0942747623323719,
+    "valid_ci_lo": -0.0564271935247056,
+    "valid_ci_hi": 0.2479406093781708,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "WATCH",
+    "valid_trades": 90,
+    "valid_mean_r": 0.2753709654993246,
+    "valid_ci_lo": 0.0187253211154889,
+    "valid_ci_hi": 0.5427131487234972,
+    "baseline": "DRIFT"
+   }
+  },
+  "DOGEUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 352,
+    "valid_mean_r": -0.0517821541100611,
+    "valid_ci_lo": -0.1908769856542522,
+    "valid_ci_hi": 0.0919243923098781,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "REJECT",
+    "valid_trades": 361,
+    "valid_mean_r": -0.0160610318643234,
+    "valid_ci_lo": -0.1517658248212625,
+    "valid_ci_hi": 0.1226051021942625,
+    "baseline": "DRIFT"
+   },
+   "60": {
+    "verdict": "WATCH",
+    "valid_trades": 316,
+    "valid_mean_r": 0.0522092430791237,
+    "valid_ci_lo": -0.095439616817011,
+    "valid_ci_hi": 0.2094559306010648,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "INCONCLUSIVE",
+    "valid_trades": 101,
+    "valid_mean_r": 0.0977061143144776,
+    "valid_ci_lo": -0.1205687516726788,
+    "valid_ci_hi": 0.322100203687215,
+    "baseline": "DRIFT"
+   }
+  },
+  "ADAUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 1053,
+    "valid_mean_r": -0.0265204956074661,
+    "valid_ci_lo": -0.1036255631803408,
+    "valid_ci_hi": 0.0526467654801918,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "REJECT",
+    "valid_trades": 237,
+    "valid_mean_r": -0.0629955352555062,
+    "valid_ci_lo": -0.2185831678498959,
+    "valid_ci_hi": 0.0997878683152799,
+    "baseline": "DRIFT"
+   },
+   "60": {
+    "verdict": "WATCH",
+    "valid_trades": 401,
+    "valid_mean_r": 0.1188092469484704,
+    "valid_ci_lo": -0.0117357607531517,
+    "valid_ci_hi": 0.2530044318295851,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "INCONCLUSIVE",
+    "valid_trades": 114,
+    "valid_mean_r": -0.0438954649008775,
+    "valid_ci_lo": -0.2576670306599339,
+    "valid_ci_hi": 0.176495875233244,
+    "baseline": "DRIFT"
+   }
+  },
+  "DOTUSDT": {
+   "15": {
+    "verdict": "REJECT",
+    "valid_trades": 1095,
+    "valid_mean_r": 0.0063018777512049,
+    "valid_ci_lo": -0.0706052640156026,
+    "valid_ci_hi": 0.0873965440696634,
+    "baseline": null
+   },
+   "30": {
+    "verdict": "REJECT",
+    "valid_trades": 342,
+    "valid_mean_r": -0.0019099250133903,
+    "valid_ci_lo": -0.1370415733343124,
+    "valid_ci_hi": 0.1365069980393213,
+    "baseline": "DRIFT"
+   },
+   "60": {
+    "verdict": "WATCH",
+    "valid_trades": 403,
+    "valid_mean_r": 0.0395832868902866,
+    "valid_ci_lo": -0.0872717145695815,
+    "valid_ci_hi": 0.1695140557548243,
+    "baseline": null
+   },
+   "240": {
+    "verdict": "INCONCLUSIVE",
+    "valid_trades": 115,
+    "valid_mean_r": 0.0399762436469701,
+    "valid_ci_lo": -0.1676054492596257,
+    "valid_ci_hi": 0.2560327016764326,
+    "baseline": "DRIFT"
+   }
+  }
+ },
+ "m30": {
+  "positive": 2,
+  "skill": 1,
+  "confirmed": false
+ },
+ "h4": {
+  "pooled_trades": 475,
+  "pooled_mean_r": 0.23675028631578948,
+  "ci_lo": 0.1022890384462486,
+  "ci_hi": 0.3829617045944668,
+  "positive": 5,
+  "coins_used": 5,
+  "long_r": 0.22689416141732285,
+  "short_r": 0.24807814027149322,
+  "confirmed": false
+ },
+ "verdict": "NOT_CONFIRMED"
+}
