@@ -5,11 +5,10 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: the ML entry model, `src/ml_entry.py`: can LightGBM time
-entries better than random signals with the same long/short mix?**
-(`docs/research/PLAN.md` §19). Run it on BTCUSDT 1h, then ETHUSDT 1h, then
-the pooled model on 20 coins, `src/ml_pool.py` (§20: `--build`, then one
-run). The exit
+**No active work.** The ML entry model (§19, BTC Exp 046, ETH Exp 010) and the
+pooled 20-coin model (§20, `_multi` Exp 005, review Exp 006) are REJECT, and
+their VALID data is now seen: do not rerun them with a changed feature,
+threshold, coin set or control. Ask the owner before starting anything new. The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
 TradingView ports are closed (§13, BTC Exp 033/034); a new port needs Pine
