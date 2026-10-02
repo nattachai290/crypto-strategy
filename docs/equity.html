@@ -48,11 +48,15 @@ table{border-collapse:collapse;font-size:.85rem;margin-top:6px;width:100%}
 td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
 td.n{text-align:right;font-variant-numeric:tabular-nums}
 code{font-size:.85em;overflow-wrap:anywhere}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.nav a{flex:1 1 140px;text-align:center;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem}
+.nav a:hover{background:var(--bg);color:var(--text)}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--bg);font-weight:600}
 </style>
 </head>
 <body>
 <main>
-<p class="small"><a href="./">← กลับหน้าสรุปผล</a></p>
+<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="equity.html" aria-current="page">📈 กราฟเงินทุน</a></nav>
 <h1>เงินทุน 1,000 USDT ขยับไปทางไหน</h1>
 <p class="sub">กลยุทธ์ 4 ตัวที่ผ่านสอบย่อยจนได้เข้าสอบจริง · เสี่ยงไม้ละ 1% ของพอร์ต · หักค่าธรรมเนียม slippage และ funding แล้ว</p>
 
