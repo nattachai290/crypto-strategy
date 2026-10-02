@@ -1740,3 +1740,47 @@ each coin's account is computed on its own.
   - test the frozen §27 model on unseen coins (information only);
   - a cost what-if on recorded trades (no holdout);
   - pause.
+
+---
+
+## Exp 019 - Pre-registration: walk-forward, multi-timeframe ML on 50 coins (PLAN.md section 28)
+
+**Date:** 2026-10-02
+**Status:** pre-registered, not run
+
+### Why
+The owner asked for three things:
+- walk-forward training on many coins;
+- the timeframes 1h, 4h and 1d only;
+- a model that looks across timeframes.
+
+§27's frozen 2020-22 model was short-biased through 2023-24. A monthly refit
+removes that staleness.
+
+### What is fixed (src/ml_wf.py, PLAN.md section 28, test 24)
+- **Universe.** 50 coins by TRAIN volume (survivorship-free); native
+  1h/4h/1d klines and funding.
+- **Features.** §19 per-coin and §21 cross-coin/BTC features on the traded
+  timeframe, plus the §19 features of the other two timeframes taken from
+  their last CLOSED bar.
+- **Label and policy.** The label is the next 24 bars in ATRs, and a
+  decision is taken at every bar. The hysteresis policy, the 8-ATR stop and
+  no clock are as in §27.
+- **Monthly refits.** Each refit uses only rows whose labels end before the
+  month starts.
+- **Choice and judgment.**
+  - The TRAIN walk-forward (2021-22) picks 1 of 24 cells per timeframe.
+  - The VALID walk-forward (2023-24) judges each timeframe against §27's
+    gates (≥ 10 trades per coin for breadth).
+- **Holdout.** Only ONE timeframe may take it: the PASS one with the best
+  TRAIN walk-forward mean.
+
+### Synthetic checks (test 24)
+- Closed-bar alignment on every timeframe pair, latest bar only.
+- Every refit trains on labels that end before its month.
+- A planted edge → PASS.
+- Noise → REJECT, with the timing gate failing. Its net mean happened to be
+  positive, which is why the other gates exist.
+
+### Verdict
+Pending the research agent's single run.

@@ -1998,3 +1998,80 @@ different, not just bigger:
 - the control is built for variable holds.
 
 A REJECT closes ML on this data.
+
+---
+
+## 28. Walk-forward, multi-timeframe ML on 50 coins (owner request, 2026-10-02)
+
+**Why.** §27's model was fitted once on 2020–22, a year that ended in a bear
+market, and then frozen for 2023–24. It wanted to be short 27% of the time and
+long only 4.5%, and its long leg lost. Its timing beat the shifted copies
+(the first ML timing pass), but it was worth only +0.009 R gross against
+0.022 R of cost.
+
+The owner asked for three changes:
+- **Walk-forward on many coins:** refit every month on everything known by
+  then, as it would run live.
+- **Timeframes 1h, 4h and 1d only.** 1d is allowed here by the owner's
+  request; the evaluate.py rule of 15m–4h is unchanged.
+- **Multi-timeframe input.** The model trading one timeframe also sees the
+  others.
+
+**Design (`src/ml_wf.py`, test 24).** Every value below is fixed before the
+run.
+- **Universe.** 50 coins by TRAIN volume, chosen by
+  `ml_pool.select_universe(n=50)` (listed by 2021-01-01, trading on
+  2022-12-31). Later delistings stay in. Native Binance 1h, 4h and 1d klines
+  and funding come from `ml_wf.py --build`; they are never resampled.
+- **Features at the bar close of the traded timeframe:**
+  - §19's per-coin set;
+  - §21's cross-coin/BTC set (windows in bars);
+  - funding as-of the close;
+  - **the §19 per-coin set of the other two timeframes, from their last bar
+    that has closed by this bar's close** (prefixes `h1_`, `h4_`, `d1_`).
+    Test 24 checks closed bars only, the latest one, and equality with
+    features computed on the truncated series.
+- **Label, policy and exits.** As §27, in bars of the traded timeframe:
+  - the label is the next 24 bars (24 h, 4 days, 24 days) in ATRs;
+  - a decision is taken at every bar;
+  - the hysteresis policy uses a rolling 180-forecast entry bar;
+  - exits are the signal, the 8-ATR stop, and the period end. There is no
+    clock.
+- **Monthly refits.**
+  - **Training rows:** a model fitted at the start of month m trains on every
+    row whose label is complete before m, across all coins, and predicts only
+    month m. Test 24 checks that every training label ends before its month.
+  - **TRAIN choice:** a walk-forward over 2021-01 → 2022-12 (24 refits per
+    setting) gives out-of-sample forecasts. It picks 1 of 24 cells (4
+    LightGBM settings × `q_in` {0.6, 0.75, 0.9} × exit {flip, half}) by net
+    mean R per trade (≥ 300 trades).
+  - **VALID:** a walk-forward over 2023-01 → 2024-12 with that cell.
+- **Gates on VALID, per timeframe, all needed:**
+  - TRAIN walk-forward mean > 0;
+  - ≥ 300 trades;
+  - net mean > 0 and weekly-block CI lower bound > 0;
+  - cost ×1.5 mean > 0;
+  - pooled timing above the 95th percentile of 200 shifts of the desired
+    path;
+  - ≥ 10 coins with ≥ 10 trades, at least half of them net > 0 **and** above
+    their own shifted median;
+  - both legs > 0.
+- **Holdout, one only.** The three timeframes are three tries, so only one may
+  use the holdout: among the PASS timeframes, the one with the highest TRAIN
+  walk-forward mean. `--final` continues the monthly refits over
+  2025-01 → 2026-08. CONFIRMED needs all of:
+  - net mean > 0 and CI lower bound > 0;
+  - timing above the shifted median;
+  - breadth ≥ half.
+
+**Outputs.**
+- `results/_multi/ml_wf/`:
+  - `universe.json`;
+  - `tf<N>.json`;
+  - `trades_valid_tf<N>.csv.gz` and `desired_valid_tf<N>.csv.gz`;
+  - the holdout files, if any.
+- `journal/_multi/ml_wf.md` (generated).
+
+**Prior:** low. VALID has now judged five ML attempts. Monthly refits address
+§27's stale-regime problem. They do not obviously make the timing larger than
+cost. A REJECT on all three timeframes closes ML in this project.
