@@ -437,6 +437,26 @@ compared that with random fills that had the same side, stop and hold.
   that is a coin flip. Fix the entry first. Never flip a losing cluster found
   on VALID.
 
+## 14. Resting a limit order at support/resistance does not help either (4 runs)
+
+`PLAN.md` §24, BTC Exp 055/056, ETH Exp 019/020. A buy limit rested at
+yesterday's low or a swing low, and a sell limit at the mirror level. The fill
+is a maker fill at the level, and the stop sits just beyond it.
+- **0 of 4 PASS.** VALID net R:
+  - BTC: −0.096 (1h), −0.033 (4h);
+  - ETH: −0.185 (1h), −0.009 (4h).
+- Gross R is ≈ 0 or negative everywhere.
+- None of the 4 runs beats the control: orders at the same distance from
+  price, placed at random bars. At 1h they do worse.
+- The new parts worked as designed: cost fell to 0.03 R at 4h and 0.08 R at
+  1h. But a level that holds no better than a random price gives the cheaper,
+  better-priced entry nothing to work with.
+- **Adverse selection is real.** About 57–67% of orders fill, and 65% of fills
+  are stopped. The fills are mostly the moves that slice through the level.
+- **Rule:** support/resistance from previous-day extremes and swing pivots
+  has now failed both as a confirmation entry (§12) and as a resting-order
+  entry. Do not try a third variant of the same levels.
+
 ## What to do with this
 
 1. **Filter out, don't fit.** Skip ideas with expected `cost_r` > 0.1 R and

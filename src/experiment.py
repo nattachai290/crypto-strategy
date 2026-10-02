@@ -129,6 +129,42 @@ def attach_metrics(bars: pd.DataFrame, metrics: pd.DataFrame, minutes: int) -> p
     return out
 
 
+PREMIUM_LAG = pd.Timedelta(minutes=2)       # an hourly candle is used 2 min after it closes
+PREMIUM_TOLERANCE = pd.Timedelta(hours=3)   # older than this at the bar close -> NaN
+
+
+def load_premium(symbol: str | None = None) -> pd.DataFrame | None:
+    """A symbol's Coinbase premium cache (python src/datafeed.py --premium), or None."""
+    symbol = symbol or C.SYMBOL
+    key = f"premium_{symbol}"
+    if key in _CACHE:
+        return _CACHE[key]
+    p = C.ROOT / "data" / "cache" / symbol / f"{symbol}_premium.parquet"
+    m = pd.read_parquet(p) if p.exists() else None
+    if m is not None:
+        m["time"] = pd.to_datetime(m["time"], utc=True)
+        m = m.sort_values("time")
+    _CACHE[key] = m
+    return m
+
+
+def attach_premium(bars: pd.DataFrame, prem: pd.DataFrame, minutes: int, col: str) -> pd.DataFrame:
+    """Add `col` = the Coinbase premium, causally: the hourly candle opening at
+    H is complete at H + 1h and is used from H + 1h + PREMIUM_LAG; a bar may
+    only see candles available at its own close. Stale (> PREMIUM_TOLERANCE)
+    or missing hours give NaN."""
+    ns = "datetime64[ns, UTC]"
+    right = pd.DataFrame({"avail": (prem["time"] + pd.Timedelta(hours=1) + PREMIUM_LAG).astype(ns),
+                          col: prem["premium"].to_numpy(float)}).sort_values("avail")
+    left = pd.DataFrame({"close_time": (bars.index + pd.Timedelta(minutes=minutes)).astype(ns)})
+    left["_i"] = np.arange(len(left))
+    got = pd.merge_asof(left.sort_values("close_time"), right, left_on="close_time", right_on="avail",
+                        direction="backward", tolerance=PREMIUM_TOLERANCE).sort_values("_i")
+    out = bars.copy()
+    out[col] = got[col].to_numpy(float)
+    return out
+
+
 def get_bars(minutes: int) -> pd.DataFrame:
     """Binance's published klines for this timeframe.
 
@@ -149,6 +185,14 @@ def get_bars(minutes: int) -> pd.DataFrame:
     m = load_metrics()
     if m is not None:
         bars = attach_metrics(bars, m, minutes)
+    # PLAN.md section 25: Coinbase premium, own coin (cb_prem) and BTC's
+    # (cb_prem_btc), when their caches exist. Only the premium blocks read them.
+    p = load_premium()
+    if p is not None:
+        bars = attach_premium(bars, p, minutes, "cb_prem")
+    pb = load_premium("BTCUSDT")
+    if pb is not None:
+        bars = attach_premium(bars, pb, minutes, "cb_prem_btc")
     _CACHE[key] = bars
     return bars
 

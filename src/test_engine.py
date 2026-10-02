@@ -424,6 +424,7 @@ def main() -> None:
     test_candle_at_level()
     test_stop_diag()
     test_level_limit()
+    test_premium()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -525,6 +526,9 @@ def test_recipe_blocks_causal() -> None:
                      ("acct_ls", np.exp(0.3 * np.cos(k / 30) + mrng.normal(0, .1, len(bars)))),
                      ("taker_ls", np.exp(mrng.normal(0, .2, len(bars))))):
         bars[col] = np.where(k < 300, np.nan, val)
+    # PLAN.md section 25 Coinbase premium columns, NaN prefix as well
+    for col in ("cb_prem", "cb_prem_btc"):
+        bars[col] = np.where(k < 200, np.nan, 0.0005 * np.sin(k / 30) + mrng.normal(0, 3e-4, len(bars)))
     cut = 1700
     bad = []
     for kind, table in (("trigger", RC.TRIGGERS), ("filter", RC.FILTERS)):
@@ -1573,6 +1577,44 @@ def test_level_limit() -> None:
     check("level_limit pipeline: noise -> REJECT, not above the control p95",
           noise["verdict"] == "REJECT" and "beats_control_p95_valid" in noise["gates_failed"],
           f"{noise['verdict']} mean {noise['valid'].get('mean_r', 0):+.3f} failed {noise['gates_failed']}")
+
+
+def test_premium() -> None:
+    print("\n21. Coinbase premium: parse, causal attach (hour H used only after H+1h), blocks")
+    import datafeed as DF
+    import experiment as E
+    import recipes as RC
+    rows = [[1577923200, 1, 2, 1.5, 7181.99, 9.0], [1577919600, 1, 2, 1.5, 7174.33, 8.0],
+            [1577919600, 1, 2, 1.5, 7174.33, 8.0]]
+    p = DF.parse_coinbase(rows)
+    check("premium: Coinbase rows parsed, sorted, de-duplicated",
+          len(p) == 2 and p["time"].iloc[0] == pd.Timestamp("2020-01-01 23:00", tz="UTC")
+          and p["cb_close"].iloc[1] == 7181.99)
+    hrs = pd.date_range("2024-01-01", periods=6, freq="1h", tz="UTC")
+    prem = pd.DataFrame({"time": hrs, "premium": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]})
+    b1 = pd.DataFrame({"close": 1.0}, index=hrs)
+    a1 = E.attach_premium(b1, prem, 60, "cb_prem")["cb_prem"].to_numpy()
+    check("premium: a 1h bar sees the PREVIOUS hour (the current one closes 2 min too late)",
+          np.isnan(a1[0]) and list(a1[1:]) == [1.0, 2.0, 3.0, 4.0, 5.0], str(a1))
+    q = pd.date_range("2024-01-01", periods=8, freq="15min", tz="UTC")
+    a15 = E.attach_premium(pd.DataFrame({"close": 1.0}, index=q), prem, 15, "cb_prem")["cb_prem"].to_numpy()
+    check("premium: 15m bars before 01:02 see nothing, from the 01:15 close on they see hour 00",
+          np.isnan(a15[:4]).all() and (a15[4:] == 1.0).all(), str(a15))
+    far = prem.copy(); far["time"] = far["time"] - pd.Timedelta(hours=10)
+    a_old = E.attach_premium(b1, far, 60, "cb_prem")["cb_prem"].to_numpy()
+    check("premium: a value older than 3h is NaN, never stale", np.isnan(a_old).all(), str(a_old))
+    n = 400
+    x = np.r_[np.zeros(300), np.full(100, 0.01)] + np.random.default_rng(2).normal(0, 1e-4, n)
+    bb = pd.DataFrame({"close": 1.0, "cb_prem": x}, index=pd.date_range("2024-01-01", periods=n, freq="1h", tz="UTC"))
+    sig = RC.t_premium_cross(bb, None, n=168, z=4.0)  # z 4: plain noise rarely crosses it
+    check("premium_cross: a jump in the premium -> one long on the jump bar",
+          sig[300] == 1.0 and int((sig != 0).sum()) == 1, str(np.flatnonzero(sig)))
+    try:
+        RC.t_premium_cross(bb.drop(columns="cb_prem"), None)
+        refused = False
+    except ValueError:
+        refused = True
+    check("premium blocks refuse bars without the premium column", refused)
 
 
 if __name__ == "__main__":

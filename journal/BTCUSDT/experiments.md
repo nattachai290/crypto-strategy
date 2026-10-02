@@ -5695,3 +5695,83 @@ carries nothing. About two thirds of the orders fill, and 65% of the fills are
 stopped against 15% reaching target: a resting limit cannot filter its own fills.
 The short leg is the losing half on both clocks, the same sign as the stop
 diagnosis in Exp 052.**
+
+---
+
+## Exp 056 - Review of Exp 055 / ETH Exp 019 (resting limits at levels, planner): REJECT stands, three statements corrected
+
+**Date:** 2026-10-02
+**Status:** complete.
+
+**Integrity.** The commit adds only `results/*/level_limit/`, journals and
+STATUS files. No `src/` change, no holdout lock, `--final` correctly not run.
+The numbers match the JSON files.
+
+**Result in one table (VALID):**
+
+| coin | tf | fills / orders | net R | gross R | control median / p95 | long / short |
+|---|---|---|---|---|---|---|
+| BTC | 1h | 542 / 975 | −0.096 | −0.019 | −0.071 / +0.020 | −0.019 / −0.160 |
+| BTC | 4h | 871 / 1313 | −0.033 | −0.003 | −0.030 / +0.051 | +0.104 / −0.154 |
+| ETH | 1h | 531 / 949 | **−0.185** | −0.121 | −0.062 / +0.055 | −0.263 / −0.108 |
+| ETH | 4h | 141 / 258 | −0.009 | +0.016 | −0.013 / +0.191 | −0.187 / +0.168 |
+
+**Corrections:**
+1. **"Every one of the 32 cells on TRAIN is negative" is wrong.** All 16
+   cells on BTC are negative. On ETH 4h, the two `swing` cells with a 2 ATR
+   stop are positive (+0.022 and +0.031), and TRAIN chose the +0.031 cell. It
+   then lost on VALID (−0.009).
+2. **"Below the control median on all four splits" is wrong.** It holds on
+   3 of 4. ETH 4h is −0.009 against a median of −0.013. None of the four is
+   anywhere near the control's p95.
+3. **"The mechanism is a cost, not a wrong idea" is the wrong reading.** The
+   gross R is ≈ 0 or negative on every run (BTC −0.003 and −0.019, ETH −0.121
+   at 1h). Before any cost, a resting order at a level does no better than one
+   at a random price the same distance away, and at 1h it does worse. That is
+   adverse selection: the orders that fill are mostly the ones price slices
+   through.
+4. **The losing short leg on BTC is the 2023–24 bull market.** The control has
+   the same side mix, so the drift does not explain the gap to the control.
+   ETH has the opposite leg pattern (4h long −0.187 / short +0.168). So there
+   is no "short side is wrong" finding here.
+
+**What the round adds.** Its two new ingredients, entering at the level
+and paying the maker fee, did lower the cost per trade (0.03 R at 4h,
+0.08 R at 1h). That still did not help: support and resistance from
+yesterday's extremes and swing pivots hold no more often than any other
+price. That is now shown both for waiting for a confirming candle (§22) and
+for resting an order in advance (§24).
+
+**Verdict.** REJECT on all 4 runs. No holdout. `LESSONS.md` §14 is added.
+
+---
+
+## Exp 057 - Coinbase premium, pre-registration (PLAN.md section 25)
+
+**Date:** 2026-10-02
+**Status:** tooling ready, not run. The research agent runs it.
+
+**Why.** This is the first data source from outside Binance. The premium is
+Coinbase USD close / Binance spot USDT close − 1, so it shows when US spot
+buyers pay up. Every Binance-only entry tested so far was about a coin flip
+(Exp 052/053).
+
+**Tooling:**
+- `datafeed.py --premium` downloads Coinbase hourly candles and Binance spot
+  1h klines, merges them on the hour, and validates coverage.
+- `experiment.attach_premium` makes hour H available only at H + 1h + 2 min.
+- `get_bars` attaches `cb_prem` and `cb_prem_btc`.
+- Blocks: `premium_cross` and `premium_side`.
+
+**Checks:**
+- Test 21: parse, causal attach, the NaN rule for stale values, a jump giving
+  one signal, and refusal without the column.
+- Test 7: causality.
+- A one-month build (March 2023) in a scratch directory gave 740 hours with a
+  premium of +0.10% median. No research run was made.
+
+**Ideas:**
+- `057_coinbase_premium_follow` (own premium): BTC and ETH.
+- `058_btc_premium_follow_eth` (BTC's premium as the signal): ETH only.
+
+Each has 4 timeframes and an 8-cell TRAIN grid.

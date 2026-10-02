@@ -1,0 +1,53 @@
+{
+  "name": "058_btc_premium_follow_eth_tf15",
+  "hypothesis": "Same mechanism as 057, but the signal is BTC's Coinbase premium applied to another coin: US institutional demand shows up first and most clearly in BTC (ETF flow), and the rest of the market follows BTC. Run on ETHUSDT only (on BTCUSDT it is identical to 057). Pre-registered in PLAN.md section 25; same exits and grid as 057. [Timeframe variant of 058_btc_premium_follow_eth, 60m -> 15m, mode chart: same bar counts and ATR multiples, hold x0.25, pct stop x0.500.]",
+  "strategy": "recipe",
+  "tf": 15,
+  "params": {
+    "triggers": [
+      {
+        "type": "premium_cross",
+        "col": "cb_prem_btc",
+        "n": 168,
+        "z": 2.0
+      }
+    ],
+    "filters": [],
+    "direction": "both",
+    "stop": {
+      "type": "atr",
+      "mult": 3.0
+    },
+    "tp": {
+      "type": "r",
+      "r": 2.0
+    },
+    "be_at": 0,
+    "trail_at": 0,
+    "trail_atr": 0,
+    "max_hold_hours": 12.0,
+    "cooldown_bars": 4,
+    "atr_n": 14
+  },
+  "grid": {
+    "triggers.0.z": [
+      1.5,
+      2.5
+    ],
+    "triggers.0.n": [
+      72,
+      336
+    ],
+    "tp.r": [
+      2.0,
+      4.0
+    ]
+  },
+  "execution": {
+    "entry_mode": "taker",
+    "entry_offset_atr": 0.0,
+    "entry_fill_ratio": 1.0
+  },
+  "variant_of": "058_btc_premium_follow_eth",
+  "variant_mode": "chart"
+}

@@ -5,10 +5,12 @@
 (where the coin stands). `BTCUSDT` is **closed** (Exp 029: 208 evaluations,
 holdout 4/4 FAILED) and `ETHUSDT` is **closed** (ETH Exp 003: 0 PASS).
 `SOLUSDT` and `BNBUSDT` are **closed** too (SOL Exp 005, BNB Exp 003).
-**Active work: limit orders resting at support/resistance,
-`src/level_limit.py` (`docs/research/PLAN.md` §24): BTCUSDT then ETHUSDT, 1h
-and 4h, one run each.** The stop diagnosis (§23) found the entries about a
-coin flip, the candle round (§22) and the ML line (§19–21) are closed.
+**Active work: Coinbase premium (`docs/research/PLAN.md` §25), the first
+data from outside Binance: `python src/datafeed.py --premium` per coin, then
+ideas `057_coinbase_premium_follow` (BTCUSDT, ETHUSDT) and
+`058_btc_premium_follow_eth` (ETHUSDT), 4 timeframes each.** Resting limits at
+levels (§24), the stop diagnosis (§23), the candle round (§22) and the ML line
+(§19–21) are closed.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
@@ -47,6 +49,8 @@ python src/datafeed.py                  # BTCUSDT; first time ~3 min; must end w
 SYMBOL=ETHUSDT python src/datafeed.py   # same, for ETH
 python src/datafeed.py --metrics        # PLAN.md section 14; must end with: METRICS VALIDATION: OK
 SYMBOL=ETHUSDT python src/datafeed.py --metrics
+python src/datafeed.py --premium        # PLAN.md section 25; must end with: PREMIUM VALIDATION: OK
+SYMBOL=ETHUSDT python src/datafeed.py --premium
 python src/evaluate.py --list    # the building blocks you can combine
 cat journal/BTCUSDT/STATUS.md journal/ETHUSDT/STATUS.md   # where things stand (PLAN.md section 13)
 ```
@@ -351,6 +355,11 @@ Engine facts to remember:
   30 min stale is NaN, and bars before `metrics_start` are NaN. The engine
   never reads them. The blocks `oi_flush`, `crowd_fade`, `smart_divergence`
   and `oi_rising` need them and refuse without them.
+- **Coinbase premium columns** (PLAN.md §25): when
+  `data/cache/<SYMBOL>/<SYMBOL>_premium.parquet` exists, `get_bars(tf)` adds
+  `cb_prem` (own coin) and, from BTCUSDT's cache, `cb_prem_btc`. The hourly
+  candle opening at H is used from H + 1h + 2 min; older than 3 h is NaN. Only
+  `premium_cross` / `premium_side` read them.
 - Funding is charged as **position notional × rate** (qty × price at the open
   of the bar holding the settlement). Before BTC Exp 030 it was qty × rate,
   i.e. almost zero; every record made before that has near-zero funding

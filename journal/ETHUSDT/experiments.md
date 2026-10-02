@@ -1695,3 +1695,15 @@ harvest. The two coins disagree about which side wins: BTC's long leg wins at
 +0.104, ETH's loses at -0.187 while ETH's short leg wins at +0.168. About 55% of
 orders fill and 65% of fills are stopped against 15% reaching target, and three
 of the four splits land below the control's median.**
+
+---
+
+## Exp 020 - Review of Exp 019 (resting limits at levels on ETH, planner)
+
+See **BTC Exp 056**.
+- TRAIN chose ETH 4h `swing` 2 ATR / 3R, one of only two positive TRAIN cells
+  across both coins. It lost on VALID (−0.009 R).
+- ETH 1h is the worst run of the round: −0.185 R net, −0.121 R gross, below
+  the control median (−0.062). Orders that fill at a level are worse than
+  orders at random prices the same distance away (adverse selection).
+- REJECT stands.

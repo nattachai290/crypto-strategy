@@ -397,6 +397,7 @@ entries inside the same trend filters do as well. A long-only result on
 - `super_scalper(atr_len, mult, rsi_fast, rsi_slow)` (T4): a big bar (body > WMA-ATR band) in the direction of RSI 25 vs RSI 100.
 - `liquidity_sweep(pivot_len, max_age, min_gap_atr, vol_mult, min_wick_ratio)` (T6): a swing high/low swept by a wick on a volume spike, closed back inside, confirmed next bar past the sweep bar's midpoint. Mozilla Public License 2.0 source.
 - `candle_at_level(pattern, level, near_atr, wick_ratio, pivot_len, max_age, atr_n)` (PLAN.md §22): a reversal candle (engulfing / pin / any) whose wick tests a support or resistance level (`prev_day` = yesterday's low/high, `swing` = live pivots, `both`) within `near_atr` x ATR and closes back on the near side. Long at support, short at resistance.
+- `premium_cross(col, n, z)` / filter `premium_side(col, n, z)` (PLAN.md §25): the Coinbase premium (Coinbase USD close / Binance spot close − 1; `cb_prem` own coin, `cb_prem_btc` BTC's) z-scored against its last n bars; crossing above +z = US spot buyers paying up (long), below −z = short. Needs `python src/datafeed.py --premium`.
 
 ## Metrics blocks (new data, PLAN.md section 14)
 

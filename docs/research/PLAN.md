@@ -1787,3 +1787,75 @@ timeframe also passes (`LESSONS.md` §5, §8). No change after a result.
 
 **Prior:** low. §22 used the same levels and they did not hold more often than
 random. The new parts are the entry price, the maker fee and the tight stop.
+
+## 25. Coinbase premium: the first data from outside Binance (owner-approved 2026-10-02)
+
+**Why.** Every entry tested so far was built from Binance's own data, and all
+of them called direction about as well as a coin flip (§23). The owner asked
+for a way to find better entries. Price patterns are used up, so this test
+asks a different question: **who is buying.**
+
+The Coinbase premium is the gap between Coinbase's USD price and Binance's
+USDT price. Coinbase is where US institutions and ETF-related flow trade spot.
+When they pay up, the premium rises, and their large orders are worked over
+hours to days.
+
+**Data** (`python src/datafeed.py --premium`, per coin):
+- Coinbase `{BASE}-USD` hourly candles, from the public API (300 hours per
+  request).
+- Binance spot `{SYMBOL}` hourly klines (data.binance.vision).
+- Premium = cb_close / bn_close − 1. This is the standard "Coinbase Premium
+  Index" definition.
+  - It has no USDT/USD correction, because Coinbase's USDT-USD pair only
+    starts on 2021-05-04.
+  - Signals use a z-score against the premium's own recent bars, which
+    removes slow USDT drift.
+- The cache is `data/cache/<SYMBOL>/<SYMBOL>_premium.parquet`.
+- `validate_premium` requires ≥ 97% hourly coverage per year and a median
+  |premium| < 0.5%.
+- Tool check: March 2023 gave 740 of 744 hours, a median premium of +0.10%,
+  and a range of ±1.5% (the USDC depeg).
+
+**Causality.** The hourly candle that opens at H is used only from
+H + 1h + 2 min. A bar sees only candles that are available at its own close.
+A value more than 3 h old becomes NaN. `get_bars` attaches two columns:
+`cb_prem` (the coin's own premium) and `cb_prem_btc` (BTC's premium).
+
+**Blocks:**
+- `premium_cross(col, n, z)` triggers when the premium's z-score against its
+  last n bars crosses above +z (long) or below −z (short).
+- `premium_side(col, n, z)` is the matching filter.
+
+**Test 21:**
+- the Coinbase rows are parsed correctly;
+- a 1h bar sees the *previous* hour;
+- 15m bars before 01:02 see nothing;
+- stale values become NaN;
+- a jump in the premium gives exactly one long;
+- the blocks refuse to run without the column.
+
+Test 7 checks causality and shape.
+
+**Ideas.** Both are written at 1h, with chart-mode variants at 15m, 30m and 4h.
+- `057_coinbase_premium_follow`: the coin's own premium. Run on **BTCUSDT
+  and ETHUSDT**.
+- `058_btc_premium_follow_eth`: BTC's premium used as the signal for
+  **ETHUSDT only**. On BTC it would be identical to 057.
+
+Both use the same exits: ATR 3 stop, out after 48 h, 4-bar cooldown. The
+TRAIN grid has 8 cells: z {1.5, 2.5} × n {72, 336} × target {2R, 4R}.
+
+**Runs:**
+1. `python src/datafeed.py --premium`
+2. `SYMBOL=ETHUSDT python src/datafeed.py --premium`
+3. 057 on BTC (4 files).
+4. 057 on ETH (4 files).
+5. 058 on ETH (4 files).
+
+Every WATCH/PASS also runs `baseline.py` and `benchmark.py`. Use `--final`
+only as AGENTS.md step 7 allows. A candidate needs the same direction on both
+coins (`LESSONS.md` §5).
+
+**Prior:** low to medium-low. It is the only new information source the
+project has tested. Published accounts of the Coinbase premium describe it
+over days, not hours, so the 4h variants matter most.

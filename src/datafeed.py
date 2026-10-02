@@ -362,7 +362,104 @@ def validate_metrics(max_missing_share: float = 0.01) -> bool:
     return not miss_days and not dup and not bad_oi and share <= max_missing_share
 
 
+# --------------------------------------------------------------------------
+# Coinbase premium (PLAN.md section 25): Coinbase {BASE}-USD hourly close vs
+# Binance spot {SYMBOL} hourly close, the standard "Coinbase Premium Index"
+# definition (no USDT/USD correction: Coinbase's USDT-USD starts 2021-05-04).
+# --------------------------------------------------------------------------
+CB_API = "https://api.exchange.coinbase.com"
+CB_CHUNK = 300  # hours per request (the API maximum)
+
+
+def parse_coinbase(rows: list) -> pd.DataFrame:
+    """Coinbase candles [time, low, high, open, close, volume] -> hourly frame."""
+    df = pd.DataFrame(rows, columns=["t", "low", "high", "open", "close", "volume"])
+    df["time"] = pd.to_datetime(df["t"].astype("int64"), unit="s", utc=True)
+    return (df.rename(columns={"close": "cb_close", "volume": "cb_volume"})[["time", "cb_close", "cb_volume"]]
+            .astype({"cb_close": float, "cb_volume": float}).drop_duplicates("time").sort_values("time"))
+
+
+def _cb_get(url: str, tries: int = 6) -> list:
+    import json as _json
+    from urllib.request import Request
+    last = None
+    for i in range(tries):
+        try:
+            with urlopen(Request(url, headers={"User-Agent": "crypto-strategy-research"}), timeout=60) as r:
+                return _json.loads(r.read())
+        except (HTTPError, URLError, TimeoutError, OSError) as e:  # pragma: no cover
+            last = e
+            time.sleep(1.5 * (i + 1))
+    raise RuntimeError(f"failed to GET {url}: {last}")
+
+
+def build_premium() -> Path:
+    out = C.CACHE / f"{C.SYMBOL}_premium.parquet"
+    if out.exists():
+        print(f"[premium] cached -> {out.name}")
+        return out
+    base = C.SYMBOL[:-4]
+    start = pd.Timestamp(C.DATA_START + "-01", tz="UTC")
+    end = pd.Period(C.DATA_END, "M").end_time.tz_localize("UTC").ceil("h")
+    frames, t = [], start
+    print(f"[premium] Coinbase {base}-USD hourly {start.date()} .. {end.date()}", flush=True)
+    while t < end:
+        u = min(t + pd.Timedelta(hours=CB_CHUNK), end)
+        rows = _cb_get(f"{CB_API}/products/{base}-USD/candles?granularity=3600"
+                       f"&start={t.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={u.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        if rows:
+            frames.append(parse_coinbase(rows))
+        t = u
+        time.sleep(0.15)  # public rate limit
+    cb = pd.concat(frames, ignore_index=True).drop_duplicates("time")
+    cb = cb[(cb["time"] >= start) & (cb["time"] < end)]
+    keys = [k for k in list_keys(f"data/spot/monthly/klines/{C.SYMBOL}/1h/") if k[-11:-4] in set(C.month_range())]
+    bn = []
+    for k in keys:
+        z = fetch_zip(k, C.RAW / "spot_1h")
+        if z is None:
+            continue
+        d = _read_one_zip(z, C.KLINE_COLS)
+        ot = d["open_time"].astype("int64")
+        d["time"] = pd.to_datetime(np.where(ot > 10**14, ot // 1000, ot), unit="ms", utc=True)
+        bn.append(d[["time", "close"]].rename(columns={"close": "bn_close"}))
+    bn = pd.concat(bn, ignore_index=True).drop_duplicates("time")
+    df = cb.merge(bn, on="time", how="inner").sort_values("time").reset_index(drop=True)
+    df["premium"] = df["cb_close"] / df["bn_close"] - 1.0
+    df.to_parquet(out, index=False)
+    print(f"[premium] wrote {out.name} rows={len(df):,} {df['time'].min()} .. {df['time'].max()}")
+    return out
+
+
+def validate_premium(min_cover: float = 0.97, max_abs_median: float = 0.005) -> bool:
+    p = C.CACHE / f"{C.SYMBOL}_premium.parquet"
+    if not p.exists():
+        print("[premium] no cache")
+        return False
+    df = pd.read_parquet(p)
+    ok = True
+    for y, g in df.groupby(df["time"].dt.year):
+        hours = 8784 if y % 4 == 0 else 8760
+        if y == int(C.DATA_END[:4]):
+            hours = int((pd.Period(C.DATA_END, "M").end_time - pd.Timestamp(f"{y}-01-01")).total_seconds() // 3600) + 1
+        cover = len(g) / hours
+        med = float(g["premium"].abs().median())
+        flag = cover >= min_cover and med <= max_abs_median
+        ok &= flag
+        print(f"  {y}: {len(g):,} hours ({cover:.1%}), |premium| median {med:.5f}, "
+              f"p99 {g['premium'].abs().quantile(0.99):.5f} {'OK' if flag else '!!'}")
+    return bool(ok)
+
+
 def main() -> None:
+    if "--premium" in sys.argv[1:]:
+        try:
+            build_premium()
+        except Exception as e:  # noqa: BLE001
+            print(f"[premium] FAILED: {e}", file=sys.stderr)
+        ok = validate_premium()
+        print("PREMIUM VALIDATION:", "OK" if ok else "PROBLEMS FOUND (see above)")
+        sys.exit(0 if ok else 1)
     if "--metrics" in sys.argv[1:]:
         try:
             build_metrics()
