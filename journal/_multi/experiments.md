@@ -2850,3 +2850,56 @@ with a negative gross of -0.0275. So more history helps at one clock only. The 1
 book also trades twice as long as §28's, 45% of the time instead of 24%, which is
 where the cost saving came from. Nothing goes to the holdout: a real improvement
 that is not yet provable is still a REJECT.**
+
+---
+
+## Exp 031 - Review of Exp 030 (§30, planner): REJECT stands; 1h is the nearest miss, read with three cautions
+
+**Date:** 2026-10-03
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- `src/` is unchanged since the re-registration (a43149a).
+- No holdout file exists.
+- `history.json` shows 46 coins with "splice" and 1 with "perp".
+- Recomputed from the trade files, matching `tf*.json`:
+
+  | tf | trades | net mean | gross | cost | gates failed |
+  |---|---|---|---|---|---|
+  | 1h | 6,307 | +0.0374 | +0.0576 | 0.0202 | `valid_ci_lo>0` only |
+  | 4h | 1,704 | +0.0031 | | | 4 gates |
+  | 1d | 1,218 | -0.0314 | | | 6 gates |
+
+- 1h without its 5 or 20 largest trades: +0.0332 and +0.0249. It is not
+  carried by a handful of trades.
+- Small wording point: the 1h breadth gate counts 33 of 47 coins (net > 0
+  **and** above the coin's own shifted median); 34 is the net > 0 count alone.
+
+**Three cautions on the 1h result.**
+1. **One year carries it.** 2023: -0.014. 2024: +0.079. AGENTS.md step 8 calls
+   that a regime effect until shown otherwise. It is also why the
+   weekly-block CI is [-0.024, +0.101].
+2. **Longer history did not help consistently.** Against §28 on the same
+   coins and windows:
+   - 1h improved: 0.000 → +0.037;
+   - 4h got worse: +0.010 → +0.003;
+   - 1d got worse: +0.023 → -0.031, and lost its timing pass.
+
+   One better and two worse out of three is what noise looks like. "Longer
+   history helps" is not established.
+3. **Multiple looks.** This is the eighth ML design judged on VALID, each on
+   three timeframes (or three cells and more). The best of about 20 looks
+   landing one gate short is roughly what chance alone would produce.
+
+**What it means.**
+- 1h is REJECT by its pre-registered gates and may not take the holdout under
+  the rules.
+- It is still the most balanced ML book recorded here: gross 2.9× cost, both
+  legs positive, timing about 4× the shifted p95, and 33 of 47 coins.
+- The holdout is untouched (5 earlier runs, all pre-ML). Spending it on an
+  explicitly exploratory, pre-registered one-shot test of this frozen 1h
+  configuration would be an owner decision outside the normal rules, as with
+  the premium lead in Exp 012/013, where the owner declined.
+
+**Unchanged.** No timeframe of §30 goes to the holdout without the owner's
+explicit decision.
