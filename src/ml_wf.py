@@ -336,7 +336,8 @@ def run_cell(P, pred, a, b, q, mode, stress=1.0):
         desired = des_all[rows]
         tgt = np.full(hi - lo, np.nan)
         tgt[P[c]["pos"][rows] - lo] = desired
-        t = MH.simulate(P[c]["bars"].iloc[lo:hi], tgt, P[c]["atr"][lo:hi], P[c]["fund"],
+        tb = P[c].get("tbars", P[c]["bars"])          # ml_wf2: features on spot bars, trades on perp bars
+        t = MH.simulate(tb.iloc[lo:hi], tgt, P[c]["atr"][lo:hi], P[c]["fund"],
                         fee=C.FEE_TAKER * stress, slip=P[c]["slip"] * stress, stop_atr=STOP_ATR)
         fr.append(t.assign(coin=c))
         paths[c] = (desired, rows, lo, hi)

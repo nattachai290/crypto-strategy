@@ -428,6 +428,7 @@ def main() -> None:
     test_premium_confirm()
     test_ml_hold()
     test_ml_wf()
+    test_ml_wf2()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1838,6 +1839,58 @@ def test_ml_wf() -> None:
           and WF.holdout_choice({60: {"tf": 60, "verdict": "PASS", "train_wf_best": {"mean_r": 0.01}},
                                  240: {"tf": 240, "verdict": "PASS", "train_wf_best": {"mean_r": 0.03}},
                                  1440: {"tf": 1440, "verdict": "REJECT", "train_wf_best": {"mean_r": 0.09}}}) == 240)
+
+
+# --------------------------------------------------------------------------
+# 25. Walk-forward ML with spot history from 2017 (PLAN.md section 29)
+# --------------------------------------------------------------------------
+def test_ml_wf2() -> None:
+    print("\n25. ML walk-forward with spot history: universe rule, trains on spot before perps exist, trades only on perp bars")
+    import contextlib
+    import io
+    import ml_wf2 as W2
+    days = pd.date_range("2017-08-01", "2023-01-01", freq="1D", tz="UTC")
+    def daily(sym, start, vol=1e6):
+        d = days[days >= pd.Timestamp(start, tz="UTC")]
+        return pd.DataFrame({"symbol": sym, "date": d, "open": 1.0, "close": 1.0, "quote_volume": vol})
+    spot = pd.concat([daily("AUSDT", "2017-09-01"), daily("BUSDT", "2019-03-01"), daily("CUSDT", "2017-09-01")])
+    perp = pd.concat([daily("AUSDT", "2020-03-01", 5e6), daily("BUSDT", "2020-03-01", 9e6), daily("CUSDT", "2020-03-01", 1e6)])
+    uni = W2.select_universe(perp, spot, n=10)
+    check("ml_wf2 universe: only coins whose spot traded by 2018-01-01, ranked by perp TRAIN volume",
+          [u["symbol"] for u in uni] == ["AUSDT", "CUSDT"], str([u["symbol"] for u in uni]))
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+
+    def coins(k, seeds):
+        out = {60: {}}
+        for n, sd in seeds:
+            b = _momentum_bars(k, seed=sd)
+            sp = b.copy()
+            sp.index = sp.index - pd.Timedelta(days=730)                 # spot history two years longer
+            sp = pd.concat([sp[sp.index < b.index[0]], b])
+            out[60][n] = {"spot": sp, "perp": b * 1.0005, "fund": fund}  # perp: same path, a small basis
+        return out
+    with contextlib.redirect_stdout(io.StringIO()):
+        Pe = W2.prepare(coins(0.0008, [(f"C{i}USDT", 110 + i) for i in range(3)]), 60)
+        edge = __import__("ml_wf").evaluate(Pe, 60, grid=__import__("ml_wf").GRID[:1], min_coins=3, step=3, keep=True)
+        noise = __import__("ml_wf").evaluate(W2.prepare(coins(0.0, [(f"N{i}USDT", 120 + i) for i in range(3)]), 60), 60,
+                                             grid=__import__("ml_wf").GRID[:1], min_coins=3, step=3)
+    z = Pe["C0USDT"]
+    pre = z["X"].index < pd.Timestamp("2020-01-01", tz="UTC")
+    rows0 = int(edge["refits"][0]["train_rows"])
+    check("ml_wf2 trains on spot rows from before the perp existed, but never forecasts or trades there",
+          np.isfinite(z["y"][pre]).sum() > 10000 and not z["tradable"][pre].any() and rows0 > 3 * 17000,
+          f"spot label rows before perps {int(np.isfinite(z['y'][pre]).sum())}, first refit rows {rows0}")
+    t = edge["_trades"]
+    tb = z["tbars"]
+    k = tb.index.get_indexer(t[t["coin"] == "C0USDT"]["entry_time"])
+    fills = t[t["coin"] == "C0USDT"]["entry_px"].to_numpy() / tb["open"].to_numpy()[k]
+    check("ml_wf2 trades fill on the PERP bars (entry = perp open +/- slippage), none before 2021",
+          (k >= 0).all() and np.allclose(np.abs(fills - 1.0), __import__("ml_pool").slippage("C0USDT"), atol=1e-9)
+          and t["entry_time"].min() >= pd.Timestamp("2021-01-01", tz="UTC"))
+    check("ml_wf2 pipeline: a planted edge is found (PASS), pure noise is not (timing gate fails)",
+          edge["verdict"] == "PASS" and noise["verdict"] == "REJECT" and "timing_beats_shift_p95" in noise["gates_failed"],
+          f"edge {edge['verdict']} {edge['gates_failed']} / noise {noise['verdict']} {noise['gates_failed']}")
 
 
 if __name__ == "__main__":

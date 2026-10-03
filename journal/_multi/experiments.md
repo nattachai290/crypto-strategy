@@ -2183,3 +2183,48 @@ books on native candles. Each trade shows:
   the forecast, the entry bar, and the top 3 feature contributions.
 
 Each coin's account is computed on its own.
+
+---
+
+## Exp 024 - Pre-registration: walk-forward ML with spot history from 2017 (PLAN.md section 29)
+
+**Date:** 2026-10-03
+**Status:** pre-registered, not run
+
+### Why
+After the §28 review, the owner asked to extend the history ("ทำปี 2016 ก่อน").
+
+**Planner's analysis of §28's recorded forecasts** (diagnostic, not a gate):
+- **Information coefficient** against the realised 24-bar label: +0.02 (1h),
+  −0.06 (4h), −0.06 (1d).
+- **Top-1 entry reasons:** 78% / 98% / 100% are market-wide features.
+- **Effective sample.** Mean pairwise return correlation of the coins is 0.61,
+  so 47 coins ≈ 1.6 independent coins. With 24-bar overlapping labels, that
+  leaves roughly 1,200 / 300 / 50 independent VALID observations. An IC of
+  0.02 needs about 10,000 to measure.
+- **Fading rallies.** At 4h the model held more shorts than longs in every
+  rising quarter. Its training regimes (2021 top, 2022 bear) taught it to
+  fade rallies.
+
+2016 is not on Binance. The owner chose Binance spot from 2017-08, over
+Coinbase USD pairs from 2016.
+
+### What is fixed (src/ml_wf2.py, PLAN.md section 29, test 25)
+- §28 unchanged, except:
+  - features and labels come from each coin's spot bars from 2017-08;
+  - trades are simulated on perp bars with perp costs and funding, in §28's
+    windows;
+  - the universe is §28's rule, restricted to coins whose spot pair traded by
+    2018-01-01.
+- `ml_wf.run_cell` now simulates on `P[c]["tbars"]` when present. Without it
+  the behaviour is unchanged; tests 1-24 still pass.
+- Synthetic checks (test 25):
+  - the universe rule;
+  - training uses spot rows from before the perps existed, but there are no
+    forecasts or trades there;
+  - fills are at the perp open ± slippage;
+  - a planted edge → PASS;
+  - noise → REJECT, with the timing gate failing.
+
+### Verdict
+Pending the research agent's single run.
