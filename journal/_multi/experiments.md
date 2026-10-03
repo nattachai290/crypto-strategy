@@ -2903,3 +2903,45 @@ that is not yet provable is still a REJECT.**
 
 **Unchanged.** No timeframe of §30 goes to the holdout without the owner's
 explicit decision.
+
+---
+
+## Exp 032 - Pre-registration: one-account portfolio layer on §30's 1h model (PLAN.md section 31)
+
+**Date:** 2026-10-03
+**Status:** pre-registered, not run
+
+### Why
+§30's 1h book failed only the weekly-block CI. The owner asked to keep going
+and to work on how money is put to work, not on the model:
+- a confidence-based size;
+- a cap on correlated same-direction exposure;
+- agreement from the bigger timeframes.
+
+The owner also asked the planner to stop proposing to close the work.
+
+### What is fixed (src/ml_port.py, PLAN.md section 31, test 27)
+- **Model.** §30's 1h/4h/1d walk-forward models are recomputed, frozen and
+  checked against §30's recorded VALID forecasts (|diff| ≤ 1e-6, else the run
+  stops).
+- **18 cells:**
+  - agreement {off, 4h, 1d};
+  - sizing {flat 1%, confidence 0.5-1%};
+  - per-direction risk cap {none, 5%, 10%}.
+
+  TRAIN walk-forward chooses the cell by the weekly t-statistic.
+- **One account.** Return per trade = net R × risk. Weekly sums, with empty
+  weeks counted as 0.
+- **Gates.** TRAIN > 0; ≥ 300 trades; weekly mean and CI > 0; cost ×1.5 > 0;
+  timing > shifted p95; breadth; both legs > 0; max drawdown ≤ 20%. One
+  holdout shot, only after PASS.
+- **Synthetic checks (test 27).**
+  - Agreement filter by hand.
+  - Confidence weights.
+  - Risk cap: never exceeded, sides independent, room reopens after exits.
+  - The weekly account.
+  - A planted edge → PASS.
+  - Noise → REJECT, with the timing gate failing.
+
+### Verdict
+Pending the research agent's single run.
