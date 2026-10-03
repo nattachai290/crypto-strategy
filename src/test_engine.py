@@ -1980,6 +1980,61 @@ def test_ml_port() -> None:
     fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
     cfg = WF_.GRID[0]
 
+    # the reproduction guard and the agreement filter on a REAL 4h forecast series
+    import json as _json
+    import shutil
+    import tempfile
+    by2 = {60: {}, 240: {}}
+    for i in range(2):
+        b = _momentum_bars(0.0008, seed=200 + i)
+        by2[60][f"C{i}USDT"] = {"spot": b, "perp": b, "fund": fund}
+        by2[240][f"C{i}USDT"] = {"spot": _agg(b, "4h"), "perp": _agg(b, "4h"), "fund": fund}
+    tmp = Path(tempfile.mkdtemp())
+    saved = MP_.SRC
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            P4 = W2.prepare(by2, 240)
+            p4 = WF_.walk_forward(P4, 240, cfg, *WF_.WINDOWS["valid"], step=3)
+        pd.concat([pd.DataFrame({"coin": c, "time": P4[c]["X"].index[np.isfinite(p4[c])],
+                                 "pred": p4[c][np.isfinite(p4[c])], "desired": 0.0}) for c in P4]
+                  ).to_csv(tmp / "desired_valid_tf240.csv.gz", index=False)
+        (tmp / "tf240.json").write_text(_json.dumps({"setting": cfg, "q_in": 0.9, "exit_mode": "flip"}))
+        MP_.SRC = tmp
+        orig_wf = WF_.walk_forward
+        WF_.walk_forward = lambda *a_, **k_: orig_wf(*a_, **{**k_, "step": 3})
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                _, o4 = MP_.forecasts(by2, 240, [WF_.WINDOWS["valid"]])
+            accepted = True
+            rec = pd.read_csv(tmp / "desired_valid_tf240.csv.gz")
+            rec.loc[3, "pred"] += 0.01
+            rec.to_csv(tmp / "desired_valid_tf240.csv.gz", index=False)
+            try:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    MP_.forecasts(by2, 240, [WF_.WINDOWS["valid"]])
+                stopped = False
+            except SystemExit:
+                stopped = True
+        finally:
+            WF_.walk_forward = orig_wf
+    finally:
+        MP_.SRC = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("ml_port reproduction guard: accepts section 30's own forecasts, stops on any mismatch", accepted and stopped)
+    with contextlib.redirect_stdout(io.StringIO()):
+        P1 = W2.prepare(by2, 60)
+        p1 = WF_.walk_forward(P1, 60, cfg, *WF_.WINDOWS["valid"], step=3)
+    pred1 = {c: pd.Series(p1[c], index=P1[c]["X"].index) for c in P1}
+    t_on, _ = MP_.run_cell(P1, pred1, {"4h": o4, "1d": o4}, *WF_.WINDOWS["valid"], "4h", "flat", None, 0.9, "flip")
+    bad = 0
+    for x in t_on.itertuples():
+        sr = o4[x.coin]
+        pos = WF_.asof_positions(pd.DatetimeIndex([x.entry_time - pd.Timedelta(hours=1)]), 60, sr.index, 240)[0]
+        v = sr.iloc[pos] if pos >= 0 else np.nan
+        bad += not (np.isfinite(v) and np.sign(v) == x.side)
+    check("ml_port agreement on a real 4h series: every new 1h entry agrees with the last CLOSED 4h forecast",
+          len(t_on) > 50 and bad == 0, f"{len(t_on)} trades, {bad} disagree")
+
     def setup(k, seeds):
         by = {60: {}}
         for n, sd in seeds:

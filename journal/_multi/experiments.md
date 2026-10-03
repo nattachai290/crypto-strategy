@@ -2945,3 +2945,23 @@ The owner also asked the planner to stop proposing to close the work.
 
 ### Verdict
 Pending the research agent's single run.
+
+**Addendum to Exp 032 (2026-10-03, before any run): the planner's bug review of `ml_port.py`.**
+
+Checked with extra synthetic runs:
+- The reproduction guard accepts §30's own forecasts and stops on a 0.01
+  change.
+- With a real 4h forecast series, every new 1h entry agrees with the last
+  closed 4h forecast: 408 of 408.
+- The cap is never exceeded.
+
+**Fixed.**
+- A coin that §30 traded but that is missing here now stops the run. Before,
+  it raised a KeyError.
+- Test 27 gains the guard and real-4h agreement checks.
+
+**Stated as simplifications** (in the module docstring; not changed):
+- A cap-skipped trade is not retried when room frees. The coin stays out until
+  its desired position next changes.
+- Same-hour entries are sized in coin-name order.
+- The timing control reads the agreement-filtered path and ignores cap skips.

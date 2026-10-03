@@ -17,6 +17,10 @@ switches are added on top of the 1h book, all simulated as ONE account:
                  bar and rising linearly to 1.0 at twice the entry bar (never > 1%).
   K  risk cap    None | 5% | 10%: total open risk per direction; a new entry
                  gets at most the remaining room, and is skipped under 0.1%.
+Simplifications, stated before the run: a trade the cap skips is not retried
+when room frees (the coin stays out until its desired position next changes);
+entries at the same hour are sized in coin-name order; the timing control reads
+the agreement-filtered desired path and ignores cap skips.
 TRAIN walk-forward (2021-22) chooses 1 of the 18 cells by the t-statistic of the
 weekly account return (>= MIN_TRADES trades). VALID (2023-24) judges it once.
 Account return per trade = net R x risk fraction (additive, of starting
@@ -167,6 +171,8 @@ def forecasts(by_tf: dict, tf: int, spans: list[tuple[str, str]], check: bool = 
     if check:
         rec = pd.read_csv(SRC / f"desired_valid_tf{tf}.csv.gz", parse_dates=["time"])
         worst = 0.0
+        if set(rec["coin"]) - set(out):                  # a coin section 30 traded is missing here
+            raise SystemExit(f"forecasts for {tf}m miss coins {sorted(set(rec['coin']) - set(out))}; stop and report")
         for c, g in rec.groupby("coin"):
             mine = out[c].reindex(pd.DatetimeIndex(g["time"])).to_numpy()
             d = np.abs(mine - g["pred"].to_numpy())
