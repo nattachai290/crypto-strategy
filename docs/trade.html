@@ -112,7 +112,7 @@ code{font-size:.85em;overflow-wrap:anywhere}
   "R" = กำไรขาดทุนเทียบกับเงินที่เสี่ยงต่อไม้ (1R = 1% ของพอร์ต) ·
   กลยุทธ์กราฟ 5 นาที (039, 041) แสดงเป็นแท่ง 1 ชั่วโมงเพื่อให้โหลดเร็ว จุดเข้าออกจึงอยู่ในแท่งที่มีเวลานั้น ·
   ระดับ stop ที่แสดงคือ stop <b>ตอนออก</b> ถ้ากลยุทธ์เลื่อน stop ตามราคา (trailing) จะไม่ใช่ stop ตอนเข้า<br>
-  <b>กลุ่ม ML (20 เหรียญ):</b> ไม้จาก ML รอบล่าสุดที่ตัดสินทั้งเข้าและออกเอง (PLAN §27) ช่วงสอบย่อย ผลรวมไม่ผ่าน ทุนของแต่ละเหรียญคิดแยกกัน<br><b>อย่าลืม:</b> กลยุทธ์ PASS ทั้ง 7 ตัวผ่านสอบย่อย แต่ 5 ตัวแพ้การเข้าแบบสุ่ม และ 4 ตัวที่ได้เข้าสอบจริงไม่ผ่านทั้งหมด หน้านี้มีไว้ดูภาพการเทรด ไม่ใช่หลักฐานว่ากลยุทธ์ทำกำไรได้<br>
+  <b>กลุ่ม ML walk-forward (47 เหรียญ × 1h/4h/1d):</b> ไม้จาก ML รอบล่าสุด (PLAN §28) ช่วงสอบย่อย ทุกไม้มีเหตุผลการเข้าออก 3 ข้อที่โมเดลให้น้ำหนักมากที่สุด ผลรวมไม่ผ่านทั้ง 3 timeframe<br><b>กลุ่ม ML (20 เหรียญ):</b> ไม้จาก ML รอบล่าสุดที่ตัดสินทั้งเข้าและออกเอง (PLAN §27) ช่วงสอบย่อย ผลรวมไม่ผ่าน ทุนของแต่ละเหรียญคิดแยกกัน<br><b>อย่าลืม:</b> กลยุทธ์ PASS ทั้ง 7 ตัวผ่านสอบย่อย แต่ 5 ตัวแพ้การเข้าแบบสุ่ม และ 4 ตัวที่ได้เข้าสอบจริงไม่ผ่านทั้งหมด หน้านี้มีไว้ดูภาพการเทรด ไม่ใช่หลักฐานว่ากลยุทธ์ทำกำไรได้<br>
   <span style="font-size:.8rem">ที่มา: <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> และ <code>_holdout.csv.gz</code> · แท่งเทียน Binance USDT-M (ไฟล์ทางการ ไม่ได้แปลงกรอบเวลา)</span>
 </div>
 </main>
@@ -124,6 +124,9 @@ const DESC = {
   "029_opening_range_tf240": "ดูกรอบราคาช่วงต้นวัน (หลัง 07:00 น. เวลาไทย) แล้วเข้าตามทางที่ราคาปิดทะลุกรอบ <b>ทั้ง Long และ Short</b> · stop 4% · ถือไม่เกิน 48 ชม.",
   "038_opening_range_both_sides": "ดูกรอบราคาชั่วโมงแรกหลัง 07:00 น. เวลาไทย แล้วเข้าตามทางที่ทะลุ <b>ทั้ง Long และ Short</b> · stop 5% · เลื่อน stop ตามเมื่อกำไร 2R · ถือไม่เกิน 96 ชม.",
   "039_breakout_flow_confirm_tf5_time": "เข้าเมื่อราคาทะลุจุดสูง/ต่ำ 80 ชม. พร้อม volume สูงและแรงซื้อขายเชิงรุกไปทางเดียวกัน <b>ทั้ง Long และ Short</b> · stop 6% · ถือไม่เกิน 96 ชม.",
+  "ml_wf 1h (PLAN §28)": "<b>ML walk-forward หลาย timeframe</b> · เทรนใหม่ทุกต้นเดือนด้วยข้อมูลถึงเดือนก่อนหน้า (47 เหรียญ) · ตัดสินใจทุกแท่ง ทำนายราคาอีก 24 แท่ง · มองกราฟ 1h, 4h, 1d พร้อมกัน (เฉพาะแท่งที่ปิดแล้ว) · เข้าเมื่อคำทำนายแรงพอ ออกเมื่อคำทำนายอ่อน/กลับทิศ · stop กันพัง 8 ATR · ไม่มีเวลาจำกัด · ผลรวม: ไม่ผ่านทั้ง 3 timeframe · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
+  "ml_wf 4h (PLAN §28)": "<b>ML walk-forward หลาย timeframe</b> · เทรนใหม่ทุกต้นเดือนด้วยข้อมูลถึงเดือนก่อนหน้า (47 เหรียญ) · ตัดสินใจทุกแท่ง ทำนายราคาอีก 24 แท่ง · มองกราฟ 1h, 4h, 1d พร้อมกัน (เฉพาะแท่งที่ปิดแล้ว) · เข้าเมื่อคำทำนายแรงพอ ออกเมื่อคำทำนายอ่อน/กลับทิศ · stop กันพัง 8 ATR · ไม่มีเวลาจำกัด · ผลรวม: ไม่ผ่านทั้ง 3 timeframe · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
+  "ml_wf 1d (PLAN §28)": "<b>ML walk-forward หลาย timeframe</b> · เทรนใหม่ทุกต้นเดือนด้วยข้อมูลถึงเดือนก่อนหน้า (47 เหรียญ) · ตัดสินใจทุกแท่ง ทำนายราคาอีก 24 แท่ง · มองกราฟ 1h, 4h, 1d พร้อมกัน (เฉพาะแท่งที่ปิดแล้ว) · เข้าเมื่อคำทำนายแรงพอ ออกเมื่อคำทำนายอ่อน/กลับทิศ · stop กันพัง 8 ATR · ไม่มีเวลาจำกัด · ผลรวม: ไม่ผ่านทั้ง 3 timeframe · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
   "ml_hold (PLAN §27)": "<b>ML ตัดสินทั้งเข้าและออกเอง ไม่จำกัดเวลา</b> · ทุก 4 ชม. โมเดลทำนายว่าอีก 24 ชม. ราคาจะไปทางไหน เข้าเมื่อคำทำนายแรงกว่า 90% ของ 30 วันที่ผ่านมา ถือไปจนคำทำนายกลับทิศ (ออกด้วยสัญญาณ) · stop กันพัง 8 ATR · <b>ทั้ง Long และ Short</b> · โมเดลเดียวเทรน 20 เหรียญรวมกัน · ผลรวม: ไม่ผ่าน (−0.013R/ไม้ ค่าธรรมเนียมกินกำไรก่อนหักทั้งหมด) · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
   "041_impulse_not_crowded_tf5_time": "เข้าตามแรงพุ่งของราคาใน 24 ชม. เมื่อ volume สูงและ funding บอกว่าคนยังไม่แห่ไปฝั่งเดียวกัน <b>ทั้ง Long และ Short</b> · stop 6% · ถือไม่เกิน 96 ชม."
 };
@@ -131,7 +134,7 @@ const REASON = {stop: "โดน stop", time: "หมดเวลาถือ", 
 const TZ = 7 * 3600;
 const th = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const dt = s => { const d = new Date(s * 1000); return `${d.getUTCDate()} ${th[d.getUTCMonth()]} ${String(d.getUTCFullYear()).slice(2)} ${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`; };
-const tfs = tf => tf >= 60 ? tf / 60 + "h" : tf + "m";
+const tfs = tf => tf >= 1440 ? tf / 1440 + "d" : tf >= 60 ? tf / 60 + "h" : tf + "m";
 const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
 const $ = id => document.getElementById(id);
 
@@ -164,7 +167,7 @@ function barAt(t) { // index of the displayed bar containing time t
 }
 
 let PER = "valid", IDX = [];
-const VER = "3";   // bump when docs/trades/ changes, so browsers do not keep an old copy
+const VER = "4";   // bump when docs/trades/ changes, so browsers do not keep an old copy
 async function load(id) {
   $("load").style.display = "flex";
   const it = IDX.find(r => r.id === id);
@@ -209,6 +212,42 @@ function markers() {
   candle.setMarkers(ms);
 }
 
+const TFM = {h1_: 60, h4_: 240, d1_: 1440};
+function span(k, tf) { const h = k * tf / 60; return h >= 48 ? Math.round(h / 24) + " วัน" : Math.round(h) + " ชม."; }
+function why(name, val, tf) {
+  let pre = "", t = tf;
+  for (const k in TFM) if (name.startsWith(k)) { pre = "กราฟ " + k.slice(0, 2).replace("h1", "1h").replace("h4", "4h").replace("d1", "1d") + ": "; t = TFM[k]; name = name.slice(3); }
+  const pc = v => v == null ? "?" : (v >= 0 ? "+" : "") + ((Math.exp(v) - 1) * 100).toFixed(1) + "%";
+  const num = (v, d = 2) => v == null ? "?" : (+v).toFixed(d);
+  let m;
+  if ((m = name.match(/^ret_(\d+)$/))) return pre + `ราคา${val >= 0 ? "ขึ้น" : "ลง"} ${pc(val)} ใน ${span(+m[1], t)}`;
+  if ((m = name.match(/^mkt_ret_(\d+)$/))) return `ตลาดรวม (เฉลี่ยทุกเหรียญ) ${pc(val)} ใน ${span(+m[1], t)}`;
+  if ((m = name.match(/^rel_ret_(\d+)$/))) return `เหรียญนี้${val >= 0 ? "แข็ง" : "อ่อน"}กว่าตลาด ${pc(val)} ใน ${span(+m[1], t)}`;
+  if ((m = name.match(/^btc_ret_(\d+)$/))) return `BTC ${pc(val)} ใน ${span(+m[1], t)}`;
+  if ((m = name.match(/^breadth_(\d+)$/))) return `เหรียญที่ขึ้นใน ${span(+m[1], t)}: ${Math.round(val * 100)}% ของตลาด`;
+  if (name === "btc_vol_168") return `ความผันผวน BTC ${span(168, t)}: ${num(val * 100, 2)}%/แท่ง`;
+  if ((m = name.match(/^vol_(\d+)$/))) return pre + `ความผันผวน ${span(+m[1], t)}: ${num(val * 100, 2)}%/แท่ง`;
+  if (name === "vol_ratio") return pre + `ความผันผวนช่วงสั้นเทียบช่วงยาว ×${num(val)}`;
+  if (name === "atr_pct") return pre + `ขนาดแท่งเฉลี่ย (ATR) ${num(val * 100, 2)}% ของราคา`;
+  if ((m = name.match(/^range_pos_(\d+)$/))) return pre + `ราคาอยู่ที่ ${Math.round(val * 100)}% ของกรอบ ${span(+m[1], t)} (0 = ล่างสุด)`;
+  if ((m = name.match(/^ema_dist_(\d+)$/))) return pre + `ราคา${val >= 0 ? "เหนือ" : "ใต้"}เส้นค่าเฉลี่ย EMA${m[1]} ${num(Math.abs(val), 1)} ATR`;
+  if (name === "body") return pre + `แท่งล่าสุดเป็น${val >= 0 ? "แท่งเขียว" : "แท่งแดง"} (เนื้อเทียน ${Math.round(Math.abs(val) * 100)}% ของแท่ง)`;
+  if (name === "body_3") return pre + `3 แท่งล่าสุดโดยรวม${val >= 0 ? "เขียว" : "แดง"}`;
+  if (name === "upper_wick") return pre + `ไส้บนยาว ${Math.round(val * 100)}% ของแท่ง`;
+  if (name === "lower_wick") return pre + `ไส้ล่างยาว ${Math.round(val * 100)}% ของแท่ง`;
+  if (name === "volume_z") return pre + `volume ${val >= 0 ? "สูง" : "ต่ำ"}กว่าปกติ ${num(Math.abs(val), 1)} SD`;
+  if (name === "taker_ratio") return pre + `แรงซื้อเชิงรุก (market buy) ${Math.round(val * 100)}% ของ volume`;
+  if (name === "taker_ratio_24") return pre + `แรงซื้อเชิงรุกเฉลี่ย ${span(24, t)}: ${Math.round(val * 100)}%`;
+  if (name === "funding_last") return `funding ล่าสุด ${num(val * 100, 4)}%`;
+  if (name === "hour") return `เวลา ${(val + 7) % 24}:00 น. (ไทย)`;
+  if (name === "weekday") return `วัน${["จันทร์","อังคาร","พุธ","พฤหัส","ศุกร์","เสาร์","อาทิตย์"][val] || "?"}`;
+  return pre + name + " = " + num(val, 4);
+}
+function whyList(w, tf) {
+  if (!w || !w.length) return "-";
+  return w.map(([n, v, c], k) => `<span style="white-space:normal">${"①②③"[k]} ${why(n, v, tf)} <span style="color:var(--muted)">(ดัน${c >= 0 ? "ขึ้น" : "ลง"} ${Math.abs(c).toFixed(2)})</span></span>`).join("<br>");
+}
+
 function show(i) {
   if (i < 0 || i >= D.trades.length) return;
   sel = i; const x = D.trades[i], m = D.meta, long = x[2] > 0, dec = m.dec;
@@ -230,7 +269,12 @@ function show(i) {
     <span>ถือ <b>${hold >= 48 ? (hold / 24).toFixed(1) + " วัน" : hold.toFixed(1) + " ชม."}</b></span>
     <span>ราคาไป <b class="${mv >= 0 ? "up" : "down"}">${mv >= 0 ? "+" : ""}${mv.toFixed(2)}%</b></span>
     <span>ผล <b class="${x[7] >= 0 ? "up" : "down"}">${x[7] >= 0 ? "+" : ""}${x[7].toFixed(2)}R</b> · ${REASON[x[8]] || x[8]}</span>
-    <span>ทุนหลังไม้ <b>${Math.round(x[9]).toLocaleString("en-US")}</b></span>` + navBtns();
+    <span>ทุนหลังไม้ <b>${Math.round(x[9]).toLocaleString("en-US")}</b></span>
+    <span>คำสั่ง: <b>Market</b> เข้า → <b>${x[8] === "stop" ? "Stop-market" : x[8] === "eod" ? "ปิดตอนจบช่วงทดสอบ" : "Market"}</b> ออก</span>` +
+    (x[10] ? `<div style="flex-basis:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 18px;font-size:.85rem;margin-top:4px">
+      <div><b>เหตุผลที่เข้า</b> <span style="color:var(--muted)">(คำทำนาย ${x[10].ep == null ? "?" : (x[10].ep >= 0 ? "+" : "") + x[10].ep.toFixed(2)} ATR · เกณฑ์เข้า ±${x[10].eb == null ? "?" : x[10].eb.toFixed(2)})</span><br>${whyList(x[10].ew, m.tf)}</div>
+      <div><b>เหตุผลที่ออก</b> ${x[8] === "signal" ? `<span style="color:var(--muted)">(คำทำนายเปลี่ยนเป็น ${x[10].xp == null ? "?" : (x[10].xp >= 0 ? "+" : "") + x[10].xp.toFixed(2)} ATR)</span><br>${whyList(x[10].xw, m.tf)}` : x[8] === "stop" ? "<br>ราคาวิ่งสวนจนโดน stop กันพัง (8 ATR)" : "<br>จบช่วงทดสอบ ระบบปิดให้"}</div>
+      <div style="grid-column:1/-1;color:var(--muted);font-size:.78rem">ตัวเลขในวงเล็บ = ปัจจัยนั้นดันคำทำนายขึ้น/ลงเท่าไหร่ (หน่วย ATR) · บอกว่าโมเดลคิดอะไร ไม่ได้แปลว่าคิดถูก</div></div>` : "") + navBtns();
   document.querySelectorAll(".row").forEach(r => r.classList.toggle("on", +r.dataset.i === i));
   const row = document.querySelector(`.row[data-i="${i}"]`);
   if (row) row.scrollIntoView({block: "nearest"});
@@ -270,8 +314,9 @@ $("theme").onclick = () => {
   idx.forEach(r => { if (r.hasHold === undefined) r.hasHold = !!r.hold; });
   const pick = $("pick");
   IDX = idx;
-  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.group === "ml" ? "ML เข้า-ออกเอง · " + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
-  pick.innerHTML = `<optgroup label="กลยุทธ์ที่ผ่านสอบย่อย (PASS)">${idx.filter(r => r.group !== "ml").map(opt).join("")}</optgroup>` +
+  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.group === "ml" || r.group === "wf" ? (r.group === "wf" ? "ML walk-forward · " : "ML เข้า-ออกเอง · ") + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
+  pick.innerHTML = `<optgroup label="กลยุทธ์ที่ผ่านสอบย่อย (PASS)">${idx.filter(r => !r.group).map(opt).join("")}</optgroup>` +
+    [60, 240, 1440].map(tf => `<optgroup label="ML walk-forward ${tfs(tf)} (รอบ §28, ไม่ผ่าน) · 47 เหรียญ">${idx.filter(r => r.group === "wf" && r.tf === tf).map(opt).join("")}</optgroup>`).join("") +
     `<optgroup label="ML ตัดสินเข้า-ออกเอง (รอบ §27, ไม่ผ่าน) · 20 เหรียญ">${idx.filter(r => r.group === "ml").map(opt).join("")}</optgroup>`;
   let first = idx[0].id;
   try { let h = location.hash.slice(1); const ho = h.endsWith("_holdout"); if (ho) h = h.slice(0, -8); if (idx.some(r => r.id === h)) { first = h; if (ho) PER = "holdout"; } } catch (e) {}
