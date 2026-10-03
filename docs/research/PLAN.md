@@ -2219,3 +2219,60 @@ first bar, followed by the perp bars themselves (`history_source`,
 - the full pipeline on such a coin.
 
 Everything else in §30 is unchanged.
+
+---
+
+## 31. Portfolio layer on §30's 1h model: agreement, sizing, risk cap (owner request, 2026-10-03)
+
+**Why.** §30's 1h book failed one gate, the weekly-block CI. Its mean was
++0.0374 R and its CI [-0.024, +0.101] (`_multi` Exp 030/031). Two things drove
+the weekly swing:
+- dozens of same-direction positions were open together on coins that move
+  together (correlation about 0.61);
+- every trade carried the same 1% risk whatever the model's confidence.
+
+The owner asked to work on the portfolio side. The model is **not** changed.
+
+**Design (`src/ml_port.py`, test 27).**
+- **Forecasts.** §30's three frozen walk-forward models (1h, 4h and 1d, each
+  with the cell its own TRAIN walk-forward chose) are recomputed. The run
+  stops unless the recomputed VALID forecasts match §30's recorded ones within
+  1e-6.
+- **One account for all 47 coins.** Three switches are added on top of the
+  1h book:
+  - **A, agreement** (`off`, `4h`, `1d`). A new 1h position opens only if the
+    last closed 4h (or 1d) forecast for that coin has the same sign. Exits are
+    unchanged.
+  - **S, sizing** (`flat`, `conf`). `flat` is 1% risk. `conf` is 1% × w, with
+    w = 0.5 at the entry bar rising linearly to 1.0 at twice the entry bar.
+    Risk is never above 1%.
+  - **K, cap** (none, 5%, 10%). This caps total open risk per direction. A new
+    entry gets at most the remaining room and is skipped below 0.1%.
+- **Account accounting.** Each trade returns net R × its risk fraction, added
+  to starting equity. A week's return is the trades that closed in it; empty
+  weeks count as 0.
+- **Cell choice on TRAIN only.** The TRAIN walk-forward (2021–22) chooses 1 of
+  the 18 cells by the t-statistic of the weekly account return, with at least
+  300 trades.
+- **Gates on VALID (all needed):**
+  - TRAIN weekly mean > 0;
+  - ≥ 300 trades;
+  - weekly mean > 0, and its 95% bootstrap CI lower bound > 0;
+  - weekly mean > 0 at cost ×1.5;
+  - timing of the filtered desired path above the shifted p95;
+  - ≥ 10 coins with ≥ 10 trades, at least half of them net > 0 and above their
+    own shifted median;
+  - both legs' summed return > 0;
+  - account max drawdown ≤ 20%.
+- **Holdout (once, only after PASS).** CONFIRMED needs all of:
+  - weekly mean > 0;
+  - CI lower bound > 0;
+  - timing above the shifted median;
+  - breadth ≥ half.
+
+**What it can show.** If the CI failure came from correlated, equally sized
+bets, a capped or confidence-sized account should narrow the weekly CI at
+little cost to the mean. If not, the 1h result was the 2024 regime.
+
+**Prior:** low to moderate. It is built on the nearest miss so far. It is
+still a further look at VALID, and only the holdout can settle it.

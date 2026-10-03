@@ -430,6 +430,7 @@ def main() -> None:
     test_ml_wf()
     test_ml_wf2()
     test_ml_wf3()
+    test_ml_port()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1939,6 +1940,124 @@ def test_ml_wf3() -> None:
     src = _json.loads(W3.SOURCE_UNIVERSE.read_text()) if W3.SOURCE_UNIVERSE.exists() else None
     check("ml_wf3 universe source is section 28's universe_v2.json (47 coins)", src is not None and len(src) == 47,
           str(None if src is None else len(src)))
+
+
+# --------------------------------------------------------------------------
+# 27. Portfolio layer on section 30's 1h model (PLAN.md section 31)
+# --------------------------------------------------------------------------
+def test_ml_port() -> None:
+    print("\n27. ML portfolio layer: agreement filter, confidence size, risk cap, weekly account, planted edge / noise")
+    import contextlib
+    import io
+    import ml_port as MP_
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    d = np.array([0, 1, 1, 0, -1, -1, 1, 1, 0], float)
+    o = np.array([1, -1, 1, 1, np.nan, -1, 1, 1, 1], float)
+    check("ml_port agreement: a new side opens only when the other forecast agrees; holding and exits untouched",
+          list(MP_.agree_filter(d, o)) == [0, 0, 1, 0, 0, -1, 1, 1, 0])
+    check("ml_port confidence weight: 0.5 at the entry bar, 0.75 at 1.5x, 1.0 at 2x and above, 0.5 if unknown",
+          np.allclose(MP_.conf_weight(np.array([1.0, 1.5, 2.0, 3.0, np.nan])), [0.5, 0.75, 1.0, 1.0, 0.5]))
+    T = lambda h: pd.Timestamp("2023-01-02", tz="UTC") + pd.Timedelta(hours=h)
+    tr = pd.DataFrame({"entry_time": [T(0), T(1), T(2), T(3), T(50)], "exit_time": [T(10), T(10), T(10), T(10), T(60)],
+                       "side": [1.0, 1.0, 1.0, -1.0, 1.0], "net_r": [1.0, -1.0, 2.0, 0.5, 1.0],
+                       "conf": [2.0, 1.0, 1.5, 2.0, 2.0], "coin": ["A", "B", "C", "D", "A"]})
+    s1 = MP_.size_trades(tr, "flat", 0.025)
+    s2 = MP_.size_trades(tr, "conf", None)
+    s3 = MP_.size_trades(tr, "flat", 0.02)
+    check("ml_port risk cap: open same-side risk never exceeds the cap; a short is not limited by longs; room reopens after exits",
+          np.allclose(s1["risk"], [0.01, 0.01, 0.005, 0.01, 0.01]) and len(s3) == 4
+          and np.allclose(s3["risk"], [0.01, 0.01, 0.01, 0.01]) and list(s3["coin"]) == ["A", "B", "D", "A"])
+    check("ml_port confidence sizing and return = net R x risk",
+          np.allclose(s2["risk"], [0.01, 0.005, 0.0075, 0.01, 0.01]) and np.allclose(s2["ret"], s2["net_r"] * s2["risk"]))
+    w = MP_.weekly(s1, "2023-01-02", "2023-01-30")
+    acc = MP_.account(s1, "2023-01-02", "2023-01-30")
+    check("ml_port weekly account: every week counted (empty weeks 0), sums match, drawdown from the running total",
+          len(w) == 4 and np.isclose(w.sum(), s1["ret"].sum()) and (w.iloc[1:] == 0).sum() >= 2
+          and acc["weeks"] == 4 and 0 <= acc["max_dd"] < 0.05)
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    cfg = WF_.GRID[0]
+
+    # the reproduction guard and the agreement filter on a REAL 4h forecast series
+    import json as _json
+    import shutil
+    import tempfile
+    by2 = {60: {}, 240: {}}
+    for i in range(2):
+        b = _momentum_bars(0.0008, seed=200 + i)
+        by2[60][f"C{i}USDT"] = {"spot": b, "perp": b, "fund": fund}
+        by2[240][f"C{i}USDT"] = {"spot": _agg(b, "4h"), "perp": _agg(b, "4h"), "fund": fund}
+    tmp = Path(tempfile.mkdtemp())
+    saved = MP_.SRC
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            P4 = W2.prepare(by2, 240)
+            p4 = WF_.walk_forward(P4, 240, cfg, *WF_.WINDOWS["valid"], step=3)
+        pd.concat([pd.DataFrame({"coin": c, "time": P4[c]["X"].index[np.isfinite(p4[c])],
+                                 "pred": p4[c][np.isfinite(p4[c])], "desired": 0.0}) for c in P4]
+                  ).to_csv(tmp / "desired_valid_tf240.csv.gz", index=False)
+        (tmp / "tf240.json").write_text(_json.dumps({"setting": cfg, "q_in": 0.9, "exit_mode": "flip"}))
+        MP_.SRC = tmp
+        orig_wf = WF_.walk_forward
+        WF_.walk_forward = lambda *a_, **k_: orig_wf(*a_, **{**k_, "step": 3})
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                _, o4 = MP_.forecasts(by2, 240, [WF_.WINDOWS["valid"]])
+            accepted = True
+            rec = pd.read_csv(tmp / "desired_valid_tf240.csv.gz")
+            rec.loc[3, "pred"] += 0.01
+            rec.to_csv(tmp / "desired_valid_tf240.csv.gz", index=False)
+            try:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    MP_.forecasts(by2, 240, [WF_.WINDOWS["valid"]])
+                stopped = False
+            except SystemExit:
+                stopped = True
+        finally:
+            WF_.walk_forward = orig_wf
+    finally:
+        MP_.SRC = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("ml_port reproduction guard: accepts section 30's own forecasts, stops on any mismatch", accepted and stopped)
+    with contextlib.redirect_stdout(io.StringIO()):
+        P1 = W2.prepare(by2, 60)
+        p1 = WF_.walk_forward(P1, 60, cfg, *WF_.WINDOWS["valid"], step=3)
+    pred1 = {c: pd.Series(p1[c], index=P1[c]["X"].index) for c in P1}
+    t_on, _ = MP_.run_cell(P1, pred1, {"4h": o4, "1d": o4}, *WF_.WINDOWS["valid"], "4h", "flat", None, 0.9, "flip")
+    bad = 0
+    for x in t_on.itertuples():
+        sr = o4[x.coin]
+        pos = WF_.asof_positions(pd.DatetimeIndex([x.entry_time - pd.Timedelta(hours=1)]), 60, sr.index, 240)[0]
+        v = sr.iloc[pos] if pos >= 0 else np.nan
+        bad += not (np.isfinite(v) and np.sign(v) == x.side)
+    check("ml_port agreement on a real 4h series: every new 1h entry agrees with the last CLOSED 4h forecast",
+          len(t_on) > 50 and bad == 0, f"{len(t_on)} trades, {bad} disagree")
+
+    def setup(k, seeds):
+        by = {60: {}}
+        for n, sd in seeds:
+            b = _momentum_bars(k, seed=sd)
+            by[60][n] = {"spot": b, "perp": b, "fund": fund}
+        P = W2.prepare(by, 60)
+        pred = {c: np.full(len(P[c]["X"]), np.nan) for c in P}
+        for a, b_ in (WF_.WINDOWS["train"], WF_.WINDOWS["valid"]):
+            pw = WF_.walk_forward(P, 60, cfg, a, b_, step=3)
+            for c in P:
+                pred[c] = np.where(np.isfinite(pw[c]), pw[c], pred[c])
+        pred1 = {c: pd.Series(pred[c], index=P[c]["X"].index) for c in P}
+        other = {"4h": pred1, "1d": pred1}                 # agreement logic is tested above
+        return P, pred1, other
+    with contextlib.redirect_stdout(io.StringIO()):
+        edge = MP_.evaluate(*setup(0.0008, [(f"C{i}USDT", 140 + i) for i in range(3)]), 0.9, "flip", min_coins=3)
+        noise = MP_.evaluate(*setup(0.0, [(f"N{i}USDT", 150 + i) for i in range(3)]), 0.9, "flip", min_coins=3)
+    check("ml_port pipeline: a planted edge is found (PASS) as one account",
+          edge["verdict"] == "PASS", f"{edge['verdict']} {edge['gates_failed']} chose {edge['chosen']} "
+          f"weekly {edge['valid']['weekly_mean']:+.5f} dd {edge['valid']['max_dd']:.3f}")
+    check("ml_port pipeline: pure noise is not a PASS and its timing does not beat the shifted p95",
+          noise["verdict"] == "REJECT" and "timing_beats_shift_p95" in noise["gates_failed"],
+          f"{noise['verdict']} {noise['gates_failed']}")
 
 
 if __name__ == "__main__":
