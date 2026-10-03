@@ -10,8 +10,9 @@ and the universe at once and the breadth gates were unreachable (_multi Exp
 025/026, the planner's error). This round asks the question cleanly:
   * Universe: EXACTLY section 28's 47 coins (results/_multi/ml_wf/universe_v2.json).
   * Each coin's features and labels come from its Binance SPOT bars from the
-    pair's own first month (as early as 2017-08); a coin with no spot pair
-    uses its perp bars, as in section 28.
+    pair's own first month (as early as 2017-08) UNTIL its perp starts, and from
+    its perp bars after that (history_source, "splice"; Exp 028 fix). A coin with
+    no earlier spot uses its perp bars, as in section 28.
   * Everything else is section 29 = section 28: trades on perp bars with perp
     costs and funding, the same windows, cell grid, gates and one holdout
     timeframe (ml_wf2.prepare, ml_wf.evaluate / holdout).
@@ -71,13 +72,19 @@ def build() -> None:
 
 
 def history_source(spot: pd.DataFrame | None, perp: pd.DataFrame) -> tuple[pd.DataFrame, str]:
-    """The bars a coin's features and labels come from: its spot bars if it has
-    any traded spot bar before its perp starts, else its perp bars."""
-    if spot is None or spot.empty or not (spot["volume"] > 0).any():
+    """The bars a coin's features and labels come from (Exp 028 fix): the coin's
+    traded SPOT bars from before its perp's first bar, then the PERP bars from
+    the perp's first bar on ("splice"). From the perp start the frame is
+    exactly section 28's, so a spot pair that was delisted early (HNT spot ended
+    2022-10, XMR 2024-02) can no longer cut the trading window short. A coin with
+    no traded spot bar before its perp uses its perp bars only ("perp")."""
+    if spot is None or spot.empty:
         return perp, "perp"
-    if spot.index[spot["volume"] > 0][0] >= perp.index[0]:
+    early = spot[(spot.index < perp.index[0]) & (spot["volume"] > 0)]
+    if early.empty:
         return perp, "perp"
-    return spot, "spot"
+    early = spot[(spot.index >= early.index[0]) & (spot.index < perp.index[0])]
+    return pd.concat([early, perp]), "splice"
 
 
 def load_all() -> tuple[dict[int, dict], dict[str, dict]]:
@@ -153,7 +160,7 @@ def write_report() -> None:
     hp = OUT / "history.json"
     if hp.exists():
         info = json.loads(hp.read_text())
-        n_spot = sum(1 for x in info.values() if x["source"] == "spot")
+        n_spot = sum(1 for x in info.values() if x["source"] == "splice")
         txt += (f"\nHistory: {n_spot} of {len(info)} coins use spot bars; earliest "
                 f"{min(x['history_from'] for x in info.values())}.\n")
     REPORT.write_text(txt)

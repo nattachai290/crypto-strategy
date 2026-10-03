@@ -2624,3 +2624,52 @@ all from before ML (4 strategies plus one lock test on
 `example_trend_breakout`), 5 FAILED and 0 CONFIRMED. `src/` is unchanged,
 `data/` is not committed, and nothing in this round can be called a finding about
 the Coinbase premium, the exit rules, or ML's gross-versus-cost problem.
+
+---
+
+## Exp 029 - Review of Exp 028 (planner): the cause was my history rule, fixed; §30 re-registered
+
+**Date:** 2026-10-03
+**Status:** pre-registered, not run. Earlier entries are not edited.
+
+### Review of Exp 028
+- **Stopping was right.** The run crashed before writing any result. `src/`
+  was unchanged and the holdout was not opened.
+- **The diagnosis is corrected.** Exp 028 says the crash came from
+  `ml_wf.run_cell` slicing a shorter perp frame with history-frame indices.
+  That is not what happens. `ml_wf2.prepare` reindexes the perp bars onto the
+  history index, so `tbars` and `bars` always have the same length. I
+  reproduced it with real BTC spot (2017-08..2024-12) and perp 1h bars:
+  - history 64,525 rows, `tbars` 64,525 rows;
+  - VALID window `lo`/`hi` 46,982/64,525;
+  - slice 17,543 bars, no crash.
+
+  BTC, ETH, BNB, NEO and ICX are not affected. The "38 coins silently
+  short" table models a slice that the code never makes.
+- **The real cause is my `history_source` rule.** It used a coin's spot bars
+  for its whole history if the spot pair started before the perp. A coin
+  whose spot pair was delisted early therefore had a history frame that ended
+  early. Listings checked against the archive:
+  - **HNTUSDT:** spot from 2020-09 to 2022-10. Its frame ends before VALID,
+    so the window is empty, which is the crash.
+  - **XMRUSDT:** spot ended 2024-02. It would have traded only part of VALID,
+    without any error.
+  - **MATICUSDT** and **TOMOUSDT:** spot ended with their perps.
+- §29's results stand. Its 4 coins all kept their spot pairs through 2024.
+
+### Fix (src/ml_wf3.py; test 26 extended; PLAN.md §30 addendum)
+- **History is spliced.** Each coin uses its spot bars from before the perp's
+  first bar, then the perp bars themselves.
+  - From the perp start, the frame is §28's frame exactly.
+  - Only the training rows before the perp start are new.
+- **New checks in test 26:**
+  - the splice is equal to the perp from the perp start;
+  - a spot pair delisted before VALID still leaves the whole perp window;
+  - the full pipeline runs on such a coin.
+- The test fails on the old rule and passes on the new one.
+
+### Re-registration
+Every other value of §30 is unchanged. No result existed, so this is not a
+re-run of a result. The research agent's prompt is the same as for Exp 027.
+`results/_multi/ml_wf3/history.json` from Exp 028 is rewritten by the run.
+Its sources now read "splice" or "perp".
