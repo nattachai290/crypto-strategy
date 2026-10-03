@@ -2478,3 +2478,40 @@ anything from noise.
 
 **Unchanged.** Every ML round so far earns a gross of the same order as its
 cost. No timeframe of §29 goes to the holdout.
+
+---
+
+## Exp 027 - Pre-registration: §28's 47 coins with each coin's own spot history (PLAN.md section 30)
+
+**Date:** 2026-10-03
+**Status:** pre-registered, not run
+
+### Why
+The owner chose the clean version of §29's question (Exp 026, option 1):
+does a longer history help a 47-coin model?
+
+### What is fixed (src/ml_wf3.py, PLAN.md section 30, test 26)
+- **Universe.** §28's `universe_v2.json`, unchanged: 47 coins.
+- **History source.** Features and labels come from each coin's spot bars from
+  its own first month, when the spot pair traded before the perp started.
+  Otherwise they come from the perp bars.
+  - Checked against the archive before registering: 46 of 47 have a spot
+    pair, and 35 gain history.
+  - Earliest starts: 2017-08 for BTC and ETH, 2017-11 for BNB and NEO.
+  - Median spot start: 2019-09.
+- **Everything else** is §28 through §29's code (`ml_wf2.prepare`,
+  `ml_wf.evaluate`/`holdout`): trades on perp bars, the same windows, grid
+  and gates, and one holdout timeframe.
+- **Synthetic checks (test 26).** The source rule; mixed spot and perp-only
+  coins, where spot coins' early rows are trained on but never traded; and
+  the universe file equal to §28's.
+
+### What the comparison will be
+§28 against §30 on the same 47 coins and windows, per timeframe:
+- TRAIN walk-forward mean;
+- VALID mean, gross and cost;
+- timing against the shifted p95;
+- the VALID IC (planner diagnostic, from the desired files).
+
+### Verdict
+Pending the research agent's single run.

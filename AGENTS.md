@@ -11,9 +11,10 @@ pooled but failed breadth and is weak on TRAIN. The owner decided (2026-10-02,
 `_multi` Exp 013) **not** to spend the holdout on it: the premium lead is closed
 and the holdout stays untouched. §27 (`ml_hold.py`) was run: REJECT (`_multi` Exp 016/017).
 §28 (`ml_wf.py`, walk-forward multi-timeframe ML) was run: REJECT on 1h/4h/1d
-(`_multi` Exp 022/023). **One approved run is pending:** PLAN.md §29
-(`src/ml_wf2.py`, §28 with spot history from 2017-08, owner request
-2026-10-03, `_multi` Exp 024). Ask before starting anything else.
+(`_multi` Exp 022/023). §29 (`ml_wf2.py`) was run: REJECT, but its universe rule left 4 coins (`_multi`
+Exp 025/026). **One approved run is pending:** PLAN.md §30 (`src/ml_wf3.py`,
+§28's 47 coins each with its own spot history, owner request 2026-10-03,
+`_multi` Exp 027). Ask before starting anything else.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The
@@ -351,6 +352,7 @@ data/{raw,cache}/<SYMBOL>/  Binance zips, parquet (both git-ignored)
 | `ml_hold.py` | PLAN.md §27: one pooled LightGBM forecast (next 24 h in ATRs) every 4 h on the same 20 coins; a hysteresis policy decides entry AND exit, no time limit (8-ATR protective stop only); TRAIN OOF picks setting, entry quantile and exit mode; control = 200 time-shifts of the desired-position path, timing before costs; simulator matches the engine (test 23). Writes `results/_multi/ml_hold/` and the generated `journal/_multi/ml_hold.md` |
 | `ml_wf.py` | PLAN.md §28: §27's model and policy refit every month (walk-forward) on 50 coins, traded on 1h, 4h or 1d with the other two timeframes' closed-bar features as inputs (multi-timeframe); `--build` downloads native 1h/4h/1d klines + funding to `data/cache/_multi/pool_<tf>`; TRAIN walk-forward picks the cell, VALID judges each timeframe, ONE timeframe may take the holdout. Writes `results/_multi/ml_wf/` and the generated `journal/_multi/ml_wf.md` |
 | `ml_wf2.py` | PLAN.md §29: §28 unchanged except that features and labels come from each coin's SPOT bars from 2017-08 (more market regimes in every refit); trades still simulated on PERP bars with perp costs and funding in §28's windows; universe = §28's rule restricted to spot listed by 2018-01-01; `--build` adds spot 1h/4h/1d to `data/cache/_multi/spot_<tf>`. Writes `results/_multi/ml_wf2/` and the generated `journal/_multi/ml_wf2.md` |
+| `ml_wf3.py` | PLAN.md §30: §28's exact 47 coins; each coin's features and labels from its own spot bars from the pair's first month (perp bars if no earlier spot), trades on perp bars; otherwise §29/§28 unchanged. `--build` adds the missing spot caches. Writes `results/_multi/ml_wf3/` and the generated `journal/_multi/ml_wf3.md` |
 | `stop_diag.py` | PLAN.md §23: from the VALID trade files, asks whether entries were on the wrong side or right and then stopped out, against random fills with the same side, stop fraction and hold. Read-only; writes `results/<SYMBOL>/stop_diag/` and the generated `journal/<SYMBOL>/stop_diag.md` |
 | `level_limit.py` | PLAN.md §24: limit orders resting AT support/resistance (previous-day extremes or live swing pivots), maker entry, stop just beyond the level; each order simulated on its own; TRAIN picks 1 of 8 cells; gates include beating control orders at the same distance from price at random bars, on TRAIN and VALID. Writes `results/<SYMBOL>/level_limit/` and the generated `journal/<SYMBOL>/level_limit.md` |
 | `premium_confirm.py` | PLAN.md §26: reads the recorded 057 results on the 10 confirmation coins (no backtest) and applies the pre-registered bars (30m: positive on ≥7, SKILL on ≥5; 4h: pooled ≥100 trades, mean > 0, weekly-block CI > 0, ≥7 coins positive). Writes `results/_multi/premium_confirm/` and the generated `journal/_multi/premium_confirm.md` |

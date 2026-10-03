@@ -429,6 +429,7 @@ def main() -> None:
     test_ml_hold()
     test_ml_wf()
     test_ml_wf2()
+    test_ml_wf3()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -1891,6 +1892,41 @@ def test_ml_wf2() -> None:
     check("ml_wf2 pipeline: a planted edge is found (PASS), pure noise is not (timing gate fails)",
           edge["verdict"] == "PASS" and noise["verdict"] == "REJECT" and "timing_beats_shift_p95" in noise["gates_failed"],
           f"edge {edge['verdict']} {edge['gates_failed']} / noise {noise['verdict']} {noise['gates_failed']}")
+
+
+# --------------------------------------------------------------------------
+# 26. Walk-forward ML, section 28's coins with all their spot history (PLAN.md section 30)
+# --------------------------------------------------------------------------
+def test_ml_wf3() -> None:
+    print("\n26. ML walk-forward, each coin's own spot history: source rule, mixed coins, same universe as section 28")
+    import contextlib
+    import io
+    import json as _json
+    import ml_wf2 as W2
+    import ml_wf3 as W3
+    b = _momentum_bars(0.0008, seed=130)
+    perp = b[b.index >= pd.Timestamp("2021-01-01", tz="UTC")]
+    early, late = b.copy(), b[b.index >= pd.Timestamp("2022-01-01", tz="UTC")]
+    dead = b.assign(volume=0.0)
+    check("ml_wf3 history source: spot when it traded before the perp, else the perp (no pair, later pair, never traded)",
+          W3.history_source(early, perp)[1] == "spot" and W3.history_source(None, perp)[1] == "perp"
+          and W3.history_source(late, perp)[1] == "perp" and W3.history_source(dead, perp)[1] == "perp"
+          and W3.history_source(b.iloc[:0], perp)[1] == "perp")
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {"SUSDT": {"spot": W3.history_source(early, perp)[0], "perp": perp * 1.0005, "fund": fund},
+               "PUSDT": {"spot": W3.history_source(None, _momentum_bars(0.0008, seed=131).loc["2021":])[0],
+                         "perp": _momentum_bars(0.0008, seed=131).loc["2021":], "fund": fund}}}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    s_pre = P["SUSDT"]["X"].index[0] < pd.Timestamp("2021-01-01", tz="UTC")
+    p_pre = P["PUSDT"]["X"].index[0] >= pd.Timestamp("2021-01-01", tz="UTC")
+    no_trade_pre = not P["SUSDT"]["tradable"][P["SUSDT"]["X"].index < pd.Timestamp("2021-01-01", tz="UTC")].any()
+    check("ml_wf3 mixed coins: a spot coin's rows start before its perp (not tradable there), a perp-only coin starts at its perp",
+          s_pre and p_pre and no_trade_pre)
+    src = _json.loads(W3.SOURCE_UNIVERSE.read_text()) if W3.SOURCE_UNIVERSE.exists() else None
+    check("ml_wf3 universe source is section 28's universe_v2.json (47 coins)", src is not None and len(src) == 47,
+          str(None if src is None else len(src)))
 
 
 if __name__ == "__main__":
