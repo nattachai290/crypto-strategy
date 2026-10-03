@@ -12,10 +12,14 @@ pooled but failed breadth and is weak on TRAIN. The owner decided (2026-10-02,
 and the holdout stays untouched. §27 (`ml_hold.py`) was run: REJECT (`_multi` Exp 016/017).
 §28 (`ml_wf.py`, walk-forward multi-timeframe ML) was run: REJECT on 1h/4h/1d
 (`_multi` Exp 022/023). §29 (`ml_wf2.py`) was run: REJECT, but its universe rule left 4 coins (`_multi`
-Exp 025/026). **One approved run is pending:** PLAN.md §30 (`src/ml_wf3.py`,
-§28's 47 coins each with its own spot history, owner request 2026-10-03,
-`_multi` Exp 027; the first attempt aborted on a spot pair delisted before VALID,
-Exp 028; fixed and re-registered as Exp 029). Ask before starting anything else.
+Exp 025/026). PLAN.md §30 (`src/ml_wf3.py`, §28's 47 coins each with its own
+spot history spliced on before the perp start, owner request 2026-10-03) was run
+as re-registered in `_multi` Exp 029 and came out in `_multi` Exp 030:
+**REJECT on 1h/4h/1d, no holdout spent.** 1h is the closest ML result in this
+project and misses **one** gate — mean +0.0374 R, gross 2.9x cost, both legs
+positive, breadth 34/47, timing 4x the shifted p95, still +0.0332 without the
+five largest trades, but the 95% CI is [-0.0235, +0.1006]. 4h and 1d went
+backwards against §28. **No active work; ask before starting anything else.**
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The

@@ -1,186 +1,186 @@
 {
  "BTCUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2017-08-17"
  },
  "ETHUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2017-08-17"
  },
  "DOGEUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-07-05"
  },
  "ADAUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2018-04-17"
  },
  "BNBUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2017-11-06"
  },
  "AVAXUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-09-22"
  },
  "MATICUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-04-26"
  },
  "AXSUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-11-04"
  },
  "ETCUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2018-06-12"
  },
  "DOTUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-08-18"
  },
  "LINKUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-01-16"
  },
  "ATOMUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-04-29"
  },
  "EOSUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2018-05-28"
  },
  "CRVUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-08-15"
  },
  "BCHUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-11-28"
  },
  "AAVEUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-10-15"
  },
  "ALGOUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-06-22"
  },
  "RUNEUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-09-04"
  },
  "XTZUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-09-24"
  },
  "THETAUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-04-10"
  },
  "UNIUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-09-17"
  },
  "EGLDUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-09-03"
  },
  "ENJUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-04-18"
  },
  "1INCHUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-12-25"
  },
  "SNXUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-07-09"
  },
  "BELUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-09-15"
  },
  "XMRUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-03-15"
  },
  "SXPUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-07-20"
  },
  "HNTUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-09-24"
  },
  "KAVAUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-10-25"
  },
  "BANDUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-09-18"
  },
  "COMPUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-06-25"
  },
  "QTUMUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2018-03-19"
  },
  "RENUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-09-25"
  },
  "IOSTUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-03-22"
  },
  "NEOUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2017-11-20"
  },
  "BLZUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-08-11"
  },
  "ALPHAUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-10-10"
  },
  "BATUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-03-04"
  },
  "DASHUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-03-28"
  },
  "ZRXUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-02-28"
  },
  "CTKUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-10-27"
  },
  "ICXUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2018-06-13"
  },
  "ONTUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2018-06-08"
  },
  "BALUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2020-08-11"
  },
  "TOMOUSDT": {
-  "source": "spot",
+  "source": "splice",
   "history_from": "2019-08-24"
  },
  "DEFIUSDT": {

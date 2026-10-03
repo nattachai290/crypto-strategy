@@ -2673,3 +2673,180 @@ Every other value of §30 is unchanged. No result existed, so this is not a
 re-run of a result. The research agent's prompt is the same as for Exp 027.
 `results/_multi/ml_wf3/history.json` from Exp 028 is rewritten by the run.
 Its sources now read "splice" or "perp".
+
+---
+
+## Exp 030 - Walk-forward ML on 47 coins with each coin's own spot history spliced on (PLAN.md section 30, Exp 029 run): REJECT on all three timeframes, and 1h came close
+
+**Date:** 2026-10-03
+**Status:** complete. **One run, all three timeframes, exactly as re-registered in
+Exp 029.** No value in `src/ml_wf3.py`, `src/ml_wf2.py` or `src/ml_wf.py` was
+changed, no variant was tried, `--final` was not run (nothing passed), no holdout
+file was created and HOLDOUT was never read. **No new evaluation row.**
+
+**Correction to Exp 028 first, because it was mine and it was wrong.** Exp 028
+diagnosed the crash as `ml_wf.run_cell` slicing a shorter perp frame with
+history-frame indices, and published a table of "38 coins silently short". **That
+is not what the code does.** `ml_wf2.prepare` reindexes the perp bars onto the
+history index, so `tbars` and `bars` always have the same length; the planner
+reproduced it on real BTC data (history 64,525 rows, `tbars` 64,525 rows, slice
+17,543 bars, no crash). The real cause was my `history_source` rule: a coin used
+its spot bars for its whole history if the spot pair started before the perp, so
+**HNTUSDT's spot ending 2022-10** left its frame short of VALID. Exp 029 fixed it
+by splicing. **Exp 028's table should be read as a wrong diagnosis, not as a
+second finding.**
+
+**Session state.** `git pull` clean · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED**, and test 26 now checks the splice
+("spot before the perp, then the perp itself; perp only when no earlier spot") and
+a **spot pair delisted before VALID still leaving the whole perp window**, plus the
+full pipeline on such a coin. `ml_wf3.py --build` -> **`BUILD OK: 47 coins x
+['1h','4h','1d']`**. No abnormal number: no inf, no nan, every mean inside |0.2|.
+
+### Universe and history
+
+`history.json`: **46 of 47 coins use `splice`** (spot before the perp's first bar,
+then the perp itself), **1 uses `perp`** (DEFIUSDT, which has no spot pair).
+**10 coins start before 2019**; the earliest are **BTCUSDT and ETHUSDT
+2017-08-17**, BNBUSDT 2017-11-06, NEOUSDT 2017-11-20, QTUMUSDT 2018-03-19,
+ADAUSDT 2018-04-17, EOSUSDT 2018-05-28, ONTUSDT 2018-06-08. Training rows grew
+**547,524 -> 2,127,343** at 1h, 136,024 -> 531,274 at 4h and 21,259 -> 87,105 at
+1d across the 48 monthly refits, against §28's 217,475 -> 1,797,294 at 1h.
+
+### Verdict: REJECT on 1h, 4h and 1d
+
+| timeframe | verdict | VALID trades | mean R | 95% weekly-block CI | gross_r | cost_r | gates failed |
+|---|---|---|---|---|---|---|---|
+| **1h** | **REJECT** | 6,307 | **+0.0374** | **[-0.0235, +0.1006]** | **+0.0576** | 0.0202 | **`valid_ci_lo>0` only** |
+| **4h** | **REJECT** | 1,704 | **+0.0031** | [-0.1530, +0.1859] | +0.0115 | 0.0084 | `valid_ci_lo>0`, `stress_mean>0`, `breadth>=0.5`, `both_legs>0` |
+| **1d** | **REJECT** | 1,218 | **-0.0314** | [-0.1303, +0.0595] | **-0.0275** | 0.0040 | `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`, `timing_beats_shift_p95`, `breadth>=0.5`, `both_legs>0` |
+
+**No timeframe passes, so no timeframe may take the holdout.** `PLAN.md` §30 gives
+one holdout timeframe to the best TRAIN walk-forward among the PASS ones; there
+are none.
+
+**TRAIN walk-forward (2021-22) chose, out of 24 cells, over 48 monthly refits:**
+
+| tf | setting | q_in | exit | TRAIN trades | TRAIN mean R |
+|---|---|---|---|---|---|
+| 1h | leaves 7, leaf 1000, 150 rounds | **0.9** | flip | 9,011 | **+0.0351** |
+| 4h | leaves 7, leaf 1000, 150 rounds | **0.9** | flip | 2,301 | **+0.1171** |
+| 1d | leaves **31**, leaf 1000, 150 rounds | 0.75 | flip | 776 | **+0.0191** |
+
+**The rest of each VALID picture:**
+
+| | 1h | 4h | 1d |
+|---|---|---|---|
+| long leg | **+0.0413** | **+0.1938** | -0.0022 |
+| short leg | **+0.0354** | **-0.0540** | **-0.0539** |
+| cost x1.5 | **+0.0259** | -0.0034 | -0.0334 |
+| average hold | 57.1 bars | 53.6 bars | 13.0 bars |
+| exits signal / stop / eod | 89.3 / 10.1 / 0.7% | 81.5 / 16.0 / 2.5% | 95.0 / 4.8 / 0.2% |
+| mean R of a signal exit | +0.1549 | +0.1960 | +0.0179 |
+| mean R of a stop exit | -1.0220 | -1.0112 | -1.0246 |
+| **timing** | **+0.0103** | **+0.0038** | **-0.0093** |
+| shifted median | +0.0005 | +0.0001 | -0.0024 |
+| **shifted p95** | **+0.0025** | **+0.0038** | **+0.0090** |
+| time in market | 45.3% | 46.0% | 47.9% |
+| desired: flat / long / short | 54.3 / 9.4 / 36.2% | 53.6 / 8.7 / 37.7% | 51.7 / 18.2 / 30.1% |
+| per year 2023 / 2024 | -0.0136 / **+0.0787** | -0.0915 / **+0.1252** | -0.0275 / **-0.0350** |
+| coins >= 10 trades, net > 0 | **34 of 47 = 0.72** | 22 of 46 = 0.48 | 12 of 46 = 0.26 |
+| **mean R without the 5 largest trades** | **+0.0332** | **-0.0199** | **-0.0379** |
+
+**Best and worst coins at 1h** (the only clock that matters below): RUNE +0.1676,
+MATIC +0.1582, ALGO +0.1290, ZRX +0.1189, ALPHA +0.1005 against BTC
+**-0.1269**, CTK -0.0852, AAVE -0.0762, HNT -0.0681, COMP -0.0453.
+
+### Section 30 against Section 28, same 47 coins, same windows
+
+| | 1h §28 | **1h §30** | 4h §28 | **4h §30** | 1d §28 | **1d §30** |
+|---|---|---|---|---|---|---|
+| TRAIN walk-forward mean | +0.0148 | **+0.0351** | +0.1171 | **+0.1171** | +0.3674 | **+0.0191** |
+| VALID trades | 9,276 | 6,307 | 2,465 | 1,704 | 845 | 1,218 |
+| **VALID mean R** | -0.0000 | **+0.0374** | +0.0096 | **+0.0031** | +0.0234 | **-0.0314** |
+| 95% CI | [-0.0325, +0.0330] | **[-0.0235, +0.1006]** | [-0.1014, +0.1346] | [-0.1530, +0.1859] | [-0.0965, +0.1353] | [-0.1303, +0.0595] |
+| **gross R** | +0.0219 | **+0.0576** | +0.0176 | **+0.0115** | +0.0304 | **-0.0275** |
+| cost R | 0.0220 | 0.0202 | 0.0080 | 0.0084 | 0.0070 | 0.0040 |
+| long leg | +0.0110 | **+0.0413** | +0.1513 | **+0.1938** | -0.0117 | -0.0022 |
+| short leg | -0.0047 | **+0.0354** | -0.0466 | -0.0540 | +0.0795 | -0.0539 |
+| cost x1.5 | -0.0116 | **+0.0259** | +0.0043 | **-0.0034** | +0.0215 | **-0.0334** |
+| timing | +0.0092 | **+0.0103** | +0.0050 | **+0.0038** | +0.0169 | **-0.0093** |
+| shifted p95 | +0.0029 | **+0.0025** | +0.0032 | **+0.0038** | +0.0101 | **+0.0090** |
+| timing gate | pass | **pass** | pass | **fail** (tied) | pass | **fail** |
+| time in market | 23.8% | **45.3%** | 57.8% | **46.0%** | 43.8% | 47.9% |
+| breadth (net>0) | 26/47 | **34/47** | 21/46 | 22/46 | 28/45 | 12/46 |
+| **mean without the 5 largest** | -0.0019 | **+0.0332** | -0.0118 | **-0.0199** | -0.0379 | **-0.0379** |
+| gates failed | 4 | **1** | 3 | 4 | 2 | 6 |
+
+### What the numbers say
+
+**1. 1h is the closest ML result in this project, and it fails on one gate by
+0.024 R.** §30 at 1h passes **seven of eight gates**: TRAIN +0.0351, 6,307 VALID
+trades, mean **+0.0374**, stress **+0.0259**, timing **+0.0103 against a shifted
+p95 of +0.0025** (4.1x), breadth **34 of 47**, and **both legs positive**
+(+0.0413 long, +0.0354 short). **The only failure is `valid_ci_lo>0`: the CI is
+[-0.0235, +0.1006] and its lower bound is 0.024 below zero.** §28's 1h failed four
+gates. **This is not a candidate and nothing goes to the holdout** - but it is the
+first ML book in this project where gross is 2.9x cost, both legs are positive,
+breadth is above 0.7, the timing control passes by a factor of four, and the
+result survives removing the five largest trades.
+
+**2. And it survives the five-largest-trades test, which is where §28 and §29
+failed.** §30 1h: whole-book **+0.0374**, without the 5 largest **+0.0332** - it
+loses 11% of itself. §28 1h: -0.0000 without the five. §29's 4h and 1d lost
+essentially all of theirs (-0.0334 and +0.0133). **This is the first time in the
+ML line that the positive number is not a handful of trades.**
+
+**3. The longer history helped at 1h and hurt at 4h and 1d.** Like for like on
+47 coins and the same windows: 1h gross **+0.0219 -> +0.0576** and mean
+**-0.0000 -> +0.0374**; 4h gross **+0.0176 -> +0.0115** and mean **+0.0096 ->
++0.0031**; 1d gross **+0.0304 -> -0.0275** and mean **+0.0234 -> -0.0314**, with
+1d's gross actually negative and its timing **-0.0093**. **So "more history is
+better" is not a general fact here: it is a fact about the 1h clock.** §29 could
+not show this because it had 4 coins; §30 could, and the answer is "at 1h yes,
+at 4h and 1d no".
+
+**4. The winning leg still flips, and 1d's book is simply wrong.** 1h both legs
+positive (new), 4h long +0.1938 against short -0.0540, 1d both legs negative.
+Breadth 0.72 / 0.48 / 0.26 on the net-positive share - **1d has only 12 of 46
+coins positive and its timing is negative.** §23's short-side shape is present at
+4h and 1d and absent at 1h.
+
+**5. 1h is still carried by 2024.** -0.0136 in 2023 and **+0.0787** in 2024;
+4h the same (-0.0915, +0.1252). `LESSONS.md` §2 again. 1d is negative in both
+years, which is the one clean reading here.
+
+**6. The book trades twice as long as §28's, and that is where the cost saving
+came from.** Time in market **45.3%** against §28's 23.8%, average hold **57.1**
+bars against 20.4, and `cost_r` **0.0202 against 0.0220** despite the much longer
+exposure. **Longer holds, lower cost per trade, and the gross is what rose.** That
+is the one mechanism in this round that worked, and it is a cost mechanism, not a
+forecast mechanism.
+
+**7. What this adds.** Eight ML looks at VALID. Seven produced gross the same size
+as cost or below it. **§30 at 1h produced gross 2.9x cost, both legs positive,
+breadth 0.72, timing 4x the control's p95, and it holds up without five
+outliers - and its confidence interval still crosses zero.** The gates did their
+job: a real improvement that is not yet provable is a WATCH, not a candidate.
+
+### Verdict
+
+**REJECT on 1h, 4h and 1d.** No timeframe may take the holdout, and per §30 there
+is no variant to try: the fix was registered in Exp 029 and this is its single
+run. **HOLDOUT was never read** - it holds 5 runs, all from before ML (4 strategies
+plus one lock test on `example_trend_breakout`), 5 FAILED and 0 CONFIRMED.
+Project total remains 500 evaluations.
+
+**The honest one-paragraph version for the owner: giving each of the 47 coins its
+own spot history made the 1-hour book much better and left the other two clocks
+worse or negative. At 1h it now has 6,307 trades, mean +0.0374 R, gross +0.0576
+against cost 0.0202 - 2.9 times the cost - both legs positive for the first time
+in the ML line (+0.041 long, +0.035 short), breadth 34 of 47 coins, timing
++0.0103 against a shifted 95th percentile of +0.0025, and it still makes +0.0332
+after removing the five largest trades. **It fails exactly one gate: the confidence
+interval's lower bound is -0.0235.** At 4h it went backwards against §28 (mean
++0.0031 against +0.0096, cost stress negative) and at 1d it is outright negative
+with a negative gross of -0.0275. So more history helps at one clock only. The 1h
+book also trades twice as long as §28's, 45% of the time instead of 24%, which is
+where the cost saving came from. Nothing goes to the holdout: a real improvement
+that is not yet provable is still a REJECT.**

@@ -1,0 +1,1097 @@
+{
+ "tf": 60,
+ "coins_n": 47,
+ "horizon_bars": 24,
+ "stop_atr": 8.0,
+ "setting": {
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "rounds": 150
+ },
+ "q_in": 0.9,
+ "exit_mode": "flip",
+ "train_wf_best": {
+  "setting": 0,
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "rounds": 150,
+  "q_in": 0.9,
+  "exit": "flip",
+  "trades": 9011,
+  "mean_r": 0.03514867055377151
+ },
+ "train_wf_table": [
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 21318,
+   "mean_r": 0.019089714100376555
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 32516,
+   "mean_r": 0.006344529762909914
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 15101,
+   "mean_r": 0.031915961193462294
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 23859,
+   "mean_r": 0.013509073496318288
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 9011,
+   "mean_r": 0.03514867055377151
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 13583,
+   "mean_r": 0.020338626931742793
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 24249,
+   "mean_r": 0.012041998533564758
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 35683,
+   "mean_r": 0.0012264737166578724
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 16957,
+   "mean_r": 0.016959079041870467
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 25303,
+   "mean_r": 0.004189415670785894
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 9721,
+   "mean_r": 0.016560547932672653
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 13541,
+   "mean_r": 0.012244855932675793
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 27163,
+   "mean_r": 0.006610515257760659
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 38763,
+   "mean_r": -0.00040997548377232643
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 19029,
+   "mean_r": 0.014210307128121888
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 27323,
+   "mean_r": 0.0061798542193730556
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 10890,
+   "mean_r": 0.012309664321514488
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 14747,
+   "mean_r": 0.010076300055314649
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 28637,
+   "mean_r": 0.006350116397720305
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 40600,
+   "mean_r": -0.000996125985866326
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 20186,
+   "mean_r": 0.0105402099834589
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 28609,
+   "mean_r": 0.0013741892970321812
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 11696,
+   "mean_r": 0.009304121095650264
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 15544,
+   "mean_r": 0.008053678199808088
+  }
+ ],
+ "valid": {
+  "trades": 6307,
+  "mean_r": 0.03744382997808238,
+  "ci_lo": -0.023528273174259352,
+  "ci_hi": 0.10062321006911104,
+  "gross_r": 0.05761781886127714,
+  "long_r": 0.04125948322816639,
+  "short_r": 0.035385593785091,
+  "exit_mix": {
+   "signal": 0.893,
+   "stop": 0.101,
+   "eod": 0.007
+  },
+  "avg_bars": 57.10464563183764,
+  "avg_hold_h": 57.10464563183764,
+  "per_year": {
+   "2023": -0.013647958654806558,
+   "2024": 0.07868324790898444
+  },
+  "stress_mean_r": 0.025901481368154917,
+  "timing": 0.010318817557087238,
+  "shift_median": 0.0005413785391798877,
+  "shift_p95": 0.0024695174805975067,
+  "per_coin": {
+   "BTCUSDT": {
+    "trades": 143,
+    "mean_r": -0.12694305181704463,
+    "timing": -0.01650195161358244,
+    "shift_median": -0.003253188448324054,
+    "shift_p95": 0.012550442821858994
+   },
+   "ETHUSDT": {
+    "trades": 125,
+    "mean_r": -0.00475787885406865,
+    "timing": 0.0026808702089030894,
+    "shift_median": -0.0008900330392783871,
+    "shift_p95": 0.012144815368209053
+   },
+   "DOGEUSDT": {
+    "trades": 142,
+    "mean_r": 0.0496201102636317,
+    "timing": 0.011966350632081109,
+    "shift_median": -0.0007828071008139269,
+    "shift_p95": 0.01117119175953685
+   },
+   "ADAUSDT": {
+    "trades": 133,
+    "mean_r": 0.09430948235433606,
+    "timing": 0.01534968358366099,
+    "shift_median": -0.00015898498530002796,
+    "shift_p95": 0.01223588591077509
+   },
+   "BNBUSDT": {
+    "trades": 142,
+    "mean_r": -0.008153407866152302,
+    "timing": 0.004207352961718805,
+    "shift_median": -0.001635792124126614,
+    "shift_p95": 0.0105282328267147
+   },
+   "AVAXUSDT": {
+    "trades": 150,
+    "mean_r": 0.07659901457013492,
+    "timing": 0.016862635139193997,
+    "shift_median": 0.0013917487783341072,
+    "shift_p95": 0.013981455423890501
+   },
+   "MATICUSDT": {
+    "trades": 107,
+    "mean_r": 0.15822750807267574,
+    "timing": 0.021381965138643506,
+    "shift_median": 0.003836391298445463,
+    "shift_p95": 0.016262897983468763
+   },
+   "AXSUSDT": {
+    "trades": 137,
+    "mean_r": 0.06707003102436568,
+    "timing": 0.01170570126260511,
+    "shift_median": 0.0002718264525001129,
+    "shift_p95": 0.014627286366614693
+   },
+   "ETCUSDT": {
+    "trades": 135,
+    "mean_r": 0.05370601026595266,
+    "timing": 0.015687541022951293,
+    "shift_median": 0.0019217719251929943,
+    "shift_p95": 0.013725435173407186
+   },
+   "DOTUSDT": {
+    "trades": 133,
+    "mean_r": 0.029390396052327673,
+    "timing": 0.012743484900737193,
+    "shift_median": 0.0025228617926843387,
+    "shift_p95": 0.014886242987118195
+   },
+   "LINKUSDT": {
+    "trades": 127,
+    "mean_r": 0.04263036452552619,
+    "timing": 0.010148325567026405,
+    "shift_median": -0.0015306940761032747,
+    "shift_p95": 0.01202098968247852
+   },
+   "ATOMUSDT": {
+    "trades": 141,
+    "mean_r": 0.09174911962212022,
+    "timing": 0.020405835440461206,
+    "shift_median": 0.0031762859898456387,
+    "shift_p95": 0.017092150691959053
+   },
+   "EOSUSDT": {
+    "trades": 153,
+    "mean_r": 0.06019752787181737,
+    "timing": 0.01529162950381397,
+    "shift_median": 0.0011931001301054359,
+    "shift_p95": 0.01321269479606654
+   },
+   "CRVUSDT": {
+    "trades": 146,
+    "mean_r": 0.07925920026207024,
+    "timing": 0.017749387534331574,
+    "shift_median": 0.0034168234965963676,
+    "shift_p95": 0.012642772477945811
+   },
+   "BCHUSDT": {
+    "trades": 153,
+    "mean_r": 0.006535275019000814,
+    "timing": 0.007636602041589669,
+    "shift_median": -0.0011984007538109421,
+    "shift_p95": 0.011454051304989075
+   },
+   "AAVEUSDT": {
+    "trades": 166,
+    "mean_r": -0.07620101543640834,
+    "timing": -0.006181346461407772,
+    "shift_median": -0.002540294463826755,
+    "shift_p95": 0.010784546574990578
+   },
+   "ALGOUSDT": {
+    "trades": 127,
+    "mean_r": 0.12895051070672225,
+    "timing": 0.018107051185466835,
+    "shift_median": 0.002064178299076759,
+    "shift_p95": 0.013770556092866648
+   },
+   "RUNEUSDT": {
+    "trades": 140,
+    "mean_r": 0.16762059104498342,
+    "timing": 0.0241609413770459,
+    "shift_median": -0.0019518384801237715,
+    "shift_p95": 0.009467178720205199
+   },
+   "XTZUSDT": {
+    "trades": 127,
+    "mean_r": 0.06614779693199392,
+    "timing": 0.013463826180842074,
+    "shift_median": 0.0007187363460384472,
+    "shift_p95": 0.010804545194288974
+   },
+   "THETAUSDT": {
+    "trades": 124,
+    "mean_r": 0.06547031762118992,
+    "timing": 0.011658741038484962,
+    "shift_median": -0.0012389754049230775,
+    "shift_p95": 0.009264307669759273
+   },
+   "UNIUSDT": {
+    "trades": 148,
+    "mean_r": -0.026953311948329155,
+    "timing": 0.002448951764993218,
+    "shift_median": -0.0007926765267213017,
+    "shift_p95": 0.012332951229538496
+   },
+   "EGLDUSDT": {
+    "trades": 136,
+    "mean_r": 0.048111044370970885,
+    "timing": 0.013053626458484478,
+    "shift_median": 0.0025678495960252835,
+    "shift_p95": 0.013319939228518823
+   },
+   "ENJUSDT": {
+    "trades": 144,
+    "mean_r": 0.0520793704670228,
+    "timing": 0.014505669227827186,
+    "shift_median": 0.0024030748325834846,
+    "shift_p95": 0.013424740118062817
+   },
+   "1INCHUSDT": {
+    "trades": 142,
+    "mean_r": 0.040037899672141795,
+    "timing": 0.009879887419862959,
+    "shift_median": 0.001158373555598816,
+    "shift_p95": 0.01666021057594598
+   },
+   "SNXUSDT": {
+    "trades": 149,
+    "mean_r": 0.08565063856965055,
+    "timing": 0.018029671083826394,
+    "shift_median": 0.001597519506390247,
+    "shift_p95": 0.011659139347751432
+   },
+   "BELUSDT": {
+    "trades": 156,
+    "mean_r": -0.0008122934137373231,
+    "timing": 0.003907264206275528,
+    "shift_median": -0.002068341340080955,
+    "shift_p95": 0.010191273093302634
+   },
+   "XMRUSDT": {
+    "trades": 152,
+    "mean_r": -0.04244682897300924,
+    "timing": -0.0015313433022409967,
+    "shift_median": 0.0009434348533188513,
+    "shift_p95": 0.010483868616637117
+   },
+   "SXPUSDT": {
+    "trades": 139,
+    "mean_r": 0.0022404204921068196,
+    "timing": -0.0011967265685024155,
+    "shift_median": 0.00037648104091088776,
+    "shift_p95": 0.011520776429808418
+   },
+   "HNTUSDT": {
+    "trades": 15,
+    "mean_r": -0.06807123955974945,
+    "timing": 0.002145818262690499,
+    "shift_median": -0.0012013971141640394,
+    "shift_p95": 0.03685967614591269
+   },
+   "KAVAUSDT": {
+    "trades": 149,
+    "mean_r": 0.012212784637484242,
+    "timing": 0.011106495759101788,
+    "shift_median": 0.0036654363740373816,
+    "shift_p95": 0.015403446540752644
+   },
+   "BANDUSDT": {
+    "trades": 142,
+    "mean_r": 0.06676976606219169,
+    "timing": 0.014026970743641872,
+    "shift_median": 0.0006906640573242904,
+    "shift_p95": 0.011493518274322123
+   },
+   "COMPUSDT": {
+    "trades": 139,
+    "mean_r": -0.045318649016755745,
+    "timing": 0.0013911826341227995,
+    "shift_median": 0.00047448263240092126,
+    "shift_p95": 0.013881284551055256
+   },
+   "QTUMUSDT": {
+    "trades": 135,
+    "mean_r": -0.03468910262648322,
+    "timing": 0.0011962467127130027,
+    "shift_median": -0.002180140173846515,
+    "shift_p95": 0.010655796484453937
+   },
+   "RENUSDT": {
+    "trades": 127,
+    "mean_r": 0.036057446307699394,
+    "timing": 0.005592681990778423,
+    "shift_median": 0.0015771061595686948,
+    "shift_p95": 0.011414877037545382
+   },
+   "IOSTUSDT": {
+    "trades": 141,
+    "mean_r": 0.07389487501180514,
+    "timing": 0.014117393793106253,
+    "shift_median": 0.0026118295290917613,
+    "shift_p95": 0.01366842429865119
+   },
+   "NEOUSDT": {
+    "trades": 141,
+    "mean_r": 0.04071689843017489,
+    "timing": 0.010239177737184187,
+    "shift_median": -0.00024095792604519124,
+    "shift_p95": 0.013193870332499365
+   },
+   "BLZUSDT": {
+    "trades": 155,
+    "mean_r": 0.07736689143494227,
+    "timing": 0.020394506732084306,
+    "shift_median": 0.0014665956890124916,
+    "shift_p95": 0.013775683096903694
+   },
+   "ALPHAUSDT": {
+    "trades": 140,
+    "mean_r": 0.10054674737121481,
+    "timing": 0.01701485754122555,
+    "shift_median": -0.0002229187504365546,
+    "shift_p95": 0.014379801278030624
+   },
+   "BATUSDT": {
+    "trades": 146,
+    "mean_r": 0.048815402005384895,
+    "timing": 0.012265729788401297,
+    "shift_median": -0.00019085249562903904,
+    "shift_p95": 0.012845125499891091
+   },
+   "DASHUSDT": {
+    "trades": 123,
+    "mean_r": 0.02596930942111709,
+    "timing": 0.010075442065334766,
+    "shift_median": 0.002194615066568129,
+    "shift_p95": 0.013215545402302456
+   },
+   "ZRXUSDT": {
+    "trades": 144,
+    "mean_r": 0.11893795281403571,
+    "timing": 0.014479513495844318,
+    "shift_median": -0.0014185118954498004,
+    "shift_p95": 0.009674349586512209
+   },
+   "CTKUSDT": {
+    "trades": 80,
+    "mean_r": -0.08522220305694786,
+    "timing": 0.0007768965709687045,
+    "shift_median": 0.0036699411404898285,
+    "shift_p95": 0.01663400754819372
+   },
+   "ICXUSDT": {
+    "trades": 146,
+    "mean_r": 0.0666549934897118,
+    "timing": 0.015484550087963069,
+    "shift_median": 0.0016370649065746976,
+    "shift_p95": 0.013285965312559444
+   },
+   "ONTUSDT": {
+    "trades": 147,
+    "mean_r": -0.004936922852932828,
+    "timing": 0.0027737215742151904,
+    "shift_median": -0.0008367014465070976,
+    "shift_p95": 0.01129244964587749
+   },
+   "BALUSDT": {
+    "trades": 129,
+    "mean_r": 0.04276615573860606,
+    "timing": 0.015005414657704413,
+    "shift_median": 0.005084067643481238,
+    "shift_p95": 0.018310587398533227
+   },
+   "TOMOUSDT": {
+    "trades": 63,
+    "mean_r": 0.013157089256713569,
+    "timing": 0.00626596116064244,
+    "shift_median": -0.012967957578625147,
+    "shift_p95": 0.01172941958735631
+   },
+   "DEFIUSDT": {
+    "trades": 128,
+    "mean_r": -0.00360100679277053,
+    "timing": 0.006917436095305059,
+    "shift_median": 5.448048428104891e-05,
+    "shift_p95": 0.012366694030237962
+   }
+  },
+  "time_in_market": 0.4528940356295403,
+  "breadth": {
+   "eligible": 47,
+   "beat": [
+    "DOGEUSDT",
+    "ADAUSDT",
+    "AVAXUSDT",
+    "MATICUSDT",
+    "AXSUSDT",
+    "ETCUSDT",
+    "DOTUSDT",
+    "LINKUSDT",
+    "ATOMUSDT",
+    "EOSUSDT",
+    "CRVUSDT",
+    "BCHUSDT",
+    "ALGOUSDT",
+    "RUNEUSDT",
+    "XTZUSDT",
+    "THETAUSDT",
+    "EGLDUSDT",
+    "ENJUSDT",
+    "1INCHUSDT",
+    "SNXUSDT",
+    "KAVAUSDT",
+    "BANDUSDT",
+    "RENUSDT",
+    "IOSTUSDT",
+    "NEOUSDT",
+    "BLZUSDT",
+    "ALPHAUSDT",
+    "BATUSDT",
+    "DASHUSDT",
+    "ZRXUSDT",
+    "ICXUSDT",
+    "BALUSDT",
+    "TOMOUSDT"
+   ],
+   "share": 0.7021276595744681
+  },
+  "last_exit": "2024-12-31 23:00:00+00:00"
+ },
+ "refits": [
+  {
+   "month": "2021-01-01",
+   "train_rows": 547524,
+   "last_train_label_end": "2020-12-31 23:00:00+00:00"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 582492,
+   "last_train_label_end": "2021-01-31 23:00:00+00:00"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 614076,
+   "last_train_label_end": "2021-02-28 23:00:00+00:00"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 648992,
+   "last_train_label_end": "2021-03-31 23:00:00+00:00"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 682832,
+   "last_train_label_end": "2021-04-30 23:00:00+00:00"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 717800,
+   "last_train_label_end": "2021-05-31 23:00:00+00:00"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 751640,
+   "last_train_label_end": "2021-06-30 23:00:00+00:00"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 786608,
+   "last_train_label_end": "2021-07-31 23:00:00+00:00"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 821576,
+   "last_train_label_end": "2021-08-31 23:00:00+00:00"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 855416,
+   "last_train_label_end": "2021-09-30 23:00:00+00:00"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 890384,
+   "last_train_label_end": "2021-10-31 23:00:00+00:00"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 924224,
+   "last_train_label_end": "2021-11-30 23:00:00+00:00"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 959192,
+   "last_train_label_end": "2021-12-31 23:00:00+00:00"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 994160,
+   "last_train_label_end": "2022-01-31 23:00:00+00:00"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 1025744,
+   "last_train_label_end": "2022-02-28 23:00:00+00:00"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 1060712,
+   "last_train_label_end": "2022-03-31 23:00:00+00:00"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 1094552,
+   "last_train_label_end": "2022-04-30 23:00:00+00:00"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 1129520,
+   "last_train_label_end": "2022-05-31 23:00:00+00:00"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 1163360,
+   "last_train_label_end": "2022-06-30 23:00:00+00:00"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 1198328,
+   "last_train_label_end": "2022-07-31 23:00:00+00:00"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 1233296,
+   "last_train_label_end": "2022-08-31 23:00:00+00:00"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 1267136,
+   "last_train_label_end": "2022-09-30 23:00:00+00:00"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 1302104,
+   "last_train_label_end": "2022-10-31 23:00:00+00:00"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 1335944,
+   "last_train_label_end": "2022-11-30 23:00:00+00:00"
+  },
+  {
+   "month": "2023-01-01",
+   "train_rows": 1370912,
+   "last_train_label_end": "2022-12-31 23:00:00+00:00"
+  },
+  {
+   "month": "2023-02-01",
+   "train_rows": 1405880,
+   "last_train_label_end": "2023-01-31 23:00:00+00:00"
+  },
+  {
+   "month": "2023-03-01",
+   "train_rows": 1437464,
+   "last_train_label_end": "2023-02-28 23:00:00+00:00"
+  },
+  {
+   "month": "2023-04-01",
+   "train_rows": 1472154,
+   "last_train_label_end": "2023-03-31 23:00:00+00:00"
+  },
+  {
+   "month": "2023-05-01",
+   "train_rows": 1505274,
+   "last_train_label_end": "2023-04-30 23:00:00+00:00"
+  },
+  {
+   "month": "2023-06-01",
+   "train_rows": 1539498,
+   "last_train_label_end": "2023-05-31 23:00:00+00:00"
+  },
+  {
+   "month": "2023-07-01",
+   "train_rows": 1572618,
+   "last_train_label_end": "2023-06-30 23:00:00+00:00"
+  },
+  {
+   "month": "2023-08-01",
+   "train_rows": 1606842,
+   "last_train_label_end": "2023-07-31 23:00:00+00:00"
+  },
+  {
+   "month": "2023-09-01",
+   "train_rows": 1641066,
+   "last_train_label_end": "2023-08-31 23:00:00+00:00"
+  },
+  {
+   "month": "2023-10-01",
+   "train_rows": 1674186,
+   "last_train_label_end": "2023-09-30 23:00:00+00:00"
+  },
+  {
+   "month": "2023-11-01",
+   "train_rows": 1708410,
+   "last_train_label_end": "2023-10-31 23:00:00+00:00"
+  },
+  {
+   "month": "2023-12-01",
+   "train_rows": 1741131,
+   "last_train_label_end": "2023-11-30 23:00:00+00:00"
+  },
+  {
+   "month": "2024-01-01",
+   "train_rows": 1774611,
+   "last_train_label_end": "2023-12-31 23:00:00+00:00"
+  },
+  {
+   "month": "2024-02-01",
+   "train_rows": 1808091,
+   "last_train_label_end": "2024-01-31 23:00:00+00:00"
+  },
+  {
+   "month": "2024-03-01",
+   "train_rows": 1839411,
+   "last_train_label_end": "2024-02-29 23:00:00+00:00"
+  },
+  {
+   "month": "2024-04-01",
+   "train_rows": 1872891,
+   "last_train_label_end": "2024-03-31 23:00:00+00:00"
+  },
+  {
+   "month": "2024-05-01",
+   "train_rows": 1904580,
+   "last_train_label_end": "2024-04-30 23:00:00+00:00"
+  },
+  {
+   "month": "2024-06-01",
+   "train_rows": 1937316,
+   "last_train_label_end": "2024-05-31 23:00:00+00:00"
+  },
+  {
+   "month": "2024-07-01",
+   "train_rows": 1968996,
+   "last_train_label_end": "2024-06-30 23:00:00+00:00"
+  },
+  {
+   "month": "2024-08-01",
+   "train_rows": 2001732,
+   "last_train_label_end": "2024-07-31 23:00:00+00:00"
+  },
+  {
+   "month": "2024-09-01",
+   "train_rows": 2034468,
+   "last_train_label_end": "2024-08-31 23:00:00+00:00"
+  },
+  {
+   "month": "2024-10-01",
+   "train_rows": 2065509,
+   "last_train_label_end": "2024-09-30 23:00:00+00:00"
+  },
+  {
+   "month": "2024-11-01",
+   "train_rows": 2096383,
+   "last_train_label_end": "2024-10-31 23:00:00+00:00"
+  },
+  {
+   "month": "2024-12-01",
+   "train_rows": 2127343,
+   "last_train_label_end": "2024-11-30 23:00:00+00:00"
+  }
+ ],
+ "verdict": "REJECT",
+ "gates_failed": [
+  "valid_ci_lo>0"
+ ],
+ "history": {
+  "BTCUSDT": {
+   "source": "splice",
+   "history_from": "2017-08-17"
+  },
+  "ETHUSDT": {
+   "source": "splice",
+   "history_from": "2017-08-17"
+  },
+  "DOGEUSDT": {
+   "source": "splice",
+   "history_from": "2019-07-05"
+  },
+  "ADAUSDT": {
+   "source": "splice",
+   "history_from": "2018-04-17"
+  },
+  "BNBUSDT": {
+   "source": "splice",
+   "history_from": "2017-11-06"
+  },
+  "AVAXUSDT": {
+   "source": "splice",
+   "history_from": "2020-09-22"
+  },
+  "MATICUSDT": {
+   "source": "splice",
+   "history_from": "2019-04-26"
+  },
+  "AXSUSDT": {
+   "source": "splice",
+   "history_from": "2020-11-04"
+  },
+  "ETCUSDT": {
+   "source": "splice",
+   "history_from": "2018-06-12"
+  },
+  "DOTUSDT": {
+   "source": "splice",
+   "history_from": "2020-08-18"
+  },
+  "LINKUSDT": {
+   "source": "splice",
+   "history_from": "2019-01-16"
+  },
+  "ATOMUSDT": {
+   "source": "splice",
+   "history_from": "2019-04-29"
+  },
+  "EOSUSDT": {
+   "source": "splice",
+   "history_from": "2018-05-28"
+  },
+  "CRVUSDT": {
+   "source": "splice",
+   "history_from": "2020-08-15"
+  },
+  "BCHUSDT": {
+   "source": "splice",
+   "history_from": "2019-11-28"
+  },
+  "AAVEUSDT": {
+   "source": "splice",
+   "history_from": "2020-10-15"
+  },
+  "ALGOUSDT": {
+   "source": "splice",
+   "history_from": "2019-06-22"
+  },
+  "RUNEUSDT": {
+   "source": "splice",
+   "history_from": "2020-09-04"
+  },
+  "XTZUSDT": {
+   "source": "splice",
+   "history_from": "2019-09-24"
+  },
+  "THETAUSDT": {
+   "source": "splice",
+   "history_from": "2019-04-10"
+  },
+  "UNIUSDT": {
+   "source": "splice",
+   "history_from": "2020-09-17"
+  },
+  "EGLDUSDT": {
+   "source": "splice",
+   "history_from": "2020-09-03"
+  },
+  "ENJUSDT": {
+   "source": "splice",
+   "history_from": "2019-04-18"
+  },
+  "1INCHUSDT": {
+   "source": "splice",
+   "history_from": "2020-12-25"
+  },
+  "SNXUSDT": {
+   "source": "splice",
+   "history_from": "2020-07-09"
+  },
+  "BELUSDT": {
+   "source": "splice",
+   "history_from": "2020-09-15"
+  },
+  "XMRUSDT": {
+   "source": "splice",
+   "history_from": "2019-03-15"
+  },
+  "SXPUSDT": {
+   "source": "splice",
+   "history_from": "2020-07-20"
+  },
+  "HNTUSDT": {
+   "source": "splice",
+   "history_from": "2020-09-24"
+  },
+  "KAVAUSDT": {
+   "source": "splice",
+   "history_from": "2019-10-25"
+  },
+  "BANDUSDT": {
+   "source": "splice",
+   "history_from": "2019-09-18"
+  },
+  "COMPUSDT": {
+   "source": "splice",
+   "history_from": "2020-06-25"
+  },
+  "QTUMUSDT": {
+   "source": "splice",
+   "history_from": "2018-03-19"
+  },
+  "RENUSDT": {
+   "source": "splice",
+   "history_from": "2019-09-25"
+  },
+  "IOSTUSDT": {
+   "source": "splice",
+   "history_from": "2019-03-22"
+  },
+  "NEOUSDT": {
+   "source": "splice",
+   "history_from": "2017-11-20"
+  },
+  "BLZUSDT": {
+   "source": "splice",
+   "history_from": "2020-08-11"
+  },
+  "ALPHAUSDT": {
+   "source": "splice",
+   "history_from": "2020-10-10"
+  },
+  "BATUSDT": {
+   "source": "splice",
+   "history_from": "2019-03-04"
+  },
+  "DASHUSDT": {
+   "source": "splice",
+   "history_from": "2019-03-28"
+  },
+  "ZRXUSDT": {
+   "source": "splice",
+   "history_from": "2019-02-28"
+  },
+  "CTKUSDT": {
+   "source": "splice",
+   "history_from": "2020-10-27"
+  },
+  "ICXUSDT": {
+   "source": "splice",
+   "history_from": "2018-06-13"
+  },
+  "ONTUSDT": {
+   "source": "splice",
+   "history_from": "2018-06-08"
+  },
+  "BALUSDT": {
+   "source": "splice",
+   "history_from": "2020-08-11"
+  },
+  "TOMOUSDT": {
+   "source": "splice",
+   "history_from": "2019-08-24"
+  },
+  "DEFIUSDT": {
+   "source": "perp",
+   "history_from": "2020-08-28"
+  }
+ }
+}
