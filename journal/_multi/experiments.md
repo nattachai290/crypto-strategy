@@ -2124,3 +2124,62 @@ clocks (4h is now 15.2% long, 43.0% short) and did not change the verdict. Both
 legs fail on two of three clocks, and the winning side flips with the clock.
 2023 and 2024 disagree in opposite directions on different clocks. Nothing goes to
 the holdout.**
+
+---
+
+## Exp 023 - Review of Exp 022 (walk-forward multi-timeframe ML, planner): REJECT stands, ML closed; four corrections
+
+**Date:** 2026-10-03
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- `src/` is unchanged since the re-registration (da70d8d).
+- No holdout file exists.
+- `universe_v2.json` holds 47 coins.
+- Recomputed from `trades_valid_tf*.csv.gz`, all matching `tf*.json`:
+
+  | tf | trades | net mean | gross | cost |
+  |---|---|---|---|---|
+  | 1h | 9,276 | -0.0000 | +0.0219 | 0.0220 |
+  | 4h | 2,465 | +0.0096 | +0.0176 | 0.0080 |
+  | 1d | 845 | +0.0234 | +0.0304 | 0.0070 |
+
+- Long/short legs, exit mixes and timing against the shifted p95 also match.
+- No |R| outlier comes from bad data: the largest is +14.99 R, a BLZ long in
+  August 2023 that rode a +140% move.
+- Every trade carries its WHY fields.
+- The REJECT on all three timeframes and the closing of ML stand.
+
+**Corrections to Exp 022.**
+1. **Point 6 repeats the selection fallacy corrected in Exp 017.** "Signal
+   exits are where the money is ... the model closes winners at a profit"
+   conditions on the trade not having reached the stop. It is not evidence of
+   exit skill. The whole-book gross is the measure.
+2. **The 4h positive mean rests on a handful of trades.** The 5 largest of
+   2,465 trades (BLZ +15.0, RUNE +11.1, ADA +10.5, SXP +8.3, DASH +7.6 R)
+   carry it. Without them the 4h mean is -0.0118.
+3. **Units.** "0.7-2.2 cents of cost per trade" should read 0.007-0.022 R per
+   trade.
+4. **Wording.**
+   - "The holdout stays untouched (BTC 4 runs, SOL 1 run, 5 FAILED)": ML never
+     touched the holdout. The 5 earlier holdout runs are 4 strategies plus 1
+     lock test (`example_trend_breakout`).
+   - The breadth table's "net > 0" row is not the gate's measure. The gate
+     also needs timing above the coin's own shifted median; the tool's counts
+     are 26/47, 21/46 and 28/45.
+
+**What stands, for LESSONS.**
+- The timing control passed on every timeframe, and in two ML rounds in a
+  row. That is real information in the forecasts.
+- The gross it earns (+0.018 to +0.030 R per trade) is the same size as cost,
+  or barely above it.
+- The winning leg flips between timeframes and the winning year flips between
+  timeframes.
+
+**Results page.** `docs/trade.html` now shows all 141 coin × timeframe VALID
+books on native candles. Each trade shows:
+- the order types (market in; market, stop-market or period-end out);
+- the reason for the entry and, for signal exits, the exit, in plain Thai:
+  the forecast, the entry bar, and the top 3 feature contributions.
+
+Each coin's account is computed on its own.
