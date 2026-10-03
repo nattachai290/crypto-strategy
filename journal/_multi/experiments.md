@@ -2228,3 +2228,197 @@ Coinbase USD pairs from 2016.
 
 ### Verdict
 Pending the research agent's single run.
+
+---
+
+## Exp 025 - Walk-forward ML with spot history from 2017 (PLAN.md section 29): REJECT on all three timeframes, and the timing control got worse
+
+**Date:** 2026-10-03
+**Status:** complete. **One run, all three timeframes, exactly as pre-registered in
+Exp 024.** No value in `src/ml_wf2.py` or `src/ml_wf.py` was changed, no variant
+was tried, `--final` was not run (nothing passed), no holdout file was created and
+HOLDOUT was never read. **No new evaluation row.**
+
+**Session state.** `git pull` up to date · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED**, including **test 25**: the universe
+rule, training on spot rows from before the perps existed with no forecasts or
+trades there, fills at the perp open plus slippage, a planted edge -> PASS and
+noise -> REJECT with the timing gate failing. `spot_1d.parquet` and
+`perp_1d.parquet` both already existed, so both `rotation.py --build` calls were
+skipped. `ml_wf2.py --build` -> **`BUILD OK: 4 coins x ['1h', '4h', '1d']
+(spot from 2017-08)`**. No abnormal number anywhere: no inf, no nan, and every
+mean well inside |5|.
+
+### The universe came out at four coins, and that decides the round
+
+`results/_multi/ml_wf2/universe.json` holds **4 coins: BTCUSDT, ETHUSDT, BNBUSDT,
+NEOUSDT.**
+
+§29's rule is §28's perp rule restricted to coins whose spot pair traded by
+**2018-01-01**. Binance spot starts 2017-08, so five months in, only four of §28's
+47 coins had a spot pair. **Consequence, stated plainly: the `coins>=10` gate
+cannot be met on any timeframe, and `breadth>=0.5` is not measurable either, so
+this round cannot return a PASS on any clock no matter how good the forecasts
+are.** I did not touch the rule - it was registered before the run and changing it
+would be picking the universe after seeing the data.
+
+**It still answered the question it was built to answer**, because §28's numbers
+on these same four coins can be read directly out of its trade files.
+
+### Verdict: REJECT on 1h, 4h and 1d
+
+| timeframe | verdict | VALID trades | mean R | 95% weekly-block CI | gross_r | cost_r | gates failed |
+|---|---|---|---|---|---|---|---|
+| **1h** | **REJECT** | 1,714 | **-0.0198** | [-0.0523, +0.0153] | +0.0069 | 0.0267 | `valid_mean>0`, `valid_ci_lo>0`, `stress_mean>0`, **`timing_beats_shift_p95`**, **`coins>=10`**, `breadth>=0.5`, `both_legs>0` |
+| **4h** | **REJECT** | 368 | **+0.0128** | [-0.0651, +0.1042] | +0.0298 | 0.0170 | `valid_ci_lo>0`, **`timing_beats_shift_p95`**, **`coins>=10`**, `both_legs>0` |
+| **1d** | **REJECT** | 82 | **+0.1363** | [-0.0427, +0.3288] | +0.1621 | 0.0258 | **`train_wf_mean>0`**, **`valid_trades>=300`**, `valid_ci_lo>0`, **`timing_beats_shift_p95`**, **`coins>=10`**, `both_legs>0` |
+
+**TRAIN walk-forward (2021-22), 48 monthly refits, each on labels ending before
+its month:**
+
+| tf | setting | q_in | exit | TRAIN trades | TRAIN mean R |
+|---|---|---|---|---|---|
+| 1h | leaves 31, leaf 1000, **500 rounds** | **0.6** | flip | 1,732 | +0.0030 |
+| 4h | leaves 7, leaf 1000, 150 rounds | 0.75 | **half** | 359 | +0.0577 |
+| 1d | leaves 7, leaf 1000, 150 rounds | 0.6 | flip | **62** | **-0.0982** |
+
+Training rows grew from 113,202 (1h first refit) to 250,218 (last refit) at 1h,
+28,316 to 62,636 at 4h and 4,604 to 10,324 at 1d. **All 24 cells at 1d are
+negative on TRAIN**, the best being -0.0241, so `train_wf_mean>0` fails there. At
+1d only 27-135 trades per cell, all under the 300 floor, which is also why
+settings 0 and 2 print identical means and 1 and 3 print identical means: with
+10,324 rows the 31-leaf settings collapse onto the same predictions.
+
+**The rest of each VALID picture:**
+
+| | 1h | 4h | 1d |
+|---|---|---|---|
+| long leg | **+0.0069** | **+0.1023** | **+0.2616** |
+| short leg | **-0.0447** | **-0.0674** | **-0.1052** |
+| cost x1.5 | -0.0331 | **+0.0058** | **+0.1335** |
+| average hold | 27.6 bars | 20.2 bars | 23.2 bars |
+| exits signal / stop / eod | 91.8 / 8.1 / 0.1% | 95.7 / 3.5 / 0.8% | 95.1 / 2.4 / 2.4% |
+| **timing** | **+0.0016** | **+0.0042** | **+0.0383** |
+| shifted median | +0.0010 | +0.0039 | +0.0267 |
+| **shifted p95** | **+0.0060** | **+0.0190** | **+0.0587** |
+| time in market | **67.3%** | 42.4% | 65.0% |
+| desired: flat / long / short | **32.7 / 33.2 / 34.1%** | 57.6 / 25.5 / 16.9% | 34.9 / 50.7 / 14.4% |
+| per year 2023 / 2024 | **-0.0089 / -0.0286** | +0.0245 / +0.0043 | +0.0422 / +0.2627 |
+| mean R without the 5 best trades | **-0.0353** | **-0.0334** | **+0.0133** |
+
+**Per coin (net R):**
+
+| coin | 1h (n / net) | 4h (n / net) | 1d (n / net) |
+|---|---|---|---|
+| BTCUSDT | 415 / **-0.0433** | 85 / **+0.0491** | 15 / +0.1845 |
+| ETHUSDT | 458 / -0.0016 | 98 / +0.0042 | 18 / +0.0539 |
+| BNBUSDT | 379 / -0.0341 | 94 / +0.0056 | 27 / +0.1313 |
+| NEOUSDT | 462 / -0.0051 | 91 / -0.0043 | 22 / +0.1772 |
+
+### Section 29 against Section 28, same windows
+
+**All of §28 (47 coins):**
+
+| tf | trades | mean R | gross_r | cost_r | timing | shift p95 | timing gate |
+|---|---|---|---|---|---|---|---|
+| 1h | 9,276 | -0.0000 | +0.0219 | 0.0220 | +0.0092 | +0.0029 | **pass** |
+| 4h | 2,465 | +0.0096 | +0.0176 | 0.0080 | +0.0050 | +0.0032 | **pass** |
+| 1d | 845 | +0.0234 | +0.0304 | 0.0070 | +0.0169 | +0.0101 | **pass** |
+
+**§29 (4 coins, spot history from 2017-08):**
+
+| tf | trades | mean R | gross_r | cost_r | timing | shift p95 | timing gate |
+|---|---|---|---|---|---|---|---|
+| 1h | 1,714 | -0.0198 | +0.0069 | 0.0267 | +0.0016 | +0.0060 | **fail** |
+| 4h | 368 | +0.0128 | +0.0298 | 0.0170 | +0.0042 | +0.0190 | **fail** |
+| 1d | 82 | +0.1363 | +0.1621 | 0.0258 | +0.0383 | +0.0587 | **fail** |
+
+**Like for like, §28 restricted to these same four coins** (read from its own
+trade files, so no re-run):
+
+| tf | §28 all 47 | **§28 these 4** | **§29 these 4** |
+|---|---|---|---|
+| 1h | 9,276 / -0.0000 (gross +0.0219) | 778 / **-0.0273** (gross +0.0022) | 1,714 / **-0.0198** (gross +0.0069) |
+| 4h | 2,465 / +0.0096 (gross +0.0176) | 262 / **-0.0313** (gross **-0.0147**) | 368 / **+0.0128** (gross +0.0298) |
+| 1d | 845 / +0.0234 (gross +0.0304) | 71 / **+0.0225** (gross +0.0279) | 82 / **+0.1363** (gross +0.1621) |
+
+### What the numbers say
+
+**1. The longer history made the timing control FAIL on all three timeframes,
+which is the opposite of what §29 was built to test.** §28's timing beat the
+shifted p95 at every clock (+0.0092 vs +0.0029, +0.0050 vs +0.0032, +0.0169 vs
++0.0101). Here it is **below the p95 at every clock** (+0.0016 vs +0.0060, +0.0042
+vs +0.0190, +0.0383 vs +0.0587). **Two ML rounds in a row passed that control and
+this one fails it, and the only change was three more years of spot history.**
+So the "the extra regimes are what was missing" hypothesis is not supported: on
+this evidence the extra history made the forecasts *less* informative about where
+price goes next, not more.
+
+**2. The gross R went UP on the same four coins at every clock, and that is the
+honest good news.** Like for like: 1h gross +0.0022 -> +0.0069; 4h **-0.0147 ->
++0.0298**; 1d +0.0279 -> +0.1621. **On 4h the same four coins went from a gross
+loss to a real gross gain.** So more history did help the raw structure - it is
+just still not enough, and the timing control says the structure is not coming
+from timing.
+
+**3. Almost all of the 4h and 1d net is five trades, which is Exp 023's correction
+applied to this round.** Whole-book mean **+0.0128** at 4h becomes **-0.0334**
+without the five largest trades; **+0.1363** at 1d becomes **+0.0133**. **On the
+measure Exp 023 insisted on, every timeframe is at or below zero.** The five 1d
+trades are +2.92 BNB long, +2.35 NEO long, +1.96 BTC long, +1.56 BTC long, +1.37
+ETH long - **five longs out of 82 trades, in a book that is 50.7% long, and the
+short leg is -0.1052.**
+
+**4. The short leg is negative at every clock, and by a lot.** -0.0447 / -0.0674 /
+-0.1052 against +0.0069 / +0.1023 / +0.2616 on the long. `both_legs>0` fails
+everywhere. **This is §23's shape again - the short side is the wrong side - in
+its seventh ML appearance.**
+
+**5. The model now trades almost continuously and is balanced, which is new.**
+Time in market **67.3%** at 1h against §28's 23.8%, and the desired mix is
+**32.7% flat / 33.2% long / 34.1% short** against §28's 76.0 / 5.1 / 19.0. §27
+and §28 were short-biased and this is not; the longer history removed the bias
+**and made the book worse at 1h, where mean went from -0.0273 to -0.0198 on these
+four coins while time in the market went from about a quarter to two thirds.**
+
+**6. 1h is negative in both years.** -0.0089 in 2023 and -0.0286 in 2024. There is
+no regime story available for 1h; it is just negative, and it is the only clock
+whose timing and money both fail.
+
+**7. Cost per trade roughly doubled against §28 at 1h and 4h** (0.0267 against
+0.0220, 0.0170 against 0.0080) because the book is in the market two to three
+times as long. **That is the whole §1 story again: a bigger gross bought with a
+bigger cost.** At 1d gross is +0.1621 against 0.0258 of cost, which is the first
+time in this project gross has beaten cost by 6x on a book of this size - on 82
+trades, five of which carry it.
+
+**8. What this adds to LESSONS.** Seven ML looks at VALID, and the pattern has
+not moved: **the gross this family can earn is +0.007 to +0.162 R per trade, the
+cost is 0.007 to 0.027 R per trade, and the two are the same size within an order
+of magnitude.** More data (§28 -> §29), more regimes, more coins (§19 -> §28),
+a model that owns the exit (§27), walk-forward refits (§28), cross-timeframe
+features (§28) and three extra years of history (§29) have each been tried and
+none of them moved gross above cost by a factor the gates would accept.
+
+### Verdict
+
+**REJECT on 1h, 4h and 1d.** No timeframe passes, so no timeframe may take the
+holdout, and per §29 there is no variant to try. **The holdout was never opened**
+- it holds 5 runs, all from before ML (4 strategies plus one lock test on
+`example_trend_breakout`), 5 FAILED and 0 CONFIRMED, and ML has never touched it.
+
+**The honest one-paragraph version for the owner: giving the model three more
+years of history made it trade more and made its forecasts worse. §28's timing
+control passed on all three timeframes; §29's fails on all three. On the same four
+coins the gross R did improve - at 4h it went from a gross loss of -0.015 to a
+gross gain of +0.030 - so more history helped the structure and did not help the
+timing. None of it is usable: with the five largest trades removed the 4h mean is
+-0.033 and the 1d mean is +0.013, the short leg is negative at every clock
+(-0.045 / -0.067 / -0.105 against +0.007 / +0.102 / +0.262 on the long), and time
+in the market went from about a quarter to two thirds, which pushed cost per trade
+from 0.022 to 0.027 R at 1h. One structural fact about the registered rule: §29's
+universe rule - §28's coins restricted to those with a spot pair by 2018-01-01 -
+leaves exactly four coins (BTC, ETH, BNB, NEO), because Binance spot was five
+months old. So the breadth gate could not be met on any clock whatever the
+forecasts did, and no PASS was reachable in this design. Nothing goes to the
+holdout.**

@@ -1,0 +1,34 @@
+[
+ {
+  "inst": "BTCUSDT",
+  "symbol": "BTCUSDT",
+  "start": "2020-01-01",
+  "end": "2026-08-31",
+  "mean_quote_volume": 14094674463.46103,
+  "spot_start": "2017-08-17"
+ },
+ {
+  "inst": "ETHUSDT",
+  "symbol": "ETHUSDT",
+  "start": "2020-01-01",
+  "end": "2026-08-31",
+  "mean_quote_volume": 7560436850.969194,
+  "spot_start": "2017-08-17"
+ },
+ {
+  "inst": "BNBUSDT",
+  "symbol": "BNBUSDT",
+  "start": "2020-02-10",
+  "end": "2026-08-31",
+  "mean_quote_volume": 668759111.1481596,
+  "spot_start": "2017-11-06"
+ },
+ {
+  "inst": "NEOUSDT",
+  "symbol": "NEOUSDT",
+  "start": "2020-02-17",
+  "end": "2026-08-31",
+  "mean_quote_volume": 48110558.44480708,
+  "spot_start": "2017-11-20"
+ }
+]

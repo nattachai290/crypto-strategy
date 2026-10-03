@@ -1,0 +1,579 @@
+{
+ "tf": 240,
+ "coins_n": 4,
+ "horizon_bars": 24,
+ "stop_atr": 8.0,
+ "setting": {
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "rounds": 150
+ },
+ "q_in": 0.75,
+ "exit_mode": "half",
+ "train_wf_best": {
+  "setting": 0,
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "rounds": 150,
+  "q_in": 0.75,
+  "exit": "half",
+  "trades": 359,
+  "mean_r": 0.057730865071753436
+ },
+ "train_wf_table": [
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 337,
+   "mean_r": 0.04373213424904468
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 480,
+   "mean_r": 0.042905410516861586
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 249,
+   "mean_r": 0.05447869237708018
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 359,
+   "mean_r": 0.057730865071753436
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 160,
+   "mean_r": 0.0667977036412955
+  },
+  {
+   "setting": 0,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 241,
+   "mean_r": 0.04644119218655201
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 444,
+   "mean_r": 0.024427570493146186
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 649,
+   "mean_r": 0.02472822068213571
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 313,
+   "mean_r": 0.04276514306986249
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 451,
+   "mean_r": 0.04506800057541863
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 188,
+   "mean_r": 0.06506271310737659
+  },
+  {
+   "setting": 1,
+   "num_leaves": 7,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 270,
+   "mean_r": 0.058534739865201156
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 394,
+   "mean_r": 0.05754004108066029
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 553,
+   "mean_r": 0.046299017775591145
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 275,
+   "mean_r": 0.07293682750374661
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 385,
+   "mean_r": 0.04568447912012485
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 174,
+   "mean_r": 0.060336213636631685
+  },
+  {
+   "setting": 2,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 150,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 239,
+   "mean_r": 0.0600583404304496
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "flip",
+   "trades": 469,
+   "mean_r": 0.031178558658935932
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.6,
+   "exit": "half",
+   "trades": 661,
+   "mean_r": 0.02071957660323601
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "flip",
+   "trades": 325,
+   "mean_r": 0.05238408562106746
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.75,
+   "exit": "half",
+   "trades": 451,
+   "mean_r": 0.02802226190627824
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "flip",
+   "trades": 208,
+   "mean_r": 0.031318031237405224
+  },
+  {
+   "setting": 3,
+   "num_leaves": 31,
+   "min_data_in_leaf": 1000,
+   "rounds": 500,
+   "q_in": 0.9,
+   "exit": "half",
+   "trades": 282,
+   "mean_r": 0.027474686378018625
+  }
+ ],
+ "valid": {
+  "trades": 368,
+  "mean_r": 0.012837207237447518,
+  "ci_lo": -0.06510825830533275,
+  "ci_hi": 0.10423239141716302,
+  "gross_r": 0.029758194213381356,
+  "long_r": 0.10227425743839036,
+  "short_r": -0.06737952850978988,
+  "exit_mix": {
+   "signal": 0.957,
+   "stop": 0.035,
+   "eod": 0.008
+  },
+  "avg_bars": 20.19836956521739,
+  "avg_hold_h": 20.19836956521739,
+  "per_year": {
+   "2023": 0.02448310733152294,
+   "2024": 0.004267582639920321
+  },
+  "stress_mean_r": 0.005817304798074055,
+  "timing": 0.0041736550457678375,
+  "shift_median": 0.0038558668058756755,
+  "shift_p95": 0.019010880303560605,
+  "per_coin": {
+   "BTCUSDT": {
+    "trades": 85,
+    "mean_r": 0.049089395343116835,
+    "timing": 0.021918711750705033,
+    "shift_median": 0.00920962416870793,
+    "shift_p95": 0.046395162497763244
+   },
+   "ETHUSDT": {
+    "trades": 98,
+    "mean_r": 0.004195905539989694,
+    "timing": 0.0035453897774007904,
+    "shift_median": 0.002841604731937537,
+    "shift_p95": 0.03181720836547742
+   },
+   "BNBUSDT": {
+    "trades": 94,
+    "mean_r": 0.005611015413938631,
+    "timing": -0.0063474070326978325,
+    "shift_median": 0.00112939170912443,
+    "shift_p95": 0.026891003146691444
+   },
+   "NEOUSDT": {
+    "trades": 91,
+    "mean_r": -0.004254291567180956,
+    "timing": -0.003079323739621541,
+    "shift_median": 0.0011510347870956421,
+    "shift_p95": 0.028926114846876034
+   }
+  },
+  "time_in_market": 0.42367761057911535,
+  "breadth": {
+   "eligible": 4,
+   "beat": [
+    "BTCUSDT",
+    "ETHUSDT"
+   ],
+   "share": 0.5
+  },
+  "last_exit": "2024-12-31 20:00:00+00:00"
+ },
+ "refits": [
+  {
+   "month": "2021-01-01",
+   "train_rows": 28316,
+   "last_train_label_end": "2020-12-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 29060,
+   "last_train_label_end": "2021-01-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 29732,
+   "last_train_label_end": "2021-02-28 20:00:00+00:00"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 30476,
+   "last_train_label_end": "2021-03-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 31196,
+   "last_train_label_end": "2021-04-30 20:00:00+00:00"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 31940,
+   "last_train_label_end": "2021-05-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 32660,
+   "last_train_label_end": "2021-06-30 20:00:00+00:00"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 33404,
+   "last_train_label_end": "2021-07-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 34148,
+   "last_train_label_end": "2021-08-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 34868,
+   "last_train_label_end": "2021-09-30 20:00:00+00:00"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 35612,
+   "last_train_label_end": "2021-10-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 36332,
+   "last_train_label_end": "2021-11-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 37076,
+   "last_train_label_end": "2021-12-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 37820,
+   "last_train_label_end": "2022-01-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 38492,
+   "last_train_label_end": "2022-02-28 20:00:00+00:00"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 39236,
+   "last_train_label_end": "2022-03-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 39956,
+   "last_train_label_end": "2022-04-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 40700,
+   "last_train_label_end": "2022-05-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 41420,
+   "last_train_label_end": "2022-06-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 42164,
+   "last_train_label_end": "2022-07-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 42908,
+   "last_train_label_end": "2022-08-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 43628,
+   "last_train_label_end": "2022-09-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 44372,
+   "last_train_label_end": "2022-10-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 45092,
+   "last_train_label_end": "2022-11-30 20:00:00+00:00"
+  },
+  {
+   "month": "2023-01-01",
+   "train_rows": 45836,
+   "last_train_label_end": "2022-12-31 20:00:00+00:00"
+  },
+  {
+   "month": "2023-02-01",
+   "train_rows": 46580,
+   "last_train_label_end": "2023-01-31 20:00:00+00:00"
+  },
+  {
+   "month": "2023-03-01",
+   "train_rows": 47252,
+   "last_train_label_end": "2023-02-28 20:00:00+00:00"
+  },
+  {
+   "month": "2023-04-01",
+   "train_rows": 47996,
+   "last_train_label_end": "2023-03-31 20:00:00+00:00"
+  },
+  {
+   "month": "2023-05-01",
+   "train_rows": 48716,
+   "last_train_label_end": "2023-04-30 20:00:00+00:00"
+  },
+  {
+   "month": "2023-06-01",
+   "train_rows": 49460,
+   "last_train_label_end": "2023-05-31 20:00:00+00:00"
+  },
+  {
+   "month": "2023-07-01",
+   "train_rows": 50180,
+   "last_train_label_end": "2023-06-30 20:00:00+00:00"
+  },
+  {
+   "month": "2023-08-01",
+   "train_rows": 50924,
+   "last_train_label_end": "2023-07-31 20:00:00+00:00"
+  },
+  {
+   "month": "2023-09-01",
+   "train_rows": 51668,
+   "last_train_label_end": "2023-08-31 20:00:00+00:00"
+  },
+  {
+   "month": "2023-10-01",
+   "train_rows": 52388,
+   "last_train_label_end": "2023-09-30 20:00:00+00:00"
+  },
+  {
+   "month": "2023-11-01",
+   "train_rows": 53132,
+   "last_train_label_end": "2023-10-31 20:00:00+00:00"
+  },
+  {
+   "month": "2023-12-01",
+   "train_rows": 53852,
+   "last_train_label_end": "2023-11-30 20:00:00+00:00"
+  },
+  {
+   "month": "2024-01-01",
+   "train_rows": 54596,
+   "last_train_label_end": "2023-12-31 20:00:00+00:00"
+  },
+  {
+   "month": "2024-02-01",
+   "train_rows": 55340,
+   "last_train_label_end": "2024-01-31 20:00:00+00:00"
+  },
+  {
+   "month": "2024-03-01",
+   "train_rows": 56036,
+   "last_train_label_end": "2024-02-29 20:00:00+00:00"
+  },
+  {
+   "month": "2024-04-01",
+   "train_rows": 56780,
+   "last_train_label_end": "2024-03-31 20:00:00+00:00"
+  },
+  {
+   "month": "2024-05-01",
+   "train_rows": 57500,
+   "last_train_label_end": "2024-04-30 20:00:00+00:00"
+  },
+  {
+   "month": "2024-06-01",
+   "train_rows": 58244,
+   "last_train_label_end": "2024-05-31 20:00:00+00:00"
+  },
+  {
+   "month": "2024-07-01",
+   "train_rows": 58964,
+   "last_train_label_end": "2024-06-30 20:00:00+00:00"
+  },
+  {
+   "month": "2024-08-01",
+   "train_rows": 59708,
+   "last_train_label_end": "2024-07-31 20:00:00+00:00"
+  },
+  {
+   "month": "2024-09-01",
+   "train_rows": 60452,
+   "last_train_label_end": "2024-08-31 20:00:00+00:00"
+  },
+  {
+   "month": "2024-10-01",
+   "train_rows": 61172,
+   "last_train_label_end": "2024-09-30 20:00:00+00:00"
+  },
+  {
+   "month": "2024-11-01",
+   "train_rows": 61916,
+   "last_train_label_end": "2024-10-31 20:00:00+00:00"
+  },
+  {
+   "month": "2024-12-01",
+   "train_rows": 62636,
+   "last_train_label_end": "2024-11-30 20:00:00+00:00"
+  }
+ ],
+ "verdict": "REJECT",
+ "gates_failed": [
+  "valid_ci_lo>0",
+  "timing_beats_shift_p95",
+  "coins>=10",
+  "both_legs>0"
+ ],
+ "history_from": "2017-08"
+}
