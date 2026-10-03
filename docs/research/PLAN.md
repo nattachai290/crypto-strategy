@@ -2153,3 +2153,43 @@ gates, and the single holdout timeframe) is §28's.
 
 **Prior:** low. It is the seventh ML look at VALID. The holdout remains the
 only clean judge, and only a PASS may use it.
+
+---
+
+## 30. Walk-forward ML on §28's 47 coins, each with all its spot history (owner request, 2026-10-03)
+
+**Why.** §29 meant to ask "does a longer history help?". Its universe rule
+(spot pair by 2018-01-01) left 4 coins. It therefore changed the history and
+the universe at once, and its breadth gates could not be met. This was the
+planner's error (`_multi` Exp 025/026). On those 4 coins, a like-for-like IC
+check showed the longer history improving the forecasts slightly. The owner
+asked for the clean test.
+
+**Design (`src/ml_wf3.py`, test 26).** The one difference from §28 is the
+length of each coin's history.
+- **Universe.** Exactly §28's 47 coins (`results/_multi/ml_wf/universe_v2.json`,
+  copied unchanged).
+- **History source.** Each coin's features and labels come from its Binance
+  spot bars, from the pair's own first month, when the spot pair traded
+  before the perp started. Otherwise they come from the perp bars, as in §28.
+  Checked before registration against the real archive:
+  - 46 of 47 coins have a spot pair; DEFIUSDT has none.
+  - 35 of the 47 get history from before their perp started. The earliest are
+    BTC and ETH (2017-08), BNB and NEO (2017-11), QTUM (2018-03), ADA (2018-04)
+    and EOS (2018-05).
+  - The median spot start is 2019-09.
+- **Everything else is §28, via §29's code.**
+  - Trades run on perp bars with perp costs and funding.
+  - The windows are the same: TRAIN walk-forward 2021–22, VALID 2023–24,
+    HOLDOUT 2025-01 → 2026-08.
+  - So are the cell grid, the gates and the single holdout timeframe.
+
+**Expectation, stated before the run.**
+- The gain in history is real but uneven. About 10 coins add the 2018 bear
+  market; most add roughly one year.
+- If longer history helps, TRAIN walk-forward and VALID should beat §28 on
+  the same 47 coins and windows. The VALID IC and gross R can be compared
+  coin for coin.
+
+**Prior:** low. This is the eighth ML look at VALID. Only a PASS may use the
+holdout, and only once.

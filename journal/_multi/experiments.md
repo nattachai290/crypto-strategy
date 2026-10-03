@@ -2422,3 +2422,96 @@ leaves exactly four coins (BTC, ETH, BNB, NEO), because Binance spot was five
 months old. So the breadth gate could not be met on any clock whatever the
 forecasts did, and no PASS was reachable in this design. Nothing goes to the
 holdout.**
+
+---
+
+## Exp 026 - Review of Exp 025 (§29, planner): REJECT stands; my universe rule left 4 coins, so §29 did not test its question
+
+**Date:** 2026-10-03
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- `src/` is unchanged since the pre-registration (3352779).
+- No holdout file exists.
+- Recomputed from the trade files, matching `tf*.json`:
+  - 1h: 1,714 trades, -0.0198
+  - 4h: 368 trades, +0.0128
+  - 1d: 82 trades, +0.1363
+- The REJECT stands on every timeframe.
+
+**My design error.** §29's universe rule (§28's coins with a Binance spot
+pair by 2018-01-01) leaves 4 coins: BTC, ETH, BNB and NEO. Binance had few
+USDT spot pairs in its first five months. I should have checked the real
+listing dates before registering. Test 25 used a synthetic universe and could
+not catch this. As a result:
+- the coin-count and breadth gates were unreachable;
+- the model was trained on 4 coins instead of 47.
+
+So §29 changed two things at once: the history length and the universe.
+
+**Correction to Exp 025 point 1.** "The extra history made the forecasts
+less informative" is not supported. The timing control on 4 coins is not
+comparable with the one on 47: the shifted p95 is wider with fewer coins.
+
+A like-for-like diagnostic, computed by the planner from both rounds'
+`desired_valid_tf*.csv.gz` against the realised 24-bar perp label on the same
+four coins (information coefficient, same rows):
+
+| tf | §28, these 4 coins | §29, these 4 coins |
+|---|---|---|
+| 1h | -0.020 | -0.012 |
+| 4h | -0.106 | -0.050 |
+| 1d | -0.066 | +0.067 |
+
+On equal footing the longer history moved every IC up, which agrees with
+Exp 025's point 2 (gross up on the same 4 coins). The values are still near
+zero or negative, and on four highly correlated coins they cannot tell
+anything from noise.
+
+**What this round can and cannot say.**
+- **Can say:** on BTC, ETH, BNB and NEO, more history made the book's gross
+  better (4h: -0.015 → +0.030 R).
+- **Cannot say:** whether more history helps a 47-coin model. That question
+  remains open. A clean test would keep §28's 47 coins and give each coin the
+  spot history it has, from its own listing date. That would be the eighth ML
+  look at VALID. It is the owner's decision.
+
+**Unchanged.** Every ML round so far earns a gross of the same order as its
+cost. No timeframe of §29 goes to the holdout.
+
+---
+
+## Exp 027 - Pre-registration: §28's 47 coins with each coin's own spot history (PLAN.md section 30)
+
+**Date:** 2026-10-03
+**Status:** pre-registered, not run
+
+### Why
+The owner chose the clean version of §29's question (Exp 026, option 1):
+does a longer history help a 47-coin model?
+
+### What is fixed (src/ml_wf3.py, PLAN.md section 30, test 26)
+- **Universe.** §28's `universe_v2.json`, unchanged: 47 coins.
+- **History source.** Features and labels come from each coin's spot bars from
+  its own first month, when the spot pair traded before the perp started.
+  Otherwise they come from the perp bars.
+  - Checked against the archive before registering: 46 of 47 have a spot
+    pair, and 35 gain history.
+  - Earliest starts: 2017-08 for BTC and ETH, 2017-11 for BNB and NEO.
+  - Median spot start: 2019-09.
+- **Everything else** is §28 through §29's code (`ml_wf2.prepare`,
+  `ml_wf.evaluate`/`holdout`): trades on perp bars, the same windows, grid
+  and gates, and one holdout timeframe.
+- **Synthetic checks (test 26).** The source rule; mixed spot and perp-only
+  coins, where spot coins' early rows are trained on but never traded; and
+  the universe file equal to §28's.
+
+### What the comparison will be
+§28 against §30 on the same 47 coins and windows, per timeframe:
+- TRAIN walk-forward mean;
+- VALID mean, gross and cost;
+- timing against the shifted p95;
+- the VALID IC (planner diagnostic, from the desired files).
+
+### Verdict
+Pending the research agent's single run.
