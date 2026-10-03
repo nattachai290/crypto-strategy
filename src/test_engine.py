@@ -1908,17 +1908,29 @@ def test_ml_wf3() -> None:
     perp = b[b.index >= pd.Timestamp("2021-01-01", tz="UTC")]
     early, late = b.copy(), b[b.index >= pd.Timestamp("2022-01-01", tz="UTC")]
     dead = b.assign(volume=0.0)
-    check("ml_wf3 history source: spot when it traded before the perp, else the perp (no pair, later pair, never traded)",
-          W3.history_source(early, perp)[1] == "spot" and W3.history_source(None, perp)[1] == "perp"
+    sp_hist, sp_src = W3.history_source(early, perp)
+    gone = b[b.index < pd.Timestamp("2022-06-01", tz="UTC")]              # spot delisted before VALID (HNT, Exp 028)
+    gone_hist, gone_src = W3.history_source(gone, perp)
+    check("ml_wf3 history source: spot before the perp, then the perp itself (splice); perp only when no earlier spot",
+          sp_src == "splice" and sp_hist.index[0] < perp.index[0] and sp_hist.loc[perp.index].equals(perp)
+          and sp_hist.index.is_unique and W3.history_source(None, perp)[1] == "perp"
           and W3.history_source(late, perp)[1] == "perp" and W3.history_source(dead, perp)[1] == "perp"
           and W3.history_source(b.iloc[:0], perp)[1] == "perp")
+    check("ml_wf3 history source (Exp 028): a spot pair delisted before VALID still leaves the whole perp window",
+          gone_src == "splice" and gone_hist.index[-1] == perp.index[-1] and gone_hist.loc[perp.index].equals(perp))
     ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
     fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
     by = {60: {"SUSDT": {"spot": W3.history_source(early, perp)[0], "perp": perp * 1.0005, "fund": fund},
                "PUSDT": {"spot": W3.history_source(None, _momentum_bars(0.0008, seed=131).loc["2021":])[0],
                          "perp": _momentum_bars(0.0008, seed=131).loc["2021":], "fund": fund}}}
+    by[60]["GUSDT"] = {"spot": gone_hist, "perp": perp, "fund": fund}
     with contextlib.redirect_stdout(io.StringIO()):
         P = W2.prepare(by, 60)
+        r = __import__("ml_wf").evaluate(P, 60, grid=__import__("ml_wf").GRID[:1], min_coins=1, step=3, keep=True)
+    lo, hi, _ = __import__("ml_hold")._window(P, "GUSDT", "2023-01-01", "2025-01-01")
+    check("ml_wf3 (Exp 028): the full pipeline runs with a coin whose spot ended early, and its VALID window is whole",
+          hi - lo > 15000 and len(P["GUSDT"]["tbars"].iloc[lo:hi]) == hi - lo and (r["_trades"]["coin"] == "GUSDT").any(),
+          f"window {hi - lo}, GUSDT trades {(r['_trades']['coin'] == 'GUSDT').sum()}")
     s_pre = P["SUSDT"]["X"].index[0] < pd.Timestamp("2021-01-01", tz="UTC")
     p_pre = P["PUSDT"]["X"].index[0] >= pd.Timestamp("2021-01-01", tz="UTC")
     no_trade_pre = not P["SUSDT"]["tradable"][P["SUSDT"]["X"].index < pd.Timestamp("2021-01-01", tz="UTC")].any()

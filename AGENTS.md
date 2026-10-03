@@ -14,7 +14,8 @@ and the holdout stays untouched. §27 (`ml_hold.py`) was run: REJECT (`_multi` E
 (`_multi` Exp 022/023). §29 (`ml_wf2.py`) was run: REJECT, but its universe rule left 4 coins (`_multi`
 Exp 025/026). **One approved run is pending:** PLAN.md §30 (`src/ml_wf3.py`,
 §28's 47 coins each with its own spot history, owner request 2026-10-03,
-`_multi` Exp 027). Ask before starting anything else.
+`_multi` Exp 027; the first attempt aborted on a spot pair delisted before VALID,
+Exp 028; fixed and re-registered as Exp 029). Ask before starting anything else.
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The

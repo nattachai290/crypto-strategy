@@ -2193,3 +2193,29 @@ length of each coin's history.
 
 **Prior:** low. This is the eighth ML look at VALID. Only a PASS may use the
 holdout, and only once.
+
+**Addendum (2026-10-03, after Exp 028 aborted; code fix, re-registered as
+Exp 029).**
+
+**The defect.** The first run crashed entering 1h VALID. The cause was my
+history rule, not the shared window code:
+- A coin used its spot bars for the whole history if the spot pair started
+  before the perp.
+- HNT's spot pair ended in 2022-10, so its history frame stopped before VALID
+  and the trading window was empty. That is the crash.
+- XMR's spot ended in 2024-02, so it would silently have traded only part of
+  VALID.
+- MATIC's and TOMO's spot ended with their perps.
+
+**The fix.** Each coin's history is now its spot bars from before the perp's
+first bar, followed by the perp bars themselves (`history_source`,
+"splice").
+- From the perp start, the frame is §28's frame exactly.
+- Only the training rows before the perp start are new.
+
+**Tests.** Test 26 now checks:
+- the splice;
+- a spot pair delisted before VALID;
+- the full pipeline on such a coin.
+
+Everything else in §30 is unchanged.
