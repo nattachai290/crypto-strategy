@@ -2108,3 +2108,48 @@ Fixed in code, with test 24 extended:
 Every other value of §28 is unchanged. Because the data and the universe
 changed, the run counts as a new registered run (Exp 021), not a re-run of a
 result: none existed.
+
+---
+
+## 29. Walk-forward ML with spot history from 2017 (owner request, 2026-10-03)
+
+**Why.** The planner's review of §28 (`_multi` Exp 023 and the analysis given
+to the owner) found three things:
+- The forecasts are almost unrelated to outcomes. The information coefficient
+  on VALID was +0.02 at 1h and −0.06 at 4h and 1d.
+- The model relies on market-wide features: 78–100% of top entry reasons are
+  BTC or market variables. With coins correlated at about 0.61, 47 coins carry
+  about 1.6 coins' worth of independent market information.
+- The training data held only three market regimes, and the model learned to
+  fade rallies (2021–22) in a rising market (2023–24).
+
+The owner asked for longer history. 2016 is not on Binance; the owner chose
+Binance **spot**, which starts in 2017-08. That adds the 2017 bubble, the 2018
+bear market and 2019.
+
+**Design (`src/ml_wf2.py`, test 25).** This is §28 exactly, with one change:
+**features and labels are computed on each coin's spot bars**, so every monthly
+refit trains on up to about three more years of history.
+- Trades are simulated on the coin's **perp** bars on the same timestamps, with
+  perp costs and funding.
+- The windows are §28's: TRAIN walk-forward 2021–22, VALID 2023–24, HOLDOUT
+  2025-01 → 2026-08. The results are therefore comparable with §28.
+- **Universe.** §28's perp rule, restricted to coins whose spot pair traded by
+  2018-01-01.
+- **Tradable bars.** A bar is tradable only if both its spot and its perp bar
+  traded and the perp ATR fraction is at least 0.01%.
+  - Forecasts and entries exist only on tradable bars.
+  - Training rows need only a clean spot label.
+- `funding_last` is NaN before perp funding exists.
+
+Every other value (features, multi-timeframe inputs, label, policy, grid,
+gates, and the single holdout timeframe) is §28's.
+
+**What it can show.**
+- If the extra regimes are what was missing, TRAIN walk-forward and VALID
+  should improve over §28 on the same windows.
+- If not, the conclusion of §27–28 (timing smaller than cost) stands with
+  twice the history behind it.
+
+**Prior:** low. It is the seventh ML look at VALID. The holdout remains the
+only clean judge, and only a PASS may use it.
