@@ -2515,3 +2515,112 @@ does a longer history help a 47-coin model?
 
 ### Verdict
 Pending the research agent's single run.
+
+---
+
+## Exp 028 - Walk-forward ML on section 28's 47 coins with each coin's own spot history (PLAN.md section 30): ABORTED, a shared index bug in the trading window
+
+**Date:** 2026-10-03
+**Status:** **aborted with a crash before any result was written. There is no
+verdict for any timeframe.** No value in `src/ml_wf3.py`, `src/ml_wf2.py` or
+`src/ml_wf.py` was changed, no variant was tried, `--final` was not run, no
+holdout file was created and HOLDOUT was never read. **No new evaluation row.**
+The only files this round produced are `results/_multi/ml_wf3/universe.json`
+(§28's 47 coins, unchanged) and `results/_multi/ml_wf3/history.json`.
+
+**Session state.** `git pull` fast-forward clean · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED**, including **test 26**: the history
+source rule, mixed spot and perp-only coins whose early spot rows are trained on
+but never traded, and the universe equal to §28's. §28's perp cache was complete
+(`pool_1h` 98 files), so `ml_wf.py --build` was skipped. `ml_wf3.py --build` ->
+**`BUILD OK: 47 coins x ['1h','4h','1d'] (spot from each pair's first month)`**.
+
+**One process note.** The first `--build` died silently after 34 of 47 coins,
+with no error and no output file - the same silent death seen once before, on the
+first `ml_wf.py` launch in Exp 020. It was restarted and the cache made it
+resumable. **No value was changed and no result was re-run**; this is a crash
+recovery of the data step, not a second attempt at the experiment.
+
+### What crashed
+
+`python src/ml_wf3.py` prepared all 47 coins and finished the 1h TRAIN
+walk-forward - all 24 cells printed sane numbers, between -0.0006 and +0.0303 -
+and then died entering the 1h VALID pass:
+
+```
+File "src/ml_wf3.py", line 133, in run
+  r = WF.evaluate(W2.prepare(by_tf, tf), tf, keep=True)
+File "src/ml_wf.py", line 398, in judge
+  t, paths = run_cell(P, pred, a, b, q, mode)
+File "src/ml_wf.py", line 340, in run_cell
+  t = MH.simulate(tb.iloc[lo:hi], tgt, P[c]["atr"][lo:hi], P[c]["fund"], ...)
+File "src/ml_hold.py", line 132, in simulate
+  bar_end = np.r_[times[1:], times[-1] + step]
+IndexError: index -1 is out of bounds for axis 0 with size 0
+```
+
+### The cause, located exactly (read-only diagnosis)
+
+`ml_wf.run_cell` (lines 334-341) computes the window as **positions in the
+history frame** and then slices the **perp frame** with them:
+
+```python
+lo, hi, rows = MH._window(P, c, a, b)   # indices into P[c]["bars"]  (history)
+tb = P[c].get("tbars", P[c]["bars"])    # the PERP frame
+t = MH.simulate(tb.iloc[lo:hi], ...)    # history indices used on perp rows
+```
+
+That is only correct when `bars is tbars`. **§30 is the first design where they
+differ**: `history.json` shows **46 of 47 coins take their history from spot**,
+and for those coins the history frame is longer than the perp frame, so `lo` is a
+history index that points past the end of the perp frame.
+
+Measured on the caches, 1h, VALID window (2023-01-01 to 2025-01-01):
+
+| | coins |
+|---|---|
+| history from spot | **46 of 47** (BTC/ETH 2017-08-17, BNB 2017-11-06, ADA 2018-04-17, median start 2019-09, DEFI is the only perp-only coin) |
+| **perp slice EMPTY -> the crash** | **5: BTCUSDT, ETHUSDT, ICXUSDT, BNBUSDT, NEOUSDT** - their VALID `lo` exceeds the perp row count by 1,998-3,134 rows |
+| **perp slice SHORT -> wrong bars, no crash** | **38 of 49** - e.g. QTUMUSDT simulates 758 bars where 17,543 were wanted; ADAUSDT 1,930 of 17,543; HNTUSDT 0 |
+| unaffected | about 6 |
+
+Examples: BTC history 64,525 rows, perp 43,848, VALID `lo` 46,982 - the slice is
+empty by 3,134 rows. QTUM history 59,425, perp 42,640, `lo` 41,882 - the slice
+returns 758 rows instead of 17,543.
+
+**The crash is the lucky case.** Where it did not fire, the simulator was fed a
+truncated and misaligned window, so those books would have been silently wrong.
+**Stopping is the only correct outcome here: a run that crashes on 5 coins and
+silently trades the wrong bars on 38 others cannot be judged.**
+
+**§29 is not implicated, and the reason is evidence rather than assumption.**
+§29's four coins are BTC, ETH, BNB and NEO - all four of them in the empty-slice
+list - yet §29 ran to completion and wrote results. Therefore in §29's `prepare`
+the history frame and the perp frame are the same object (`bars is tbars`), the
+indices agree, and §29's numbers stand. **§30 introduced the mixed-frame case
+that the shared code path never handled.**
+
+### What this round can and cannot say
+
+- **Cannot say:** anything about whether a longer history helps a 47-coin model.
+  That was the only question §30 was built to answer, and it was not reached on
+  any timeframe. The 1h TRAIN numbers that printed before the crash (+0.0162 at
+  the chosen cell, all 24 cells between -0.0006 and +0.0303, against §28's +0.0148
+  best) are TRAIN-stage output on a run that then failed, so they are **not a
+  result** and are recorded only so the next run can be compared.
+- **Can say:** §30's design, as built, cannot run. The fix is in
+  `ml_wf.run_cell`: the window must be located on the perp frame's own index (or
+  `tbars` must be reindexed to the history index before slicing). **That is a code
+  change to a shared function used by §27, §28 and §29, so it is the owner's
+  decision and I did not make it.** Any re-run after that fix is a new registered
+  run, not a re-run of a result - none exists.
+
+### Verdict
+
+**No verdict. The round is aborted, not REJECT.** `PLAN.md` §30 registered the
+gates and the single holdout timeframe; none of them was evaluated, so no
+timeframe may take the holdout. HOLDOUT was never read: it still holds 5 runs,
+all from before ML (4 strategies plus one lock test on
+`example_trend_breakout`), 5 FAILED and 0 CONFIRMED. `src/` is unchanged,
+`data/` is not committed, and nothing in this round can be called a finding about
+the Coinbase premium, the exit rules, or ML's gross-versus-cost problem.

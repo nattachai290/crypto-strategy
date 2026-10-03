@@ -1,0 +1,331 @@
+[
+ {
+  "inst": "BTCUSDT",
+  "symbol": "BTCUSDT",
+  "start": "2020-01-01",
+  "end": "2026-08-31",
+  "mean_quote_volume": 14094674463.46103
+ },
+ {
+  "inst": "ETHUSDT",
+  "symbol": "ETHUSDT",
+  "start": "2020-01-01",
+  "end": "2026-08-31",
+  "mean_quote_volume": 7560436850.969194
+ },
+ {
+  "inst": "DOGEUSDT",
+  "symbol": "DOGEUSDT",
+  "start": "2020-07-10",
+  "end": "2026-08-31",
+  "mean_quote_volume": 801320014.7695304
+ },
+ {
+  "inst": "ADAUSDT",
+  "symbol": "ADAUSDT",
+  "start": "2020-01-31",
+  "end": "2026-08-31",
+  "mean_quote_volume": 696286883.3259284
+ },
+ {
+  "inst": "BNBUSDT",
+  "symbol": "BNBUSDT",
+  "start": "2020-02-10",
+  "end": "2026-08-31",
+  "mean_quote_volume": 668759111.1481596
+ },
+ {
+  "inst": "AVAXUSDT",
+  "symbol": "AVAXUSDT",
+  "start": "2020-09-23",
+  "end": "2026-08-31",
+  "mean_quote_volume": 553336598.3614874
+ },
+ {
+  "inst": "MATICUSDT",
+  "symbol": "MATICUSDT",
+  "start": "2020-10-22",
+  "end": "2024-09-04",
+  "mean_quote_volume": 528805956.0384745
+ },
+ {
+  "inst": "AXSUSDT",
+  "symbol": "AXSUSDT",
+  "start": "2020-11-20",
+  "end": "2026-08-31",
+  "mean_quote_volume": 528366390.5162351
+ },
+ {
+  "inst": "ETCUSDT",
+  "symbol": "ETCUSDT",
+  "start": "2020-01-16",
+  "end": "2026-08-31",
+  "mean_quote_volume": 499895971.493716
+ },
+ {
+  "inst": "DOTUSDT",
+  "symbol": "DOTUSDT",
+  "start": "2020-08-22",
+  "end": "2026-08-31",
+  "mean_quote_volume": 482569118.9536184
+ },
+ {
+  "inst": "LINKUSDT",
+  "symbol": "LINKUSDT",
+  "start": "2020-01-17",
+  "end": "2026-08-31",
+  "mean_quote_volume": 362323704.37025535
+ },
+ {
+  "inst": "ATOMUSDT",
+  "symbol": "ATOMUSDT",
+  "start": "2020-02-07",
+  "end": "2026-08-31",
+  "mean_quote_volume": 338222160.33138156
+ },
+ {
+  "inst": "EOSUSDT",
+  "symbol": "EOSUSDT",
+  "start": "2020-01-08",
+  "end": "2025-05-21",
+  "mean_quote_volume": 280679337.3424538
+ },
+ {
+  "inst": "CRVUSDT",
+  "symbol": "CRVUSDT",
+  "start": "2020-09-01",
+  "end": "2026-08-31",
+  "mean_quote_volume": 173647228.1530676
+ },
+ {
+  "inst": "BCHUSDT",
+  "symbol": "BCHUSDT",
+  "start": "2020-01-01",
+  "end": "2026-08-31",
+  "mean_quote_volume": 155385859.42271647
+ },
+ {
+  "inst": "AAVEUSDT",
+  "symbol": "AAVEUSDT",
+  "start": "2020-10-16",
+  "end": "2026-08-31",
+  "mean_quote_volume": 155304399.57430783
+ },
+ {
+  "inst": "ALGOUSDT",
+  "symbol": "ALGOUSDT",
+  "start": "2020-06-16",
+  "end": "2026-08-31",
+  "mean_quote_volume": 143424965.93211302
+ },
+ {
+  "inst": "RUNEUSDT",
+  "symbol": "RUNEUSDT",
+  "start": "2020-09-04",
+  "end": "2026-08-31",
+  "mean_quote_volume": 139121091.3557122
+ },
+ {
+  "inst": "XTZUSDT",
+  "symbol": "XTZUSDT",
+  "start": "2020-02-06",
+  "end": "2026-08-31",
+  "mean_quote_volume": 131113040.42180873
+ },
+ {
+  "inst": "THETAUSDT",
+  "symbol": "THETAUSDT",
+  "start": "2020-05-27",
+  "end": "2026-08-31",
+  "mean_quote_volume": 126718206.07105555
+ },
+ {
+  "inst": "UNIUSDT",
+  "symbol": "UNIUSDT",
+  "start": "2020-09-18",
+  "end": "2026-08-31",
+  "mean_quote_volume": 120699940.64835082
+ },
+ {
+  "inst": "EGLDUSDT",
+  "symbol": "EGLDUSDT",
+  "start": "2020-09-14",
+  "end": "2026-08-31",
+  "mean_quote_volume": 94796871.87226066
+ },
+ {
+  "inst": "ENJUSDT",
+  "symbol": "ENJUSDT",
+  "start": "2020-09-29",
+  "end": "2026-08-31",
+  "mean_quote_volume": 85934099.87405851
+ },
+ {
+  "inst": "1INCHUSDT",
+  "symbol": "1INCHUSDT",
+  "start": "2020-12-25",
+  "end": "2026-08-31",
+  "mean_quote_volume": 73546280.36898014
+ },
+ {
+  "inst": "SNXUSDT",
+  "symbol": "SNXUSDT",
+  "start": "2020-08-14",
+  "end": "2026-08-31",
+  "mean_quote_volume": 69270060.75145173
+ },
+ {
+  "inst": "BELUSDT",
+  "symbol": "BELUSDT",
+  "start": "2020-11-18",
+  "end": "2026-08-31",
+  "mean_quote_volume": 65630022.918955386
+ },
+ {
+  "inst": "XMRUSDT",
+  "symbol": "XMRUSDT",
+  "start": "2020-02-03",
+  "end": "2026-08-31",
+  "mean_quote_volume": 64205482.250863716
+ },
+ {
+  "inst": "SXPUSDT",
+  "symbol": "SXPUSDT",
+  "start": "2020-07-21",
+  "end": "2025-12-05",
+  "mean_quote_volume": 62794709.0594681
+ },
+ {
+  "inst": "HNTUSDT",
+  "symbol": "HNTUSDT",
+  "start": "2020-09-28",
+  "end": "2023-03-20",
+  "mean_quote_volume": 61697920.228247
+ },
+ {
+  "inst": "KAVAUSDT",
+  "symbol": "KAVAUSDT",
+  "start": "2020-07-28",
+  "end": "2026-08-31",
+  "mean_quote_volume": 61564386.68206466
+ },
+ {
+  "inst": "BANDUSDT",
+  "symbol": "BANDUSDT",
+  "start": "2020-07-29",
+  "end": "2026-08-31",
+  "mean_quote_volume": 58150883.14023794
+ },
+ {
+  "inst": "COMPUSDT",
+  "symbol": "COMPUSDT",
+  "start": "2020-06-30",
+  "end": "2026-08-31",
+  "mean_quote_volume": 56875646.84613576
+ },
+ {
+  "inst": "QTUMUSDT",
+  "symbol": "QTUMUSDT",
+  "start": "2020-02-20",
+  "end": "2026-08-31",
+  "mean_quote_volume": 53640897.862414025
+ },
+ {
+  "inst": "RENUSDT",
+  "symbol": "RENUSDT",
+  "start": "2020-10-13",
+  "end": "2024-12-03",
+  "mean_quote_volume": 50918775.88422133
+ },
+ {
+  "inst": "IOSTUSDT",
+  "symbol": "IOSTUSDT",
+  "start": "2020-02-21",
+  "end": "2026-08-31",
+  "mean_quote_volume": 49008660.98983319
+ },
+ {
+  "inst": "NEOUSDT",
+  "symbol": "NEOUSDT",
+  "start": "2020-02-17",
+  "end": "2026-08-31",
+  "mean_quote_volume": 48110558.44480708
+ },
+ {
+  "inst": "BLZUSDT",
+  "symbol": "BLZUSDT",
+  "start": "2020-09-17",
+  "end": "2024-12-23",
+  "mean_quote_volume": 47805357.97758573
+ },
+ {
+  "inst": "ALPHAUSDT",
+  "symbol": "ALPHAUSDT",
+  "start": "2020-11-23",
+  "end": "2025-09-23",
+  "mean_quote_volume": 47188178.68500406
+ },
+ {
+  "inst": "BATUSDT",
+  "symbol": "BATUSDT",
+  "start": "2020-02-13",
+  "end": "2026-08-31",
+  "mean_quote_volume": 47062573.80051573
+ },
+ {
+  "inst": "DASHUSDT",
+  "symbol": "DASHUSDT",
+  "start": "2020-02-04",
+  "end": "2026-08-31",
+  "mean_quote_volume": 44402705.93905033
+ },
+ {
+  "inst": "ZRXUSDT",
+  "symbol": "ZRXUSDT",
+  "start": "2020-06-24",
+  "end": "2026-08-31",
+  "mean_quote_volume": 38178053.208748996
+ },
+ {
+  "inst": "CTKUSDT",
+  "symbol": "CTKUSDT",
+  "start": "2020-11-19",
+  "end": "2024-04-01",
+  "mean_quote_volume": 37867878.077517234
+ },
+ {
+  "inst": "ICXUSDT",
+  "symbol": "ICXUSDT",
+  "start": "2020-09-15",
+  "end": "2026-08-26",
+  "mean_quote_volume": 37035874.93035428
+ },
+ {
+  "inst": "ONTUSDT",
+  "symbol": "ONTUSDT",
+  "start": "2020-02-11",
+  "end": "2026-08-31",
+  "mean_quote_volume": 31176245.12908758
+ },
+ {
+  "inst": "BALUSDT",
+  "symbol": "BALUSDT",
+  "start": "2020-09-01",
+  "end": "2025-04-14",
+  "mean_quote_volume": 29353055.521873955
+ },
+ {
+  "inst": "TOMOUSDT",
+  "symbol": "TOMOUSDT",
+  "start": "2020-10-12",
+  "end": "2023-11-14",
+  "mean_quote_volume": 27553739.73420255
+ },
+ {
+  "inst": "DEFIUSDT",
+  "symbol": "DEFIUSDT",
+  "start": "2020-08-28",
+  "end": "2025-08-11",
+  "mean_quote_volume": 7655906.404350455
+ }
+]
