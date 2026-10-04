@@ -4035,3 +4035,210 @@ python src/listing.py --build      # daily OHLC + funding of ~900 perps (+ spot 
 python src/listing.py              # once; writes results/_multi/listing/ and journal/_multi/listing.md
 ```
 Do not run `--final` unless the verdict is PASS and the owner agrees.
+
+---
+
+## Exp 045 - Short newly listed USDT-M perpetuals (PLAN.md section 35, Exp 044 run): REJECT on five gates - the payoff was inverted on VALID
+
+**Date:** 2026-10-04
+**Status:** complete. **One run, exactly as pre-registered in Exp 044.** No value
+in `src/listing.py` was changed, no variant was tried, `--final` was not run
+(nothing passed), no holdout file was created and HOLDOUT was never read. **No
+new evaluation row.** This is a new family, not the ML line: no §30 model, no
+account layer, no §31 cell.
+
+**Session state.** `git pull` already up to date · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED** with **test 31 present and all seven of
+its checks passing** (the trailing exit covers at the next open when a close
+exceeds the lowest close x (1 + trail), hand-computed; the stop is filled at the
+stop or at the open on a gap; a delisted/eod exit carries fees, alt slippage and
+funding, and a short receives a positive rate; an open trade closes at the last
+close inside the window with reason `eod`; events are the first run only, after
+`LISTED_AFTER`, with founding contracts and relaunches excluded; the new-token flag
+is "no spot pair, or spot first traded in the listing month or later"; a planted
+post-listing decline is found and beats the established-coin control; no decline
+-> REJECT). `python src/listing.py --build` -> **`BUILD OK`** on the first try, no
+silent death this time. No abnormal number: no inf, no nan; every mean R inside
+|0.36|.
+
+**The universe.** 850 listings after 2020-02-01: **2020 70, 2021 59, 2022 26,
+2023 97, 2024 131, 2025 241, 2026 226**. TRAIN (2021-22) = **85 events**, VALID
+(entries 2023-01-18 to 2024-12-31) = **228 events**, and the untouched holdout
+window would hold **467** - which is why this family was ranked first: the holdout
+has more than enough events to judge it.
+
+**Every event traded: 85 of 85 on TRAIN, 228 of 228 on VALID.** No listing was
+skipped by the 10% cap or by a missing bar.
+
+### Verdict: REJECT, on five gates
+
+`valid_weekly_mean>0`, `valid_ci_lo>0`, `stress_weekly_mean>0`,
+`mean_r_without_top5>0`, `each_valid_year>0`.
+
+**The gates that passed matter as much:** TRAIN weekly mean > 0, >= 100 VALID
+trades (228), **both control gates on TRAIN and on VALID**, and max drawdown
+16.18% <= 20%.
+
+### The 12-cell TRAIN table
+
+| delay | stop | trail | TRAIN trades | weekly mean | t | per year | max DD | mean R |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 0.3 | 0.3 | 85 | +0.00037 | +1.21 | +1.9% | 3.2% | +0.1844 |
+| **1** | **0.3** | **0.6** | **85** | **+0.00073** | **+1.40** | **+3.5%** | 4.8% | **+0.2417** |
+| 1 | 0.5 | 0.3 | 85 | +0.00023 | +1.15 | +1.2% | 1.9% | +0.1153 |
+| 1 | 0.5 | 0.6 | 85 | +0.00043 | +1.22 | +2.1% | 3.5% | +0.2151 |
+| 3 | 0.3 | 0.3 | 85 | +0.00030 | +1.00 | +1.5% | 3.4% | +0.1456 |
+| 3 | 0.3 | 0.6 | 85 | +0.00054 | +1.11 | +2.6% | 4.5% | +0.1903 |
+| 3 | 0.5 | 0.3 | 85 | +0.00015 | +0.77 | +0.8% | 2.6% | +0.0735 |
+| 3 | 0.5 | 0.6 | 85 | +0.00028 | +0.82 | +1.4% | 4.3% | +0.1374 |
+| 7 | 0.3 | 0.3 | 86 | +0.00011 | +0.33 | +0.6% | 4.3% | +0.0538 |
+| 7 | 0.3 | 0.6 | 86 | +0.00050 | +1.04 | +2.4% | 5.1% | +0.2447 |
+| 7 | 0.5 | 0.3 | 86 | +0.00001 | +0.04 | +0.0% | 3.4% | +0.0056 |
+| 7 | 0.5 | 0.6 | 86 | +0.00031 | +0.92 | +1.5% | 4.3% | +0.1467 |
+
+**The chosen cell was delay 1, stop 0.3, trail 0.6** (t **+1.40**, best of 12).
+All 12 TRAIN cells are positive and the ordering is sensible: the shorter the
+delay and the tighter the stop, the better; a 7-day delay loses most of the edge
+(t +1.40 -> +0.04 at 7 days with stop 0.5). **On TRAIN the hypothesis looked
+good**, with a mean R of +0.2417 per trade.
+
+**TRAIN control:** event mean **+0.3586 R** against a control median of -0.0095
+and a control p95 of **+0.1386**. The events beat the control comfortably.
+
+### VALID
+
+| | value | gate |
+|---|---|---|
+| verdict | **REJECT** | failed 5 gates, listed above |
+| **events / trades** | **228 / 228** | >= 100 pass |
+| weeks | 105 | |
+| **weekly mean** | **-0.00086** | **FAIL** |
+| **95% weekly CI** | **[-0.00213, +0.00088]** | **FAIL** |
+| **t** | **-1.10** | |
+| **max drawdown** | 16.18% | <= 20% pass |
+| total VALID return | **-9.04%** | |
+| **mean R** | **-0.1586** | |
+| **gross R** | **-0.1776** | |
+| **funding R** | **+0.0258** (a short receives it) | |
+| cost x1.5, weekly | -0.00088 | **FAIL** |
+| **mean R without the 5 best trades** | **-0.2237** | **FAIL** |
+| short leg | -0.0904 | long leg 0.0 (short only by design) |
+| **event mean vs control p95** | -0.1586 vs **-0.3740** | **pass** |
+
+### The control, and why passing it is not good news here
+
+| | event mean R | control median | control p95 | beats p95 |
+|---|---|---|---|---|
+| TRAIN | **+0.3586** | -0.0095 | +0.1386 | **yes** |
+| VALID | -0.1586 | -0.4390 | **-0.3740** | **yes** |
+
+**Both control gates passed, and on VALID that is the market's move, not an
+edge.** The control shorted established perps and lost **0.374 R** on average;
+the new listings lost 0.159 R. **Everything fell in 2023-24, and new listings
+fell less.** "Beats the control" here means "loses less than the market does",
+which is the opposite of the hypothesis being tested. The same control would have
+passed with a rule that simply did nothing while alts fell. **TRAIN's pass is the
+informative one** (+0.359 against a control p95 of +0.139); VALID's is not.
+
+### By entry year, exits, and hold
+
+| entry year | events | mean R |
+|---|---|---|
+| 2023 | 97 | **-0.1644** |
+| 2024 | 131 | **-0.1543** |
+
+**Both VALID years are negative.** The summary's `per_year_r` groups by **exit**
+year and shows 2023 -0.0558, 2024 -0.1060, **2025 +0.0714**; the 2025 group is the
+22 `eod` trades from 2024 entries closing at the 2025-01-01 window boundary, all
+of them at +1.2981 R. **The only positive "year" is a boundary artefact of trades
+that were simply cut at the window end**, so it must not be read as 2025 doing
+well.
+
+| exit type | trades | mean R | average days |
+|---|---|---|---|
+| **stop** | **111 (48.7%)** | **-1.0098** | **14.9** |
+| **signal (trailing cover)** | 93 (40.8%) | +0.4788 | **98.4** |
+| eod (window end) | 22 (9.6%) | +1.2981 | 51.3 |
+| delisted | 2 (0.9%) | +1.4170 | |
+
+**Average hold 51.3 days, median 21, range 1 to 319.**
+
+### What the numbers say
+
+**1. The payoff was inverted, and that is the whole result.** **48.7% of the
+shorts were stopped out at -1.01 R within 14.9 days**, while the ones that did
+fall took **98.4 days** to cover for only **+0.4788 R**. Many small fast losses
+against few large slow gains: over VALID, 137 trades lost and 91 won, and the
+mean is -0.1586 R. **In a rising market the short side is the wrong side, which is
+what the pre-registration said would happen and what the `each_valid_year>0` gate
+was written to catch.**
+
+**2. Funding helped and it was not enough.** A short receives funding when the
+crowd is long, and it added **+0.0258 R**, about a sixth of what gross lost
+(-0.1776). On the cost-stress gate the account is still negative (-0.00088 a
+week). The funding tailwind is a real feature of shorting new listings, and it
+does not cover a -0.18 R price move.
+
+**3. The result is not carried by a few outliers; it is worse without them.**
+Mean R without the 5 best trades is **-0.2237**. The 5 best trades total +13.72 R
+against a book total of **-36.16 R**, so removing them leaves a much worse book.
+There is no version of this result where the top few trades rescue it.
+
+**4. New tokens did better than old ones - and that is the most useful thing in
+the round.** Split by the new-token flag:
+
+| group | events | mean R |
+|---|---|---|
+| **new tokens** (no spot pair, or spot first traded in the listing month or later) | 126 | **-0.0706** |
+| **existing tokens** (spot older than the listing month) | 102 | **-0.2673** |
+
+**New listings lost about a quarter of what established listings lost.** The flag
+does separate them, so there is something real about *genuinely* new tokens as
+opposed to relaunches and long-listed coins - but the better group is still
+negative, so it is a ranking, not an edge. It is also a diagnostic computed after
+the fact, not a gate, and it was not used to choose anything.
+
+**5. TRAIN was a bull turn for the short side and VALID was not.** TRAIN
+(2021-22) gave all 12 cells a positive weekly mean and an event mean R of +0.3586;
+VALID (2023-24, entries) gave -0.164 and -0.154. **`LESSONS.md` §2 again:** a
+one-sided book is judged on one market's direction, and the two halves of this
+sample point in opposite directions. A 12-cell grid on 85 events could not have
+found that.
+
+**6. What must NOT be said.** The trailing-cover exits average +0.4788 R and the
+`eod` exits +1.2981 R. **That is not exit skill** (Exp 017): a short only survives
+to those exits if it did not hit the stop, so those figures describe the trades
+that were already the winners. The 111 stops at -1.0098 R are the decisions the
+rule actually made most often. The whole-book **-0.1586 R** is the measure.
+
+**7. Where the family stands.** This is a new family, first round, REJECT. The
+holdout for this family is **untouched and has 467 events** - more than enough to
+judge it - but nothing may go there without a PASS, and there is no PASS. Recorded
+as the ranking's first candidate, done.
+
+### Verdict
+
+**REJECT** on `valid_weekly_mean>0`, `valid_ci_lo>0`, `stress_weekly_mean>0`,
+`mean_r_without_top5>0`, `each_valid_year>0`. **No holdout run** - HOLDOUT was
+never read; across the project it still holds 5 runs, all from before ML (4
+strategies plus one lock test on `example_trend_breakout`), 5 FAILED and 0
+CONFIRMED. Project total remains 500 evaluations. No v2, no changed values, no
+re-run.
+
+**The honest one-paragraph version for the owner:** shorting every newly listed
+perpetual looked good on the training period and lost clearly on the validation
+one. On the 85 training listings all twelve setups made money and the best made
++0.36 R per trade against a control of +0.14. On the 228 validation listings,
+every single one was traded and the average was **-0.159 R** - gross -0.178 with
+funding adding back +0.026 - for a total loss of **-9.0%**, with both years
+negative (-0.164 in 2023, -0.154 in 2024). The shape is the story: **48.7% of the
+shorts were stopped out at a full -1R within 15 days, and the ones that did fall
+took 98 days to cover for only +0.48R** - many small fast losses against a few
+slow ones, and removing the five best trades makes it worse, not better. Funding
+helped and was not enough. Two things worth keeping: genuinely new tokens lost
+about a quarter of what established tokens lost (-0.071 against -0.267), so the
+flag does separate something real even though both are negative; and the family
+has 467 events waiting in the holdout, so it was the right choice of family even
+though this first look fails. Note the validation control also "passed" only
+because established perps lost 0.374 R in that period - beating a market that is
+falling is not an edge.
