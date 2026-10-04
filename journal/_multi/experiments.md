@@ -3200,3 +3200,44 @@ danger, not the forecast.
   years. The holdout (2025-01 → 2026-08, untouched) is the only data that can
   settle it. Using it on the frozen §31 cell is an owner decision outside the
   PASS rule.
+
+---
+
+## Exp 035 - Pre-registration: market-demeaned forecasts on §31's account (PLAN.md §32, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**Hypothesis.** §30's models carry a coin-relative signal under a market-wide
+part that is mostly noise. Evidence for this:
+- the top WHY reasons were market-wide 78–100% of the time;
+- the 47 coins behave like about 1.6 independent coins;
+- §31's return was concentrated: the best 5 of 105 weeks gave 67% (Exp 034).
+
+Subtracting the cross-sectional mean forecast at each hour should keep the
+relative signal and remove the common weekly swing.
+
+**Fixed before the run (`src/ml_xs.py`, test 28):**
+- §30's frozen 1h/4h/1d forecasts, recomputed and checked to 1e-6 as in §31;
+- the demean transform needs ≥ 10 coins and is applied to the agreement
+  forecasts too;
+- 24 TRAIN cells: form raw/demean × agreement off/4h/1d × sizing flat/conf ×
+  cap 5%/10%;
+- the cell is chosen by the TRAIN weekly t-statistic, with ≥ 300 trades;
+- a `raw` choice is REJECT;
+- §31's VALID gates, unchanged;
+- diagnostics: top-5-week share, negative weeks, beta and correlation to the
+  equal-weight market;
+- one holdout shared with §31.
+
+**Looks.** This is the 7th ML look at VALID 2023–24 in `_multi`
+(§27–§32). A PASS still needs the holdout, and any report of a PASS must say
+this.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 28 included)
+python src/ml_xs.py                # once; writes results/_multi/ml_xs/ and journal/_multi/ml_xs.md
+```
+- If the reproduction check stops the run, report it and change nothing.
+- Do not run `--final` unless the verdict is PASS and the owner agrees.
