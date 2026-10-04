@@ -10,17 +10,17 @@
 <style>
 :root{
   --bg:#f6f7f9; --card:#fcfcfb; --text:#0b0b0b; --muted:#52514e; --faint:#8b8a85; --line:#e3e6ec; --grid:#ececea;
-  --s1:#2a78d6; --s2:#eb6834; --good:#16a34a; --bad:#dc2626; --accent:#0f766e;
+  --s1:#2a78d6; --s2:#eb6834; --c27:#e87ba4; --c28:#eda100; --c29:#4a3aa7; --c30:#eb6834; --c31:#2a78d6; --c32:#1baf7a; --c33:#008300; --c34:#e34948; --good:#16a34a; --bad:#dc2626; --accent:#0f766e;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
-    --s1:#3987e5; --s2:#d95926; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
+    --s1:#3987e5; --s2:#d95926; --c27:#d55181; --c28:#c98500; --c29:#9085e9; --c30:#d95926; --c31:#3987e5; --c32:#199e70; --c33:#008300; --c34:#e66767; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
-  --s1:#3987e5; --s2:#d95926; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
+  --s1:#3987e5; --s2:#d95926; --c27:#d55181; --c28:#c98500; --c29:#9085e9; --c30:#d95926; --c31:#3987e5; --c32:#199e70; --c33:#008300; --c34:#e66767; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.6;font-size:16px}
@@ -60,6 +60,7 @@ html{scroll-padding-top:72px}
 .mini .v{font-variant-numeric:tabular-nums;font-size:.9rem}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
 .chips button{font:inherit;font-size:.85rem;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer}
+.chips .sq{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
 .chips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
 .badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
 .bd{font-size:.72rem;padding:0 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
@@ -72,7 +73,14 @@ html{scroll-padding-top:72px}
 <main>
 <nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="ml.html">🤖 ML</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html" aria-current="page">🧪 กราฟสอบย่อย</a><a href="trade.html">🕯️ จุดเข้าออก</a></nav>
 <h1>กราฟสอบย่อย (VALID 2023–24)</h1>
-<p class="sub">ทุกกลยุทธ์ที่ผ่าน (PASS) หรือเกือบผ่าน (WATCH) ช่วงสอบย่อย · <span id="cnt"></span> · เริ่มที่ 1,000 USDT · เสี่ยงไม้ละ 1% · หักค่าธรรมเนียม slippage และ funding แล้ว</p>
+<p class="sub">ช่วงสอบย่อย 2023–24 · ML อยู่ด้านบน · กลยุทธ์กฎตายตัวที่ผ่าน (PASS) หรือเกือบผ่าน (WATCH) ซ่อนไว้ด้านล่าง · <span id="cnt"></span> · เริ่มที่ 1,000 USDT · เสี่ยงไม้ละ 1% · หักค่าธรรมเนียม slippage และ funding แล้ว</p>
+<div class="card" id="mlsec">
+  <div class="head"><h2>ML: ทุน 1,000 USDT ช่วงสอบย่อย 2023–24</h2><a href="ml.html" class="small">ดูรายละเอียดทุกรอบ →</a></div>
+  <p class="small" style="margin:0 0 6px">บัญชีเดียวรวมทุกเหรียญ นับแบบบวกสะสม · §27–§30 เสี่ยงไม้ละ 1% <b>ไม่จำกัดจำนวนไม้ที่เปิดพร้อมกัน</b> (จึงแกว่งแรงมาก บางเส้นติดลบเกินทุน) · §31–§34 ขนาดไม้ตามความมั่นใจ (ไม่เกิน 1%) และเปิดค้างฝั่งเดียวกันรวมไม่เกิน 5% · เส้นทึบ 1h เส้นประ 4h เส้นจุด 1d · กดเลข § เพื่อเลือกรอบ · หักค่าธรรมเนียม slippage และ funding แล้ว · ยังไม่มีตัวไหนผ่านครบ · <a href="trade.html">ดูจุดเข้าออกรายไม้ →</a></p>
+  <div class="chips" id="mlchips" role="group" aria-label="กรองตามรอบ"></div>
+  <div class="legend" id="mllg"></div>
+  <div class="chart" id="mlc"></div>
+</div>
 <div class="mltog"><label><input type="checkbox" id="showNonMl"> แสดงกลยุทธ์ที่ไม่ใช่ ML</label><span class="small" style="color:var(--muted)">ทุกกราฟในหน้านี้เป็นกลยุทธ์แบบกฎตายตัว · กราฟสอบย่อยของ ML ดูที่หน้า <a href="ml.html">🤖 ML</a></span></div>
 <div class="nonml" hidden>
 
@@ -199,6 +207,65 @@ render();
 (function(){const cb=document.getElementById("showNonMl");if(!cb)return;
 const apply=()=>{document.querySelectorAll(".nonml").forEach(e=>e.hidden=!cb.checked);window.dispatchEvent(new Event("resize"));document.dispatchEvent(new CustomEvent("nonml",{detail:cb.checked}));};
 cb.addEventListener("change",apply);apply();})();
+</script>
+<script>
+(function(){
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const MON = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const D = s => new Date(s + "T00:00:00Z").getTime();
+let DATA = null;
+const COL = {27: "--c27", 28: "--c28", 29: "--c29", 30: "--c30", 31: "--c31", 32: "--c32", 33: "--c33", 34: "--c34"};
+const DASH = {"1h": "", "4h": "7 4", "1d": "2 3"};
+let ON = new Set([30, 31]);
+try { const v = JSON.parse(localStorage.getItem("validSecs")); if (Array.isArray(v) && v.length) ON = new Set(v); } catch (e) {}
+function chips() {
+  const secs = [...new Set(DATA.rounds.map(r => r.sec))];
+  document.getElementById("mlchips").innerHTML = secs.map(n => `<button type="button" class="chip${ON.has(n) ? " on" : ""}" data-s="${n}" aria-pressed="${ON.has(n)}"><span class="sq" style="background:var(${COL[n]})"></span>§${n}</button>`).join("") +
+    `<button type="button" class="chip" data-s="all">ทั้งหมด</button>`;
+  document.querySelectorAll("#mlchips .chip").forEach(b => b.onclick = () => {
+    const s = b.dataset.s;
+    if (s === "all") ON = new Set(secs); else { const n = +s; ON.has(n) ? ON.delete(n) : ON.add(n); }
+    try { localStorage.setItem("validSecs", JSON.stringify([...ON])); } catch (e) {}
+    chips(); draw();
+  });
+}
+function draw() {
+  if (!DATA) return;
+  const host = document.getElementById("mlc");
+  host.innerHTML = '<div class="tip"></div>';
+  const W = Math.max(320, host.clientWidth || 860), H = W < 600 ? 260 : 320, m = {l: 54, r: 14, t: 10, b: 26};
+  const ser = DATA.rounds.filter(r => ON.has(r.sec)).map(r => ({n: r.label, c: COL[r.sec], d: DASH[r.tf] || "", p: r.series.map(q => [D(q[0]), q[1]])}));
+  if (!ser.length) { document.getElementById("mllg").innerHTML = "<span class='small'>เลือกรอบด้านบนอย่างน้อย 1 รอบ</span>"; return; }
+  document.getElementById("mllg").innerHTML = ser.map(s => `<span class="key"><span class="sw" style="background:var(${s.c})${s.d ? ";height:0;border-top:2px dashed var(" + s.c + ")" : ""}"></span>${s.n} → ${Math.round(s.p[s.p.length - 1][1]).toLocaleString("en-US")}</span>`).join("");
+  const t0 = D("2023-01-01"), t1 = D("2025-01-10");
+  const all = ser.flatMap(s => s.p.map(p => p[1])).concat([1000]);
+  let y0 = Math.min(...all), y1 = Math.max(...all); const pad = (y1 - y0) * .06; y0 -= pad; y1 += pad;
+  const x = t => m.l + (t - t0) / (t1 - t0) * (W - m.l - m.r), y = v => m.t + (y1 - v) / (y1 - y0) * (H - m.t - m.b);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "ทุน ML ช่วงสอบย่อย"}, host);
+  const step = [50, 100, 200, 250, 500].find(s => (y1 - y0) / s <= 6) || 1000;
+  for (let v = Math.ceil(y0 / step) * step; v <= y1; v += step) {
+    el("line", {x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 1000 ? css("--faint") : css("--grid"), "stroke-dasharray": v === 1000 ? "4 3" : ""}, svg);
+    el("text", {x: m.l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: css("--muted")}, svg).textContent = (Math.abs(v) < 1e-9 ? 0 : v).toLocaleString("en-US");
+  }
+  [2023, 2024].forEach(yr => el("text", {x: x(Date.UTC(yr, 0, 1)), y: H - 6, "text-anchor": "start", "font-size": 11, fill: css("--muted")}, svg).textContent = yr);
+  ser.slice().reverse().forEach(s => el("path", {d: s.p.map((p, i) => (i ? "L" : "M") + x(p[0]).toFixed(1) + "," + y(p[1]).toFixed(1)).join(""), fill: "none", stroke: css(s.c), "stroke-width": s.n.startsWith("§31") ? 2.5 : 1.6, "stroke-dasharray": s.d}, svg));
+  const g = el("g", {style: "display:none"}, svg), vl = el("line", {y1: m.t, y2: H - m.b, stroke: css("--faint"), "stroke-dasharray": "3 3"}, g);
+  const hit = el("rect", {x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent"}, svg), tip = host.querySelector(".tip");
+  const at = (p, t) => { let r = null; for (const q of p) { if (q[0] > t) break; r = q; } return r; };
+  hit.addEventListener("pointermove", ev => {
+    const rc = svg.getBoundingClientRect(), t = t0 + ((ev.clientX - rc.left) / rc.width * W - m.l) / (W - m.l - m.r) * (t1 - t0);
+    g.style.display = ""; vl.setAttribute("x1", x(t)); vl.setAttribute("x2", x(t));
+    const d = new Date(t);
+    tip.innerHTML = `<div class="small">${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}</div>` + ser.map(s => { const q = at(s.p, t); return `<div>${s.n} <span class="v">${q ? Math.round(q[1]).toLocaleString("en-US") : "–"}</span></div>`; }).join("");
+    tip.style.opacity = 1; tip.style.left = Math.min(Math.max(x(t) / W * rc.width + 12, 0), rc.width - tip.offsetWidth) + "px"; tip.style.top = "6px";
+  });
+  hit.addEventListener("pointerleave", () => { g.style.display = "none"; tip.style.opacity = 0; });
+}
+fetch("ml_data.json?v=2", {cache: "no-cache"}).then(r => r.json()).then(d => { DATA = d; chips(); draw(); });
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(draw, 150); });
+})();
 </script>
 </body>
 </html>
