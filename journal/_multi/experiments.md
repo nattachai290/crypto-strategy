@@ -3961,3 +3961,30 @@ so this round adds no new look at the validation years. The fair conclusion is
 narrow: there is no positioning edge visible in 2021-22 data, which is not the
 same as saying positioning never works - the data only starts at the end of 2021
 and was never used on 2023-24.
+
+---
+
+## Exp 043 - Review of Exp 042 (§34, planner): REJECT stands; two corrections
+
+**Date:** 2026-10-04
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- The run matches its registration and TRAIN chose `base`, so the REJECT stands.
+- The VALID trade file is §31's (Exp 042 checked this; the summary numbers match §31's to the last digit).
+- The narrow conclusion is the right size: no positioning edge is visible in the 2021–22 data.
+
+**Correction 1: 2021 was not "a year without the features".** Exp 042 puts most of flow's TRAIN deficit (2021: -64%) on the metrics being absent that year. But the funding features (`fund_168`, `mkt_funding`, `mkt_fund_168`) exist through all of 2021. Only the metrics columns start in 2021-12. So the 2021 gap is what the funding features (plus any change in tree structure) did on their own. The fair reading is the opposite of an excuse: where only funding was added, the book lost most of its 2021 return; where all twelve features were present (2022), it lost 11%. Funding as a feature hurt here.
+
+**Correction 2: the look count.** §32 and §34 both chose their base form, so neither produced a new VALID result: their VALID trade files are §31's. The number of distinct VALID books judged in `_multi` ML is therefore 7, not 9 (§27, §28 ×3 timeframes counted as one round, §29, §30, §31, §33). §32 and §34 spent TRAIN comparisons only. The statement "every further variant judged on VALID adds a look" still holds.
+
+**Where the line stands.** Four rounds (§31–§34) have not moved the frozen §31 cell:
+- 1,588 trades;
+- weekly mean +0.00548;
+- CI lower bound -0.00026;
+- the best 5 of 105 weeks are 67% of the return.
+
+What has been learned about the cell:
+- its signal needs each coin's own price-based forecast, traded on that coin (§32, §33);
+- positioning and funding data did not add to it in 2021–22 (§34);
+- the holdout's power to confirm it is low: about 39% if its VALID edge is fully real, about 13% at half of it (Exp 041).
