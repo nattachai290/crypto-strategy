@@ -3440,3 +3440,74 @@ nothing left to remove and the transform only destroyed signal. Your instinct th
 the book is unstable is confirmed - the best 5 of 105 weeks are 67% of the profit
 and 44 weeks lose money - but demeaning is not the fix, because it was applied to
 the forecast instead of to the account, and the account was already neutral.
+
+---
+
+## Exp 037 - Review of Exp 036 (§32, planner): REJECT stands; "already market-neutral" is wrong. The book times the market.
+
+**Date:** 2026-10-04
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- The run matches its registration. TRAIN chose `raw`, so the REJECT stands.
+- `results/_multi/ml_xs/trades_valid.csv.gz` equals `results/_multi/ml_port/trades_valid.csv.gz` (`DataFrame.equals` is True, 1,588 rows), so §32 added no new look at VALID.
+- The TRAIN table supports the main result: all 12 demeaned cells are weaker than the raw cells (t at most +0.63 against +2.40).
+
+**Correction 1: a beta near 0 does not make the book market-neutral.** Exp 036's central claim is that the cap and the 4h filter "had already made the trading book close to market-neutral", so demeaning had nothing left to remove. The trade file says otherwise:
+- **In an average week, 89% of the trades that close are on the same side.**
+- **The best weeks are one-sided bets that won together:**
+
+  | week | return | short share | coins that won |
+  |---|---|---|---|
+  | 2024-07-29 | +0.121 | 15 of 16 short | 94% |
+  | 2024-07-01 | +0.099 | 10 of 10 short | 90% |
+  | 2023-05-15 | +0.085 | 15 of 15 short | 87% |
+  | 2023-03-06 | +0.073 | 13 of 13 short | 69% |
+
+- Across the top 5 weeks, 86 trades on 36 coins won 88% of the time, and 74% of them were short.
+
+So the book makes one bet on the market's direction at a time, spread over many coins, and switches side. The unconditional beta is about 0 (-0.05) because the side changes over time, not because the market exposure is netted. **This is a market-timing book.** It agrees with Exp 036's own point 2, that the signal is market-wide, and it explains the concentration found in Exp 034: the return comes from a few market moves the model was on the right side of, mostly sell-offs.
+
+**Correction 2: a mismatched number.** Exp 036 says mean R "falls from +0.0597 to +0.0095 at the winning switches". At the same switches (4h, conf, 5%), the demeaned mean R is **+0.0018**. +0.0095 is the best demeaned cell (1d, conf, 5%), so the drop is larger than stated.
+
+**What this means.**
+- §32's premise ("the book is one market bet") was right. Its remedy (removing the market part from the forecast) was wrong because the market part is the signal.
+- The VALID sample therefore holds only a few independent market moves, not 1,588 independent trades. The weekly CI, which treats weeks as independent, is the right measure, and the effective evidence is small.
+- The holdout (2025-01 → 2026-08, untouched) is still the only data that can tell timing skill from a few lucky calls. Using it on the frozen §31 cell is the owner's decision outside the PASS rule.
+
+---
+
+## Exp 038 - Pre-registration: market timing on BTC/ETH from the 47-coin mean forecast (PLAN.md §33, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**Hypothesis.** §30's 1h model is a market timer:
+- its signal is the market-wide part of the forecast (Exp 036);
+- §31's book puts one side on many coins at once (Exp 037).
+
+Making the call once, on BTC and/or ETH, should keep the timing and cut the
+alt-coin costs and noise.
+
+**Fixed before the run (`src/ml_mkt.py`, test 29):**
+- §30's frozen 1h and 4h forecasts, recomputed and checked to 1e-6;
+- the signal is the mean over ≥ 10 coins at each hour;
+- §30's policy (q_in 0.9, `flip`), an 8-ATR stop, no clock;
+- 6 TRAIN cells: instrument BTC, ETH or BTC+ETH (half risk each) × agreement
+  off or 4h;
+- the cell is chosen by the TRAIN weekly t-statistic, with ≥ 30 trades;
+- VALID gates: §31's without breadth;
+- diagnostics: time long/short, top-5-week share, negative weeks, buy-and-hold
+  beta and correlation;
+- one holdout shared with §31 and §32.
+
+**Looks.** This is the 8th ML look at VALID 2023–24 in `_multi` (§27–§33). A
+PASS still needs the holdout, and any report of a PASS must say this.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 29 included)
+python src/ml_mkt.py               # once; writes results/_multi/ml_mkt/ and journal/_multi/ml_mkt.md
+```
+- If the reproduction check stops the run, report it and change nothing.
+- Do not run `--final` unless the verdict is PASS and the owner agrees.
