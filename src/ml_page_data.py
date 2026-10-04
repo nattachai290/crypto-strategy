@@ -48,6 +48,23 @@ def main() -> None:
     out["s31"] = daily_cum(t, "ret")
     t = _read(M / "listing" / "trades_valid.csv.gz")
     out["s35"] = daily_cum(t, "ret")
+    rounds = [(27, None, "ml_hold/trades_valid.csv.gz", "§27 ตัดสินเข้า-ออกเอง · 20 เหรียญ")]
+    for sec, d in ((28, "ml_wf"), (29, "ml_wf2"), (30, "ml_wf3")):
+        for tf, nm in ((60, "1h"), (240, "4h"), (1440, "1d")):
+            rounds.append((sec, nm, f"{d}/trades_valid_tf{tf}.csv.gz", f"§{sec} {nm}"))
+    rounds += [(31, None, "ml_port/trades_valid.csv.gz", "§31 1h + จัดพอร์ต"),
+               (32, None, "ml_xs/trades_valid.csv.gz", "§32 ตัดทิศตลาด (= §31)"),
+               (33, None, "ml_mkt/trades_valid.csv.gz", "§33 ทั้งตลาด → ETH"),
+               (34, None, "ml_flow/trades_valid.csv.gz", "§34 เพิ่ม OI/funding (= §31)")]
+    out["rounds"] = []
+    for sec, tf, f, label in rounds:
+        t = _read(M / f)
+        if "ret" in t:                                  # one account: return share of starting equity
+            ser = [[d, round(1000 * (1 + v), 1)] for d, v in daily_cum(t, "ret")]
+        else:                                           # 1% risk per trade, every coin in one account, additive
+            ser = [[d, round(1000 + 10 * v, 1)] for d, v in daily_cum(t, "net_r")]
+        out["rounds"].append({"sec": sec, "tf": tf, "label": label, "trades": int(len(t)),
+                              "mean_r": round(float(t["net_r"].mean()), 4), "series": ser})
     OUT.write_text(json.dumps(out, separators=(",", ":")))
     print(f"wrote {OUT} ({OUT.stat().st_size:,} bytes)")
 
