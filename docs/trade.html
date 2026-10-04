@@ -71,12 +71,14 @@ code{font-size:.85em;overflow-wrap:anywhere}
   .side{border-left:0;border-top:1px solid var(--line);height:360px}
   .detail .nav2{margin-left:0}
 }
+.mltog{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 10px;font-size:.92rem}.mltog label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:600}.mltog input{width:18px;height:18px;accent-color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
-<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html" aria-current="page">🕯️ จุดเข้าออก</a></nav>
+<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="ml.html">🤖 ML</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html" aria-current="page">🕯️ จุดเข้าออก</a></nav>
 
+<div class="mltog"><label><input type="checkbox" id="showNonMl"> แสดงกลยุทธ์ที่ไม่ใช่ ML</label><span class="small" style="color:var(--muted)">ค่าเริ่มต้นแสดงเฉพาะ ML · กลยุทธ์ที่ผ่านสอบย่อยแบบกฎตายตัว ซ่อนไว้</span></div>
 <div class="bar">
   <select id="pick" aria-label="เลือกกลยุทธ์"></select>
   <span class="seg" id="per" role="group" aria-label="ช่วงข้อมูล"><button type="button" data-p="valid" aria-pressed="true">สอบย่อย 2023–24</button><button type="button" data-p="holdout" aria-pressed="false">สอบจริง 2025–26</button></span>
@@ -315,14 +317,21 @@ $("theme").onclick = () => {
   const pick = $("pick");
   IDX = idx;
   const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.group === "ml" || r.group === "wf" ? (r.group === "wf" ? "ML walk-forward · " : "ML เข้า-ออกเอง · ") + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
-  pick.innerHTML = `<optgroup label="กลยุทธ์ที่ผ่านสอบย่อย (PASS)">${idx.filter(r => !r.group).map(opt).join("")}</optgroup>` +
-    [60, 240, 1440].map(tf => `<optgroup label="ML walk-forward ${tfs(tf)} (รอบ §28, ไม่ผ่าน) · 47 เหรียญ">${idx.filter(r => r.group === "wf" && r.tf === tf).map(opt).join("")}</optgroup>`).join("") +
-    `<optgroup label="ML ตัดสินเข้า-ออกเอง (รอบ §27, ไม่ผ่าน) · 20 เหรียญ">${idx.filter(r => r.group === "ml").map(opt).join("")}</optgroup>`;
-  let first = idx[0].id;
-  try { let h = location.hash.slice(1); const ho = h.endsWith("_holdout"); if (ho) h = h.slice(0, -8); if (idx.some(r => r.id === h)) { first = h; if (ho) PER = "holdout"; } } catch (e) {}
+  const ml = r => r.group === "ml" || r.group === "wf";
+  const fill = show => {
+    pick.innerHTML = [60, 240, 1440].map(tf => `<optgroup label="ML walk-forward ${tfs(tf)} (รอบ §28, ไม่ผ่าน) · 47 เหรียญ">${idx.filter(r => r.group === "wf" && r.tf === tf).map(opt).join("")}</optgroup>`).join("") +
+      `<optgroup label="ML ตัดสินเข้า-ออกเอง (รอบ §27, ไม่ผ่าน) · 20 เหรียญ">${idx.filter(r => r.group === "ml").map(opt).join("")}</optgroup>` +
+      (show ? `<optgroup label="ไม่ใช่ ML: กลยุทธ์กฎตายตัวที่ผ่านสอบย่อย (PASS)">${idx.filter(r => !ml(r)).map(opt).join("")}</optgroup>` : "");
+  };
+  const cb = $("showNonMl");
+  const def = () => (idx.find(r => r.group === "wf" && r.tf === 60 && r.sym === "BTCUSDT") || idx.find(ml) || idx[0]).id;
+  let first = def();
+  try { let h = location.hash.slice(1); const ho = h.endsWith("_holdout"); if (ho) h = h.slice(0, -8); const r = idx.find(x => x.id === h); if (r) { first = h; if (ho) PER = "holdout"; if (!ml(r)) cb.checked = true; } } catch (e) {}
+  fill(cb.checked);
   const setHash = () => history.replaceState(null, "", "#" + pick.value + (PER === "holdout" ? "_holdout" : ""));
   document.querySelectorAll("#per button").forEach(b => b.onclick = () => { if (b.disabled) return; PER = b.dataset.p; setHash(); load(pick.value); });
   pick.value = first;
+  cb.onchange = () => { const cur = pick.value; fill(cb.checked); if (idx.some(r => r.id === cur && (cb.checked || ml(r)))) pick.value = cur; else { pick.value = def(); setHash(); load(pick.value); } };
   pick.onchange = () => { setHash(); load(pick.value); };
   load(first);
 })();

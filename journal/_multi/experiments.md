@@ -4242,3 +4242,65 @@ has 467 events waiting in the holdout, so it was the right choice of family even
 though this first look fails. Note the validation control also "passed" only
 because established perps lost 0.374 R in that period - beating a market that is
 falling is not an edge.
+
+---
+
+## Exp 046 - Review of Exp 045 (§35, planner): REJECT stands; the control result was read backwards
+
+**Date:** 2026-10-04
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+One small code fix in `src/listing.py` (below); it does not change the recorded
+verdict.
+
+**Checked and correct.** The run matches its registration, and I recomputed
+from `results/_multi/listing/trades_valid.csv.gz`:
+- 228 trades at a mean of -0.1586 R;
+- by entry year: 2023 -0.1644, 2024 -0.1543;
+- by exit type: 111 stops at -1.010 R, 93 signals at +0.479 R, 22 eod at
+  +1.298 R, 2 delisted at +1.417 R.
+
+The REJECT stands. The short book lost money in both VALID years.
+
+**Correction 1 (the important one): the control says the hypothesis's relative
+part held.** Exp 045 reads the VALID control as "everything fell in 2023–24, and
+new listings fell less". It is the other way round.
+- The control shorts established perps. A control mean of -0.439 R means those
+  shorts lost, so established perps rose (2023–24 was a bull market).
+- The new-listing shorts lost less (-0.159 R), so new listings rose less than
+  established coins on the same days. In relative terms they underperformed by
+  about 0.28 R per trade against the control median.
+- On TRAIN the same comparison gives +0.359 R against a median of -0.009,
+  about 0.37 R.
+
+So the pre-registered control gate, "new listings do worse than established
+coins shorted on the same days", passed in both periods, and by similar
+margins. What failed is the absolute short: in a rising market the market's
+move (about -0.44 R per trade for any short) is larger than the
+listing-specific underperformance (about 0.28 R).
+
+This is the clearest relative effect the project has recorded. It still cannot
+be traded as a short alone. A version that removes the market's move would need
+a long hedge, and the owner has excluded pair trading. Any hedged version would
+also be judged on a VALID period whose relative result is now known, so only
+the holdout could test it cleanly.
+
+**Correction 2: numbers in Exp 045's hand-made TRAIN table.** The "mean R"
+column does not match `summary.json` for 7 of 12 rows. For example, the chosen
+cell (1, 0.3, 0.6) is +0.3586, not +0.2417; (3, 0.3, 0.6) is +0.2646, not
++0.1903. The generated `journal/_multi/listing.md` is correct. Also, the
+average hold of the `eod` exits is 27.2 days, not 51.3 (51.3 is the whole book).
+
+**Code fix: year attribution of `eod` exits.** An `eod` exit is stamped at the
+window end, 00:00 on 2025-01-01, so `per_year_r` filed those 22 trades under
+2025. That is the artefact Exp 045 spotted.
+- `listing.year_of_exit` now takes one microsecond off the stamp, so they count
+  in 2024. Test 31 checks this.
+- Recomputed, 2024 becomes -0.106 + 0.071 = -0.035. That is still negative, so
+  the gate `each_valid_year>0` and the verdict are unchanged.
+- The weekly account was not affected: those exits already fell in the last
+  week of the window.
+
+**What is still open in this family.**
+- The new-token split (new -0.071 R, existing -0.267 R) agrees with the
+  mechanism: genuinely new tokens are where the sellers are.
+- The holdout's 467 listings are untouched.

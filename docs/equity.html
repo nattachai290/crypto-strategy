@@ -58,13 +58,17 @@ html{scroll-padding-top:72px}
 .mini .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .mini .t b{font-size:1rem}
 .mini .v{font-variant-numeric:tabular-nums;font-size:.9rem}
+.mltog{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 16px;font-size:.92rem}.mltog label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:600}.mltog input{width:18px;height:18px;accent-color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
-<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="equity.html" aria-current="page">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html">🕯️ จุดเข้าออก</a></nav>
+<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="ml.html">🤖 ML</a><a href="equity.html" aria-current="page">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html">🕯️ จุดเข้าออก</a></nav>
 <h1>เงินทุน 1,000 USDT ขยับไปทางไหน</h1>
 <p class="sub">กลยุทธ์ 4 ตัวที่ผ่านสอบย่อยจนได้เข้าสอบจริง · เสี่ยงไม้ละ 1% ของพอร์ต · หักค่าธรรมเนียม slippage และ funding แล้ว</p>
+<div class="mltog"><label><input type="checkbox" id="showNonMl"> แสดงกลยุทธ์ที่ไม่ใช่ ML</label><span class="small" style="color:var(--muted)">ทุกกราฟในหน้านี้เป็นกลยุทธ์แบบกฎตายตัว ยังไม่มี ML ตัวไหนได้สอบจริง · ผล ML ดูที่หน้า <a href="ml.html">🤖 ML</a></span></div>
+<div class="nonml" hidden>
+
 
 <div class="card">
   <p style="margin:0 0 6px"><b>อ่านกราฟยังไง:</b> แต่ละช่วงเริ่มต้นที่ 1,000 USDT ใหม่ เส้นสีน้ำเงินคือช่วงสอบย่อย (2023–24) ที่ใช้คัดกลยุทธ์ เส้นสีส้มคือช่วงสอบจริง (2025–ส.ค. 2026) ที่กลยุทธ์ไม่เคยเห็นมาก่อน เส้นประคือจุดเริ่ม 1,000</p>
@@ -84,6 +88,7 @@ html{scroll-padding-top:72px}
 <div class="minis" id="prem"></div>
 
 <p class="small">ที่มา: ไฟล์รายการเทรดใน <code>results/&lt;เหรียญ&gt;/eval_trades/&lt;eval_id&gt;_valid.csv.gz</code> และ <code>_holdout.csv.gz</code> (คอลัมน์ <code>equity_after</code>) · SOL ใช้บัญชีวิจัย 20,000 USDT จึงย่อสเกลให้เริ่มที่ 1,000 เท่ากัน · holdout ครั้งที่ใช้ทดสอบระบบล็อก (กลยุทธ์ตัวอย่าง ไม่ได้ผ่านการคัดเลือก) ไม่ได้แสดง เพราะไม่มีไฟล์รายการเทรดช่วงสอบจริง</p>
+</div>
 </main>
 <script>
 const DATA = 
@@ -199,6 +204,11 @@ const PREM = [{"sym":"LINK","verdict":"WATCH","n":95,"end":1500.1,"min":1000,"pt
     hit.addEventListener("pointerleave", () => { g.style.display = "none"; tip.style.opacity = 0; });
   });
 })();
+</script>
+<script>
+(function(){const cb=document.getElementById("showNonMl");if(!cb)return;
+const apply=()=>{document.querySelectorAll(".nonml").forEach(e=>e.hidden=!cb.checked);window.dispatchEvent(new Event("resize"));document.dispatchEvent(new CustomEvent("nonml",{detail:cb.checked}));};
+cb.addEventListener("change",apply);apply();})();
 </script>
 </body>
 </html>
