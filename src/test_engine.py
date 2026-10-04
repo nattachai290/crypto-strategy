@@ -2409,6 +2409,9 @@ def test_listing() -> None:
     check("listing events: first run only, after LISTED_AFTER (founding contracts and relaunches are not listings)",
           list(ev["inst"]) == ["BUSDT"])
 
+    ys = LS.year_of_exit(pd.Series([pd.Timestamp("2025-01-01", tz="UTC"), pd.Timestamp("2024-06-03", tz="UTC")]))
+    check("listing per-year: an eod exit stamped at the window end (next 00:00) counts in the last year of the window",
+          list(ys) == [2024, 2024])
     L = pd.Timestamp("2023-05-20", tz="UTC")
     check("listing new-token flag: no spot pair, or spot first traded in the listing month or later",
           LS.new_token(None, L) and LS.new_token("2023-05", L) and LS.new_token("2023-06", L)

@@ -221,6 +221,12 @@ def short_trade(b: pd.DataFrame, entry_day: pd.Timestamp, end: pd.Timestamp, sto
             "gross_r": gross / stop, "net_r": ret / stop, "funding_r": fund_sum / stop}
 
 
+def year_of_exit(exit_time: pd.Series) -> pd.Series:
+    """Calendar year a trade's exit belongs to. An `eod` exit is stamped at the window
+    end (00:00 of the next year), so one microsecond is taken off (_multi Exp 046)."""
+    return (pd.to_datetime(exit_time, utc=True) - pd.Timedelta(microseconds=1)).dt.year
+
+
 def event_trades(bars, ev, a, b, delay, stop, trail, stress=1.0) -> pd.DataFrame:
     end = pd.Timestamp(b, tz="UTC")
     rows = []
@@ -293,7 +299,7 @@ def judge(bars, ev, a, b, cell) -> tuple[dict, pd.DataFrame]:
                funding_r=float(t["funding_r"].mean()) if len(t) else None,
                exits={k: int(v) for k, v in t["reason"].value_counts().items()} if len(t) else {},
                avg_days=float(t["days"].mean()) if len(t) else None,
-               per_year_r={str(y): float(g["ret"].sum()) for y, g in t.groupby(pd.to_datetime(t["exit_time"]).dt.year)}
+               per_year_r={str(y): float(g["ret"].sum()) for y, g in t.groupby(year_of_exit(t["exit_time"]))}
                if len(t) else {})
     if "new_token" in ev and len(t_all):
         nt = dict(zip(ev["inst"], ev["new_token"]))
