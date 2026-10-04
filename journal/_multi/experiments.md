@@ -3705,3 +3705,27 @@ shift of the signal scored better than the real one. The 4.6% drawdown looks goo
 only because it sits in cash 63% of the time. So the timing does not survive being
 made once: the mean of the 47 forecasts is simply a weaker signal than each coin's
 own forecast, and it crosses its threshold eight times less often.
+
+---
+
+## Exp 040 - Review of Exp 039 (§33, planner): REJECT stands; one comparison corrected
+
+**Date:** 2026-10-04
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.** I recomputed from `results/_multi/ml_mkt/trades_valid.csv.gz`:
+- 98 trades, all on ETHUSDT;
+- long: 32 trades at -0.1242 R, summing to -3.98 R;
+- short: 66 trades at +0.1186 R, summing to +7.82 R;
+- mean R without the 5 best trades: -0.0821.
+
+The run matches its registration. The REJECT stands, and so does the main reading: on TRAIN, 5 of the 6 cells lost money, so the mean forecast has no edge on BTC or ETH.
+
+**Correction: the "crosses its threshold eight times less often" comparison.** The 98 trades are on one contract. §31's 1,588 trades are spread over 47 coins, about 34 per coin, and §31 traded ETH itself 27 times. Per contract, the mean signal trades about three times as often as a coin's own forecast, not eight times less often. The conclusion stands for a different reason: the mean signal is not weaker because it trades less. It is weaker because it has no edge on TRAIN.
+
+**What the three rounds §31–§33 say together.**
+- §32: removing the market-wide part of each coin's forecast removed the edge.
+- §33: the market-wide part alone, traded on BTC or ETH, has no edge.
+- So the edge, if it is real, needs both parts together: each coin's own forecast, traded on that coin. On VALID it came mostly from shorts on alt-coins in sell-offs. §31 short leg: +0.42 against +0.16 long; §33's short leg is its only positive leg.
+- The mean signal spent 31% of 2023–24 short and 6.5% long while ETH rose about 1% a week. The model leans short, as the owner saw ("it goes short while the trend is up").
+- Three further rounds have not improved on the frozen §31 cell. Every further variant judged on VALID 2023–24 is another look at the same two years: this would be the 9th.
