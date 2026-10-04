@@ -126,6 +126,8 @@ const DESC = {
   "029_opening_range_tf240": "ดูกรอบราคาช่วงต้นวัน (หลัง 07:00 น. เวลาไทย) แล้วเข้าตามทางที่ราคาปิดทะลุกรอบ <b>ทั้ง Long และ Short</b> · stop 4% · ถือไม่เกิน 48 ชม.",
   "038_opening_range_both_sides": "ดูกรอบราคาชั่วโมงแรกหลัง 07:00 น. เวลาไทย แล้วเข้าตามทางที่ทะลุ <b>ทั้ง Long และ Short</b> · stop 5% · เลื่อน stop ตามเมื่อกำไร 2R · ถือไม่เกิน 96 ชม.",
   "039_breakout_flow_confirm_tf5_time": "เข้าเมื่อราคาทะลุจุดสูง/ต่ำ 80 ชม. พร้อม volume สูงและแรงซื้อขายเชิงรุกไปทางเดียวกัน <b>ทั้ง Long และ Short</b> · stop 6% · ถือไม่เกิน 96 ชม.",
+  "ML §31 1h + portfolio": "<b>ML ตัวที่ดีที่สุดตอนนี้ (§30 + จัดพอร์ต §31)</b> · โมเดล 1h เทรนใหม่ทุกเดือน (47 เหรียญ + ประวัติ spot ตั้งแต่ 2017) · เข้าไม้เฉพาะเมื่อกราฟ 4h ทำนายทางเดียวกัน · ยิ่งมั่นใจยิ่งลงขนาดไม้มาก (ไม่เกิน 1%) · เปิดค้างฝั่งเดียวกันรวมไม่เกิน 5% · ทุกเหรียญอยู่บัญชีเดียวกัน หน้านี้แสดงส่วนของเหรียญนี้ (ทุนเริ่ม 1,000 นับแบบบวกสะสม) · ผลรวม: ขาดเกณฑ์ช่วงความเชื่อมั่นอีก 0.00026",
+  "ML §30 1h (spot history, 47 coins)": "<b>ML walk-forward 1h (§30)</b> · เหมือน §28 แต่เรียนจากประวัติ spot ย้อนถึง 2017 · ตัดสินใจทุกแท่ง ทำนายราคาอีก 24 ชม. · เข้าเมื่อคำทำนายแรงพอ ออกเมื่อคำทำนายอ่อน/กลับทิศ · stop กันพัง 8 ATR · ไม่มีเวลาจำกัด · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1% · ผลรวม: +0.037 R ต่อไม้ ตกด่านเดียว (ช่วงความเชื่อมั่น)",
   "ml_wf 1h (PLAN §28)": "<b>ML walk-forward หลาย timeframe</b> · เทรนใหม่ทุกต้นเดือนด้วยข้อมูลถึงเดือนก่อนหน้า (47 เหรียญ) · ตัดสินใจทุกแท่ง ทำนายราคาอีก 24 แท่ง · มองกราฟ 1h, 4h, 1d พร้อมกัน (เฉพาะแท่งที่ปิดแล้ว) · เข้าเมื่อคำทำนายแรงพอ ออกเมื่อคำทำนายอ่อน/กลับทิศ · stop กันพัง 8 ATR · ไม่มีเวลาจำกัด · ผลรวม: ไม่ผ่านทั้ง 3 timeframe · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
   "ml_wf 4h (PLAN §28)": "<b>ML walk-forward หลาย timeframe</b> · เทรนใหม่ทุกต้นเดือนด้วยข้อมูลถึงเดือนก่อนหน้า (47 เหรียญ) · ตัดสินใจทุกแท่ง ทำนายราคาอีก 24 แท่ง · มองกราฟ 1h, 4h, 1d พร้อมกัน (เฉพาะแท่งที่ปิดแล้ว) · เข้าเมื่อคำทำนายแรงพอ ออกเมื่อคำทำนายอ่อน/กลับทิศ · stop กันพัง 8 ATR · ไม่มีเวลาจำกัด · ผลรวม: ไม่ผ่านทั้ง 3 timeframe · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
   "ml_wf 1d (PLAN §28)": "<b>ML walk-forward หลาย timeframe</b> · เทรนใหม่ทุกต้นเดือนด้วยข้อมูลถึงเดือนก่อนหน้า (47 เหรียญ) · ตัดสินใจทุกแท่ง ทำนายราคาอีก 24 แท่ง · มองกราฟ 1h, 4h, 1d พร้อมกัน (เฉพาะแท่งที่ปิดแล้ว) · เข้าเมื่อคำทำนายแรงพอ ออกเมื่อคำทำนายอ่อน/กลับทิศ · stop กันพัง 8 ATR · ไม่มีเวลาจำกัด · ผลรวม: ไม่ผ่านทั้ง 3 timeframe · ทุนแต่ละเหรียญคิดแยก เริ่ม 1,000 เสี่ยงไม้ละ 1%",
@@ -169,7 +171,7 @@ function barAt(t) { // index of the displayed bar containing time t
 }
 
 let PER = "valid", IDX = [];
-const VER = "4";   // bump when docs/trades/ changes, so browsers do not keep an old copy
+const VER = "5";   // bump when docs/trades/ changes, so browsers do not keep an old copy
 async function load(id) {
   $("load").style.display = "flex";
   const it = IDX.find(r => r.id === id);
@@ -178,6 +180,11 @@ async function load(id) {
   const key = id + (PER === "holdout" ? "_holdout" : "");
   if (!cache[key]) cache[key] = await (await fetch("trades/" + key + ".json?v=" + VER, {cache: "no-cache"})).json();
   D = cache[key];
+  if (!D.bars && D.meta.bars_from) {
+    const bk = D.meta.bars_from;
+    if (!cache[bk]) cache[bk] = await (await fetch("trades/" + bk + ".json?v=" + VER, {cache: "no-cache"})).json();
+    D.bars = cache[bk].bars;
+  }
   const m = D.meta, b = D.bars, dec = m.dec;
   B = b.t;
   makeChart();
@@ -247,6 +254,8 @@ function why(name, val, tf) {
 }
 function whyList(w, tf) {
   if (!w || !w.length) return "-";
+  w = w.filter(r => r[1] != null && r[2] != null);
+  if (!w.length) return "-";
   return w.map(([n, v, c], k) => `<span style="white-space:normal">${"①②③"[k]} ${why(n, v, tf)} <span style="color:var(--muted)">(ดัน${c >= 0 ? "ขึ้น" : "ลง"} ${Math.abs(c).toFixed(2)})</span></span>`).join("<br>");
 }
 
@@ -316,15 +325,17 @@ $("theme").onclick = () => {
   idx.forEach(r => { if (r.hasHold === undefined) r.hasHold = !!r.hold; });
   const pick = $("pick");
   IDX = idx;
-  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${r.group === "ml" || r.group === "wf" ? (r.group === "wf" ? "ML walk-forward · " : "ML เข้า-ออกเอง · ") + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
-  const ml = r => r.group === "ml" || r.group === "wf";
+  const ml = r => ["ml", "wf", "s30", "s31"].includes(r.group);
+  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${ml(r) ? ({wf: "ML walk-forward · ", ml: "ML เข้า-ออกเอง · ", s30: "ML §30 · ", s31: "ML §31 พอร์ต · "})[r.group] + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
   const fill = show => {
-    pick.innerHTML = [60, 240, 1440].map(tf => `<optgroup label="ML walk-forward ${tfs(tf)} (รอบ §28, ไม่ผ่าน) · 47 เหรียญ">${idx.filter(r => r.group === "wf" && r.tf === tf).map(opt).join("")}</optgroup>`).join("") +
+    pick.innerHTML = `<optgroup label="ML §31: โมเดล 1h + จัดพอร์ต (ดีที่สุด, ขาดเกณฑ์อีก 0.00026) · 47 เหรียญ">${idx.filter(r => r.group === "s31").map(opt).join("")}</optgroup>` +
+      `<optgroup label="ML §30 1h (ประวัติ spot ตั้งแต่ 2017, เกือบผ่าน) · 47 เหรียญ">${idx.filter(r => r.group === "s30").map(opt).join("")}</optgroup>` +
+      [60, 240, 1440].map(tf => `<optgroup label="ML walk-forward ${tfs(tf)} (รอบ §28, ไม่ผ่าน) · 47 เหรียญ">${idx.filter(r => r.group === "wf" && r.tf === tf).map(opt).join("")}</optgroup>`).join("") +
       `<optgroup label="ML ตัดสินเข้า-ออกเอง (รอบ §27, ไม่ผ่าน) · 20 เหรียญ">${idx.filter(r => r.group === "ml").map(opt).join("")}</optgroup>` +
       (show ? `<optgroup label="ไม่ใช่ ML: กลยุทธ์กฎตายตัวที่ผ่านสอบย่อย (PASS)">${idx.filter(r => !ml(r)).map(opt).join("")}</optgroup>` : "");
   };
   const cb = $("showNonMl");
-  const def = () => (idx.find(r => r.group === "wf" && r.tf === 60 && r.sym === "BTCUSDT") || idx.find(ml) || idx[0]).id;
+  const def = () => (idx.find(r => r.group === "s31" && r.sym === "BTCUSDT") || idx.find(ml) || idx[0]).id;
   let first = def();
   try { let h = location.hash.slice(1); const ho = h.endsWith("_holdout"); if (ho) h = h.slice(0, -8); const r = idx.find(x => x.id === h); if (r) { first = h; if (ho) PER = "holdout"; if (!ml(r)) cb.checked = true; } } catch (e) {}
   fill(cb.checked);
