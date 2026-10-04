@@ -4366,3 +4366,49 @@ selection:
 The owner is also choosing how "large coins" are defined. The planner's
 proposal: crypto only, listed ≥ 1 year, the monthly top 20 by prior-30-day
 volume. §36 will be revised and re-registered before any run.
+
+---
+
+## Exp 048 - Re-registration of PLAN.md §36: train wide, trade the monthly top 20 large coins (owner's definition)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent. This replaces
+Exp 047's registration, which was put on hold.
+
+**The owner's definition of "large coins" (2026-10-04):**
+- crypto only;
+- listed ≥ 1 year;
+- each month, the top 20 by mean daily quote volume over the prior 30 days.
+
+That is the set that could be known live, so the backtest chooses no coin with
+hindsight. Today, for illustration only (August 2026, from the 2026-08 daily
+files), the list would start BTC, ETH, SOL, XRP, ZEC, HYPE, DOGE, BNB…
+
+**Fixed before the run (`src/ml_wide.py`, test 32, rewritten):**
+- **Sets per symbol, never per split run.** This is the data-gap fix: SOL,
+  XRP and LTC return.
+- **Non-crypto exclusion:** from `exchangeInfo` plus a fallback list.
+- **Training:**
+  - `narrow`: the 47 core coins' rows, one 24-bar model;
+  - `wide`: the core rows plus monthly top-50 crypto members, with 12/24/48-bar
+    models averaged.
+  - Both: §30's 1h setting, refit monthly.
+- **Agreement:** a 4h model (§30's 4h recipe) trained on the core rows,
+  forecasting every traded coin.
+- **Account:** §31's cell. New positions only in a coin's traded months.
+- **TRAIN** compares narrow against wide; a narrow choice is REJECT.
+- **VALID gates:** §31's.
+- **Diagnostic:** VALID forecast/label correlation, narrow against wide.
+- **Holdout:** one holdout shared with §31–§35's ML line.
+
+**Looks.** This would be the 8th distinct ML VALID book in `_multi`.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 32 included)
+python src/ml_wide.py --build      # non-crypto list + monthly sets + the extra coins' klines/funding (long; resumable)
+python src/ml_wide.py              # once; long (1h narrow + 3 wide horizons + 4h walk-forwards)
+```
+- Do not run `--final`.
+- If memory runs out, report it with the coin counts. Do not change TRAIN_TOP
+  or TRADE_N.

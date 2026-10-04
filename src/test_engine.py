@@ -2433,25 +2433,33 @@ def test_listing() -> None:
 
 
 # --------------------------------------------------------------------------
-# 32. Train wide, trade the top 20 (PLAN.md section 36)
+# 32. Train wide, trade the monthly top 20 large coins (PLAN.md section 36)
 # --------------------------------------------------------------------------
 def test_ml_wide() -> None:
-    print("\n32. ML wide: causal monthly top-N, labels per horizon = prepare's, training mask, horizon ensemble, pipeline")
+    print("\n32. ML wide: monthly sets (per symbol, crypto, age), labels per horizon = prepare's, masks, ensemble, member filter, pipeline")
     import contextlib
     import io
     import ml_port as MP_
     import ml_wf as WF_
     import ml_wf2 as W2
     import ml_wide as MW
-    days = pd.date_range("2023-01-01", "2023-03-31", freq="D", tz="UTC")
+    days = pd.date_range("2021-01-01", "2023-03-31", freq="D", tz="UTC")
     rows = []
     for d in days:
-        rows += [("A", d, 300.0 if d < pd.Timestamp("2023-02-01", tz="UTC") else 1.0),
-                 ("B", d, 200.0), ("C", d, 100.0 if d.day % 2 else 0.0), ("D", d, 50.0)]
-    daily = pd.DataFrame(rows, columns=["inst", "date", "quote_volume"])
-    mem = MW.monthly_members(daily, ["2023-02", "2023-03"], top=2)
-    check("ml_wide members: top-N by mean volume over the 30 days BEFORE the month; < 20 traded days excluded",
-          mem["2023-02"] == ["A", "B"] and mem["2023-03"] == ["B", "D"], f"{mem}")
+        young = d >= pd.Timestamp("2022-12-01", tz="UTC")
+        gap = pd.Timestamp("2023-02-26", tz="UTC") <= d <= pd.Timestamp("2023-02-28", tz="UTC")
+        rows += [("AUSDT", d, 300.0), ("XAUUSDT", d, 999.0)]
+        if not gap:
+            rows.append(("BUSDT", d, 200.0))                       # a 3-day hole must not drop it
+        if young:
+            rows.append(("NEWUSDT", d, 500.0))
+        rows.append(("CUSDT", d, 100.0 if d.day % 2 else 0.0))   # 15 traded days of 30: too few
+    daily = pd.DataFrame(rows, columns=["symbol", "date", "quote_volume"])
+    mem, tr = MW.monthly_sets(daily, ["2023-01", "2023-03"], {"XAUUSDT"}, train_top=3, trade_n=2)
+    check("ml_wide sets: per symbol (a data hole does not drop a coin), crypto only, >= 20 traded days; "
+          "traded = top-N listed >= 365 days; members may be young",
+          mem["2023-01"] == ["NEWUSDT", "AUSDT", "BUSDT"] and tr["2023-01"] == ["AUSDT", "BUSDT"]
+          and tr["2023-03"] == ["AUSDT", "BUSDT"], f"{mem} {tr}")
 
     ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
     fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
@@ -2469,13 +2477,18 @@ def test_ml_wide() -> None:
           and np.isclose(y12[i], np.log(o[i + 13] / o[i + 1]) * af) and np.isnan(y12[4995]))
 
     idx = pd.date_range("2023-01-30", "2023-03-02", freq="1D", tz="UTC")
-    mk = MW.training_mask(idx, "X", {"CORE"}, {"2023-02": ["X"], "2023-03": []})
-    check("ml_wide training mask: a core coin trains on every row; another coin only in its member months",
-          MW.training_mask(idx, "CORE", {"CORE"}, {}).all()
-          and list(mk) == [d.strftime("%Y-%m") == "2023-02" for d in idx])
+    feb = [d.strftime("%Y-%m") == "2023-02" for d in idx]
+    check("ml_wide masks: narrow trains on core rows only; wide adds a coin's member months",
+          MW.training_mask(idx, "CORE", {"CORE"}, {}, False).all()
+          and not MW.training_mask(idx, "X", {"CORE"}, {"2023-02": ["X"]}, False).any()
+          and list(MW.training_mask(idx, "X", {"CORE"}, {"2023-02": ["X"], "2023-03": []}, True)) == feb)
     cb = MW.combine({12: np.array([1.0, np.nan]), 24: np.array([2.0, 1.0]), 48: np.array([4.0, 1.0])})
     check("ml_wide ensemble: mean of pred_h x sqrt(24/h); NaN unless every horizon forecasts",
           np.isclose(cb[0], (np.sqrt(2) + 2 + 4 / np.sqrt(2)) / 3) and np.isnan(cb[1]))
+    d = np.array([0, 1, 1, 1, 0, -1, -1, 1], float)
+    al = np.array([1, 0, 1, 0, 0, 0, 1, 0], bool)
+    check("ml_wide member filter: a new position (or reversal) only where allowed; holding and exits untouched",
+          list(MW.member_filter(d, al)) == [0, 0, 1, 1, 0, 0, -1, 0])
 
     cfg = WF_.GRID[0]
     saved_cfg = MP_._cfg
@@ -2485,28 +2498,32 @@ def test_ml_wide() -> None:
         for n, sd in (("C0USDT", 140), ("C1USDT", 141), ("C2USDT", 142), ("N0USDT", 143)):
             bb = _momentum_bars(0.0008, seed=sd)
             by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+        months = [str(p) for p in pd.period_range("2020-01", "2024-12", freq="M")]
+        members = {m: ["N0USDT"] for m in months}
+        core = {"C0USDT", "C1USDT", "C2USDT"}
         with contextlib.redirect_stdout(io.StringIO()):
             P = W2.prepare(by, 60)
-            members = {m: ["N0USDT"] for m in [str(p) for p in pd.period_range("2020-01", "2024-12", freq="M")]}
             h0 = WF_.H_BARS
             spans = [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]]
-            pw = MW.wide_forecasts(P, members, {"C0USDT", "C1USDT", "C2USDT"}, spans, step=3)
+            pw = MW.forecasts(P, 60, cfg, {c: MW.training_mask(P[c]["X"].index, c, core, members, True) for c in P},
+                              MW.HORIZONS, spans, step=3)
         va = [(s.index >= pd.Timestamp(WF_.WINDOWS["valid"][0], tz="UTC")) for s in pw.values()]
-        check("ml_wide forecasts: every coin forecast in VALID, the horizon setting restored afterwards",
+        check("ml_wide forecasts: every coin forecast in VALID (the non-core coin too), horizon setting restored",
               WF_.H_BARS == h0 and all(np.isfinite(s.to_numpy()[m]).mean() > 0.5 for s, m in zip(pw.values(), va)))
-        P20 = {c: P[c] for c in ("C0USDT", "C1USDT", "C2USDT")}
-        noise = {c: pd.Series(np.random.default_rng(9).normal(size=len(P20[c]["X"])), index=P20[c]["X"].index) for c in P20}
-        wide = {c: pw[c] for c in P20}
+        traded = {m: ["C0USDT", "C1USDT", "C2USDT"] for m in months}
+        noise = {c: pd.Series(np.random.default_rng(9).normal(size=len(P[c]["X"])), index=P[c]["X"].index) for c in P}
         with contextlib.redirect_stdout(io.StringIO()):
-            r1 = MW.evaluate(P20, noise, wide, {"4h": wide}, 0.9, "flip", min_coins=3)
-            r2 = MW.evaluate(P20, wide, noise, {"4h": wide}, 0.9, "flip", min_coins=3)
-        check("ml_wide pipeline: a real edge in the wide forecast is chosen and PASSes; a base choice cannot PASS",
+            r1 = MW.evaluate(P, noise, pw, pw, traded, 0.9, "flip", min_coins=3)
+            r2 = MW.evaluate(P, pw, noise, pw, traded, 0.9, "flip", min_coins=3)
+            t_off, _ = MW.run_cell(P, pw, pw, *WF_.WINDOWS["valid"], {m: ["C0USDT"] for m in months}, 0.9, "flip")
+        check("ml_wide pipeline: a real edge in the wide forecast is chosen and PASSes; a narrow choice cannot PASS",
               r1["chosen"]["form"] == "wide" and r1["verdict"] == "PASS"
-              and r2["chosen"]["form"] == "base" and "train_chose_wide" in r2["gates_failed"],
+              and r2["chosen"]["form"] == "narrow" and "train_chose_wide" in r2["gates_failed"],
               f"{r1['verdict']} {r1['gates_failed']} / {r2['chosen']} {r2['gates_failed']}")
+        check("ml_wide traded sets: a coin outside every month's traded set never gets a position",
+              len(t_off) > 0 and set(t_off["coin"]) == {"C0USDT"})
     finally:
         MP_._cfg = saved_cfg
-
 
 if __name__ == "__main__":
     main()

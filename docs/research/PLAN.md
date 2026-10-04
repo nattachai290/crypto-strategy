@@ -2601,3 +2601,30 @@ The run is long: monthly refits on all training coins.
 **Prior:** low to moderate. This is the 8th distinct ML VALID book (Exp 043's
 count). Trading only 20 coins removes the breadth lever, so the CI must
 narrow through forecast quality alone.
+
+### §36 addendum: re-registered on the owner's definition of "large coins" (2026-10-04, `_multi` Exp 048)
+
+This replaces the static "top 20 of `universe_v2.json`" above, which inherited
+the data-gap bug (`_multi` Exp 047 note).
+
+- **Traded set, chosen by the owner.**
+  - Crypto only: no stock, gold or oil perps. Excluded are symbols whose
+    `exchangeInfo` `underlyingType` is not COIN, fetched by `--build`, plus a
+    fallback list. These perps only exist from 2025.
+  - Listed for ≥ 365 days.
+  - Each month, the top 20 by mean daily quote volume over the 30 days before
+    the month, with ≥ 20 traded days.
+  - A new position on a coin opens only in a month when it is in the set;
+    holding and exits are untouched.
+- **Data-gap fix.** Sets and listing age are computed per symbol from daily
+  volume, never from `split_instruments` runs. SOL, XRP and LTC are back.
+- **Training rows.** For `wide`: the 47 core coins' rows, plus every crypto
+  perp's rows in months when it was in the top 50, at any age.
+- **The comparison is now narrow against wide**, on the same traded sets.
+  `narrow` is §30's recipe: one 24-bar model trained on the 47 core coins'
+  rows only, forecasting every traded coin, with features from the same
+  `prepare` as `wide`. A `narrow` choice is REJECT.
+- **Agreement.** A 4h model with §30's 4h recipe, trained on the core rows and
+  forecasting every traded coin, shared by both forms. §30's frozen 4h
+  forecasts cover only the 47 coins.
+- **Unchanged:** §31's cell, gates and holdout sharing.

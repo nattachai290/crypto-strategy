@@ -1,38 +1,43 @@
-"""Train wide, trade the top 20: more training data and a horizon ensemble for the 1h model (PLAN.md section 36)
+"""Train wide, trade the monthly top 20 large coins (PLAN.md section 36, re-registered)
 
-    python src/ml_wide.py --build   # 1h/4h/1d perp klines + funding of every coin that was a monthly top-50
+    python src/ml_wide.py --build   # 1h/4h/1d perp klines + funding of every coin needed
     python src/ml_wide.py           # TRAIN/VALID, once
     python src/ml_wide.py --final   # HOLDOUT once, only after PASS (shared with sections 31-34)
 
-Sections 31-34 (_multi Exp 033-043) left the frozen section 31 cell as the best
-book: weekly mean +0.00548, CI lower bound -0.00026. Its forecast is weak (IC
-about +0.02) and was learned from 47 coins only. The owner will trade only the
-large coins (top 20), so the improvement has to come from a better forecast,
-not from more traded coins.
+The owner's frame (2026-10-04): the goal is an ML model that trades, and it will
+trade only LARGE coins. "Large", as the owner chose: crypto only (no stock,
+gold, oil perps), listed for at least a year, and each month the top TRADE_N by
+mean daily quote volume over the 30 days before the month. That is exactly what
+can be known when trading live, so the backtest picks no coin with hindsight.
 
-Hypothesis: the 1h model learns more, and forecasts more steadily, when it is
-trained on (a) every coin that was among the 50 most traded perps at the time,
-not only the 47 chosen in 2020-22 (later large coins, sell-offs, new regimes),
-and (b) three label horizons (12, 24, 48 bars) whose forecasts are averaged.
+Hypothesis: the 1h model learns more, and forecasts more steadily, when (a) it
+is trained on every crypto perp that was among the TRAIN_TOP most traded at the
+time (later large coins, more sell-offs, new regimes; never traded unless large)
+and (b) three label horizons (12, 24, 48 bars) are averaged.
 
-Everything else is fixed (an ablation against section 31 on the same coins):
-  * traded coins: the top TRADE_N of section 28's universe by 2020-22 volume
-    (universe_v2.json order), the only coins that ever get a position;
-  * training rows: all of section 30's rows for its 47 coins (spot history
-    included), PLUS each other coin's rows only in months when it was in the
-    top TRAIN_TOP perps by mean quote volume over the 30 days before the month
-    (causal; zero-volume days excluded; delisted coins included). Other coins
-    use their perp bars only;
-  * the model: section 30's chosen 1h setting, refit every month, one model per
-    horizon h in HORIZONS (label = log return over h bars in ATRs, the walk-forward
-    lag = h + 1 bars); the forecast is the mean of pred_h x sqrt(24 / h);
-  * the account: section 31's chosen cell (4h agreement with section 30's frozen
-    4h forecasts, confidence sizing, 5% cap), its policy, stop, costs, gates.
-TRAIN (2021-22) compares "base" (section 30's frozen 1h forecasts on the same
-TRADE_N coins) with "wide" by the weekly account t-statistic; a "base" choice is
-REJECT (gate train_chose_wide). VALID gates: section 31's (breadth over the
-TRADE_N coins, MIN_COINS = 10). Diagnostic: the correlation of each forecast with
-the 24-bar label on the traded coins' VALID rows (base vs wide).
+The comparison (TRAIN chooses, VALID judges once), both forms on the same coins,
+the same monthly traded sets and the same account:
+  * "narrow": section 30's recipe - one 24-bar model trained only on section
+    30's 47 coins' rows - forecasting every traded coin;
+  * "wide": one model per horizon trained on the 47 coins' rows PLUS every other
+    crypto perp's rows in months when it was a monthly top-TRAIN_TOP member;
+    forecast = mean of pred_h x sqrt(24 / h).
+  Both: section 30's chosen 1h setting, refit monthly; features from
+  ml_wf2.prepare over all training coins (perp bars for coins outside the 47).
+  Agreement: one 4h model with section 30's 4h recipe (24 bars, section 30's 4h
+  setting) trained on the 47 coins' rows, forecasting every traded coin, shared
+  by both forms. Account: section 31's chosen cell (4h agreement, confidence
+  sizing, 5% cap), its policy, stop, costs. A NEW position on a coin opens only
+  in a month when the coin is in that month's traded set; holding and exits are
+  untouched.
+A "narrow" choice is REJECT (gate train_chose_wide). VALID gates: section 31's,
+breadth over coins with >= MIN_COIN_TRADES trades (>= MIN_COINS of them).
+Data-gap fix (_multi Exp 047): membership and listing age are computed per
+SYMBOL from daily volume, never from rotation.split_instruments runs, so a hole
+in Binance's daily files (SOL/XRP/LTC, 2022-02-26..28) no longer drops a coin.
+Non-crypto: symbols whose Binance exchangeInfo underlyingType is not COIN
+(fetched by --build) plus NON_CRYPTO_FALLBACK; they only exist from 2025, so
+they matter for the holdout only.
 Holdout: sections 31-36 share ONE holdout (the same model line).
 Writes results/_multi/ml_wide/ and the generated journal/_multi/ml_wide.md.
 """
@@ -61,32 +66,47 @@ import ml_xs as XS  # noqa: E402
 
 OUT = C.ROOT / "results" / "_multi" / "ml_wide"
 REPORT = C.ROOT / "journal" / "_multi" / "ml_wide.md"
+SOURCE_UNIVERSE = C.ROOT / "results" / "_multi" / "ml_wf" / WF.UNIVERSE_FILE
 
-# ---- pre-registered (PLAN.md section 36)
+# ---- pre-registered (PLAN.md section 36, re-registered in _multi Exp 048)
 TRADE_N = 20
 TRAIN_TOP = 50
+MIN_AGE_DAYS = 365
 VOL_DAYS, VOL_MIN_DAYS = 30, 20
-MEMBERS_FROM = "2019-10"
+MONTHS_FROM = "2019-10"
 HORIZONS = (12, 24, 48)
 CELL = FL.CELL
+NON_CRYPTO_FALLBACK = {
+    "XAUUSDT", "XAGUSDT", "CLUSDT", "BZUSDT", "SNDKUSDT", "SKHYNIXUSDT", "SKHYUSDT", "SPCXUSDT", "SOXLUSDT",
+    "SOXSUSDT", "MUUSDT", "KORUUSDT", "SNXXUSDT", "DRAMUSDT", "SAMSUNGUSDT", "CRCLUSDT", "MSTRUSDT", "NVDAUSDT",
+    "AAPLUSDT", "ADBEUSDT", "AAOIUSDT", "TSLAUSDT", "AMZNUSDT", "GOOGLUSDT", "METAUSDT", "MSFTUSDT", "COINUSDT",
+    "HOODUSDT", "QQQUSDT", "SPYUSDT", "PLTRUSDT", "AMDUSDT", "INTCUSDT", "NFLXUSDT", "BABAUSDT", "TSMUSDT"}
 
 
 # --------------------------------------------------------------------------
 # pure pieces (test 32)
 # --------------------------------------------------------------------------
-def monthly_members(daily: pd.DataFrame, months: list[str], top: int = TRAIN_TOP) -> dict[str, list[str]]:
-    """For each month 'YYYY-MM', the `top` instruments by mean quote volume over
-    the VOL_DAYS days before the month starts (at least VOL_MIN_DAYS traded days).
-    daily: columns inst, date (UTC), quote_volume; zero-volume rows are not trading."""
-    d = daily[daily["quote_volume"] > 0]
-    out = {}
+def monthly_sets(daily: pd.DataFrame, months: list[str], non_crypto: set,
+                 train_top: int = TRAIN_TOP, trade_n: int = TRADE_N) -> tuple[dict, dict]:
+    """daily: symbol, date (UTC), quote_volume. For each month 'YYYY-MM', ranked by
+    mean quote volume over the VOL_DAYS days before the month (>= VOL_MIN_DAYS
+    traded days), crypto only:
+      members[m] = the top train_top symbols (training rows);
+      traded[m]  = the top trade_n among symbols first traded >= MIN_AGE_DAYS
+                   before the month (the coins that may be traded).
+    Per symbol, never per split run (the data-gap fix); zero volume = no trading."""
+    d = daily[(daily["quote_volume"] > 0) & ~daily["symbol"].isin(non_crypto)]
+    first = d.groupby("symbol")["date"].min()
+    members, traded = {}, {}
     for m in months:
         m0 = pd.Timestamp(m + "-01", tz="UTC")
         w = d[(d["date"] >= m0 - pd.Timedelta(days=VOL_DAYS)) & (d["date"] < m0)]
-        g = w.groupby("inst")["quote_volume"].agg(["mean", "size"])
+        g = w.groupby("symbol")["quote_volume"].agg(["mean", "size"])
         g = g[g["size"] >= VOL_MIN_DAYS].sort_values("mean", ascending=False)
-        out[m] = list(g.index[:top])
-    return out
+        members[m] = list(g.index[:train_top])
+        old = g[first.reindex(g.index) <= m0 - pd.Timedelta(days=MIN_AGE_DAYS)]
+        traded[m] = list(old.index[:trade_n])
+    return members, traded
 
 
 def label_h(bars: pd.DataFrame, h: int) -> np.ndarray:
@@ -112,13 +132,18 @@ def label_h(bars: pd.DataFrame, h: int) -> np.ndarray:
     return y[:-1]
 
 
-def training_mask(idx: pd.DatetimeIndex, coin: str, core: set, members: dict[str, list[str]]) -> np.ndarray:
-    """True where a row may train the model: every row of a core coin (section 30's
-    47), and another coin's rows only in months when it was a member."""
+def month_mask(idx: pd.DatetimeIndex, coin: str, sets: dict[str, list[str]]) -> np.ndarray:
+    """True on rows whose month lists the coin."""
+    mem = [m for m, lst in sets.items() if coin in lst]
+    return np.asarray(idx.strftime("%Y-%m").isin(mem), bool) if len(idx) else np.zeros(0, bool)
+
+
+def training_mask(idx: pd.DatetimeIndex, coin: str, core: set, members: dict, wide: bool) -> np.ndarray:
+    """narrow: every row of a core coin, nothing else; wide: also another coin's
+    rows in its member months."""
     if coin in core:
         return np.ones(len(idx), bool)
-    mem = {m for m, lst in members.items() if coin in lst}
-    return np.asarray(idx.strftime("%Y-%m").isin(list(mem)) if len(idx) else np.zeros(0, bool), bool)
+    return month_mask(idx, coin, members) if wide else np.zeros(len(idx), bool)
 
 
 def combine(preds: dict[int, np.ndarray]) -> np.ndarray:
@@ -128,22 +153,34 @@ def combine(preds: dict[int, np.ndarray]) -> np.ndarray:
     return np.where(np.isfinite(st).all(axis=0), st.mean(axis=0), np.nan)
 
 
-def wide_forecasts(P: dict, members: dict, core: set, spans, horizons=HORIZONS, step: int = 1) -> dict[str, pd.Series]:
-    """Walk-forward forecasts of the wide ensemble for every coin in P."""
-    cfg = MP._cfg(MP.TF_MAIN)["setting"]
-    masks = {c: training_mask(P[c]["X"].index, c, core, members) for c in P}
+def member_filter(desired: np.ndarray, allowed: np.ndarray) -> np.ndarray:
+    """Desired path with NEW positions (and reversals) only where allowed; holding
+    and exiting untouched."""
+    out, pos = np.zeros(len(desired)), 0.0
+    for t, want in enumerate(desired):
+        if want == pos:
+            pass
+        elif want == 0:
+            pos = 0.0
+        else:
+            pos = want if allowed[t] else 0.0
+        out[t] = pos
+    return out
+
+
+def forecasts(P: dict, tf: int, cfg: dict, masks: dict, horizons, spans, step: int = 1) -> dict[str, pd.Series]:
+    """Walk-forward forecasts (mean over horizons) for every coin in P, each model
+    trained only on rows where masks[c] is True."""
     per_h = {}
     saved = WF.H_BARS
     try:
         for h in horizons:
-            Ph = {}
-            for c in P:
-                y = label_h(P[c]["bars"], h)
-                Ph[c] = {**P[c], "y": pd.Series(np.where(masks[c], y, np.nan), index=P[c]["X"].index)}
+            Ph = {c: {**P[c], "y": pd.Series(np.where(masks[c], label_h(P[c]["bars"], h), np.nan),
+                                             index=P[c]["X"].index)} for c in P}
             WF.H_BARS = h                                  # the walk-forward lag is h + 1 bars
             pred = {c: np.full(len(P[c]["X"]), np.nan) for c in P}
             for a, b in spans:
-                p = WF.walk_forward(Ph, MP.TF_MAIN, cfg, a, b, step=step)
+                p = WF.walk_forward(Ph, tf, cfg, a, b, step=step)
                 for c in P:
                     pred[c] = np.where(np.isfinite(p[c]), p[c], pred[c])
             per_h[h] = pred
@@ -161,105 +198,81 @@ def forecast_corr(P: dict, pred: dict, a: str, b: str) -> float | None:
         idx = P[c]["X"].index
         w = (idx >= pd.Timestamp(a, tz="UTC")) & (idx < pd.Timestamp(b, tz="UTC"))
         p = pred[c].reindex(idx).to_numpy()[w]
-        y = P[c]["y"].to_numpy()[w]
+        y = label_h(P[c]["bars"], 24)[w]
         ok = np.isfinite(p) & np.isfinite(y)
         xs.append(p[ok])
         ys.append(y[ok])
-    x, y = np.concatenate(xs) if xs else np.zeros(0), np.concatenate(ys) if ys else np.zeros(0)
+    x = np.concatenate(xs) if xs else np.zeros(0)
+    y = np.concatenate(ys) if ys else np.zeros(0)
     return float(np.corrcoef(x, y)[0, 1]) if len(x) > 2 and x.std() > 0 and y.std() > 0 else None
 
 
 # --------------------------------------------------------------------------
-# data
+# the account: section 31's cell, with the monthly traded set
 # --------------------------------------------------------------------------
-def _daily() -> pd.DataFrame:
-    import rotation as RO
-    p = RO.CACHE / "perp_1d.parquet"
-    if not p.exists():
-        raise SystemExit(f"no {p}: run  python src/rotation.py --build perp  first")
-    return RO.split_instruments(pd.read_parquet(p))
-
-
-def _months(a: str, b: str) -> list[str]:
-    return [str(p) for p in pd.period_range(a, b, freq="M")]
-
-
-def build() -> None:
-    import datafeed as DF
-    import ml_pool as MPL
-    OUT.mkdir(parents=True, exist_ok=True)
-    d = _daily()
-    mp = OUT / "members.json"
-    if not mp.exists():
-        mem = monthly_members(d, _months(MEMBERS_FROM, C.DATA_END))
-        mp.write_text(json.dumps(mem, indent=1))
-    mem = json.loads(mp.read_text())
-    uni = json.loads(SOURCE_UNIVERSE.read_text())
-    core = {u["inst"] for u in uni}
-    (OUT / "trade.json").write_text(json.dumps([u["inst"] for u in uni[:TRADE_N]], indent=1))
-    extra = sorted(set().union(*map(set, mem.values())) - core)
-    rng = d.groupby("inst")["date"].agg(["min", "max"])
-    sym = d.drop_duplicates("inst").set_index("inst")["symbol"]
-    months = set(C.month_range(*MPL.MONTHS))
-    print(f"[ml_wide] {len(extra)} coins beyond section 30's {len(core)} were a monthly top-{TRAIN_TOP}", flush=True)
-    for n, inst in enumerate(extra, 1):
-        s = sym[inst]
-        lo, hi = rng.at[inst, "min"], rng.at[inst, "max"] + pd.Timedelta(days=1)
-        for tf in WF.TFS:
-            kp = WF.cache_dir(tf) / f"{inst}.parquet"
-            if kp.exists():
-                continue
-            WF.cache_dir(tf).mkdir(parents=True, exist_ok=True)
-            keys = [k for k in DF.list_keys(f"data/futures/{C.MARKET}/monthly/klines/{s}/{WF.TF_NAME[tf]}/")
-                    if k[-11:-4] in months]
-            zs = [z for z in (DF.fetch_zip(x, WF.RAW / f"perp_{WF.TF_NAME[tf]}" / s) for x in keys) if z]
-            if not zs:
-                continue
-            k = pd.concat([DF._read_one_zip(z, C.KLINE_COLS) for z in zs], ignore_index=True)
-            k["open_time"] = MPL._ms(k["open_time"])
-            k = k[(k["open_time"] >= lo) & (k["open_time"] < hi)].drop_duplicates("open_time").sort_values("open_time")
-            k.to_parquet(kp, index=False)
-        fp = WF.cache_dir(60) / f"{inst}_funding.parquet"
-        if not fp.exists():
-            fkeys = [x for x in DF.list_keys(f"data/futures/{C.MARKET}/monthly/fundingRate/{s}/") if x[-11:-4] in months]
-            fz = [z for z in (DF.fetch_zip(x, WF.RAW / "perp_funding" / s) for x in fkeys) if z]
-            f = (pd.concat([DF._read_one_zip(z, C.FUNDING_COLS) for z in fz], ignore_index=True) if fz
-                 else pd.DataFrame(columns=C.FUNDING_COLS))
-            if len(f):
-                f["calc_time"] = MPL._ms(f["calc_time"])
-                f = f[(f["calc_time"] >= lo) & (f["calc_time"] < hi)].sort_values("calc_time")
-            f.to_parquet(fp, index=False)
-        print(f"  {n}/{len(extra)} {inst}: cached", flush=True)
-    print(f"BUILD OK: {len(core)} + {len(extra)} coins")
-
-
-SOURCE_UNIVERSE = C.ROOT / "results" / "_multi" / "ml_wf" / WF.UNIVERSE_FILE
-
-
-def load_wide() -> tuple[dict, set, dict, list[str]]:
-    mem = json.loads((OUT / "members.json").read_text())
-    trade = json.loads((OUT / "trade.json").read_text())
-    by_tf, _ = W3.load_all()
-    core = set(by_tf[60])
-    extra = sorted(set().union(*map(set, mem.values())) - core)
-    for inst in extra:
-        if not all((WF.cache_dir(tf) / f"{inst}.parquet").exists() for tf in WF.TFS):
+def run_cell(P, pred, o4, a, b, traded, q, mode, stress=1.0):
+    fr, paths = [], {}
+    for c in P:
+        p = pred[c].reindex(P[c]["X"].index).to_numpy()
+        ok = np.isfinite(p)
+        des, ebar = np.full(len(p), np.nan), np.full(len(p), np.nan)
+        if ok.any():
+            ebar[ok] = MH.entry_bar(p[ok], q)
+            des[ok] = MH.policy(p[ok], ebar[ok], mode)
+        lo, hi, rows = MH._window(P, c, a, b)
+        rows = rows[np.isfinite(des[rows])]
+        if not len(rows):
             continue
-        fund = pd.read_parquet(WF.cache_dir(60) / f"{inst}_funding.parquet")
-        for tf in WF.TFS:
-            b = W2._read(WF.cache_dir(tf) / f"{inst}.parquet")
-            if len(b):
-                by_tf[tf][inst] = {"spot": b, "perp": b, "fund": fund}
-    return by_tf, core, mem, trade
+        idx = P[c]["X"].index[rows]
+        o = o4.get(c)
+        if o is None or o.empty:
+            ov = np.full(len(rows), np.nan)
+        else:
+            pos = WF.asof_positions(idx, MP.TF_MAIN, o.index, 240)
+            ov = np.where(pos >= 0, o.to_numpy()[np.maximum(pos, 0)], np.nan)
+        desired = member_filter(MP.agree_filter(des[rows], ov), month_mask(idx, c, traded))
+        if not np.any(desired != 0):
+            continue
+        tgt = np.full(hi - lo, np.nan)
+        tgt[P[c]["pos"][rows] - lo] = desired
+        tb = P[c].get("tbars", P[c]["bars"])
+        t = MH.simulate(tb.iloc[lo:hi], tgt, P[c]["atr"][lo:hi], P[c]["fund"],
+                        fee=C.FEE_TAKER * stress, slip=P[c]["slip"] * stress, stop_atr=WF.STOP_ATR)
+        if len(t):
+            k = P[c]["X"].index.get_indexer(t["entry_time"] - pd.Timedelta(minutes=MP.TF_MAIN))
+            t["conf"] = np.where(k >= 0, np.abs(p[np.maximum(k, 0)]) / ebar[np.maximum(k, 0)], np.nan)
+        fr.append(t.assign(coin=c))
+        paths[c] = (desired, rows, lo, hi)
+    t = pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(
+        columns=["entry_time", "exit_time", "side", "net_r", "conf", "coin"])
+    return MP.size_trades(t, CELL["sizing"], CELL["cap"]), paths
 
 
-# --------------------------------------------------------------------------
-def evaluate(P20, pred_base, pred_wide, other, q, mode, min_coins=MP.MIN_COINS, keep=False, corr=None) -> dict:
+def judge(P, pred, o4, a, b, traded, q, mode, min_coins=MP.MIN_COINS):
+    t, paths = run_cell(P, pred, o4, a, b, traded, q, mode)
+    acc = MP.account(t, a, b)
+    acc["stress_weekly_mean"] = MP.account(run_cell(P, pred, o4, a, b, traded, q, mode, 1.5)[0], a, b)["weekly_mean"]
+    timing, per, pooled = MH.control({c: P[c] for c in paths}, paths)
+    coins = {}
+    for c in paths:
+        tc = t[t["coin"] == c]
+        coins[c] = {"trades": int(len(tc)), "mean_r": float(tc["net_r"].mean()) if len(tc) else None,
+                    "timing": per[c]["timing"], "shift_median": MH._q(per[c]["shifts"], 50)}
+    elig = {c: x for c, x in coins.items() if x["trades"] >= MP.MIN_COIN_TRADES}
+    beat = [c for c, x in elig.items() if x["mean_r"] > 0 and x["timing"] is not None
+            and x["shift_median"] is not None and x["timing"] > x["shift_median"]]
+    acc.update(timing=timing, shift_median=MH._q(pooled, 50), shift_p95=MH._q(pooled, 95), per_coin=coins,
+               breadth={"eligible": len(elig), "beat": beat, "share": len(beat) / len(elig) if elig else 0.0},
+               per_year_r={str(y): float(g["ret"].sum()) for y, g in t.groupby(pd.to_datetime(t["exit_time"]).dt.year)})
+    return acc, t
+
+
+def evaluate(P, pred_narrow, pred_wide, o4, traded, q, mode, min_coins=MP.MIN_COINS, keep=False, corr=None) -> dict:
     a_tr, b_tr = WF.WINDOWS["train"]
     a_va, b_va = WF.WINDOWS["valid"]
     table = []
-    for form, pr in (("base", pred_base), ("wide", pred_wide)):
-        t, _ = MP.run_cell(P20, pr, other, a_tr, b_tr, CELL["agree"], CELL["sizing"], CELL["cap"], q, mode)
+    for form, pr in (("narrow", pred_narrow), ("wide", pred_wide)):
+        t, _ = run_cell(P, pr, o4, a_tr, b_tr, traded, q, mode)
         acc = MP.account(t, a_tr, b_tr)
         table.append({"form": form, **{k: acc[k] for k in ("trades", "weekly_mean", "tstat", "per_year", "max_dd",
                                                            "mean_r")},
@@ -269,8 +282,8 @@ def evaluate(P20, pred_base, pred_wide, other, q, mode, min_coins=MP.MIN_COINS, 
               f"dd {acc['max_dd']:.3f}", flush=True)
     ok = [x for x in table if x["trades"] >= MP.MIN_TRADES]
     best = max(ok, key=lambda x: x["tstat"]) if ok else table[0]
-    pr = pred_base if best["form"] == "base" else pred_wide
-    v, t = MP.judge(P20, pr, other, a_va, b_va, CELL["agree"], CELL["sizing"], CELL["cap"], q, mode, min_coins)
+    pr = pred_narrow if best["form"] == "narrow" else pred_wide
+    v, t = judge(P, pr, o4, a_va, b_va, traded, q, mode, min_coins)
     w = MP.weekly(t, a_va, b_va)
     tot = float(w.sum())
     v["diagnostics"] = {"forecast_corr_valid": corr,
@@ -291,12 +304,107 @@ def evaluate(P20, pred_base, pred_wide, other, q, mode, min_coins=MP.MIN_COINS, 
     failed = [k for k, g in gates.items() if not g]
     res = {"chosen": {"form": best["form"], **CELL}, "train_table": table, "valid": v,
            "verdict": "REJECT" if failed else "PASS", "gates_failed": failed,
-           "model": {"q_in": q, "exit_mode": mode, "horizons": list(HORIZONS)}}
+           "model": {"q_in": q, "exit_mode": mode, "horizons_wide": list(HORIZONS)}}
     if keep:
         res["_trades"] = t
     return res
 
 
+# --------------------------------------------------------------------------
+# data
+# --------------------------------------------------------------------------
+def _daily() -> pd.DataFrame:
+    import rotation as RO
+    p = RO.CACHE / "perp_1d.parquet"
+    if not p.exists():
+        raise SystemExit(f"no {p}: run  python src/rotation.py --build perp  first")
+    d = pd.read_parquet(p, columns=["symbol", "date", "quote_volume"])
+    d["date"] = pd.to_datetime(d["date"], utc=True)
+    return d
+
+
+def _non_crypto() -> set:
+    p = OUT / "non_crypto.json"
+    return set(json.loads(p.read_text())) if p.exists() else set(NON_CRYPTO_FALLBACK)
+
+
+def _download(symbol: str, lo, hi) -> None:
+    import datafeed as DF
+    import ml_pool as MPL
+    months = set(C.month_range(*MPL.MONTHS))
+    for tf in WF.TFS:
+        kp = WF.cache_dir(tf) / f"{symbol}.parquet"
+        if kp.exists():
+            continue
+        WF.cache_dir(tf).mkdir(parents=True, exist_ok=True)
+        keys = [k for k in DF.list_keys(f"data/futures/{C.MARKET}/monthly/klines/{symbol}/{WF.TF_NAME[tf]}/")
+                if k[-11:-4] in months]
+        zs = [z for z in (DF.fetch_zip(x, WF.RAW / f"perp_{WF.TF_NAME[tf]}" / symbol) for x in keys) if z]
+        if not zs:
+            continue
+        k = pd.concat([DF._read_one_zip(z, C.KLINE_COLS) for z in zs], ignore_index=True)
+        k["open_time"] = MPL._ms(k["open_time"])
+        k = k[(k["open_time"] >= lo) & (k["open_time"] < hi)].drop_duplicates("open_time").sort_values("open_time")
+        k.to_parquet(kp, index=False)
+    fp = WF.cache_dir(60) / f"{symbol}_funding.parquet"
+    if not fp.exists():
+        fkeys = [x for x in DF.list_keys(f"data/futures/{C.MARKET}/monthly/fundingRate/{symbol}/") if x[-11:-4] in months]
+        fz = [z for z in (DF.fetch_zip(x, WF.RAW / "perp_funding" / symbol) for x in fkeys) if z]
+        f = (pd.concat([DF._read_one_zip(z, C.FUNDING_COLS) for z in fz], ignore_index=True) if fz
+             else pd.DataFrame(columns=C.FUNDING_COLS))
+        if len(f):
+            f["calc_time"] = MPL._ms(f["calc_time"])
+            f = f[(f["calc_time"] >= lo) & (f["calc_time"] < hi)].sort_values("calc_time")
+        f.to_parquet(fp, index=False)
+
+
+def build() -> None:
+    import urllib.request
+    OUT.mkdir(parents=True, exist_ok=True)
+    nc = OUT / "non_crypto.json"
+    if not nc.exists():
+        try:
+            with urllib.request.urlopen("https://fapi.binance.com/fapi/v1/exchangeInfo", timeout=30) as r:
+                info = json.loads(r.read())
+            api = {s["symbol"] for s in info["symbols"] if s.get("underlyingType", "COIN") != "COIN"}
+            src = "exchangeInfo"
+        except Exception as e:  # noqa: BLE001 - recorded, never hidden
+            api, src = set(), f"exchangeInfo unavailable ({e.__class__.__name__}); fallback list only"
+        nc.write_text(json.dumps(sorted(api | NON_CRYPTO_FALLBACK), indent=1))
+        print(f"[ml_wide] non-crypto symbols: {len(api | NON_CRYPTO_FALLBACK)} ({src})", flush=True)
+    d = _daily()
+    months = [str(p) for p in pd.period_range(MONTHS_FROM, C.DATA_END, freq="M")]
+    members, traded = monthly_sets(d, months, _non_crypto())
+    (OUT / "members.json").write_text(json.dumps(members, indent=1))
+    (OUT / "traded.json").write_text(json.dumps(traded, indent=1))
+    core = {u["inst"] for u in json.loads(SOURCE_UNIVERSE.read_text())}
+    need = sorted((set().union(*map(set, members.values())) | set().union(*map(set, traded.values()))) - core)
+    rng = d[d["quote_volume"] > 0].groupby("symbol")["date"].agg(["min", "max"])
+    print(f"[ml_wide] {len(need)} coins beyond section 30's {len(core)}", flush=True)
+    for n, s in enumerate(need, 1):
+        _download(s, rng.at[s, "min"], rng.at[s, "max"] + pd.Timedelta(days=1))
+        print(f"  {n}/{len(need)} {s}: cached", flush=True)
+    print(f"BUILD OK: {len(core)} + {len(need)} coins")
+
+
+def load_wide() -> tuple[dict, set, dict, dict]:
+    members = json.loads((OUT / "members.json").read_text())
+    traded = json.loads((OUT / "traded.json").read_text())
+    by_tf, _ = W3.load_all()
+    core = set(by_tf[60])
+    need = sorted((set().union(*map(set, members.values())) | set().union(*map(set, traded.values()))) - core)
+    for s in need:
+        if not all((WF.cache_dir(tf) / f"{s}.parquet").exists() for tf in WF.TFS):
+            continue
+        fund = pd.read_parquet(WF.cache_dir(60) / f"{s}_funding.parquet")
+        bars = {tf: W2._read(WF.cache_dir(tf) / f"{s}.parquet") for tf in WF.TFS}
+        if all(len(b) for b in bars.values()):
+            for tf in WF.TFS:
+                by_tf[tf][s] = {"spot": bars[tf], "perp": bars[tf], "fund": fund}
+    return by_tf, core, members, traded
+
+
+# --------------------------------------------------------------------------
 def run(final: bool = False) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     res_path, lock = OUT / "summary.json", OUT / "holdout.json"
@@ -311,35 +419,40 @@ def run(final: bool = False) -> None:
                 raise SystemExit(f"--final refused: sections 31-36 share one holdout and {o.name} used it")
     elif res_path.exists():
         raise SystemExit(f"{res_path} exists: pre-registered, run once (delete only after a journaled code fix)")
-    if not (OUT / "members.json").exists():
-        raise SystemExit("no members: run  python src/ml_wide.py --build")
+    if not (OUT / "traded.json").exists():
+        raise SystemExit("no traded sets: run  python src/ml_wide.py --build")
     spans = [WF.WINDOWS["train"], WF.WINDOWS["valid"]] + ([WF.WINDOWS["holdout"]] if final else [])
-    trade = json.loads((OUT / "trade.json").read_text())
-    by_tf0, _ = W3.load_all()
-    P_o, o4 = MP.forecasts(by_tf0, 240, spans)
-    del P_o
-    P0, pred0 = MP.forecasts(by_tf0, MP.TF_MAIN, spans)
-    P20 = {c: P0[c] for c in trade if c in P0}
-    pred_base = {c: pred0[c] for c in P20}
-    other = {"4h": {c: o4[c] for c in P20 if c in o4}}
-    del P0, pred0, by_tf0
+    by_tf, core, members, traded = load_wide()
+    tcoins = sorted({c for m, lst in traded.items() for c in lst} & set(by_tf[60]))
+    print(f"[ml_wide] training coins {len(by_tf[60])} ({len(core)} core); coins ever traded {len(tcoins)}", flush=True)
+    # 4h agreement: section 30's 4h recipe, trained on the core rows, forecasting the traded coins
+    P4 = W2.prepare({tf: {c: v for c, v in by_tf[tf].items() if c in core or c in tcoins} for tf in WF.TFS}, 240)
+    cfg4 = MP._cfg(240)["setting"]
+    o4 = forecasts(P4, 240, cfg4, {c: training_mask(P4[c]["X"].index, c, core, members, False) for c in P4},
+                   (WF.H_BARS,), spans)
+    o4 = {c: o4[c] for c in tcoins if c in o4}
+    del P4
     gc.collect()
-    by_tf, core, mem, _ = load_wide()
-    print(f"[ml_wide] training coins: {len(by_tf[60])} ({len(core)} core); traded: {len(P20)}", flush=True)
     P = W2.prepare(by_tf, MP.TF_MAIN)
     del by_tf
     gc.collect()
-    pw = wide_forecasts(P, mem, core, spans)
-    pred_wide = {c: pw[c].reindex(P20[c]["X"].index) for c in P20}
-    corr = {"base": forecast_corr(P20, pred_base, *WF.WINDOWS["valid"]),
-            "wide": forecast_corr(P20, pred_wide, *WF.WINDOWS["valid"])}
-    del P, pw
+    cfg1 = MP._cfg(MP.TF_MAIN)["setting"]
+    pn = forecasts(P, MP.TF_MAIN, cfg1, {c: training_mask(P[c]["X"].index, c, core, members, False) for c in P},
+                   (WF.H_BARS,), spans)
+    pw = forecasts(P, MP.TF_MAIN, cfg1, {c: training_mask(P[c]["X"].index, c, core, members, True) for c in P},
+                   HORIZONS, spans)
+    PT = {c: P[c] for c in tcoins if c in P}
+    pred_n = {c: pn[c] for c in PT}
+    pred_w = {c: pw[c] for c in PT}
+    corr = {"narrow": forecast_corr(PT, pred_n, *WF.WINDOWS["valid"]),
+            "wide": forecast_corr(PT, pred_w, *WF.WINDOWS["valid"])}
+    del P, pn, pw
     gc.collect()
     m = MP._cfg(MP.TF_MAIN)
     if final:
         a, b = WF.WINDOWS["holdout"]
-        pr = pred_base if res["chosen"]["form"] == "base" else pred_wide
-        h, t = MP.judge(P20, pr, other, a, b, CELL["agree"], CELL["sizing"], CELL["cap"], m["q_in"], m["exit_mode"])
+        pr = pred_n if res["chosen"]["form"] == "narrow" else pred_w
+        h, t = judge(PT, pr, o4, a, b, traded, m["q_in"], m["exit_mode"])
         h["verdict"] = ("CONFIRMED" if h["weekly_mean"] > 0 and h["ci_lo"] > 0 and h["shift_median"] is not None
                         and h["timing"] is not None and h["timing"] > h["shift_median"]
                         and h["breadth"]["share"] >= MP.BREADTH_SHARE else "FAILED")
@@ -348,9 +461,10 @@ def run(final: bool = False) -> None:
         write_report(res)
         print(json.dumps({k: h.get(k) for k in ("trades", "weekly_mean", "ci_lo", "verdict")}, indent=1))
         return
-    res = evaluate(P20, pred_base, pred_wide, other, m["q_in"], m["exit_mode"], keep=True, corr=corr)
-    res["training_coins"] = {"core": len(core), "members_union": len(set().union(*map(set, mem.values())))}
-    res["traded"] = list(P20)
+    res = evaluate(PT, pred_n, pred_w, o4, traded, m["q_in"], m["exit_mode"], keep=True, corr=corr)
+    res["coins"] = {"core": len(core), "training": len(set().union(*map(set, members.values())) | core),
+                    "ever_traded_valid": sorted({c for mo, lst in traded.items()
+                                                 if "2023-01" <= mo < "2025-01" for c in lst})}
     res.pop("_trades").to_csv(OUT / "trades_valid.csv.gz", index=False)
     res_path.write_text(json.dumps(res, indent=1, default=str))
     write_report(res)
@@ -361,11 +475,12 @@ def write_report(r: dict) -> None:
     v, d = r["valid"], r["valid"]["diagnostics"]
     f = (lambda x, k=5: "-" if x is None else f"{x:+.{k}f}")
     corr = d.get("forecast_corr_valid") or {}
-    L = ["# Train wide, trade the top 20: more data and a horizon ensemble (PLAN.md section 36)", "",
+    cs = r.get("coins", {})
+    L = ["# Train wide, trade the monthly top 20 large coins (PLAN.md section 36)", "",
          "GENERATED by `src/ml_wide.py`. Do not edit by hand.", "",
          f"## **{r['verdict']}** (TRAIN chose {r['chosen']}; failed: {r['gates_failed'] or 'none'})", "",
-         f"- traded coins ({len(r.get('traded', []))}): {', '.join(c.replace('USDT', '') for c in r.get('traded', []))}",
-         f"- training coins: {r.get('training_coins')}",
+         f"- coins: {cs.get('core')} core, {cs.get('training')} training in all; traded at some point in VALID: "
+         f"{', '.join(c.replace('USDT', '') for c in cs.get('ever_traded_valid', []))}",
          f"- VALID {v['trades']} trades over {v['weeks']} weeks: weekly account return {f(v['weekly_mean'])}, "
          f"95% CI [{f(v['ci_lo'])}, {f(v['ci_hi'])}], t {v['tstat']:+.2f}; return per year {f(v['per_year'], 4)}, "
          f"max drawdown {v['max_dd']:.4f}",
@@ -374,7 +489,7 @@ def write_report(r: dict) -> None:
          f"- timing {f(v['timing'], 4)} vs shifted median {f(v['shift_median'], 4)} / p95 {f(v['shift_p95'], 4)}; "
          f"breadth {len(v['breadth']['beat'])} of {v['breadth']['eligible']} ({v['breadth']['share']:.2f}); "
          f"per year {v['per_year_r']}",
-         f"- diagnostics: forecast/label correlation on VALID base {f(corr.get('base'), 4)} vs wide "
+         f"- diagnostics: forecast/label correlation on VALID narrow {f(corr.get('narrow'), 4)} vs wide "
          f"{f(corr.get('wide'), 4)}; best 5 weeks = {f(d['top_weeks_share'], 3)} of the total; negative weeks "
          f"{d['neg_weeks']} of {v['weeks']}", "",
          "| form | TRAIN trades | weekly mean | t | per year | max DD | mean R | summed return by year |",
