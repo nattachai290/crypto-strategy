@@ -434,6 +434,7 @@ def main() -> None:
     test_ml_xs()
     test_ml_mkt()
     test_ml_flow()
+    test_listing()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2342,6 +2343,89 @@ def test_ml_flow() -> None:
         FL.OUT, MP_.OUT, XS.OUT, MK.OUT = saved
         shutil.rmtree(tmp, ignore_errors=True)
     check("ml_flow holdout: refused when sections 31-33 already used the shared holdout", refused)
+
+
+# --------------------------------------------------------------------------
+# 31. Short newly listed perpetuals (PLAN.md section 35)
+# --------------------------------------------------------------------------
+def _listing_market(decline: float, seed: int, n_new: int = 320, n_old: int = 40) -> dict:
+    """Synthetic daily perps for the TEST only: n_old established coins from 2020-01, n_new coins
+    listed uniformly 2020-06..2024-12; a new coin drifts by `decline` a day for its first 40 days."""
+    rng = np.random.default_rng(seed)
+    end = pd.Timestamp("2025-01-10", tz="UTC")
+    starts = [pd.Timestamp("2020-01-01", tz="UTC")] * n_old + list(
+        pd.Timestamp("2020-06-01", tz="UTC") + pd.to_timedelta(np.sort(rng.integers(0, 1650, n_new)), unit="D"))
+    bars = {}
+    for k, st in enumerate(starts):
+        idx = pd.date_range(st, end, freq="D", tz="UTC")
+        n = len(idx)
+        drift = np.where((np.arange(n) < 40) & (k >= n_old), decline, 0.0)
+        r = rng.normal(0, 0.03, n) + drift
+        c = 10 * np.exp(np.cumsum(r))
+        o = np.r_[10.0, c[:-1]]
+        hi = np.maximum(o, c) * (1 + np.abs(rng.normal(0, 0.01, n)))
+        lo = np.minimum(o, c) * (1 - np.abs(rng.normal(0, 0.01, n)))
+        bars[f"{'OLD' if k < n_old else 'NEW'}{k}USDT"] = pd.DataFrame(
+            {"open": o, "high": hi, "low": lo, "close": c, "quote_volume": 1e6, "funding": 0.0}, index=idx)
+    return bars
+
+
+def test_listing() -> None:
+    print("\n31. Listing short: events, daily short with stop / trailing signal / eod / delisting, funding, control, pipeline")
+    import contextlib
+    import io
+    import listing as LS
+    D = lambda d: pd.Timestamp("2023-01-01", tz="UTC") + pd.Timedelta(days=d)
+    idx = pd.date_range(D(0), periods=8, freq="D", tz="UTC")
+    def mk(o, h, c, f=None):
+        return pd.DataFrame({"open": o, "high": h, "low": np.minimum(o, c), "close": c, "quote_volume": 1.0,
+                             "funding": f if f is not None else np.zeros(len(o))}, index=idx[:len(o)])
+    # trailing: lowest close 80, then a close of 105 > 80 x 1.3 = 104 -> cover at the next open (106)
+    b1 = mk([100, 95, 85, 90, 106, 100], [101, 96, 90, 106, 107, 101], [95, 85, 80, 105, 100, 99])
+    t1 = LS.short_trade(b1, D(0), D(30), stop=0.5, trail=0.3, fee=0.0, slip=0.0)
+    check("listing trailing exit: a close above the lowest close x (1 + trail) covers at the next open",
+          t1["reason"] == "signal" and t1["exit_px"] == 106 and t1["exit_time"] == D(4)
+          and np.isclose(t1["net_r"], (100 - 106) / 100 / 0.5), f"{t1}")
+    # stop with a gap: open 140 above the 130 stop -> filled at the open
+    b2 = mk([100, 140], [110, 150], [120, 145])
+    t2 = LS.short_trade(b2, D(0), D(30), stop=0.3, trail=0.6, fee=0.0, slip=0.0)
+    b3 = mk([100, 120], [110, 131], [120, 125])
+    t3 = LS.short_trade(b3, D(0), D(30), stop=0.3, trail=0.6, fee=0.0, slip=0.0)
+    check("listing stop: filled at the stop, or at the open when the day gaps through it",
+          t2["reason"] == "stop" and t2["exit_px"] == 140 and np.isclose(t2["net_r"], -0.4 / 0.3)
+          and t3["exit_px"] == 130 and np.isclose(t3["net_r"], -1.0))
+    b4 = mk([100, 99, 98], [101, 100, 99], [99, 98, 97], f=np.array([0.001, 0.001, -0.002]))
+    t4 = LS.short_trade(b4, D(0), D(30), stop=0.5, trail=0.6, fee=0.0005, slip=0.0005)
+    want = ((100 * 0.9995 - 97 * 1.0005) / (100 * 0.9995) - 0.001 + (0.001 * 100 + 0.001 * 99 - 0.002 * 98) / 100) / 0.5
+    check("listing delisted/eod exit with fees, slippage and funding (a short receives a positive rate)",
+          t4["reason"] == "delisted" and np.isclose(t4["net_r"], want), f"{t4['net_r']} vs {want}")
+    t5 = LS.short_trade(b4, D(0), D(2), stop=0.5, trail=0.6, fee=0.0, slip=0.0)
+    check("listing window end: an open trade closes at the last close inside the window ('eod')",
+          t5["reason"] == "eod" and t5["exit_px"] == 98 and t5["exit_time"] == D(2))
+
+    bars = {"AUSDT": mk([1] * 3, [1] * 3, [1] * 3), "BUSDT": b1, "BUSDT#1": b1}
+    bars["AUSDT"].index = pd.date_range("2020-01-01", periods=3, freq="D", tz="UTC")
+    ev = LS.listings(bars)
+    check("listing events: first run only, after LISTED_AFTER (founding contracts and relaunches are not listings)",
+          list(ev["inst"]) == ["BUSDT"])
+
+    L = pd.Timestamp("2023-05-20", tz="UTC")
+    check("listing new-token flag: no spot pair, or spot first traded in the listing month or later",
+          LS.new_token(None, L) and LS.new_token("2023-05", L) and LS.new_token("2023-06", L)
+          and not LS.new_token("2023-04", L))
+    with contextlib.redirect_stdout(io.StringIO()):
+        good = _listing_market(-0.015, seed=7)
+        null = _listing_market(0.0, seed=8)
+        r_good = LS.evaluate(good, LS.listings(good))
+        r_null = LS.evaluate(null, LS.listings(null))
+    v = r_good["valid"]
+    check("listing pipeline: a planted post-listing decline is found (PASS) and beats the established-coin control",
+          r_good["verdict"] == "PASS" and v["event_mean_r"] > v["control_p95"],
+          f"{r_good['verdict']} {r_good['gates_failed']} chose {r_good['chosen']} trades {v['trades']} "
+          f"weekly {v['weekly_mean']:+.5f} event {v['event_mean_r']:+.3f} ctl p95 {v['control_p95']}")
+    check("listing pipeline: no decline -> REJECT, and the event mean does not beat the control p95",
+          r_null["verdict"] == "REJECT" and "valid_beats_control_p95" in r_null["gates_failed"],
+          f"{r_null['gates_failed']}")
 
 
 if __name__ == "__main__":

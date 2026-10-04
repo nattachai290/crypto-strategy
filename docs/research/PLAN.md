@@ -2456,3 +2456,83 @@ is high. Positioning should sharpen exactly the trades that carry the book.
 
 **Prior:** low to moderate. This is the 9th ML look at VALID 2023–24. TRAIN
 saw only 13 months of metrics, so the TRAIN comparison leans on 2022.
+
+## 35. Short newly listed perpetuals (owner request, 2026-10-04)
+
+**Why a new family.** §31–§34 did not move the frozen §31 cell, and the holdout
+has low power for it (Exp 041). The owner chose to start a family that differs
+from the ML line. It was ranked first of four candidates by the planner, for
+three reasons:
+- it has a seller with a reason;
+- its costs are low against a hold of days to weeks;
+- the holdout has enough events to judge it.
+
+It is untested here. §17 explicitly dropped coins younger than 60 days.
+
+**Hypothesis.** A coin newly listed on Binance USDT-M tends to fall for weeks
+after the listing. Holders who got it cheaply (airdrops, early investors, the
+team, unlocks) sell into the new liquidity, and the first-day attention fades.
+
+**What happens in a rising market:** the short side is the only side, and it
+is what loses in a bull run. That is why each VALID year must be positive and
+the control removes the market's own move.
+
+**Data, checked by the planner.**
+- About 900 USDT-M perp symbols on data.binance.vision, delisted ones
+  included.
+- First daily bars by year: 2020 81 (mostly founding contracts, excluded by
+  `LISTED_AFTER` 2020-02-01), 2021 59, 2022 26, 2023 97, 2024 131, 2025 241,
+  2026 262.
+- So TRAIN has about 85 listings, VALID about 228, and the holdout about 500.
+- Frozen zero-volume bars after a delisting are cut.
+- `api.binance.com` is blocked here, so the listing day is the first daily bar
+  in Binance's files. For FTTUSDT, for example, that is 2022-04-15.
+
+**Design (`src/listing.py`, test 31).**
+- **Event.** One per symbol: the first run of its first daily bar, after
+  2020-02-01. A relaunch after a gap is not an event.
+- **Trade.** Short at the open of listing + DELAY days, on daily bars.
+  - **Stop:** entry × (1 + STOP), filled at the stop, or at the open on a gap.
+  - **Trailing signal exit:** a close above the lowest close since entry ×
+    (1 + TRAIL) covers at the next open.
+  - **Otherwise:** the window end (`eod`), or the last traded close if the
+    contract was delisted first.
+  - No clock.
+  - **Costs:** taker fee and alt slippage on each side, plus funding (a short
+    receives a positive rate).
+  - R = STOP.
+- **Account.** §31's accounting at 0.25% risk per listing, with at most 10%
+  open (about 40 shorts at once, so the cap rarely decides which listing is
+  taken).
+- **Cell choice on TRAIN only.** TRAIN (2021–22) picks 1 of 12 cells (DELAY
+  1/3/7 × STOP 0.3/0.5 × TRAIL 0.3/0.6) by the weekly account t-statistic, with
+  ≥ 30 trades.
+- **VALID gates (all needed):**
+  - TRAIN weekly mean > 0;
+  - ≥ 100 trades;
+  - weekly mean > 0 and its CI lower bound > 0;
+  - cost ×1.5 > 0;
+  - the event mean net R beats the 95th percentile of 200 control draws, on
+    TRAIN and on VALID. A control draw shorts an established perp (listed
+    ≥ 365 days earlier, trading that day) on each event's day with the same
+    exits;
+  - mean R without the 5 best trades > 0;
+  - both VALID years > 0;
+  - max drawdown ≤ 20%.
+- **Diagnostic (not a gate):** the event mean for new tokens (no Binance spot
+  pair before the listing month) against existing tokens that only got a new
+  perp.
+- **Holdout.** Its own one-time holdout (a different family from §31–§34).
+  CONFIRMED needs a weekly mean > 0, a CI lower bound > 0, and the event mean
+  above the control's p95.
+
+**What it can show.**
+- **Supports the hypothesis:** newly listed coins fall more than established
+  coins shorted on the same days, in both VALID years, after costs and
+  funding.
+- **Answers it the other way:** the event mean sits inside the control. Then
+  shorting new listings is just shorting alt-coins.
+
+**Prior:** moderate. The mechanism is plausible and the effect is widely
+discussed, which is exactly why it may already be priced in (in funding, for
+example). The holdout's ~500 listings would give it real power.

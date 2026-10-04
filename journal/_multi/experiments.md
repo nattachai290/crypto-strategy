@@ -3988,3 +3988,50 @@ What has been learned about the cell:
 - its signal needs each coin's own price-based forecast, traded on that coin (§32, §33);
 - positioning and funding data did not add to it in 2021–22 (§34);
 - the holdout's power to confirm it is low: about 39% if its VALID edge is fully real, about 13% at half of it (Exp 041).
+
+---
+
+## Exp 044 - Pre-registration: short newly listed perpetuals (PLAN.md §35, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**Why.** The owner chose a new family over spending the holdout on §31. The
+planner ranked four untested families, and this one came first:
+1. short new listings;
+2. low-volatility cross-section;
+3. daily reversal;
+4. seasonality.
+
+**Hypothesis.** Newly listed USDT-M perps fall for weeks after listing.
+Holders who got the coin cheaply (airdrops, early investors, the team,
+unlocks) sell into the new liquidity. The short side loses in a bull run,
+which is why both VALID years must be positive and an established-coin
+control removes the market's move.
+
+**Fixed before the run (`src/listing.py`, test 31):**
+- **Events:** each symbol's first daily bar after 2020-02-01 (delisted
+  symbols included; relaunches are not events).
+- **Trade:** a short at listing + DELAY days, with a STOP and a TRAIL signal
+  exit. No clock. Costs, alt slippage and funding are charged.
+- **Account:** 0.25% risk per listing, 10% cap.
+- **TRAIN:** 12 cells; the weekly t-statistic picks one.
+- **VALID gates:** the weekly CI, an established-perp control on TRAIN and
+  VALID, mean R without the top 5 trades, both years > 0, drawdown, and cost
+  stress.
+- **Diagnostic:** new tokens against existing tokens.
+- **Holdout:** its own one-time holdout.
+
+**Data checked by the planner:**
+- listings by first daily bar: 2021 59, 2022 26, 2023 97, 2024 131,
+  2025 241, 2026 262;
+- the readers handle the 2025+ microsecond timestamps;
+- frozen bars after a delisting (FTTUSDT trades flat at 1.59 to 2026) are cut.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 31 included)
+python src/listing.py --build      # daily OHLC + funding of ~900 perps (+ spot first months); resumable by re-running
+python src/listing.py              # once; writes results/_multi/listing/ and journal/_multi/listing.md
+```
+Do not run `--final` unless the verdict is PASS and the owner agrees.
