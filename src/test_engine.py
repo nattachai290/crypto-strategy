@@ -435,6 +435,7 @@ def main() -> None:
     test_ml_mkt()
     test_ml_flow()
     test_listing()
+    test_ml_wide()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2429,6 +2430,82 @@ def test_listing() -> None:
     check("listing pipeline: no decline -> REJECT, and the event mean does not beat the control p95",
           r_null["verdict"] == "REJECT" and "valid_beats_control_p95" in r_null["gates_failed"],
           f"{r_null['gates_failed']}")
+
+
+# --------------------------------------------------------------------------
+# 32. Train wide, trade the top 20 (PLAN.md section 36)
+# --------------------------------------------------------------------------
+def test_ml_wide() -> None:
+    print("\n32. ML wide: causal monthly top-N, labels per horizon = prepare's, training mask, horizon ensemble, pipeline")
+    import contextlib
+    import io
+    import ml_port as MP_
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_wide as MW
+    days = pd.date_range("2023-01-01", "2023-03-31", freq="D", tz="UTC")
+    rows = []
+    for d in days:
+        rows += [("A", d, 300.0 if d < pd.Timestamp("2023-02-01", tz="UTC") else 1.0),
+                 ("B", d, 200.0), ("C", d, 100.0 if d.day % 2 else 0.0), ("D", d, 50.0)]
+    daily = pd.DataFrame(rows, columns=["inst", "date", "quote_volume"])
+    mem = MW.monthly_members(daily, ["2023-02", "2023-03"], top=2)
+    check("ml_wide members: top-N by mean volume over the 30 days BEFORE the month; < 20 traded days excluded",
+          mem["2023-02"] == ["A", "B"] and mem["2023-03"] == ["B", "D"], f"{mem}")
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    b = _momentum_bars(0.0008, seed=210).copy()
+    b.iloc[5000:5010, b.columns.get_loc("volume")] = 0.0              # dead bars inside the history
+    with contextlib.redirect_stdout(io.StringIO()):
+        P1 = W2.prepare({60: {"AUSDT": {"spot": b, "perp": b, "fund": fund}}}, 60)
+    y24 = MW.label_h(P1["AUSDT"]["bars"], 24)
+    y12 = MW.label_h(P1["AUSDT"]["bars"], 12)
+    o = P1["AUSDT"]["bars"]["open"].to_numpy()
+    i = 7000
+    af = P1["AUSDT"]["y"].iloc[i] / np.log(o[i + 25] / o[i + 1])        # = 1 / ATR fraction at i
+    check("ml_wide label_h(24) equals ml_wf.prepare's label exactly; label_h(12) uses 12 bars and the same ATR",
+          np.allclose(y24, P1["AUSDT"]["y"].to_numpy(), equal_nan=True)
+          and np.isclose(y12[i], np.log(o[i + 13] / o[i + 1]) * af) and np.isnan(y12[4995]))
+
+    idx = pd.date_range("2023-01-30", "2023-03-02", freq="1D", tz="UTC")
+    mk = MW.training_mask(idx, "X", {"CORE"}, {"2023-02": ["X"], "2023-03": []})
+    check("ml_wide training mask: a core coin trains on every row; another coin only in its member months",
+          MW.training_mask(idx, "CORE", {"CORE"}, {}).all()
+          and list(mk) == [d.strftime("%Y-%m") == "2023-02" for d in idx])
+    cb = MW.combine({12: np.array([1.0, np.nan]), 24: np.array([2.0, 1.0]), 48: np.array([4.0, 1.0])})
+    check("ml_wide ensemble: mean of pred_h x sqrt(24/h); NaN unless every horizon forecasts",
+          np.isclose(cb[0], (np.sqrt(2) + 2 + 4 / np.sqrt(2)) / 3) and np.isnan(cb[1]))
+
+    cfg = WF_.GRID[0]
+    saved_cfg = MP_._cfg
+    MP_._cfg = lambda tf: {"setting": cfg, "q_in": 0.9, "exit_mode": "flip"}
+    try:
+        by = {60: {}}
+        for n, sd in (("C0USDT", 140), ("C1USDT", 141), ("C2USDT", 142), ("N0USDT", 143)):
+            bb = _momentum_bars(0.0008, seed=sd)
+            by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+        with contextlib.redirect_stdout(io.StringIO()):
+            P = W2.prepare(by, 60)
+            members = {m: ["N0USDT"] for m in [str(p) for p in pd.period_range("2020-01", "2024-12", freq="M")]}
+            h0 = WF_.H_BARS
+            spans = [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]]
+            pw = MW.wide_forecasts(P, members, {"C0USDT", "C1USDT", "C2USDT"}, spans, step=3)
+        va = [(s.index >= pd.Timestamp(WF_.WINDOWS["valid"][0], tz="UTC")) for s in pw.values()]
+        check("ml_wide forecasts: every coin forecast in VALID, the horizon setting restored afterwards",
+              WF_.H_BARS == h0 and all(np.isfinite(s.to_numpy()[m]).mean() > 0.5 for s, m in zip(pw.values(), va)))
+        P20 = {c: P[c] for c in ("C0USDT", "C1USDT", "C2USDT")}
+        noise = {c: pd.Series(np.random.default_rng(9).normal(size=len(P20[c]["X"])), index=P20[c]["X"].index) for c in P20}
+        wide = {c: pw[c] for c in P20}
+        with contextlib.redirect_stdout(io.StringIO()):
+            r1 = MW.evaluate(P20, noise, wide, {"4h": wide}, 0.9, "flip", min_coins=3)
+            r2 = MW.evaluate(P20, wide, noise, {"4h": wide}, 0.9, "flip", min_coins=3)
+        check("ml_wide pipeline: a real edge in the wide forecast is chosen and PASSes; a base choice cannot PASS",
+              r1["chosen"]["form"] == "wide" and r1["verdict"] == "PASS"
+              and r2["chosen"]["form"] == "base" and "train_chose_wide" in r2["gates_failed"],
+              f"{r1['verdict']} {r1['gates_failed']} / {r2['chosen']} {r2['gates_failed']}")
+    finally:
+        MP_._cfg = saved_cfg
 
 
 if __name__ == "__main__":

@@ -4304,3 +4304,65 @@ window end, 00:00 on 2025-01-01, so `per_year_r` filed those 22 trades under
 - The new-token split (new -0.071 R, existing -0.267 R) agrees with the
   mechanism: genuinely new tokens are where the sellers are.
 - The holdout's 467 listings are untouched.
+
+---
+
+## Exp 047 - Pre-registration: train wide, trade the top 20 (PLAN.md §36, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**The owner's frame (2026-10-04).** The goal is an ML model that trades, not
+fixed rules. It will trade only large coins, the top 20, and never new
+listings.
+
+**Hypothesis.** §30's 1h forecast is weak because it learned from 47 coins
+that act like about 1.6. Two changes should help:
+- train on every perp that was in the monthly top 50 by prior-30-day volume;
+- average three label horizons (12, 24 and 48 bars).
+
+Together they should improve the forecast on the coins actually traded.
+
+**Fixed before the run (`src/ml_wide.py`, test 32):**
+- **Traded coins:** the top 20 of `universe_v2.json`.
+- **Training rows:** all of §30's 47 coins, plus other perps only in their
+  member months (causal, delisted coins included).
+- **Model:** §30's 1h setting, refit monthly, one model per horizon,
+  combined as the mean of pred_h × √(24/h).
+- **Account:** §31's fixed cell, with §30's frozen 4h forecasts for
+  agreement.
+- **TRAIN:** base (§30 on the same 20) against wide; a base choice is
+  REJECT.
+- **VALID gates:** §31's, with breadth over the 20 coins.
+- **Diagnostic:** forecast/label correlation, base against wide.
+- **Holdout:** one holdout shared with §31–§35's ML line.
+
+**Looks.** This would be the 8th distinct ML VALID book in `_multi`.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 32 included)
+python src/ml_wide.py --build      # extra coins' 1h/4h/1d klines + funding (long; resumable by re-running)
+python src/ml_wide.py              # once; long (three walk-forwards on the wide set)
+```
+- If the reproduction check stops the run, report it and change nothing.
+- Do not run `--final`.
+- If memory runs out, report it with the training-coin count. Do not change
+  TRAIN_TOP on your own.
+
+**Exp 047 is ON HOLD (planner, same day). Do not run `src/ml_wide.py`.**
+While choosing the traded set, the planner found a data-gap bug in universe
+selection:
+- Binance's daily files for SOLUSDT, XRPUSDT and LTCUSDT have no rows for
+  2022-02-26..28.
+- `rotation.split_instruments` (MAX_GAP_DAYS 3) therefore split each of them
+  into two instruments at 2022-03-01, so `ml_pool.select_universe` dropped them
+  (first run ends before SELECT_TO; second run starts after MIN_LISTED).
+- So §28–§34's 47 coins, and this round's "top 20 by 2020–22 volume", leave
+  out SOL, XRP and LTC, which were among the largest coins.
+- The bug does not leak future data, and the recorded results stand as
+  recorded. They were measured on a narrower universe than intended.
+
+The owner is also choosing how "large coins" are defined. The planner's
+proposal: crypto only, listed ≥ 1 year, the monthly top 20 by prior-30-day
+volume. §36 will be revised and re-registered before any run.
