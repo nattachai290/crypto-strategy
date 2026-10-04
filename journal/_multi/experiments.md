@@ -3961,3 +3961,77 @@ so this round adds no new look at the validation years. The fair conclusion is
 narrow: there is no positioning edge visible in 2021-22 data, which is not the
 same as saying positioning never works - the data only starts at the end of 2021
 and was never used on 2023-24.
+
+---
+
+## Exp 043 - Review of Exp 042 (§34, planner): REJECT stands; two corrections
+
+**Date:** 2026-10-04
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- The run matches its registration and TRAIN chose `base`, so the REJECT stands.
+- The VALID trade file is §31's (Exp 042 checked this; the summary numbers match §31's to the last digit).
+- The narrow conclusion is the right size: no positioning edge is visible in the 2021–22 data.
+
+**Correction 1: 2021 was not "a year without the features".** Exp 042 puts most of flow's TRAIN deficit (2021: -64%) on the metrics being absent that year. But the funding features (`fund_168`, `mkt_funding`, `mkt_fund_168`) exist through all of 2021. Only the metrics columns start in 2021-12. So the 2021 gap is what the funding features (plus any change in tree structure) did on their own. The fair reading is the opposite of an excuse: where only funding was added, the book lost most of its 2021 return; where all twelve features were present (2022), it lost 11%. Funding as a feature hurt here.
+
+**Correction 2: the look count.** §32 and §34 both chose their base form, so neither produced a new VALID result: their VALID trade files are §31's. The number of distinct VALID books judged in `_multi` ML is therefore 7, not 9 (§27, §28 ×3 timeframes counted as one round, §29, §30, §31, §33). §32 and §34 spent TRAIN comparisons only. The statement "every further variant judged on VALID adds a look" still holds.
+
+**Where the line stands.** Four rounds (§31–§34) have not moved the frozen §31 cell:
+- 1,588 trades;
+- weekly mean +0.00548;
+- CI lower bound -0.00026;
+- the best 5 of 105 weeks are 67% of the return.
+
+What has been learned about the cell:
+- its signal needs each coin's own price-based forecast, traded on that coin (§32, §33);
+- positioning and funding data did not add to it in 2021–22 (§34);
+- the holdout's power to confirm it is low: about 39% if its VALID edge is fully real, about 13% at half of it (Exp 041).
+
+---
+
+## Exp 044 - Pre-registration: short newly listed perpetuals (PLAN.md §35, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**Why.** The owner chose a new family over spending the holdout on §31. The
+planner ranked four untested families, and this one came first:
+1. short new listings;
+2. low-volatility cross-section;
+3. daily reversal;
+4. seasonality.
+
+**Hypothesis.** Newly listed USDT-M perps fall for weeks after listing.
+Holders who got the coin cheaply (airdrops, early investors, the team,
+unlocks) sell into the new liquidity. The short side loses in a bull run,
+which is why both VALID years must be positive and an established-coin
+control removes the market's move.
+
+**Fixed before the run (`src/listing.py`, test 31):**
+- **Events:** each symbol's first daily bar after 2020-02-01 (delisted
+  symbols included; relaunches are not events).
+- **Trade:** a short at listing + DELAY days, with a STOP and a TRAIL signal
+  exit. No clock. Costs, alt slippage and funding are charged.
+- **Account:** 0.25% risk per listing, 10% cap.
+- **TRAIN:** 12 cells; the weekly t-statistic picks one.
+- **VALID gates:** the weekly CI, an established-perp control on TRAIN and
+  VALID, mean R without the top 5 trades, both years > 0, drawdown, and cost
+  stress.
+- **Diagnostic:** new tokens against existing tokens.
+- **Holdout:** its own one-time holdout.
+
+**Data checked by the planner:**
+- listings by first daily bar: 2021 59, 2022 26, 2023 97, 2024 131,
+  2025 241, 2026 262;
+- the readers handle the 2025+ microsecond timestamps;
+- frozen bars after a delisting (FTTUSDT trades flat at 1.59 to 2026) are cut.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 31 included)
+python src/listing.py --build      # daily OHLC + funding of ~900 perps (+ spot first months); resumable by re-running
+python src/listing.py              # once; writes results/_multi/listing/ and journal/_multi/listing.md
+```
+Do not run `--final` unless the verdict is PASS and the owner agrees.
