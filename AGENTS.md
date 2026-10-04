@@ -19,10 +19,16 @@ as re-registered in `_multi` Exp 029 and came out in `_multi` Exp 030:
 project and misses **one** gate — mean +0.0374 R, gross 2.9x cost, both legs
 positive, breadth 34/47, timing 4x the shifted p95, still +0.0332 without the
 five largest trades, but the 95% CI is [-0.0235, +0.1006]. 4h and 1d went
-backwards against §28 (`_multi` Exp 030/031). **One approved run is pending:**
-PLAN.md §31 (`src/ml_port.py`, a one-account portfolio layer on §30's 1h model:
-agreement filter, confidence sizing, risk cap; owner request 2026-10-03, `_multi`
-Exp 032). Ask before starting anything else.
+backwards against §28 (`_multi` Exp 030/031). PLAN.md §31 (`src/ml_port.py`, a
+one-account portfolio layer on §30's frozen 1h model: 4h agreement, confidence
+sizing, 5% cap per direction) was run as pre-registered in `_multi` Exp 032 and
+came out in `_multi` Exp 033: **REJECT on `valid_ci_lo>0` again, no holdout
+spent.** It is a real improvement - 1,588 trades at mean +0.0608 R (gross 3.9x
+cost), both legs up, 2023 positive for the first time, breadth 28/46, timing
+4.4x the shifted p95, max drawdown 19.77% - and the weekly CI narrowed 10.8x with
+its lower bound at **-0.00026**. The risk finding matters more than the number:
+uncapped, §30's 1h book loses 150% on TRAIN; capped it does not.
+**No active work; ask before starting anything else.**
 The exit
 lab (§18) found no exit skill (BTC Exp 045). Rotation (§17) and allocation
 (§16) were REJECT / NO_IMPROVEMENT. The

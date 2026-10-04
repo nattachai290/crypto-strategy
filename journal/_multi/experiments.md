@@ -2965,3 +2965,192 @@ Checked with extra synthetic runs:
   its desired position next changes.
 - Same-hour entries are sized in coin-name order.
 - The timing control reads the agreement-filtered path and ignores cap skips.
+
+---
+
+## Exp 033 - One-account portfolio layer on the frozen section 30 1h model (PLAN.md section 31, Exp 032 run): REJECT on the same gate, 91x closer to it
+
+**Date:** 2026-10-03
+**Status:** complete. **One run, exactly as pre-registered in Exp 032.** No value in `src/ml_port.py`, `ml_wf3.py`, `ml_wf2.py` or `ml_wf.py` was changed, no variant was tried, `--final` was not run (nothing passed), no holdout file was created and HOLDOUT was never read. **No new evaluation row.**
+
+**Session state.** `git pull` already up to date · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED**, test 27 present with all nine checks
+(agreement by hand, confidence weight 0.5 -> 1.0, risk cap never exceeded with
+independent sides and room reopening, return = net R x risk, weekly account with
+empty weeks at 0, the reproduction guard, agreement on a real 4h series 408/408,
+a planted edge -> PASS, noise -> REJECT). Section 30's caches were all present
+(`pool_1h/4h/1d`, `spot_1h/4h/1d`), so `--build` was not needed. The run's
+reproduction guard checked all three of section 30's walk-forward models against
+section 30's recorded VALID forecasts and **did not stop**: the model layer in
+this round is section 30's, unchanged. No abnormal number anywhere - no inf, no
+nan, no exponential notation; every mean R inside |0.35|.
+
+### What TRAIN chose, and the whole 18-cell table
+
+Selection was by the t-statistic of the **weekly account return**, minimum 300
+trades. The winner was **agreement `4h`, confidence sizing, 5% cap per direction**
+(t **+2.40**, the highest of the 18). All 18 cells had a positive TRAIN weekly
+mean; they differ by how much risk they carry.
+
+| agree | sizing | cap | TRAIN trades | weekly mean | t | per year | max DD | mean R |
+|---|---|---|---|---|---|---|---|---|
+| off | flat | none | 9,011 | +0.03016 | +1.59 | +157.4% | **150.5%** | +0.0351 |
+| off | flat | 5% | 1,930 | +0.00620 | +1.71 | +32.4% | 27.9% | +0.0337 |
+| off | flat | 10% | 3,397 | +0.01256 | +1.96 | +65.5% | 44.9% | +0.0388 |
+| off | conf | none | 9,011 | +0.01730 | +1.52 | +90.3% | 89.2% | +0.0351 |
+| off | conf | 5% | 3,139 | +0.00647 | +1.99 | +33.8% | 24.0% | +0.0402 |
+| off | conf | 10% | 5,184 | +0.01126 | +1.95 | +58.7% | 35.8% | +0.0415 |
+| 4h | flat | none | 6,665 | +0.02887 | +1.72 | +150.7% | 75.3% | +0.0455 |
+| 4h | flat | 5% | 1,489 | +0.00717 | +2.13 | +37.4% | 27.2% | +0.0505 |
+| 4h | flat | 10% | 2,613 | +0.01314 | +2.32 | +68.5% | 36.4% | +0.0528 |
+| 4h | conf | none | 6,665 | +0.01718 | +1.73 | +89.6% | 41.5% | +0.0455 |
+| **4h** | **conf** | **5%** | **2,425** | **+0.00694** | **+2.40** | **+36.2%** | **19.2%** | **+0.0597** |
+| 4h | conf | 10% | 3,936 | +0.01053 | +2.05 | +55.0% | 26.9% | +0.0517 |
+| 1d | flat | none | 5,011 | +0.01530 | +1.09 | +79.8% | **136.2%** | +0.0321 |
+| 1d | flat | 5% | 1,296 | +0.00060 | +0.21 | +3.1% | 28.1% | +0.0049 |
+| 1d | flat | 10% | 2,176 | +0.00322 | +0.65 | +16.8% | 48.0% | +0.0156 |
+| 1d | conf | none | 5,011 | +0.00814 | +0.97 | +42.5% | 80.9% | +0.0321 |
+| 1d | conf | 5% | 2,035 | +0.00161 | +0.63 | +8.4% | 25.8% | +0.0191 |
+| 1d | conf | 10% | 3,179 | +0.00548 | +1.12 | +28.6% | 46.5% | +0.0323 |
+
+Three things are already visible on TRAIN alone, before VALID is looked at:
+- **The 5% cap is what raises the t-statistic, not the weekly mean.** It cuts the
+  mean return (0.0302 -> 0.0069) and cuts the drawdown (150.5% -> 19.2%). That
+  is the whole mechanism: fewer correlated bets at once make the weekly series
+  smoother. It works on TRAIN and it is not a forecast.
+- **Agreement with the 4h forecast is worth about +0.010 mean R** (0.0351 ->
+  0.0455 flat/no-cap) and costs 26% of the entries (9,011 -> 6,665).
+- **Agreement with the 1d forecast destroys the edge**: mean R 0.0321 -> 0.0049
+  and t +1.09 -> +0.21. The 1d model is the one section 30 rejected outright
+  (Exp 030), and it should not be allowed to vote.
+
+### VALID: REJECT, failing one gate by 0.00026
+
+| | value |
+|---|---|
+| verdict | **REJECT** - failed **`valid_ci_lo>0`** only |
+| trades / weeks | 1,588 / 105 |
+| **weekly account return** | **+0.00548** |
+| **95% weekly CI** | **[-0.00026, +0.01129]** (t +1.84) |
+| return per year / total VALID | +28.6% / +57.6% |
+| **max drawdown** | **19.77%** (gate 20%) |
+| mean R per trade | **+0.0608** (risk-weighted +0.0669) |
+| gross R / cost R | **+0.0820 / 0.0212** |
+| long / short trades | 534 (+0.0529 R) / 1,054 (+0.0648 R) |
+| summed return long / short | +0.1599 / **+0.4158** |
+| average risk per trade | **0.54%** (17 of 1,588 at the 1% cap, none below 0.1%) |
+| cost x1.5, weekly | **+0.00450** (positive) |
+| **timing / shift median / shift p95** | **+0.01287 / +0.00057 / +0.00295** (4.4x the p95) |
+| breadth (net > 0 **and** above its own shifted median) | **28 of 46 = 0.61** |
+| per year, summed return | 2023 **+0.1120** / 2024 +0.4637 |
+| average hold | 56.0 bars |
+| exits signal / stop / eod | 1,429 (90.0%) / 149 (9.4%) / 10 (0.6%) |
+| mean R of a signal exit / a stop exit | +0.1722 / -1.0260 |
+| mean R without the 5 largest trades | **+0.0500** |
+| mean R without the 20 largest trades | **+0.0244** |
+
+**Seven of the eight account gates pass**: TRAIN weekly > 0 (+0.00694), >= 300
+trades (1,588), weekly mean > 0, cost x1.5 > 0, timing above the shifted p95,
+breadth 28 of 46, both legs' summed return > 0, max drawdown 19.77% < 20%. **The
+only failure is the CI's lower bound, at -0.00026.** Max drawdown clears its gate
+by 0.23 percentage points, which is worth saying plainly: this account runs at
+its limit and a different two-year window could breach it.
+
+### Section 31 against section 30's 1h book, same model, same coins, same windows
+
+| | section 30 1h (Exp 030) | **section 31 (this)** |
+|---|---|---|
+| entries in VALID | 6,307 | **1,588** (1,371 are the same coin/time/side) |
+| mean R | +0.0374 | **+0.0608** |
+| gross R / cost R | +0.0576 / 0.0202 | **+0.0820** / 0.0212 |
+| long / short leg (mean R) | +0.0413 / +0.0354 | +0.0529 / +0.0648 |
+| weekly CI | [-0.0235, +0.1006] | **[-0.00026, +0.01129]** |
+| CI width | 0.1241 | **0.0115 (10.8x narrower)** |
+| lower bound | -0.0235 | **-0.00026 (91x closer to 0)** |
+| 2023 mean R | **-0.0136** | **+0.0177** |
+| 2024 mean R | +0.0787 | +0.0969 |
+| risk per trade | 1% flat | 0.54% average |
+| average hold | 57.1 bars | 56.0 bars |
+| exit mix s/stop/eod | 89.3 / 10.1 / 0.7% | 90.0 / 9.4 / 0.6% |
+| mean R without the 5 largest | +0.0332 | **+0.0500** |
+
+### What the numbers say
+
+**1. The portfolio layer did what it was built to do.** Section 31's question was
+narrow: if section 30's CI failure came from correlated, equally sized bets, a
+capped and confidence-sized account should narrow the weekly CI at little cost
+to the mean. **It did, and it did not cost the mean.** Gross R rose from +0.0576
+to +0.0820, mean R from +0.0374 to +0.0608, both legs rose, cost R barely moved
+(0.0202 -> 0.0212), the hold is unchanged at 56 bars, and the weekly CI is 10.8x
+narrower. The book is a **quarter of the size** (1,588 entries against 6,307) at a
+**larger mean R per trade**, so this is not "less risk, same luck": the kept
+entries were the better ones.
+
+**2. The CI lower bound moved from -0.0235 to -0.00026, and most of that is 2023.**
+Section 30 lost money in 2023 (-0.0136 mean R); section 31 makes **+0.0177** there.
+That is the single biggest change in the round, and it is a change in the *same*
+model's trades, not a new model. 2024 is still 4.1x 2023 (+0.4637 against +0.1120
+of summed return), so the regime tilt is reduced, not gone.
+
+**3. It fails the same gate for the second time, and this time by 0.00026.** That
+is a real improvement and it is still a REJECT. `valid_ci_lo>0` is a line, not a
+scoreboard. **Nothing goes to the holdout and no v2 is allowed** - the cell was
+frozen on TRAIN by a pre-registered rule and section 31 has no variant clause.
+
+**4. The cap is a risk mechanism, not a forecast.** On TRAIN the 5% cap cut the
+weekly mean from +0.0302 to +0.0069 and the drawdown from **150.5% to 19.2%** while
+raising the t from +1.59 to +2.40. Section 30's 1h book run as one uncapped account
+loses 150% on TRAIN; capped it does not. That is the honest headline of this
+round: **the correlated same-direction exposure was the account's real risk**, and
+the CI was wide mostly because of that, not because the forecast was empty.
+
+**5. Three cautions, in order of how much they should worry the owner.**
+- **The cell is the best of 18 on TRAIN by t.** Picking the maximum t over 18 cells
+  selects for a smooth weekly series, and a smooth series can be smooth by luck.
+  The cap makes t rise mechanically; that it also survived VALID is encouraging
+  but it is one look.
+- **The account carries more concurrent risk than anything else in this repo.**
+  5% per direction means up to 10% of equity at risk at once, against the 1% of
+  `evaluate.py`'s single-position books. The +57.6% VALID return and the 19.77%
+  drawdown both come with that leverage, and the drawdown clears its gate by
+  0.23 points.
+- **This is the ninth ML design judged on VALID.** Exp 031 already warned that
+  the best of about 20 looks lands one gate short; this is another one gate short,
+  now 0.00026 short. The pre-registered rule exists exactly so that this stays a
+  REJECT.
+
+**6. What must NOT be said about this book.** Signal exits are 90% of the trades
+at a mean of +0.1722 R. **That is not evidence that the model is good at
+exits** (Exp 017). A position only exists while the forecast wants it, so
+signal exits are the selected majority by construction; the stop exits are the
+disagreements, and they cost -1.0260 R each. The whole-book mean of **+0.0608 R**
+is the measure, and it is positive on its own terms with no exit claim.
+
+**7. What this adds.** Nine ML looks at VALID. Eight produced a gross the same
+size as cost or below it; section 30 1h produced gross 2.9x cost with both legs
+positive and one gate short; **section 31 produces gross 3.9x cost, both legs
+positive, breadth 0.61, timing 4.4x the control's p95, drawdown under the gate,
+2023 positive for the first time - and a CI lower bound of -0.00026.** The
+portfolio side was the right thing to work on, and it is not yet proof.
+
+### Verdict
+
+**REJECT.** One gate failed: the 95% weekly CI's lower bound, -0.00026 against a
+required > 0. **No holdout run** - HOLDOUT was never read, and it still holds 5
+runs, all from before ML (4 strategies plus one lock test on
+`example_trend_breakout`), 5 FAILED and 0 CONFIRMED. Project total remains 500
+evaluations.
+
+**The honest one-paragraph version for the owner:** taking section 30's 1-hour
+model unchanged and running it as one account with 4-hour agreement, confidence
+sizing and a 5% cap per direction made the book better, not smaller-looking:
+1,588 trades instead of 6,307, mean +0.0608 R instead of +0.0374, gross +0.0820
+against cost 0.0212 - 3.9 times the cost - both legs up, 2023 turned positive
+(+0.0177 against -0.0136), breadth 28 of 46 coins, timing 4.4 times the shifted
+95th percentile, cost at 1.5x still positive, max drawdown 19.77% under the 20%
+gate, and still +0.0500 after removing the five largest trades. The weekly
+confidence interval narrowed 10.8 times and its lower bound went from -0.0235 to
+-0.00026. **It still fails, on that one number, so nothing goes to the holdout.**
+The real finding is the risk side: uncapped, section 30's book loses 150% on TRAIN;
+capped it does not. The correlated same-direction exposure was the account's
+danger, not the forecast.
