@@ -3241,3 +3241,202 @@ python src/ml_xs.py                # once; writes results/_multi/ml_xs/ and jour
 ```
 - If the reproduction check stops the run, report it and change nothing.
 - Do not run `--final` unless the verdict is PASS and the owner agrees.
+
+---
+
+## Exp 036 - Market-demeaned forecasts on section 31's account (PLAN.md section 32, Exp 035 run): REJECT - TRAIN chose raw, and the book was already market-neutral
+
+**Date:** 2026-10-04
+**Status:** complete. **One run, exactly as pre-registered in Exp 035.** No value
+in `src/ml_xs.py`, `ml_port.py`, `ml_wf3.py`, `ml_wf2.py` or `ml_wf.py` was
+changed, no variant was tried, `--final` was not run (nothing passed), no holdout
+file was created and HOLDOUT was never read. **No new evaluation row.**
+
+**Session state.** `git pull` fast-forward · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED** with **test 28 present and all nine of
+its checks passing** (demean = same-hour cross-sectional mean; NaN below
+`min_coins`; demean is causal; raw passes through unchanged; weekly market
+return; **raw cells reproduce section 31's TRAIN cells exactly (24 = 2 x 12)**;
+demeaned cells trade and differ; a raw choice cannot PASS; noise -> REJECT).
+Section 30's caches were complete (`pool_1h/4h/1d`, `spot_1h/4h/1d`) so
+`--build` was not needed. **The reproduction check did not stop the run**, so the
+forecast layer is section 30's frozen models, unchanged, as §32 requires. No
+abnormal number: no inf, no nan, no exponential notation; every weekly mean
+inside |0.014| and every mean R inside |0.06|.
+
+### Verdict: REJECT, on two gates
+
+`train_chose_demean` and `valid_ci_lo>0`.
+
+**The cell TRAIN chose was `raw`** - agreement `4h`, confidence sizing, 5% cap,
+t **+2.40** - which is §31's cell again. Per the pre-registration, a `raw` choice
+is §31 restated and cannot PASS.
+
+**Consequence for VALID, stated plainly: §32's VALID row is §31's VALID row.**
+The 12 `raw` cells reproduce §31's cells exactly, so with `raw` chosen the book
+is the same book. Checked directly rather than assumed: `trades_valid.csv.gz` in
+`results/_multi/ml_xs/` and in `results/_multi/ml_port/` have the same 1,588 rows
+and `pandas` reports them **identical**. **So §32 added no new look at VALID
+2023-24.** The new evidence in this round is entirely on TRAIN, and it is
+decisive.
+
+### The whole 24-cell TRAIN table
+
+| form | agree | sizing | cap | TRAIN trades | weekly mean | t | per year | max DD | mean R |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | off | flat | 5% | 1,930 | +0.00620 | +1.71 | +32.4% | 27.9% | +0.0337 |
+| raw | off | flat | 10% | 3,397 | +0.01256 | +1.96 | +65.5% | 44.9% | +0.0388 |
+| raw | off | conf | 5% | 3,139 | +0.00647 | +1.99 | +33.8% | 24.0% | +0.0402 |
+| raw | off | conf | 10% | 5,184 | +0.01126 | +1.95 | +58.7% | 35.8% | +0.0415 |
+| raw | 4h | flat | 5% | 1,489 | +0.00717 | +2.13 | +37.4% | 27.2% | +0.0505 |
+| raw | 4h | flat | 10% | 2,613 | +0.01314 | +2.32 | +68.5% | 36.4% | +0.0528 |
+| **raw** | **4h** | **conf** | **5%** | **2,425** | **+0.00694** | **+2.40** | **+36.2%** | 19.2% | **+0.0597** |
+| raw | 4h | conf | 10% | 3,936 | +0.01053 | +2.05 | +55.0% | 26.9% | +0.0517 |
+| raw | 1d | flat | 5% | 1,296 | +0.00060 | +0.21 | +3.1% | 28.1% | +0.0049 |
+| raw | 1d | flat | 10% | 2,176 | +0.00322 | +0.65 | +16.8% | 48.0% | +0.0156 |
+| raw | 1d | conf | 5% | 2,035 | +0.00161 | +0.63 | +8.4% | 25.8% | +0.0191 |
+| raw | 1d | conf | 10% | 3,179 | +0.00548 | +1.12 | +28.6% | 46.5% | +0.0323 |
+| demean | off | flat | 5% | 3,109 | +0.00200 | +0.63 | +10.4% | 21.5% | +0.0067 |
+| demean | off | flat | 10% | 5,585 | **-0.00058** | **-0.12** | -3.0% | 43.3% | -0.0011 |
+| demean | off | conf | 5% | 5,118 | +0.00028 | +0.10 | +1.5% | 27.2% | +0.0012 |
+| demean | off | conf | 10% | 7,329 | **-0.00051** | **-0.13** | -2.6% | 44.9% | -0.0014 |
+| demean | 4h | flat | 5% | 2,909 | +0.00160 | +0.52 | +8.3% | 23.1% | +0.0058 |
+| demean | 4h | flat | 10% | 4,963 | +0.00103 | +0.20 | +5.4% | 30.3% | +0.0022 |
+| demean | 4h | conf | 5% | 4,595 | +0.00151 | +0.54 | +7.9% | **17.4%** | +0.0018 |
+| demean | 4h | conf | 10% | 6,090 | +0.00220 | +0.59 | +11.5% | 36.2% | +0.0055 |
+| demean | 1d | flat | 5% | 2,704 | +0.00124 | +0.38 | +6.5% | 24.3% | +0.0048 |
+| demean | 1d | flat | 10% | 4,170 | +0.00215 | +0.50 | +11.2% | 33.2% | +0.0054 |
+| demean | 1d | conf | 5% | 3,900 | +0.00114 | +0.47 | +6.0% | **13.4%** | +0.0095 |
+| demean | 1d | conf | 10% | 4,570 | +0.00097 | +0.34 | +5.0% | 29.2% | +0.0058 |
+
+**Same switches, raw -> demean:**
+
+| agree / sizing / cap | raw trades, t | demean trades, t |
+|---|---|---|
+| off flat 5% | 1,930, +1.71 | 3,109, +0.63 |
+| off flat 10% | 3,397, +1.96 | 5,585, **-0.12** |
+| off conf 5% | 3,139, +1.99 | 5,118, +0.10 |
+| off conf 10% | 5,184, +1.95 | 7,329, **-0.13** |
+| 4h flat 5% | 1,489, +2.13 | 2,909, +0.52 |
+| 4h flat 10% | 2,613, +2.32 | 4,963, +0.20 |
+| 4h conf 5% | 2,425, **+2.40** | 4,595, +0.54 |
+| 4h conf 10% | 3,936, +2.05 | 6,090, +0.59 |
+| 1d flat 5% | 1,296, +0.21 | 2,704, +0.38 |
+| 1d flat 10% | 2,176, +0.65 | 4,170, +0.50 |
+| 1d conf 5% | 2,035, +0.63 | 3,900, +0.47 |
+| 1d conf 10% | 3,179, +1.12 | 4,570, +0.34 |
+
+### VALID (identical to §31, because `raw` was chosen)
+
+| | value |
+|---|---|
+| verdict | **REJECT** - `train_chose_demean`, `valid_ci_lo>0` |
+| trades / weeks | 1,588 / 105 |
+| **weekly mean** | **+0.00548** |
+| **95% weekly CI** | **[-0.00026, +0.01129]** |
+| **t** | **+1.84** |
+| **max drawdown** | **19.77%** (gate 20%) |
+| **long / short (summed return)** | **+0.1599 / +0.4158** |
+| **breadth** | **28 of 46 = 0.61** |
+| **timing / shift median / shift p95** | **+0.01287 / +0.00057 / +0.00295** (4.4x the p95) |
+| mean R | +0.0608 (gross +0.0820, cost 0.0212) |
+| cost x1.5, weekly | +0.00450 |
+| per year, summed return | 2023 +0.1120 / 2024 +0.4637 |
+
+### Diagnostics - and the one that matters
+
+| diagnostic | §32 (= §31's book) |
+|---|---|
+| **share of the total return from the best 5 of 105 weeks** | **66.8%** (+0.384 of +0.576) |
+| negative weeks | **44 of 105** |
+| **beta of the weekly account return to the equal-weight weekly market** | **-0.053** |
+| **correlation to the same market return** | **-0.166** |
+
+**The book's beta to the market is -0.05 and its correlation is -0.17.** That is
+the finding of this round, and it is the opposite of what §32 set out to fix.
+PLAN.md §32's premise was "the book is mostly one bet on the market's next move".
+**The §31 account is not that.** The 5% per-direction cap and the 4h agreement
+filter had already made the trading book close to market-neutral before any
+demeaning was applied: it is uncorrelated with the equal-weight market, so there
+was almost no market-wide exposure left for the cross-sectional transform to
+remove. `beta = -0.05` is also consistent with the owner's own observation that
+the book "goes short while the trend is up" - the account was not taking the
+market's side at all.
+
+### What the numbers say
+
+**1. The hypothesis is answered the other way, and the answer is clean.** Demeaning
+does not keep the relative signal - it removes the edge. Mean R per trade falls
+from **+0.0597 to +0.0095** at the winning switches, and every one of the 12
+demeaned cells sits between **-0.0014 and +0.0095** while every one of the 12 raw
+cells sits between **+0.0049 and +0.0597**. The TRAIN t-statistic range collapses
+from **+0.21..+2.40** (raw) to **-0.13..+0.63** (demean), and **2 of 12 demeaned
+cells have a negative weekly mean**. `train_chose_demean` is not a formality: the
+alternative was never competitive.
+
+**2. §30's signal lives in the market-wide part, not in the cross-sectional part.**
+That is what this establishes, and it is the plain reading of point 1. The models
+were not picking relatively strong coins; their usable content was the
+market-wide component, and removing it leaves approximately nothing. Note this
+does **not** follow that §31's account was long the market - it was not (beta
+-0.05). The signal can be market-wide in the forecast and market-neutral in the
+capped book, because the cap and the agreement filter spend it rather than net it.
+
+**3. The owner was right that the book feels like the market, and right that
+fixing it this way does not work.** The concentration diagnostics confirm the
+instability the owner saw and Exp 034 flagged - **the best 5 of 105 weeks are 67%
+of the total, and 44 of 105 weeks lose money** - and the cross-sectional
+transform does not touch any of it, because it was applied to the wrong object.
+
+**4. The design tests a different thing from what it was aimed at, and this is a
+real limitation.** Demeaning the *forecast* changes which coin is picked, the
+entry bar and the confidence, and it makes the book trade **1.6x to 2.8x more
+often** (2,425 -> 4,595 trades at the winning switches; 1,296 -> 4,570 at 1d).
+So §32 compares "raw signal" with "a different, weaker signal", not "the same
+signal with the market part netted out". The clean version of the idea - keep the
+signal, net the market exposure in the **account** - is **already what §31's 5%
+cap does**, and §32's own beta of -0.05 is the measurement that says so. Nothing
+here says a market-neutral book cannot work; it says the forecast-level version
+of the idea is worse than the cap-level version, which already exists.
+
+**5. Ordering among the demeaned cells is not meaningful.** All 12 t-statistics
+lie between -0.13 and +0.63, which is the noise band. `demean + 1d + conf + 5%`
+having the lowest drawdown (13.4%) and `demean + off` being negative are both
+consistent with noise. Do not read a preference into them.
+
+**6. What must NOT be said.** Demeaned signal exits and the whole-book mean say
+nothing about exit skill (Exp 017), and §32's VALID numbers are not new evidence
+about VALID at all - they are §31's trades read again. The information content of
+this round is 12 TRAIN cells, nothing more.
+
+**7. Where this leaves the line.** Section 30's 1h model is unchanged and still
+frozen. Section 31's capped account is the best book recorded here and is still a
+REJECT by 0.00026 on the weekly CI's lower bound. Section 32 tried to fix it by
+removing the market-wide part and made it worse. **The ML family in this repo has
+now had 7 registered looks at VALID 2023-24 (Exp 035's count), and the holdout
+(2025-01 -> 2026-08, untouched) remains the only data that could settle the frozen
+§31 cell. That would be an owner decision outside the PASS rule, as with the
+premium lead in Exp 012/013.**
+
+### Verdict
+
+**REJECT**, on `train_chose_demean` and `valid_ci_lo>0`. **No holdout run** -
+HOLDOUT was never read; it still holds 5 runs, all from before ML (4 strategies
+plus one lock test on `example_trend_breakout`), 5 FAILED and 0 CONFIRMED.
+Project total remains 500 evaluations. No v2, no changed values, no re-run.
+
+**The honest one-paragraph version for the owner:** the market-demeaning idea was
+tested cleanly and it loses. On the training period all twelve demeaned setups
+are far worse than all twelve raw ones - mean R per trade drops from +0.0597 to
+at most +0.0095, two demeaned setups lose money outright, and the train
+consistency collapses from a best t of +2.40 to a best t of +0.63. TRAIN therefore
+picked the raw book, which is §31's exact book, so the VALID numbers are the same
+1,588 trades as last round - I verified the two trade files are identical - and
+this round adds no new look at VALID. The decisive number is the beta: §31's
+capped account's weekly return has a beta of **-0.05** and a correlation of
+**-0.17** to the equal-weight market, so it was already almost market-neutral.
+The cap and the 4h filter had done what demeaning was meant to do, so there was
+nothing left to remove and the transform only destroyed signal. Your instinct that
+the book is unstable is confirmed - the best 5 of 105 weeks are 67% of the profit
+and 44 weeks lose money - but demeaning is not the fix, because it was applied to
+the forecast instead of to the account, and the account was already neutral.
