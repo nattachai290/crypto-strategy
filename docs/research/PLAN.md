@@ -2536,3 +2536,95 @@ the control removes the market's own move.
 **Prior:** moderate. The mechanism is plausible and the effect is widely
 discussed, which is exactly why it may already be priced in (in funding, for
 example). The holdout's ~500 listings would give it real power.
+
+## 36. Train wide, trade the top 20: more training data and a horizon ensemble (owner request, 2026-10-04)
+
+**The owner's frame.** The goal is an ML model that trades, not fixed rules.
+In the end it will trade **only large coins: the top 20**, never new listings.
+So the improvement over §30/§31 has to come from a better forecast, not from
+more traded coins.
+
+**What limits §31.**
+- The forecast is weak: its correlation with the label is about +0.02.
+- It was learned from 47 coins chosen on 2020–22 volume, which behave like
+  about 1.6 independent coins.
+- The return comes from a few sell-off weeks.
+
+What has already been tried and did not help:
+- longer history (§29/§30);
+- 4h/1d as the traded timeframe;
+- demeaning (§32);
+- one BTC/ETH call (§33);
+- positioning data (§34).
+
+**Hypothesis.** The 1h model learns more, and forecasts more steadily, when:
+- (a) it is trained on every coin that was among the 50 most traded perps at
+  the time. That adds later large coins, more sell-offs and new regimes. These
+  coins are training data only and never traded.
+- (b) it averages three label horizons (12, 24 and 48 bars).
+
+**Design (`src/ml_wide.py`, test 32). An ablation against §31 on the same traded coins.**
+- **Traded coins:** the top 20 of §28's universe by 2020–22 volume, in
+  `universe_v2.json` order: BTC, ETH, DOGE, ADA, BNB, AVAX, MATIC, AXS, ETC,
+  DOT, LINK, ATOM, EOS, CRV, BCH, AAVE, ALGO, RUNE, XTZ, THETA. Only these ever
+  get a position.
+- **Training rows:**
+  - every §30 row of its 47 coins, spot history included;
+  - plus each other perp's rows, only in months when it was in the top 50 by
+    mean quote volume over the 30 days before the month. This is causal:
+    zero-volume days are excluded and delisted coins are included. These
+    coins use perp bars only.
+- **Model:**
+  - §30's chosen 1h setting, refit monthly;
+  - one model per horizon h ∈ {12, 24, 48} (label = h-bar log return in ATRs;
+    walk-forward lag h + 1 bars);
+  - forecast = mean of pred_h × √(24/h).
+- **Account:** §31's chosen cell (agreement with §30's frozen 4h forecasts,
+  conf sizing, 5% cap), with §31's policy, stop, costs and gates. Breadth is
+  measured over the 20 traded coins, with min coins 10.
+- **Cell choice on TRAIN only.** TRAIN (2021–22) compares `base` (§30's frozen
+  1h forecasts on the same 20 coins) with `wide` by the weekly account
+  t-statistic. A `base` choice is REJECT (gate `train_chose_wide`).
+- **Diagnostic:** the forecast/label correlation on the traded coins' VALID
+  rows, base against wide.
+- **Holdout.** §31–§36 share one holdout (the same model line).
+
+**What it can show.**
+- **Supports the hypothesis:** TRAIN prefers `wide`, the VALID correlation
+  rises, and the weekly CI clears 0 on the top 20.
+- **Answers it the other way:** the extra coins and horizons add noise, not
+  information.
+
+**Cost.** About 3× §30's walk-forward (three horizons) on a larger row set.
+The run is long: monthly refits on all training coins.
+
+**Prior:** low to moderate. This is the 8th distinct ML VALID book (Exp 043's
+count). Trading only 20 coins removes the breadth lever, so the CI must
+narrow through forecast quality alone.
+
+### §36 addendum: re-registered on the owner's definition of "large coins" (2026-10-04, `_multi` Exp 048)
+
+This replaces the static "top 20 of `universe_v2.json`" above, which inherited
+the data-gap bug (`_multi` Exp 047 note).
+
+- **Traded set, chosen by the owner.**
+  - Crypto only: no stock, gold or oil perps. Excluded are symbols whose
+    `exchangeInfo` `underlyingType` is not COIN, fetched by `--build`, plus a
+    fallback list. These perps only exist from 2025.
+  - Listed for ≥ 365 days.
+  - Each month, the top 20 by mean daily quote volume over the 30 days before
+    the month, with ≥ 20 traded days.
+  - A new position on a coin opens only in a month when it is in the set;
+    holding and exits are untouched.
+- **Data-gap fix.** Sets and listing age are computed per symbol from daily
+  volume, never from `split_instruments` runs. SOL, XRP and LTC are back.
+- **Training rows.** For `wide`: the 47 core coins' rows, plus every crypto
+  perp's rows in months when it was in the top 50, at any age.
+- **The comparison is now narrow against wide**, on the same traded sets.
+  `narrow` is §30's recipe: one 24-bar model trained on the 47 core coins'
+  rows only, forecasting every traded coin, with features from the same
+  `prepare` as `wide`. A `narrow` choice is REJECT.
+- **Agreement.** A 4h model with §30's 4h recipe, trained on the core rows and
+  forecasting every traded coin, shared by both forms. §30's frozen 4h
+  forecasts cover only the 47 coins.
+- **Unchanged:** §31's cell, gates and holdout sharing.
