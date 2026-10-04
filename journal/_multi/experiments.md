@@ -3705,3 +3705,70 @@ shift of the signal scored better than the real one. The 4.6% drawdown looks goo
 only because it sits in cash 63% of the time. So the timing does not survive being
 made once: the mean of the 47 forecasts is simply a weaker signal than each coin's
 own forecast, and it crosses its threshold eight times less often.
+
+---
+
+## Exp 040 - Review of Exp 039 (§33, planner): REJECT stands; one comparison corrected
+
+**Date:** 2026-10-04
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.** I recomputed from `results/_multi/ml_mkt/trades_valid.csv.gz`:
+- 98 trades, all on ETHUSDT;
+- long: 32 trades at -0.1242 R, summing to -3.98 R;
+- short: 66 trades at +0.1186 R, summing to +7.82 R;
+- mean R without the 5 best trades: -0.0821.
+
+The run matches its registration. The REJECT stands, and so does the main reading: on TRAIN, 5 of the 6 cells lost money, so the mean forecast has no edge on BTC or ETH.
+
+**Correction: the "crosses its threshold eight times less often" comparison.** The 98 trades are on one contract. §31's 1,588 trades are spread over 47 coins, about 34 per coin, and §31 traded ETH itself 27 times. Per contract, the mean signal trades about three times as often as a coin's own forecast, not eight times less often. The conclusion stands for a different reason: the mean signal is not weaker because it trades less. It is weaker because it has no edge on TRAIN.
+
+**What the three rounds §31–§33 say together.**
+- §32: removing the market-wide part of each coin's forecast removed the edge.
+- §33: the market-wide part alone, traded on BTC or ETH, has no edge.
+- So the edge, if it is real, needs both parts together: each coin's own forecast, traded on that coin. On VALID it came mostly from shorts on alt-coins in sell-offs. §31 short leg: +0.42 against +0.16 long; §33's short leg is its only positive leg.
+- The mean signal spent 31% of 2023–24 short and 6.5% long while ETH rose about 1% a week. The model leans short, as the owner saw ("it goes short while the trend is up").
+- Three further rounds have not improved on the frozen §31 cell. Every further variant judged on VALID 2023–24 is another look at the same two years: this would be the 9th.
+
+---
+
+## Exp 041 - Pre-registration: positioning features for §30's 1h model on §31's account (PLAN.md §34, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**Why not the holdout now.** The owner chose new data over spending the holdout
+on §31. The planner estimated the power of the 87-week holdout from §31's VALID
+weekly mean (+0.00548) and standard deviation (0.0305). A CONFIRM would come
+about 39% of the time if that edge were fully real, and about 13% at half that
+edge. A FAILED result would not tell a weak edge from none, and the one clean
+dataset would be spent.
+
+**Hypothesis.** The sell-offs that carry §31's book are liquidation cascades.
+They are more likely when open interest has built up, the crowd is long and
+funding is high. Positioning features should sharpen those trades.
+
+**Fixed before the run (`src/ml_flow.py`, test 30):**
+- Only the features change.
+- **Model:** §30's 1h setting, refit monthly.
+- **New features:** the 12 FLOW_COLS from Binance metrics and funding. They
+  are causal: a row is used 5 min after its `create_time`, and is NaN when more
+  than 30 min stale.
+- **Account:** §31's fixed cell, with §30's frozen 4h agreement.
+- **TRAIN** compares base against flow by the weekly t-statistic. A base
+  choice is REJECT.
+- **VALID gates:** §31's.
+- **Diagnostics:** the flow features' gain share, the top-5-week share,
+  negative weeks.
+- **Holdout:** one holdout, shared with §31–§33.
+
+**Looks.** This is the 9th ML look at VALID 2023–24 in `_multi`.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 30 included)
+python src/ml_flow.py --build      # metrics for the 47 coins (~83k daily files; long, resumable)
+python src/ml_flow.py              # once; writes results/_multi/ml_flow/ and journal/_multi/ml_flow.md
+```
+- If the reproduction check stops the run, report it and change nothing.
+- Do not run `--final` unless the verdict is PASS and the owner agrees.
