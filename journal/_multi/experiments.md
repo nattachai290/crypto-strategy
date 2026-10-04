@@ -3772,3 +3772,192 @@ python src/ml_flow.py              # once; writes results/_multi/ml_flow/ and jo
 ```
 - If the reproduction check stops the run, report it and change nothing.
 - Do not run `--final` unless the verdict is PASS and the owner agrees.
+
+---
+
+## Exp 042 - Positioning features for the 1h model on section 31's account (PLAN.md section 34, Exp 041 run): REJECT - TRAIN chose base, and the model used the new features heavily anyway
+
+**Date:** 2026-10-04
+**Status:** complete. **One run, exactly as pre-registered in Exp 041.** No value
+in `src/ml_flow.py`, `ml_port.py`, `ml_xs.py`, `ml_mkt.py`, `ml_wf3.py`,
+`ml_wf2.py` or `src/ml_wf.py` was changed, no variant was tried, `--final` was
+not run (nothing passed), no holdout file was created and HOLDOUT was never read.
+**No new evaluation row.**
+
+**Session state.** `git pull` fast-forward · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED** with **test 30 present and all nine of
+its checks passing** (the base `X` is untouched and a copy carries every flow
+column; `oi_chg_24` is the log OI change over 24 bars, each OI the last row 5 min
+before that bar's close; metrics features are NaN before the metrics start while
+funding exists earlier; market features are the same-hour mean with `rel` =
+coin minus market; the features are causal; **the `base` form is section 31's
+cell exactly**; flow forecasts differ from base and the gain share is measured in
+[0, 1]; a `base` choice cannot PASS; the shared holdout is refused when sections
+31-33 used it). **The reproduction check did not stop the run.** No abnormal
+number: no inf, no nan, no exponential notation; the largest weekly mean in the
+table is +0.00694.
+
+**`--build`, and the third silent death in this project.** The first
+`python src/ml_flow.py --build` died with no error and no output file after 22 of
+47 coins (last written: EGLDUSDT). The process was simply gone - no traceback, no
+Python exception. **Re-ran the identical command with no value changed**, as the
+owner authorised; the cache is resumable and it continued from coin 23 to
+**`BUILD OK: metrics for 47 coins`**. This is the third time a background process
+has died silently here (after the first `ml_wf.py` launch and the first
+`ml_wf3.py --build`); every one was recovered by re-running the same command with
+nothing changed.
+
+**What was downloaded.** Binance daily metrics for the 47 coins to
+`data/cache/_multi/metrics/`: **median 1,735 days, maximum 1,735, minimum 498**;
+**36 of 47 coins have 1,700 days or more.** The short ones are **HNTUSDT 498
+days**, **TOMOUSDT 732**, then BALUSDT 1,283, SXPUSDT 1,548, DEFIUSDT 1,515.
+Metrics start 2021-12-01, so they cover 13 of TRAIN's 24 months, exactly as
+pre-registered.
+
+### Verdict: REJECT, on two gates
+
+`train_chose_flow` and `valid_ci_lo>0`.
+
+**The chosen form was `base`** - section 31's cell, agreement 4h, confidence
+sizing, 5% cap. Per the pre-registration, a `base` choice is section 31 restated
+and cannot PASS.
+
+**Consequence for VALID, checked rather than assumed:** `trades_valid.csv.gz` in
+`results/_multi/ml_flow/` and in `results/_multi/ml_port/` both hold 1,588 rows
+and `pandas` reports them **identical**. **Section 34 added no new look at VALID
+2023-24.** As in section 32, the new evidence is entirely on TRAIN: one
+comparison, base against flow.
+
+### The TRAIN comparison, base vs flow
+
+| form | TRAIN trades | weekly mean | t | per year | **2021** | **2022** | max DD | mean R |
+|---|---|---|---|---|---|---|---|---|
+| **base** (section 31) | 2,425 | **+0.00694** | **+2.40** | **+36.2%** | **+0.3438** | **+0.3854** | 19.2% | **+0.0597** |
+| **flow** (+12 features) | 1,882 | +0.00445 | +1.52 | +23.2% | +0.1247 | +0.3425 | **16.9%** | +0.0525 |
+
+**Flow is behind base on every TRAIN measure except drawdown**: 22% fewer trades,
+36% lower weekly mean, t +1.52 against +2.40, mean R +0.0525 against +0.0597,
+and 36% lower return per year. The only thing flow improves is the drawdown
+(16.9% against 19.2%), which is the same trade seen throughout this project -
+carry less risk, earn less - and here it buys a worse book as well.
+
+**The per-year split is the honest reading, and it softens but does not overturn
+the result.** Flow's TRAIN deficit is very unevenly spread:
+
+| TRAIN year | base | flow | difference |
+|---|---|---|---|
+| 2021 | +0.3438 | +0.1247 | **-64%** |
+| 2022 | +0.3854 | +0.3425 | **-11%** |
+
+Metrics only start 2021-12-01, so **2021 is mostly a year without the features**,
+and almost the whole headline gap lives there. In 2022 - the fully covered year -
+flow is still behind base, but by 11%, not 64%. **So the fair statement is
+narrower than "positioning does not help": on the part of TRAIN where positioning
+actually exists, the new features cost about a ninth of the return.** They did
+not add any.
+
+### VALID (identical to §31, because `base` was chosen)
+
+| | value | gate |
+|---|---|---|
+| verdict | **REJECT** | failed `train_chose_flow`, `valid_ci_lo>0` |
+| **trades / weeks** | 1,588 / 105 | |
+| **weekly mean** | **+0.00548** | > 0 pass |
+| **95% weekly CI** | **[-0.00026, +0.01129]** | **FAIL** |
+| **t** | **+1.84** | |
+| **max drawdown** | **19.77%** | <= 20% pass |
+| **mean R** | **+0.0608** (gross +0.0820, cost 0.0212), avg risk 0.54% | |
+| **long / short (summed return)** | **+0.1599 / +0.4158** | both legs pass |
+| **breadth** | **28 of 46 = 0.61** | pass |
+| **timing / shift median / shift p95** | **+0.01287 / +0.00057 / +0.00295** (4.4x the p95) | pass |
+| cost x1.5, weekly | +0.00450 | pass |
+| per year, summed return | 2023 +0.1120 / 2024 +0.4637 | |
+
+### Diagnostics
+
+| | value |
+|---|---|
+| **flow features' share of gain in the VALID refits** | **45.0%** |
+| **share of the total from the best 5 of 105 weeks** | **66.8%** (+0.384 of +0.576) |
+| **negative weeks** | **44 of 105** |
+| TRAIN return by year | base 2021 +0.3438 / 2022 +0.3854 · flow 2021 +0.1247 / 2022 +0.3425 |
+
+**The gain share is the most informative number in the round, and it must not be
+read as a success.** The flow model spends **45% of its gain on the twelve new
+features** - it leans on open interest, the long/short ratios and funding heavily -
+**and still produces the worse book.** High usage is not usefulness: the features
+are informative enough for the trees to use them, and they do not carry an edge.
+If they carried a large one, flow would have won on TRAIN.
+
+### Section 34 against section 31
+
+| | section 31 (Exp 033) | **section 34 (this)** |
+|---|---|---|
+| VALID trades / weeks | 1,588 / 105 | 1,588 / 105 (identical trades) |
+| weekly mean / CI / t | +0.00548 / [-0.00026, +0.01129] / +1.84 | identical |
+| max drawdown | 19.77% | 19.77% |
+| mean R | +0.0608 | +0.0608 |
+| long / short | +0.1599 / +0.4158 | +0.1599 / +0.4158 |
+| breadth | 28 of 46 | 28 of 46 |
+| timing vs shifted p95 | 4.4x pass | 4.4x pass |
+| best 5 weeks' share | 66.8% | 66.8% |
+| negative weeks | 44 of 105 | 44 of 105 |
+| TRAIN weekly mean (base leg) | +0.00694, t +2.40 | +0.00694, t +2.40 |
+| **TRAIN with the new features** | - | **+0.00445, t +1.52** |
+| gates failed | 1 | **2** |
+
+### What the numbers say
+
+**1. Positioning did not sharpen the trades that carry the book; it diluted
+them.** The hypothesis was that the sell-offs section 31 catches are liquidation
+cascades, and that open interest, crowd side and funding would mark them. The
+ablation says the price features were already carrying what those trades needed:
+adding positioning cost 11% of the 2022 return and left the model leaning on the
+new columns for 45% of its gain with a worse outcome. That is the "answers it the
+other way" branch PLAN.md named, and it is what happened.
+
+**2. The data coverage limits what this round can claim, and the claim must be
+stated at that size.** Metrics begin 2021-12-01, so only 13 of TRAIN's 24 months
+have them, and two of the 47 coins are thin (HNT 498 days, TOMO 732). **"There is
+no positioning edge measurable in 2021-22 data" is supported. "Positioning has no
+edge" is not established** - a feature set can be starved of training data and
+still carry signal, and 2023-24 metrics were never used to choose anything.
+Anyone reading this round as evidence against positioning in general would be
+over-reading it.
+
+**3. Nothing changed on VALID, so this is the 9th look at the same two years
+with the 9th identical answer.** Four consecutive rounds now end at the same
+place: section 31's frozen cell, 1,588 trades, weekly +0.00548, CI lower bound
+-0.00026, 44 negative weeks, the best 5 of 105 weeks supplying 67% of the return.
+Section 32 changed the forecast's form and made it worse; section 33 concentrated
+the signal and lost it; section 34 added real new data and made it worse on TRAIN.
+
+**4. What must NOT be said.** Signal exits are 90% of this book at +0.1722 R and
+that is not exit skill (Exp 017) - a position exists only while the forecast
+wants it, and the stops are the disagreements at -1.0260 R. The whole-book
+**+0.0608 R** is the measure. And the 45% gain share is not a partial success.
+
+### Verdict
+
+**REJECT** on `train_chose_flow` and `valid_ci_lo>0`. **No holdout run** - HOLDOUT
+was never read; it still holds 5 runs, all from before ML (4 strategies plus one
+lock test on `example_trend_breakout`), 5 FAILED and 0 CONFIRMED. Project total
+remains 500 evaluations. No v2, no changed values, no re-run.
+
+**The honest one-paragraph version for the owner:** the positioning data was
+downloaded for all 47 coins (36 of them with the full 1,735 days; the metrics only
+start December 2021) and the model was refit with twelve new columns - open
+interest change, open interest over volume, the long/short ratios, funding, and
+the same quantities averaged across the market. It did not help. On the training
+period the new version is behind on everything: 1,882 trades instead of 2,425,
++0.00445 a week instead of +0.00694, t +1.52 instead of +2.40, mean R +0.0525
+instead of +0.0597. The gap looks worst in 2021 (-64%) because the data barely
+existed that year; in 2022, the year it does exist, the gap is -11%. Still a loss.
+The striking part is the gain share: the new model puts **45% of its gain on the
+new features** and is still worse - the trees use them heavily and they carry no
+edge. Because the training chose the old model, the validation numbers are
+section 31's 1,588 trades again, which I verified are byte-for-byte the same file,
+so this round adds no new look at the validation years. The fair conclusion is
+narrow: there is no positioning edge visible in 2021-22 data, which is not the
+same as saying positioning never works - the data only starts at the end of 2021
+and was never used on 2023-24.
