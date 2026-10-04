@@ -432,6 +432,7 @@ def main() -> None:
     test_ml_wf3()
     test_ml_port()
     test_ml_xs()
+    test_ml_mkt()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2137,6 +2138,88 @@ def test_ml_xs() -> None:
           (xs["chosen"]["form"] == "demean") == ("train_chose_demean" not in xs["gates_failed"])
           and "diagnostics" in xs["valid"], f"{xs['chosen']} {xs['verdict']} {xs['gates_failed']}")
     check("ml_xs pipeline: pure noise is not a PASS", noise["verdict"] == "REJECT", f"{noise['gates_failed']}")
+
+
+# --------------------------------------------------------------------------
+# 29. Market timing on BTC/ETH from the mean forecast (PLAN.md section 33)
+# --------------------------------------------------------------------------
+def test_ml_mkt() -> None:
+    print("\n29. ML market timing: mean forecast, instruments, shared risk budget, shared holdout lock, planted edge / noise")
+    import contextlib
+    import io
+    import json as _json
+    import shutil
+    import tempfile
+    import ml_mkt as MK
+    import ml_port as MP_
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_xs as XS
+    ix = pd.date_range("2023-01-01", periods=3, freq="1h", tz="UTC")
+    pr = {"A": pd.Series([1.0, 2.0, np.nan], index=ix), "B": pd.Series([3.0, np.nan, 1.0], index=ix),
+          "C": pd.Series([2.0, 0.0, 5.0], index=ix)}
+    ms = MK.market_signal(pr, min_coins=2)
+    check("ml_mkt market signal: same-hour mean over coins with a forecast; NaN under min_coins",
+          np.allclose(ms.to_numpy(), [2.0, 1.0, 3.0]) and MK.market_signal(pr, min_coins=3).isna().tolist() == [False, True, True])
+    pr2 = {k: v.copy() for k, v in pr.items()}
+    pr2["C"].iloc[2] = 99.0
+    check("ml_mkt market signal is causal: a later forecast never changes an earlier value",
+          np.allclose(MK.market_signal(pr2, 2).iloc[:2], ms.iloc[:2]))
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+
+    def setup(k, seeds):
+        by = {60: {}}
+        for n, sd in seeds:
+            b = _momentum_bars(k, seed=sd)
+            by[60][n] = {"spot": b, "perp": b, "fund": fund}
+        P = W2.prepare(by, 60)
+        pred = {}
+        for c in P:                                      # the planted edge's own causal forecast: last 24h, in ATRs
+            cl = P[c]["bars"]["close"]
+            f = np.log(cl / cl.shift(24)) / (P[c]["atr"] / cl)
+            pred[c] = pd.Series(f.to_numpy()[:-1], index=P[c]["X"].index).where(P[c]["tradable"])
+        return P, pred, {"4h": pred}
+    with contextlib.redirect_stdout(io.StringIO()):
+        S = setup(0.0008, [("BTCUSDT", 160), ("ETHUSDT", 160)])
+        Sn = setup(0.0, [("BTCUSDT", 170), ("ETHUSDT", 171)])
+    a, b = WF_.WINDOWS["valid"]
+    t1, _, P1 = MK.run_cell(*S, a, b, "BTC", "off", 0.9, "flip", min_xs=1)
+    t2, _, P2 = MK.run_cell(*S, a, b, "BTC+ETH", "off", 0.9, "flip", min_xs=1)
+    check("ml_mkt instruments: BTC trades one contract at 1% risk; BTC+ETH trades both at half risk each",
+          list(P1) == ["BTCUSDT"] and set(t1["coin"]) == {"BTCUSDT"} and np.allclose(t1["risk"], 0.01)
+          and set(t2["coin"]) == {"BTCUSDT", "ETHUSDT"} and np.allclose(t2["risk"], 0.005)
+          and np.allclose(t2["ret"], t2["net_r"] * t2["risk"]), f"{len(t1)} / {len(t2)} trades")
+    Pi, p1, _ = MK.book(*S, "ETH", min_xs=1)
+    check("ml_mkt book: the instrument is driven by the market signal on its own decision index",
+          list(Pi) == ["ETHUSDT"] and p1["ETHUSDT"].index.equals(S[0]["ETHUSDT"]["X"].index)
+          and np.allclose(p1["ETHUSDT"].dropna(), MK.market_signal(S[1], 1).reindex(p1["ETHUSDT"].index).dropna()))
+    with contextlib.redirect_stdout(io.StringIO()):
+        edge = MK.evaluate(*S, 0.9, "flip", min_xs=1)
+        noise = MK.evaluate(*Sn, 0.9, "flip", min_xs=1)
+    check("ml_mkt pipeline: a planted market-timing edge is found (PASS); 6 TRAIN cells",
+          edge["verdict"] == "PASS" and len(edge["train_table"]) == 6,
+          f"{edge['verdict']} {edge['gates_failed']} chose {edge['chosen']} weekly {edge['valid']['weekly_mean']:+.5f}")
+    check("ml_mkt pipeline: pure noise is not a PASS", noise["verdict"] == "REJECT", f"{noise['gates_failed']}")
+
+    tmp = Path(tempfile.mkdtemp())
+    saved = (MK.OUT, MP_.OUT, XS.OUT)
+    try:
+        MK.OUT, MP_.OUT, XS.OUT = tmp / "mkt", tmp / "port", tmp / "xs"
+        for o in (MK.OUT, MP_.OUT):
+            o.mkdir(parents=True)
+        (MK.OUT / "summary.json").write_text(_json.dumps({"verdict": "PASS"}))
+        (MP_.OUT / "holdout.json").write_text("{}")
+        try:
+            MK.run(final=True)
+            refused = False
+        except SystemExit as e:
+            refused = "share one holdout" in str(e)
+    finally:
+        MK.OUT, MP_.OUT, XS.OUT = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("ml_mkt holdout: refused when section 31 (or 32) already used the shared holdout", refused)
 
 
 if __name__ == "__main__":

@@ -2336,3 +2336,64 @@ pairs trading (which the owner excluded).
 **Prior:** low to moderate. This is another look at VALID 2023–24, the 7th ML
 look in `_multi` (§27–§32). Even a PASS needs the holdout, and the record
 must state the number of looks.
+
+## 33. Market timing on BTC/ETH from the 47-coin mean forecast (owner request, 2026-10-04)
+
+**Why.** §32 and its review showed what §30's 1h model is.
+- **The usable signal is market-wide.** Demeaning the forecasts across coins
+  removed the edge (`_multi` Exp 036).
+- **§31's book is a market timer** (`_multi` Exp 037):
+  - in an average week, 89% of the trades that close are on one side;
+  - the best weeks are one-sided shorts across many coins that won together;
+  - beta is near 0 only because the side changes over time.
+
+One market call spread over about 40 alt-coins pays alt-coin costs about 40
+times (slippage 0.05% against 0.02%) and adds alt-coin noise.
+
+**Hypothesis.** The same call, made once on the most liquid contracts, keeps
+the timing and sheds most of the cost and noise.
+
+**Design (`src/ml_mkt.py`, test 29).**
+- **No refit.** §30's frozen 1h and 4h models are recomputed and checked to
+  1e-6 (`ml_port.forecasts`).
+- **Signal:** m(t) = the mean of the 47 coins' 1h forecasts at open time t,
+  with ≥ 10 coins. It uses only forecasts made at t, so it is causal.
+- **Policy:** §30's own hysteresis on m.
+  - The entry bar is the rolling q_in = 0.9 quantile of |m|.
+  - The exit mode is §30's `flip`.
+  - An 8-ATR protective stop; no clock.
+  - Perp bars, perp costs and funding.
+- **Cells (6):**
+  - **I, instrument:** BTC, ETH, or BTC+ETH. For BTC+ETH each contract gets
+    0.5% risk, so the total stays ≤ 1%.
+  - **A, agreement:** off or 4h. §31's rule, using the 4h mean forecast.
+- **Cell choice on TRAIN only.** The TRAIN walk-forward (2021–22) chooses one
+  cell by the weekly account t-statistic, with ≥ 30 trades.
+- **VALID gates (all needed):**
+  - TRAIN weekly mean > 0;
+  - ≥ 30 trades;
+  - weekly mean > 0, and its 95% bootstrap CI lower bound > 0;
+  - weekly mean > 0 at cost ×1.5;
+  - timing above the shifted p95;
+  - both legs > 0;
+  - max drawdown ≤ 20%.
+
+  Breadth does not apply with 1–2 contracts.
+- **Diagnostics (not gates):**
+  - time spent long, short and flat;
+  - the share of the total from the best 5 weeks;
+  - the number of negative weeks;
+  - buy-and-hold weekly return;
+  - beta and correlation to buy-and-hold.
+- **Holdout.** §31, §32 and §33 share one holdout; `--final` refuses if either
+  of the others used it. CONFIRMED needs a weekly mean > 0, a CI lower bound
+  > 0, and timing above the shifted median.
+
+**What it can show.**
+- **Supports the hypothesis:** the timing survives on 1–2 contracts and the
+  costs fall.
+- **Answers it the other way:** the edge needs the alt-coin moves (alts fall
+  harder in sell-offs), which a BTC/ETH-only book cannot capture.
+
+**Prior:** low to moderate. This is the 8th ML look at VALID 2023–24. A
+1–2-contract book has fewer trades, so the weekly CI may be wider.
