@@ -3154,3 +3154,90 @@ confidence interval narrowed 10.8 times and its lower bound went from -0.0235 to
 The real finding is the risk side: uncapped, section 30's book loses 150% on TRAIN;
 capped it does not. The correlated same-direction exposure was the account's
 danger, not the forecast.
+
+---
+
+## Exp 034 - Review of Exp 033 (§31, planner): REJECT by 0.00026 stands; three corrections
+
+**Date:** 2026-10-04
+**Status:** complete. A review, no evaluations. Earlier entries are not edited.
+
+**Checked and correct.**
+- `src/` is unchanged since the bug review (f7cf75f).
+- No holdout file exists.
+- Recomputed with `ml_port.account` from `trades_valid.csv.gz`, matching
+  `summary.json` exactly:
+  - 1,588 trades;
+  - weekly mean +0.00548, CI [-0.00026, +0.01129], t +1.84;
+  - max drawdown 0.1977;
+  - long +0.160 / short +0.416 (summed return);
+  - 2023 +0.112, 2024 +0.464.
+- TRAIN chose agreement 4h, confidence sizing and a 5% cap, which is the cell
+  with the highest TRAIN t (+2.40).
+
+**Corrections to Exp 033.**
+1. **"The weekly CI is 10.8x narrower" compares different units.** §30's
+   0.1241 is the width of a per-trade CI in R. §31's 0.0115 is the width of a
+   weekly CI in account return. They cannot be divided. A like-for-like
+   comparison would need §30's book in the same account units (the off/flat/no
+   cap cell on VALID), which was not computed.
+2. **The return is concentrated.**
+   - The 5 best of 105 weeks give +0.384 of the +0.576 total (67%).
+   - Without them, the weekly mean is +0.0019.
+   - 2023 is positive only because of its best weeks: without its 3 best
+     weeks, 2023 is -0.079. "2023 positive for the first time" is true but
+     fragile.
+   - 44 of 105 weeks are negative.
+3. **The drawdown gate passed by 0.2 points** (19.77% against 20%).
+
+**What stands.**
+- This is the most complete book in the project. Every gate passes except the
+  CI lower bound, which misses by 0.00026.
+- Both legs are positive. Breadth is 28 of 46. Timing is far above the shifted
+  p95. The uncapped account's TRAIN drawdown of 150% shows that the cap is
+  required in any real use.
+- Any further variant judged on VALID adds another look at the same two
+  years. The holdout (2025-01 → 2026-08, untouched) is the only data that can
+  settle it. Using it on the frozen §31 cell is an owner decision outside the
+  PASS rule.
+
+---
+
+## Exp 035 - Pre-registration: market-demeaned forecasts on §31's account (PLAN.md §32, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**Hypothesis.** §30's models carry a coin-relative signal under a market-wide
+part that is mostly noise. Evidence for this:
+- the top WHY reasons were market-wide 78–100% of the time;
+- the 47 coins behave like about 1.6 independent coins;
+- §31's return was concentrated: the best 5 of 105 weeks gave 67% (Exp 034).
+
+Subtracting the cross-sectional mean forecast at each hour should keep the
+relative signal and remove the common weekly swing.
+
+**Fixed before the run (`src/ml_xs.py`, test 28):**
+- §30's frozen 1h/4h/1d forecasts, recomputed and checked to 1e-6 as in §31;
+- the demean transform needs ≥ 10 coins and is applied to the agreement
+  forecasts too;
+- 24 TRAIN cells: form raw/demean × agreement off/4h/1d × sizing flat/conf ×
+  cap 5%/10%;
+- the cell is chosen by the TRAIN weekly t-statistic, with ≥ 300 trades;
+- a `raw` choice is REJECT;
+- §31's VALID gates, unchanged;
+- diagnostics: top-5-week share, negative weeks, beta and correlation to the
+  equal-weight market;
+- one holdout shared with §31.
+
+**Looks.** This is the 7th ML look at VALID 2023–24 in `_multi`
+(§27–§32). A PASS still needs the holdout, and any report of a PASS must say
+this.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 28 included)
+python src/ml_xs.py                # once; writes results/_multi/ml_xs/ and journal/_multi/ml_xs.md
+```
+- If the reproduction check stops the run, report it and change nothing.
+- Do not run `--final` unless the verdict is PASS and the owner agrees.

@@ -2276,3 +2276,63 @@ little cost to the mean. If not, the 1h result was the 2024 regime.
 
 **Prior:** low to moderate. It is built on the nearest miss so far. It is
 still a further look at VALID, and only the holdout can settle it.
+
+## 32. Cross-sectional (market-demeaned) forecasts on §31's account (owner request, 2026-10-04)
+
+**Why.** §31 failed one gate by 0.00026, the weekly CI lower bound
+(`_multi` Exp 033). The review (`_multi` Exp 034) found that its return was
+concentrated:
+- the 5 best of 105 weeks gave 67% of the total;
+- 2023 without its 3 best weeks was -0.079.
+
+Two earlier findings point at the same cause:
+- §30's top WHY reasons were market-wide features 78–100% of the time;
+- the 47 coins behave like about 1.6 independent coins.
+
+So the book is mostly one bet on the market's next move, and the owner saw
+it: "it goes short while the trend is up".
+
+**Hypothesis.** The models carry a coin-relative signal (which coins will do
+better or worse than the others) under a market-wide part that is mostly
+noise. Removing the market-wide part should do three things:
+- leave the relative signal;
+- hold long and short at the same time;
+- cut the common weekly swing that widens the CI.
+
+Each trade is still one coin on its own, with no hedge leg, so this is not
+pairs trading (which the owner excluded).
+
+**Design (`src/ml_xs.py`, test 28).**
+- **No model is refitted.** §31's recomputation and its 1e-6 reproduction
+  check are reused (`ml_port.forecasts`).
+- **F, form** (`raw`, `demean`). `demean` means: at each open time, a coin's
+  forecast minus the mean of every coin's forecast at that time.
+  - It needs ≥ 10 coins with a forecast; otherwise there is no forecast.
+  - The same transform is applied to the 4h and 1d agreement forecasts.
+  - The entry bar and confidence are then computed per coin on the transformed
+    forecast, exactly as before.
+- **§31's switches:** agreement off, 4h or 1d; sizing flat or conf; cap 5% or
+  10%. Uncapped is dropped because it lost 150% on TRAIN in §31.
+  This gives 24 cells.
+- **Cell choice on TRAIN only.** The TRAIN walk-forward (2021–22) chooses one
+  cell by the weekly account t-statistic, with ≥ 300 trades. A `raw` choice is
+  §31 again and is REJECT (gate `train_chose_demean`).
+- **VALID gates** are §31's, unchanged.
+- **Diagnostics (not gates):**
+  - the share of the total from the best 5 weeks;
+  - the number of negative weeks;
+  - beta and correlation of the weekly account return to the equal-weight
+    weekly market return of the 47 coins.
+- **Holdout.** §31 and §32 share one holdout; `--final` refuses if §31 used
+  it. CONFIRMED uses §31's rule.
+
+**What it can show.**
+- **Supports the hypothesis:** TRAIN chooses `demean`, VALID beta and the
+  top-5-week share fall, and the CI moves above 0.
+- **Answers it the other way:** TRAIN chooses `raw`, or `demean` loses the
+  mean. Then §30's signal was the market-wide part, and §31's 2024 result was
+  a market regime.
+
+**Prior:** low to moderate. This is another look at VALID 2023–24, the 7th ML
+look in `_multi` (§27–§32). Even a PASS needs the holdout, and the record
+must state the number of looks.

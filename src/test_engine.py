@@ -431,6 +431,7 @@ def main() -> None:
     test_ml_wf2()
     test_ml_wf3()
     test_ml_port()
+    test_ml_xs()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2058,6 +2059,84 @@ def test_ml_port() -> None:
     check("ml_port pipeline: pure noise is not a PASS and its timing does not beat the shifted p95",
           noise["verdict"] == "REJECT" and "timing_beats_shift_p95" in noise["gates_failed"],
           f"{noise['verdict']} {noise['gates_failed']}")
+
+
+# --------------------------------------------------------------------------
+# 28. Cross-sectional (market-demeaned) forecasts (PLAN.md section 32)
+# --------------------------------------------------------------------------
+def test_ml_xs() -> None:
+    print("\n28. ML cross-sectional: demeaned forecasts, causal, raw cells = section 31, weekly market, pipeline")
+    import contextlib
+    import io
+    import ml_port as MP_
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_xs as XS
+    ix = pd.date_range("2023-01-01", periods=4, freq="1h", tz="UTC")
+    pr = {"A": pd.Series([1.0, 2.0, np.nan, 4.0], index=ix), "B": pd.Series([3.0, 0.0, 1.0, 0.0], index=ix),
+          "C": pd.Series([2.0, 1.0, 5.0], index=ix[:3])}
+    dm = XS.demean(pr, min_coins=2)
+    check("ml_xs demean: minus the same-hour mean of every coin; NaN under min_coins; each coin keeps its index",
+          np.allclose(dm["A"].to_numpy(), [-1.0, 1.0, np.nan, 2.0], equal_nan=True)
+          and np.allclose(dm["B"].to_numpy(), [1.0, -1.0, -2.0, -2.0]) and np.allclose(dm["C"].to_numpy(), [0.0, 0.0, 2.0])
+          and dm["C"].index.equals(ix[:3]))
+    check("ml_xs demean: below min_coins there is no forecast",
+          XS.demean(pr, min_coins=3)["B"].isna().to_numpy().tolist() == [False, False, True, True])
+    pr2 = {k: v.copy() for k, v in pr.items()}
+    pr2["A"].iloc[3] = 100.0
+    dm2 = XS.demean(pr2, min_coins=2)
+    check("ml_xs demean is causal: a later forecast never changes an earlier value",
+          all(np.allclose(dm[c].iloc[:3], dm2[c].iloc[:3], equal_nan=True) for c in pr))
+    p1, o1 = XS.transform("raw", pr, {"4h": pr})
+    check("ml_xs raw form passes the forecasts through unchanged", p1 is pr and o1["4h"] is pr)
+
+    wk = pd.date_range("2023-01-01", periods=23 * 24, freq="1h", tz="UTC")     # a day before the first week
+    def bars(px):
+        return pd.DataFrame({"open": px, "high": px, "low": px, "close": px, "volume": 1.0}, index=wk)
+    pa = np.where(np.arange(len(wk)) < 8 * 24 - 1, 100.0, 110.0)      # the bar closing at 2023-01-09 00:00 is 110
+    pa = np.where(np.arange(len(wk)) < 15 * 24 - 1, pa, 121.0)
+    Pm = {"A": {"bars": bars(pa)}, "B": {"bars": bars(np.full(len(wk), 50.0))}}
+    mw = XS.market_weekly(Pm, "2023-01-02", "2023-01-23")
+    check("ml_xs weekly market return: equal-weight mean of weekly log returns from the last close before each week",
+          len(mw) == 3 and np.isclose(mw.iloc[0], np.log(1.1) / 2) and np.isclose(mw.iloc[1], np.log(1.1) / 2)
+          and np.isclose(mw.iloc[2], 0.0), f"{mw.to_numpy()}")
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    cfg = WF_.GRID[0]
+
+    def setup(k, seeds):
+        by = {60: {}}
+        for n, sd in seeds:
+            b = _momentum_bars(k, seed=sd)
+            by[60][n] = {"spot": b, "perp": b, "fund": fund}
+        P = W2.prepare(by, 60)
+        pred = {c: np.full(len(P[c]["X"]), np.nan) for c in P}
+        for a, b_ in (WF_.WINDOWS["train"], WF_.WINDOWS["valid"]):
+            pw = WF_.walk_forward(P, 60, cfg, a, b_, step=3)
+            for c in P:
+                pred[c] = np.where(np.isfinite(pw[c]), pw[c], pred[c])
+        pred1 = {c: pd.Series(pred[c], index=P[c]["X"].index) for c in P}
+        return P, pred1, {"4h": pred1, "1d": pred1}
+    with contextlib.redirect_stdout(io.StringIO()):
+        S = setup(0.0008, [(f"C{i}USDT", 140 + i) for i in range(3)])
+        port = MP_.evaluate(*S, 0.9, "flip", min_coins=3)
+        xs = XS.evaluate(*S, 0.9, "flip", min_coins=3, min_xs=2)
+        noise = XS.evaluate(*setup(0.0, [(f"N{i}USDT", 150 + i) for i in range(3)]), 0.9, "flip", min_coins=3, min_xs=2)
+    key = lambda x: (x["agree"], x["sizing"], x["cap"])
+    pt = {key(x): x for x in port["train_table"]}
+    raw = [x for x in xs["train_table"] if x["form"] == "raw"]
+    same = all(np.isclose(x["weekly_mean"], pt[key(x)]["weekly_mean"]) and x["trades"] == pt[key(x)]["trades"] for x in raw)
+    check("ml_xs raw cells reproduce section 31's TRAIN cells exactly (24 cells = 2 forms x 12)",
+          len(xs["train_table"]) == 24 and len(raw) == 12 and same)
+    dem = [x for x in xs["train_table"] if x["form"] == "demean"]
+    check("ml_xs demeaned cells trade and differ from raw",
+          all(x["trades"] > 0 for x in dem) and any(x["trades"] != r["trades"] or not np.isclose(x["weekly_mean"], r["weekly_mean"])
+                                                    for x, r in zip(dem, raw)))
+    check("ml_xs gate: a raw choice is section 31 again and cannot PASS",
+          (xs["chosen"]["form"] == "demean") == ("train_chose_demean" not in xs["gates_failed"])
+          and "diagnostics" in xs["valid"], f"{xs['chosen']} {xs['verdict']} {xs['gates_failed']}")
+    check("ml_xs pipeline: pure noise is not a PASS", noise["verdict"] == "REJECT", f"{noise['gates_failed']}")
 
 
 if __name__ == "__main__":
