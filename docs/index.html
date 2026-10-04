@@ -83,10 +83,10 @@ html{scroll-padding-top:72px}
 </head>
 <body>
 <main>
-<nav class="nav" aria-label="เมนู"><a href="./" aria-current="page">📋 สรุปผล</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html">🕯️ จุดเข้าออก</a></nav>
+<nav class="nav" aria-label="เมนู"><a href="./" aria-current="page">📋 สรุปผล</a><a href="ml.html">🤖 ML</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html">🕯️ จุดเข้าออก</a></nav>
 
 <h1>ผลวิจัยกลยุทธ์เทรดคริปโต</h1>
-<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 2 ต.ค. 2026 (Coinbase premium)</p>
+<p class="sub">Binance USDT-M Futures · หักค่าธรรมเนียม VIP0 + slippage + funding จริงทุกไม้ · อัปเดต 4 ต.ค. 2026 (ML รอบ §30–§34, short เหรียญเปิดใหม่ §35)</p>
 
 <div class="card hero">
   <div class="big">สรุปสั้นๆ: ยังไม่เจอวิธีไหนที่ทำกำไรได้จริง</div>
@@ -98,7 +98,20 @@ html{scroll-padding-top:72px}
   <div class="stat"><div class="n">500+</div><div class="l">รายการที่ทดสอบ (12 เหรียญ)</div></div>
   <div class="stat"><div class="n">4</div><div class="l">กลยุทธ์ที่ได้เข้าสอบจริง (ไม่นับ 1 ครั้งที่ใช้ทดสอบระบบ)</div></div>
   <div class="stat"><div class="n" style="color:var(--bad)">0</div><div class="l">ที่สอบจริงผ่าน</div></div>
-  <div class="stat"><div class="n">+0.06</div><div class="l">R ที่ดีที่สุดของ ML (รวม 20 เหรียญ) แต่ยังแยกจากโชคไม่ได้</div></div>
+  <div class="stat"><div class="n">+0.061</div><div class="l">R ต่อไม้ของ ML ที่ดีที่สุด (§31) ขาดเกณฑ์อีก 0.00026</div></div>
+</div>
+
+<h2>ผล ML ล่าสุด</h2>
+<p><a href="ml.html" style="color:var(--accent);font-weight:600">ดูกราฟผล ML ทุกรอบ →</a></p>
+<div class="card" style="border-left:6px solid var(--wait)">
+  <h3>โมเดล 1 ชั่วโมง + การจัดพอร์ต (§30 + §31) <span class="tag t-wait">เกือบผ่าน · ยังไม่ได้สอบจริง</span></h3>
+  <p>LightGBM เทรนใหม่ทุกเดือนบน 47 เหรียญ ตัดสินเข้า-ออกเอง ช่วงสอบย่อย 2023–24: <b>1,588 ไม้ เฉลี่ย +0.061 R</b>, ผลตอบแทนเฉลี่ย +0.55% ต่อสัปดาห์ (ช่วงความเชื่อมั่น −0.03% ถึง +1.13%), ลงหนักสุด 19.8%, ได้กำไรทั้งฝั่ง long และ short</p>
+  <ul style="margin:0 0 8px;padding-left:20px">
+    <li>ตกด่านเดียว: ช่วงความเชื่อมั่นยังแตะ 0 (ขาดไป 0.00026)</li>
+    <li>กำไรกระจุก: 5 สัปดาห์ที่ดีที่สุดจาก 105 ให้กำไร 67% ส่วนใหญ่เป็นการ short เหรียญเล็กตอนตลาดดิ่ง</li>
+    <li>ปรับต่ออีก 3 รอบไม่ดีขึ้น: ตัดทิศตลาดออก (§32), เทรดแค่ BTC/ETH (§33), เพิ่มข้อมูล OI/long-short/funding (§34)</li>
+  </ul>
+  <p class="small muted" style="margin:0">ยังไม่ใช้ holdout เพราะต่อให้ดีจริง โอกาสสอบผ่านมีแค่ราว 13–39% · ที่มา: <code>journal/_multi/ml_port.md</code>, <code>journal/_multi/experiments.md</code> Exp 033–043</p>
 </div>
 
 <h2>วิธีตัดสินว่า "ใช้ได้จริง" (เหมือนสอบ 3 รอบ)</h2>
@@ -114,8 +127,11 @@ html{scroll-padding-top:72px}
 
 <h2>ผลสอบจริง 4 ตัว: สอบย่อยดูดี แต่สอบจริงร่วง</h2>
 <p><a href="equity.html" style="color:var(--accent);font-weight:600">ดูกราฟเงินทุน 1,000 USDT ของแต่ละตัว →</a></p>
+<div class="card" style="padding:10px 14px"><label style="display:inline-flex;gap:8px;align-items:center;cursor:pointer;font-weight:600"><input type="checkbox" id="showNonMl" style="width:18px;height:18px;accent-color:var(--accent)"> แสดงกราฟกลยุทธ์ที่ไม่ใช่ ML</label> <span class="small muted">ทั้ง 4 ตัวเป็นกฎตายตัว</span></div>
+<div class="nonml" hidden>
 <p class="muted">แท่งสีเขียวคือกำไร สีแดงคือขาดทุน (R เฉลี่ยต่อไม้ หลังหักค่าธรรมเนียม)</p>
 <div class="card" id="holdout"></div>
+</div>
 <p class="small muted">นอกจากนี้ holdout ถูกใช้อีก 1 ครั้งตอนตั้งระบบ เพื่อทดสอบว่าระบบล็อกทำงาน (<code>example_trend_breakout</code> บน BTC 15m เป็นกลยุทธ์ตัวอย่าง ไม่ได้ผ่านการคัดเลือก) ได้ −0.23 R จาก 212 ไม้ จึงไม่นับรวมกับ 4 ตัวข้างบน · ที่มา: <code>results/BTCUSDT/holdout_log.csv</code>, <code>results/SOLUSDT/holdout_log.csv</code></p>
 
 <h2>แต่ละรอบลองอะไรไปบ้าง</h2>
@@ -173,10 +189,10 @@ html{scroll-padding-top:72px}
   <p class="small muted" style="margin:0">ห้ามปรับแต่งแล้วรันซ้ำบนข้อมูลชุดเดิม เพราะจะกลายเป็นการจูนให้เข้ากับข้อสอบ · ที่มา: <code>journal/*/ml_entry.md</code>, <code>journal/_multi/ml_pool.md</code>, <code>journal/_multi/ml_pool2.md</code></p>
 </div>
 
-<h2>ผลล่าสุด: Coinbase premium กราฟ 4 ชั่วโมง</h2>
+<h2>Coinbase premium กราฟ 4 ชั่วโมง (กฎตายตัว)</h2>
 <p><a href="equity.html#prem" style="color:var(--accent);font-weight:600">ดูกราฟเงินทุนรายเหรียญ →</a></p>
 <div class="card" style="border-left:6px solid var(--wait)">
-  <h3>ดีที่สุดเท่าที่เคยเจอ แต่ยังไม่ผ่านการยืนยัน <span class="tag t-wait">ยังไม่ได้สอบจริง</span></h3>
+  <h3>ดีที่สุดในกลุ่มกฎตายตัว แต่ยืนยันไม่ผ่าน <span class="tag t-wait">ยังไม่ได้สอบจริง</span></h3>
   <p>เมื่อราคาบน Coinbase (นักลงทุนสหรัฐ) แพงกว่า Binance ผิดปกติ ให้ long ถ้าถูกกว่าผิดปกติ ให้ short ถือได้นานสุดราว 8 วัน · ผลช่วงสอบย่อย 2023–24 · เสี่ยงไม้ละ 1%</p>
   <div class="scroll"><table class="tbl">
     <tr><th>เหรียญ</th><th style="text-align:right">ไม้</th><th style="text-align:right">R เฉลี่ย</th><th style="text-align:right">ต่อปี</th><th style="text-align:right">ลงหนักสุด</th></tr>
@@ -201,7 +217,7 @@ html{scroll-padding-top:72px}
 
 <h2>ต่อจากนี้</h2>
 <div class="card" style="border-left:6px solid var(--wait)">
-  <p>ตัดสินใจแล้ว (2 ต.ค. 2026): <b>ไม่</b>ใช้ "สอบจริง" กับ Coinbase premium เพราะผลยังไม่ดีพอ ปิดเรื่อง premium และเก็บข้อมูลสอบจริง (2025–ส.ค. 2026) ไว้ให้แนวทางใหม่ที่ผ่านเกณฑ์ปกติ กำลังเลือกแนวทางถัดไป</p>
+  <p>เป้าหมายคือโมเดล ML ที่เทรดเอง ไม่ใช่กฎตายตัว · ขั้นต่อไป: ML สำหรับเหรียญเปิดใหม่ (ให้โมเดลเรียนเองว่าเมื่อไหร่ควร short/long/อยู่เฉย จากข้อมูลวันที่เปิด, การพุ่งช่วงแรก, วอลุ่ม, funding และทิศตลาด) · ข้อมูลสอบจริง (2025–ส.ค. 2026) ยังเก็บไว้ ไม่มีรอบไหนใช้</p>
 </div>
 
 <footer>
@@ -229,6 +245,8 @@ const rounds = [
   {ico:"🔍", t:"ตรวจว่าเข้าผิดทาง หรือโดนลากไส้หลอก", tag:["bad","ทายทิศทางได้แค่เท่าโยนเหรียญ"], d:"ดูไม้จริงกว่า 54,000 ไม้ของทุกกลยุทธ์ เทียบกับจุดเข้าสุ่ม", r:"เข้าถูกทาง 49% (สุ่มได้ 50.5%) ส่วนที่โดน stop แล้วสุดท้ายราคากลับมาถูกทางมีมากกว่าสุ่มแค่ 2.5% ปัญหาหลักคือจุดเข้า ไม่ใช่การโดนหลอกออก"},
   {ico:"🕯️", t:"รูปแท่งเทียน + แนวรับแนวต้าน", tag:["bad","ไม่ผ่าน"], d:"Engulfing / Pin bar ที่แตะยอด-ก้นเมื่อวาน หรือ swing high/low · BTC/ETH · 15m–4h", r:"0 จาก 16 การทดสอบที่ผ่าน กราฟเล็ก (15m, 30m) แพ้ค่าธรรมเนียมชัด ส่วนตัวที่ดูบวกเป็นฝั่ง long ช่วงตลาดขาขึ้น หรือมีไม้น้อยเกินจะสรุป"},
   {ico:"🤖", t:"ML เลือกจังหวะเข้า", tag:["bad","ไม่ผ่าน"], d:"LightGBM บน BTC, ETH และเทรนรวม 20 เหรียญ", r:"ไม่ผ่านทั้ง 4 แบบ รวมรอบ 2 ที่ทำให้ฉลาดขึ้นแล้วกลับแย่ลง (ดูด้านล่าง)"},
+  {ico:"🧠", t:"ML เทรนใหม่ทุกเดือน ตัดสินเข้า-ออกเอง (§27–§34)", tag:["wait","เกือบผ่าน"], d:"LightGBM 47 เหรียญ · กราฟ 1h/4h/1d · ประวัติ spot ตั้งแต่ 2017 · จัดพอร์ตบัญชีเดียว", r:"ดีที่สุดคือ 1h + จัดพอร์ต: +0.061 R ต่อไม้ ขาดเกณฑ์ช่วงความเชื่อมั่นอีก 0.00026 ดูหน้า 🤖 ML"},
+  {ico:"🆕", t:"short เหรียญที่เพิ่งเปิด futures (§35)", tag:["bad","ไม่ผ่าน"], d:"กฎตายตัว: short ทุกเหรียญใหม่หลังเปิด 1–7 วัน · 228 เหรียญในช่วงสอบย่อย", r:"ขาดทุน −0.16 R ต่อไม้เพราะตลาดขาขึ้น แต่เหรียญใหม่แย่กว่าเหรียญเก่าราว 0.3 R ทั้ง 2 ช่วง จึงจะให้ ML เรียนตัดสินแทนกฎ"},
 ];
 
 const max = 0.3, pct = v => Math.min(Math.abs(v) / max, 1) * 50;
@@ -249,6 +267,9 @@ const hold = [["< 4 ชม.", 0], ["4–24 ชม.", 40], ["1–3 วัน", 52
 document.getElementById("hold").innerHTML = hold.map(([l, v]) =>
   `<div class="barrow"><span class="muted">${l}</span><div class="track"><div class="fill" style="width:${v}%"></div></div>
    <span style="text-align:right">${v}%</span></div>`).join("");
+</script>
+<script>
+(function(){const cb=document.getElementById("showNonMl");if(!cb)return;const a=()=>document.querySelectorAll(".nonml").forEach(e=>e.hidden=!cb.checked);cb.addEventListener("change",a);a();})();
 </script>
 </body>
 </html>

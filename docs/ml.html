@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ผลโมเดล ML</title>
+<meta name="description" content="ผลโมเดล ML (LightGBM walk-forward) ทุกรอบ พร้อมกราฟผลสอบย่อย">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fcfcfb; --text:#0b0b0b; --muted:#52514e; --faint:#8b8a85; --line:#e3e6ec; --grid:#ececea;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --pos:#2a78d6; --neg:#e34948;
+  --good:#16a34a; --good-bg:#e8f6ee; --bad:#dc2626; --bad-bg:#fdecec; --wait:#2563eb; --wait-bg:#e8effd; --accent:#0f766e;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --pos:#3987e5; --neg:#e66767;
+    --good:#4ade80; --good-bg:#12291c; --bad:#f87171; --bad-bg:#2e1616; --wait:#60a5fa; --wait-bg:#142038; --accent:#2dd4bf;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --pos:#3987e5; --neg:#e66767;
+  --good:#4ade80; --good-bg:#12291c; --bad:#f87171; --bad-bg:#2e1616; --wait:#60a5fa; --wait-bg:#142038; --accent:#2dd4bf;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.6;font-size:16px}
+main{max-width:900px;margin:0 auto;padding:28px 16px 64px}
+h1{font-size:1.6rem;line-height:1.3;margin:0 0 6px}
+h2{font-size:1.25rem;margin:34px 0 10px}
+h3{font-size:1.05rem;margin:0 0 4px}
+p{margin:0 0 12px}
+a{color:var(--accent)}
+.sub{color:var(--muted);margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 16px}
+.hero{border-left:6px solid var(--wait)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0 4px}
+.stat{background:var(--bg);border-radius:10px;padding:10px 12px}
+.stat .n{font-size:1.35rem;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat .l{color:var(--muted);font-size:.82rem}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.88rem;color:var(--muted);margin:2px 0 8px}
+.key{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:3px;border-radius:2px;display:inline-block}
+.sq{width:11px;height:11px;border-radius:3px;display:inline-block}
+.chart{position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.82rem;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.12);opacity:0;transition:opacity .1s;z-index:2}
+.tip .v{font-weight:600;font-variant-numeric:tabular-nums}
+.small{font-size:.85rem;color:var(--muted)}
+.tag{display:inline-block;font-size:.78rem;font-weight:600;padding:1px 9px;border-radius:999px;white-space:nowrap}
+.t-bad{background:var(--bad-bg);color:var(--bad)}
+.t-wait{background:var(--wait-bg);color:var(--wait)}
+.tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+.tbl th,.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{color:var(--muted);font-weight:500;font-size:.8rem}
+.tbl td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+details{margin-top:8px}
+summary{cursor:pointer;color:var(--muted);font-size:.85rem}
+code{font-size:.85em;overflow-wrap:anywhere}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;position:sticky;top:8px;z-index:10;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+html{scroll-padding-top:72px}
+.nav a{flex:1 1 120px;text-align:center;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem}
+.nav a:hover{background:var(--bg);color:var(--text)}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--bg);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="ml.html" aria-current="page">🤖 ML</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html">🕯️ จุดเข้าออก</a></nav>
+
+<h1>ผลโมเดล ML (AI เทรดเอง)</h1>
+<p class="sub">LightGBM เทรนใหม่ทุกเดือนแบบ walk-forward บน 47 เหรียญ · โมเดลตัดสินทั้งจังหวะเข้าและออกเอง ไม่มีออกตามเวลา · ผลช่วงสอบย่อย (VALID 2023–24) หลังหักค่าธรรมเนียม slippage และ funding · อัปเดต 4 ต.ค. 2026</p>
+
+<div class="card hero">
+  <h3>ตัวที่ดีที่สุดตอนนี้: โมเดล 1 ชั่วโมง (§30) + การจัดพอร์ต (§31) <span class="tag t-wait">เกือบผ่าน · ยังไม่ได้สอบจริง</span></h3>
+  <p style="margin:6px 0 0">ผ่านทุกด่านยกเว้นด่านเดียว: ช่วงความเชื่อมั่นของผลรายสัปดาห์ยังแตะ 0 (ขาดไป 0.00026) ปรับต่ออีก 3 รอบ (§32–§34) ก็ยังไม่ดีกว่านี้</p>
+  <div class="stats">
+    <div class="stat"><div class="n">1,588</div><div class="l">ไม้ในช่วงสอบย่อย</div></div>
+    <div class="stat"><div class="n" style="color:var(--good)">+0.061 R</div><div class="l">กำไรเฉลี่ยต่อไม้</div></div>
+    <div class="stat"><div class="n">+0.55%</div><div class="l">ต่อสัปดาห์ (ช่วงความเชื่อมั่น −0.03% ถึง +1.13%)</div></div>
+    <div class="stat"><div class="n">19.8%</div><div class="l">ลงหนักสุดของพอร์ต (เกณฑ์ไม่เกิน 20%)</div></div>
+  </div>
+  <p class="small" style="margin:8px 0 0">จุดอ่อน: กำไร 67% มาจาก 5 สัปดาห์ที่ดีที่สุดจาก 105 สัปดาห์ ส่วนใหญ่เป็นการ short เหรียญเล็กตอนตลาดดิ่ง</p>
+</div>
+
+<h2>§30 ผลสะสมช่วงสอบย่อย แยกตามกราฟที่ใช้เทรด</h2>
+<div class="card">
+  <div class="legend" id="lg1"></div>
+  <div class="chart" id="c1"></div>
+  <p class="small" style="margin:8px 0 0">แต่ละเส้นคือผลรวม R ของทุกไม้ (R = ระยะ stop 8 ATR ของไม้นั้น) นับตามวันที่ปิดไม้ · 1h ใกล้ผ่านที่สุด ตกด่านเดียวคือช่วงความเชื่อมั่นของ R เฉลี่ยต่อไม้ [−0.024, +0.101] ยังแตะ 0 · 4h และ 1d ไม่มีสัญญาณ</p>
+</div>
+
+<h2>§31 โมเดล 1h + การจัดพอร์ต (บัญชีเดียว)</h2>
+<div class="card">
+  <div class="chart" id="c2"></div>
+  <p class="small" style="margin:8px 0 0">ผลตอบแทนสะสมของพอร์ต (% ของทุนเริ่มต้น นับแบบบวกสะสม) · เข้าไม้เมื่อกราฟ 4h เห็นทางเดียวกัน · ยิ่งมั่นใจยิ่งลงขนาดไม้มาก (ไม่เกิน 1%) · เปิดค้างฝั่งเดียวกันได้ไม่เกิน 5%</p>
+</div>
+
+<h2>§30 โมเดล 1h: รายเดือน และฝั่ง long/short</h2>
+<div class="card">
+  <h3 id="t3"></h3>
+  <div class="legend"><span class="key"><span class="sq" style="background:var(--pos)"></span>เดือนที่กำไร</span><span class="key"><span class="sq" style="background:var(--neg)"></span>เดือนที่ขาดทุน</span></div>
+  <div class="chart" id="c3"></div>
+</div>
+<div class="card">
+  <h3>long กับ short สะสม</h3>
+  <div class="legend" id="lg4"></div>
+  <div class="chart" id="c4"></div>
+</div>
+
+<h2>ทุกรอบของ ML</h2>
+<div class="card scroll">
+  <table class="tbl">
+    <tr><th>รอบ</th><th>ลองอะไร</th><th style="text-align:right">ไม้</th><th style="text-align:right">ผลเฉลี่ย</th><th>ผล</th></tr>
+    <tbody id="rounds"></tbody>
+  </table>
+  <p class="small" style="margin:10px 0 0">R เฉลี่ยต่อไม้ (รอบที่ใช้พอร์ตบอกผลเป็น % ต่อสัปดาห์) · ทุกรอบยังไม่ได้ใช้ข้อมูลสอบจริง (2025–ส.ค. 2026)</p>
+</div>
+
+<p class="small">ที่มา: <code>results/_multi/ml_wf3/trades_valid_tf*.csv.gz</code>, <code>results/_multi/ml_port/trades_valid.csv.gz</code>, ไฟล์ <code>summary.json</code>/<code>tf*.json</code> ของแต่ละรอบ · ข้อมูลกราฟสร้างด้วย <code>src/ml_page_data.py</code> · ไม่มีตัวเลขไหนที่แต่งขึ้นเอง · งานวิจัย ไม่ใช่คำแนะนำการลงทุน</p>
+</main>
+
+<script>
+const ROUNDS = [
+  ["§27", "โมเดลตัดสินเข้า-ออกเอง ทุก 4 ชม. · 20 เหรียญ", "1,940", "−0.013 R", "bad", "ไม่ผ่าน"],
+  ["§28", "walk-forward เทรนใหม่ทุกเดือน · 47 เหรียญ · 1h/4h/1d", "9,276 (1h)", "−0.000 R (1h)", "bad", "ไม่ผ่านทั้ง 3"],
+  ["§29", "เพิ่มประวัติ spot ตั้งแต่ 2017 (เหลือแค่ 4 เหรียญ)", "1,714 (1h)", "−0.020 R (1h)", "bad", "ไม่ผ่าน"],
+  ["§30", "เหมือน §28 + ประวัติ spot ของทั้ง 47 เหรียญ", "6,307 (1h)", "+0.037 R (1h)", "wait", "เกือบผ่าน (1h)"],
+  ["§31", "§30 1h + จัดพอร์ต: กรอง 4h, ขนาดตามความมั่นใจ, เพดาน 5%", "1,588", "+0.55%/สัปดาห์", "wait", "ขาดอีก 0.00026"],
+  ["§32", "ตัดส่วนที่เป็นทิศตลาดออก เหลือแต่ส่วนต่างระหว่างเหรียญ", "1,588", "= §31", "bad", "แย่ลง (TRAIN เลือกแบบเดิม)"],
+  ["§33", "ใช้ค่าเฉลี่ยคำทำนายทั้งตลาด เทรดแค่ BTC/ETH", "98", "+0.04%/สัปดาห์", "bad", "ไม่มีสัญญาณ"],
+  ["§34", "เพิ่มข้อมูล open interest, long/short, funding", "1,588", "= §31", "bad", "แย่ลง (TRAIN เลือกแบบเดิม)"],
+];
+document.getElementById("rounds").innerHTML = ROUNDS.map(r =>
+  `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="n">${r[2]}</td><td class="n">${r[3]}</td><td><span class="tag t-${r[4]}">${r[5]}</span></td></tr>`).join("");
+
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a = {}, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const D = s => new Date(s + "T00:00:00Z").getTime();
+const MON = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const dstr = t => { const d = new Date(t); return `${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+const sgn = (v, d = 1) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d);
+
+function axes(svg, x, y, m, W, H, y0, y1, unit) {
+  const ticks = []; const span = y1 - y0, step = [1, 2, 5, 10, 20, 25, 50, 100, 200].find(s => span / s <= 6) || 500;
+  for (let v = Math.ceil(y0 / step) * step; v <= y1; v += step) ticks.push(v);
+  ticks.forEach(v => {
+    el("line", {x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 0 ? css("--faint") : css("--grid"), "stroke-width": v === 0 ? 1.2 : 1}, svg);
+    el("text", {x: m.l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: css("--muted")}, svg).textContent = (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v) + unit;
+  });
+  for (const yr of [2023, 2024, 2025]) for (const mo of (W < 600 ? [0] : [0, 6])) {
+    const t = Date.UTC(yr, mo, 1); const xx = x(t); if (xx < m.l - 1 || xx > W - m.r + 1) continue;
+    el("text", {x: xx, y: H - 6, "text-anchor": "middle", "font-size": 11, fill: css("--muted")}, svg).textContent = `${MON[mo]} ${yr}`;
+  }
+}
+
+function lineChart(host, series, opt) {
+  const W = Math.max(320, host.clientWidth || 860), H = Math.round((opt.h || 320) * (W < 600 ? 0.85 : 1)), m = {l: 52, r: opt.r || 20, t: 12, b: 28};
+  host.innerHTML = '<div class="tip"></div>';
+  const all = series.flatMap(s => s.pts);
+  const t0 = D(opt.from), t1 = D(opt.to);
+  let y0 = Math.min(0, ...all.map(p => p[1])), y1 = Math.max(0, ...all.map(p => p[1]));
+  const pad = (y1 - y0) * 0.06; y0 -= pad; y1 += pad;
+  const x = t => m.l + (t - t0) / (t1 - t0) * (W - m.l - m.r), y = v => m.t + (y1 - v) / (y1 - y0) * (H - m.t - m.b);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opt.label}, host);
+  axes(svg, x, y, m, W, H, y0, y1, opt.unit);
+  series.forEach(s => {
+    el("path", {d: s.pts.map((p, i) => (i ? "L" : "M") + x(p[0]).toFixed(1) + "," + y(p[1]).toFixed(1)).join(""), fill: "none", stroke: css(s.color), "stroke-width": 2, "stroke-linejoin": "round"}, svg);
+    if (s.label) {
+      const last = s.pts[s.pts.length - 1];
+      el("text", {x: x(last[0]) + 6, y: y(last[1]) + 4, "font-size": 12, "font-weight": 600, fill: css("--text")}, svg).textContent = s.label;
+    }
+  });
+  const g = el("g", {style: "display:none"}, svg);
+  const vl = el("line", {y1: m.t, y2: H - m.b, stroke: css("--faint"), "stroke-dasharray": "3 3"}, g);
+  const dots = series.map(s => el("circle", {r: 4.5, fill: css(s.color), stroke: css("--card"), "stroke-width": 2}, g));
+  const hit = el("rect", {x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent"}, svg);
+  const tip = host.querySelector(".tip");
+  const at = (pts, t) => { let lo = 0, hi = pts.length - 1; if (t < pts[0][0]) return null; while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (pts[mid][0] <= t) lo = mid; else hi = mid - 1; } return pts[lo]; };
+  hit.addEventListener("pointermove", ev => {
+    const rc = svg.getBoundingClientRect(), t = t0 + ((ev.clientX - rc.left) / rc.width * W - m.l) / (W - m.l - m.r) * (t1 - t0);
+    g.style.display = ""; vl.setAttribute("x1", x(t)); vl.setAttribute("x2", x(t));
+    const rows = series.map((s, i) => { const p = at(s.pts, t); if (p) { dots[i].setAttribute("cx", x(p[0])); dots[i].setAttribute("cy", y(p[1])); dots[i].style.display = ""; } else dots[i].style.display = "none"; return [s, p]; });
+    tip.innerHTML = `<div class="small">${dstr(t)}</div>` + rows.map(([s, p]) => `<div><span class="sq" style="background:${css(s.color)};margin-right:6px"></span>${s.name} <span class="v">${p ? sgn(p[1], opt.dec) + opt.unit : "–"}</span></div>`).join("");
+    tip.style.opacity = 1;
+    const px = x(t) / W * rc.width;
+    tip.style.left = Math.min(Math.max(px + 12, 0), rc.width - tip.offsetWidth) + "px";
+    tip.style.top = "8px";
+  });
+  hit.addEventListener("pointerleave", () => { g.style.display = "none"; tip.style.opacity = 0; });
+}
+
+function barChart(host, rows) {
+  const W = Math.max(320, host.clientWidth || 860), H = W < 600 ? 220 : 260, m = {l: 52, r: 10, t: 12, b: 28};
+  host.innerHTML = '<div class="tip"></div>';
+  let y0 = Math.min(0, ...rows.map(r => r[1])), y1 = Math.max(0, ...rows.map(r => r[1]));
+  const pad = (y1 - y0) * 0.06; y0 -= pad; y1 += pad;
+  const n = rows.length, bw = (W - m.l - m.r) / n;
+  const y = v => m.t + (y1 - v) / (y1 - y0) * (H - m.t - m.b);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "ผล R รายเดือนของโมเดล 1h"}, host);
+  const step = [5, 10, 20, 25, 50].find(s => (y1 - y0) / s <= 6) || 100;
+  for (let v = Math.ceil(y0 / step) * step; v <= y1; v += step) {
+    el("line", {x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 0 ? css("--faint") : css("--grid")}, svg);
+    el("text", {x: m.l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: css("--muted")}, svg).textContent = (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v) + " R";
+  }
+  const tip = host.querySelector(".tip");
+  rows.forEach(([k, v], i) => {
+    const x0 = m.l + i * bw + 1.5, w = bw - 3, top = y(Math.max(v, 0)), h = Math.max(Math.abs(y(v) - y(0)), 1);
+    const r = el("rect", {x: x0, y: top, width: w, height: h, rx: 3, fill: css(v >= 0 ? "--pos" : "--neg")}, svg);
+    const [yr, mo] = k.split("-").map(Number);
+    if (mo === 1 || (mo === 7 && W >= 600)) el("text", {x: x0 + w / 2, y: H - 6, "text-anchor": "middle", "font-size": 11, fill: css("--muted")}, svg).textContent = `${MON[mo - 1]} ${yr}`;
+    const hit = el("rect", {x: m.l + i * bw, y: m.t, width: bw, height: H - m.t - m.b, fill: "transparent"}, svg);
+    hit.addEventListener("pointermove", () => {
+      const rc = svg.getBoundingClientRect();
+      tip.innerHTML = `<div class="small">${MON[mo - 1]} ${yr}</div><div class="v">${sgn(v)} R</div>`; tip.style.opacity = 1;
+      tip.style.left = Math.min(Math.max((x0 + w / 2) / W * rc.width - tip.offsetWidth / 2, 0), rc.width - tip.offsetWidth) + "px"; tip.style.top = "8px";
+      r.setAttribute("opacity", .75);
+    });
+    hit.addEventListener("pointerleave", () => { tip.style.opacity = 0; r.setAttribute("opacity", 1); });
+  });
+}
+
+let DATA = null;
+function render() {
+  if (!DATA) return;
+  const P = s => s.map(p => [D(p[0]), p[1]]);
+  const tfs = [["1h", "--s1"], ["4h", "--s2"], ["1d", "--s3"]];
+  document.getElementById("lg1").innerHTML = tfs.map(([k, c]) => { const s = DATA.s30[k]; return `<span class="key"><span class="sw" style="background:var(${c})"></span>${k} · ${s.trades.toLocaleString()} ไม้ · เฉลี่ย ${sgn(s.mean_r, 3)} R</span>`; }).join("");
+  lineChart(document.getElementById("c1"), tfs.map(([k, c]) => ({name: k, color: c, label: k, pts: P(DATA.s30[k].series)})),
+    {from: "2023-01-01", to: "2025-01-15", unit: " R", dec: 1, r: 34, label: "ผลสะสม R ของโมเดล §30 แยก 1h 4h 1d"});
+  lineChart(document.getElementById("c2"), [{name: "พอร์ต §31", color: "--s1", pts: P(DATA.s31.map(p => [p[0], p[1] * 100]))}],
+    {from: "2023-01-01", to: "2025-01-15", unit: "%", dec: 1, h: 280, label: "ผลตอบแทนสะสมของพอร์ต §31"});
+  const mo = DATA.s30_month;
+  document.getElementById("t3").textContent = `ผล R รายเดือน (กำไร ${mo.filter(r => r[1] > 0).length} จาก ${mo.length} เดือน)`;
+  barChart(document.getElementById("c3"), mo.filter(r => r[0] < "2025-01"));
+  const sd = [["long", "--s1"], ["short", "--s2"]];
+  document.getElementById("lg4").innerHTML = sd.map(([k, c]) => { const s = DATA.s30_side[k]; return `<span class="key"><span class="sw" style="background:var(${c})"></span>${k} · ${s.trades.toLocaleString()} ไม้ · เฉลี่ย ${sgn(s.mean_r, 3)} R</span>`; }).join("");
+  lineChart(document.getElementById("c4"), sd.map(([k, c]) => ({name: k, color: c, label: k, pts: P(DATA.s30_side[k].series)})),
+    {from: "2023-01-01", to: "2025-01-15", unit: " R", dec: 1, h: 260, r: 46, label: "ผลสะสม long กับ short ของโมเดล 1h"});
+}
+fetch("ml_data.json?v=1", {cache: "no-cache"}).then(r => r.json()).then(d => { DATA = d; render(); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(render, 150); });
+</script>
+</body>
+</html>
