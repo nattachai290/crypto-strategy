@@ -2397,3 +2397,62 @@ the timing and sheds most of the cost and noise.
 
 **Prior:** low to moderate. This is the 8th ML look at VALID 2023–24. A
 1–2-contract book has fewer trades, so the weekly CI may be wider.
+
+## 34. Positioning data for §30's 1h model, judged on §31's account (owner request, 2026-10-04)
+
+**Why.** §31–§33 located §30's edge, if it is real (`_multi` Exp 033–040):
+- it needs each coin's own forecast, traded on that coin;
+- it comes mostly from shorts on alt-coins in sell-offs.
+
+The model has only ever seen prices, volume, taker flow and the coin's last
+funding rate. It has never seen positioning: how much leverage is open, which
+side the crowd is on, and what funding costs the whole market.
+
+The owner chose new data over spending the holdout now. The planner's power
+estimate: at §31's VALID edge and weekly volatility, the 87-week holdout would
+CONFIRM only about 39% of the time even if the edge were fully real, and
+about 13% at half that edge.
+
+**Hypothesis.** The sell-offs the model catches are liquidation cascades. They
+are more likely when open interest has built up, the crowd is long and funding
+is high. Positioning should sharpen exactly the trades that carry the book.
+
+**Design (`src/ml_flow.py`, test 30). An ablation: only the features change.**
+- **Data.** `--build` downloads Binance daily metrics files for the 47 coins
+  (2021-12 → 2026-08) to `data/cache/_multi/metrics/`. Metrics start
+  2021-12-01 for every coin in the universe (checked by the planner).
+- **New features, all causal on the 1h bar close.** A metrics row is used 5 min
+  after its `create_time` and is NaN when more than 30 min stale
+  (`experiment.attach_metrics`).
+  - Per coin: `oi_chg_24`, `oi_chg_168`, `oi_to_vol`, `top_pos_ls`, `acct_ls`,
+    `acct_ls_chg_24`, `fund_168`.
+  - Market-wide (same-hour mean, ≥ 10 coins): `mkt_oi_chg_24`, `mkt_acct_ls`,
+    `mkt_funding`, `mkt_fund_168`, `rel_oi_chg_24`.
+  - Funding exists through all of TRAIN. Metrics exist for 13 of TRAIN's 24
+    months. LightGBM reads NaN as missing.
+- **Fixed:**
+  - §30's chosen 1h setting (refit monthly on the 47 coins' histories), q_in
+    0.9 and `flip`;
+  - §30's frozen 4h forecasts for agreement;
+  - §31's chosen account cell (agreement 4h, conf sizing, 5% cap), with §31's
+    stop, costs and gates.
+- **Cell choice on TRAIN only.** The TRAIN walk-forward (2021–22) compares
+  `base` (§31 recomputed) with `flow` (base + the new features) by the weekly
+  account t-statistic. A `base` choice is REJECT (gate `train_chose_flow`).
+- **Diagnostics (not gates):**
+  - the flow features' share of the VALID refits' total gain;
+  - the share of the total from the best 5 weeks;
+  - the number of negative weeks;
+  - TRAIN return by year.
+- **Holdout.** §31–§34 share one holdout; `--final` refuses if any used it.
+
+**What it can show.**
+- **Supports the hypothesis:** TRAIN prefers `flow`, the model uses the new
+  features (gain share), and the VALID weekly CI clears 0 with less
+  concentration.
+- **Answers it the other way:** `base` wins, or `flow` matches it with little
+  gain share. Then positioning adds nothing the price features did not
+  already carry.
+
+**Prior:** low to moderate. This is the 9th ML look at VALID 2023–24. TRAIN
+saw only 13 months of metrics, so the TRAIN comparison leans on 2022.

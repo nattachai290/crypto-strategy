@@ -3729,3 +3729,46 @@ The run matches its registration. The REJECT stands, and so does the main readin
 - So the edge, if it is real, needs both parts together: each coin's own forecast, traded on that coin. On VALID it came mostly from shorts on alt-coins in sell-offs. §31 short leg: +0.42 against +0.16 long; §33's short leg is its only positive leg.
 - The mean signal spent 31% of 2023–24 short and 6.5% long while ETH rose about 1% a week. The model leans short, as the owner saw ("it goes short while the trend is up").
 - Three further rounds have not improved on the frozen §31 cell. Every further variant judged on VALID 2023–24 is another look at the same two years: this would be the 9th.
+
+---
+
+## Exp 041 - Pre-registration: positioning features for §30's 1h model on §31's account (PLAN.md §34, owner request)
+
+**Date:** 2026-10-04
+**Status:** registered, not run. Run once by the research agent.
+
+**Why not the holdout now.** The owner chose new data over spending the holdout
+on §31. The planner estimated the power of the 87-week holdout from §31's VALID
+weekly mean (+0.00548) and standard deviation (0.0305). A CONFIRM would come
+about 39% of the time if that edge were fully real, and about 13% at half that
+edge. A FAILED result would not tell a weak edge from none, and the one clean
+dataset would be spent.
+
+**Hypothesis.** The sell-offs that carry §31's book are liquidation cascades.
+They are more likely when open interest has built up, the crowd is long and
+funding is high. Positioning features should sharpen those trades.
+
+**Fixed before the run (`src/ml_flow.py`, test 30):**
+- Only the features change.
+- **Model:** §30's 1h setting, refit monthly.
+- **New features:** the 12 FLOW_COLS from Binance metrics and funding. They
+  are causal: a row is used 5 min after its `create_time`, and is NaN when more
+  than 30 min stale.
+- **Account:** §31's fixed cell, with §30's frozen 4h agreement.
+- **TRAIN** compares base against flow by the weekly t-statistic. A base
+  choice is REJECT.
+- **VALID gates:** §31's.
+- **Diagnostics:** the flow features' gain share, the top-5-week share,
+  negative weeks.
+- **Holdout:** one holdout, shared with §31–§33.
+
+**Looks.** This is the 9th ML look at VALID 2023–24 in `_multi`.
+
+**Run (research agent):**
+```bash
+python src/test_engine.py          # ALL CHECKS PASSED (test 30 included)
+python src/ml_flow.py --build      # metrics for the 47 coins (~83k daily files; long, resumable)
+python src/ml_flow.py              # once; writes results/_multi/ml_flow/ and journal/_multi/ml_flow.md
+```
+- If the reproduction check stops the run, report it and change nothing.
+- Do not run `--final` unless the verdict is PASS and the owner agrees.

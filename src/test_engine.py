@@ -433,6 +433,7 @@ def main() -> None:
     test_ml_port()
     test_ml_xs()
     test_ml_mkt()
+    test_ml_flow()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2220,6 +2221,127 @@ def test_ml_mkt() -> None:
         MK.OUT, MP_.OUT, XS.OUT = saved
         shutil.rmtree(tmp, ignore_errors=True)
     check("ml_mkt holdout: refused when section 31 (or 32) already used the shared holdout", refused)
+
+
+# --------------------------------------------------------------------------
+# 30. Positioning features for the 1h model (PLAN.md section 34)
+# --------------------------------------------------------------------------
+def _metrics_frame(idx_from, idx_to, seed, oi0=1000.0):
+    """Synthetic 5-minute Binance metrics rows (already renamed), for the TEST only."""
+    rng = np.random.default_rng(seed)
+    ct = pd.date_range(idx_from, idx_to, freq="5min", tz="UTC")
+    oi = oi0 * np.exp(np.cumsum(rng.normal(0, 0.002, len(ct))))
+    ls = np.exp(rng.normal(0, 0.1, len(ct)))
+    return pd.DataFrame({"create_time": ct, "oi": oi, "oi_usd": oi * 30000, "top_acct_ls": ls,
+                         "top_pos_ls": ls * 1.1, "acct_ls": ls, "taker_ls": ls})
+
+
+def test_ml_flow() -> None:
+    print("\n30. ML positioning features: causal coin and market features, base untouched, base = section 31, pipeline")
+    import contextlib
+    import io
+    import json as _json
+    import shutil
+    import tempfile
+    import ml_flow as FL
+    import ml_mkt as MK
+    import ml_port as MP_
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_xs as XS
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.random.default_rng(5).normal(1e-4, 1e-4, len(ft))})
+    by = {60: {}}
+    for n, sd in (("C0USDT", 140), ("C1USDT", 141), ("C2USDT", 142)):
+        b = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": b, "perp": b, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    met = {c: _metrics_frame("2021-12-01", "2025-01-10", 300 + i) for i, c in enumerate(P)}
+    cols0 = {c: list(P[c]["X"].columns) for c in P}
+    Q = FL.add_flow(P, met, min_xs=2)
+    check("ml_flow add_flow: base X untouched; the copy carries every flow column",
+          all(list(P[c]["X"].columns) == cols0[c] for c in P)
+          and all(list(Q[c]["X"].columns) == cols0[c] + FL.FLOW_COLS for c in P)
+          and all(Q[c]["X"].index.equals(P[c]["X"].index) for c in P))
+    c0 = "C0USDT"
+    X = Q[c0]["X"]
+    t = pd.Timestamp("2023-06-01 12:00", tz="UTC")
+    m = met[c0].set_index("create_time")
+    def oi_at(ts):                                   # last row available 5 min before the bar close
+        close = ts + pd.Timedelta(hours=1)
+        return m.loc[m.index + pd.Timedelta(minutes=5) <= close, "oi"].iloc[-1]
+    want = np.log(oi_at(t) / oi_at(t - pd.Timedelta(hours=24)))
+    check("ml_flow oi_chg_24 = log OI change over 24 bars, each OI the last row 5 min before that bar's close",
+          np.isclose(X.loc[t, "oi_chg_24"], want), f"{X.loc[t, 'oi_chg_24']} vs {want}")
+    check("ml_flow metrics features are NaN before the metrics start; funding features exist earlier",
+          X.loc[:"2021-11-30", "oi_chg_24"].isna().all() and X.loc["2021-06-01":"2021-11-30", "fund_168"].notna().any())
+    mk = pd.concat([Q[c]["X"]["oi_chg_24"] for c in P], axis=1).mean(axis=1)
+    check("ml_flow market features: same-hour mean over coins; relative = coin minus market",
+          np.allclose(X.loc[t, "mkt_oi_chg_24"], mk.loc[t]) and np.isclose(X.loc[t, "rel_oi_chg_24"],
+                                                                         X.loc[t, "oi_chg_24"] - mk.loc[t]))
+    met2 = {c: v.copy() for c, v in met.items()}
+    met2[c0].loc[met2[c0]["create_time"] > t + pd.Timedelta(hours=1), ["oi", "oi_usd", "acct_ls", "top_pos_ls"]] *= 3.0
+    Q2 = FL.add_flow(P, met2, min_xs=2)
+    same = all(np.allclose(Q2[c]["X"].loc[:t, FL.FLOW_COLS].to_numpy(float), Q[c]["X"].loc[:t, FL.FLOW_COLS].to_numpy(float),
+                           equal_nan=True) for c in P)
+    check("ml_flow features are causal: metrics after a bar's close never change that bar or earlier", same)
+
+    a, b = WF_.WINDOWS["train"][0], WF_.WINDOWS["valid"][1]
+    orig = WF_.walk_forward
+    WF_.walk_forward = lambda *a_, **k_: orig(*a_, **{**k_, "step": 3})
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            spans = [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]]
+            cfg = WF_.GRID[0]
+            saved_cfg = MP_._cfg
+            MP_._cfg = lambda tf: {"setting": cfg, "q_in": 0.9, "exit_mode": "flip"}
+            try:
+                pb = {}
+                for a_, b_ in spans:
+                    pw = WF_.walk_forward(P, 60, cfg, a_, b_)
+                    for c in P:
+                        pb[c] = np.where(np.isfinite(pw[c]), pw[c], pb.get(c, np.full(len(pw[c]), np.nan)))
+                pred_base = {c: pd.Series(pb[c], index=P[c]["X"].index) for c in P}
+                models = {}
+                pred_flow = FL.flow_forecasts(Q, spans, models)
+                gain = FL.flow_gain_share(models, *WF_.WINDOWS["valid"])
+                res = FL.evaluate(P, pred_base, Q, pred_flow, {"4h": pred_base}, 0.9, "flip", min_coins=3, gain=gain)
+            finally:
+                MP_._cfg = saved_cfg
+    finally:
+        WF_.walk_forward = orig
+    t_b, _ = MP_.run_cell(P, pred_base, {"4h": pred_base}, *WF_.WINDOWS["train"], "4h", "conf", 0.05, 0.9, "flip")
+    acc_b = MP_.account(t_b, *WF_.WINDOWS["train"])
+    base_row = [x for x in res["train_table"] if x["form"] == "base"][0]
+    check("ml_flow base form is section 31's cell exactly (same trades and weekly mean on TRAIN)",
+          base_row["trades"] == acc_b["trades"] and np.isclose(base_row["weekly_mean"], acc_b["weekly_mean"]))
+    check("ml_flow flow forecasts differ from base and the gain share is measured in [0, 1]",
+          any(not np.allclose(pred_flow[c].dropna(), pred_base[c].reindex(pred_flow[c].dropna().index), equal_nan=True)
+              for c in P) and gain is not None and 0.0 <= gain <= 1.0, f"gain {gain}")
+    check("ml_flow gate: a base choice is section 31 again and cannot PASS",
+          (res["chosen"]["form"] == "flow") == ("train_chose_flow" not in res["gates_failed"])
+          and len(res["train_table"]) == 2 and "diagnostics" in res["valid"],
+          f"{res['chosen']} {res['verdict']} {res['gates_failed']}")
+
+    tmp = Path(tempfile.mkdtemp())
+    saved = (FL.OUT, MP_.OUT, XS.OUT, MK.OUT)
+    try:
+        FL.OUT, MP_.OUT, XS.OUT, MK.OUT = tmp / "flow", tmp / "port", tmp / "xs", tmp / "mkt"
+        for o in (FL.OUT, MK.OUT):
+            o.mkdir(parents=True)
+        (FL.OUT / "summary.json").write_text(_json.dumps({"verdict": "PASS"}))
+        (MK.OUT / "holdout.json").write_text("{}")
+        try:
+            FL.run(final=True)
+            refused = False
+        except SystemExit as e:
+            refused = "share one holdout" in str(e)
+    finally:
+        FL.OUT, MP_.OUT, XS.OUT, MK.OUT = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("ml_flow holdout: refused when sections 31-33 already used the shared holdout", refused)
 
 
 if __name__ == "__main__":
