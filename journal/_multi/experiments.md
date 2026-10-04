@@ -3511,3 +3511,197 @@ python src/ml_mkt.py               # once; writes results/_multi/ml_mkt/ and jou
 ```
 - If the reproduction check stops the run, report it and change nothing.
 - Do not run `--final` unless the verdict is PASS and the owner agrees.
+
+---
+
+## Exp 039 - Market timing on ETH from the 47-coin mean forecast (PLAN.md section 33, Exp 038 run): REJECT on three gates, and TRAIN had no edge to begin with
+
+**Date:** 2026-10-04
+**Status:** complete. **One run, exactly as pre-registered in Exp 038.** No value
+in `src/ml_mkt.py`, `ml_port.py`, `ml_xs.py`, `ml_wf3.py`, `ml_wf2.py` or
+`src/ml_wf.py` was changed, no variant was tried, `--final` was not run (nothing
+passed), no holdout file was created and HOLDOUT was never read. **No new
+evaluation row.**
+
+**Session state.** `git pull` already up to date · `pip install` all present ·
+`test_engine.py` -> **ALL CHECKS PASSED** with **test 29 present and all seven of
+its checks passing** (market signal = same-hour mean over coins with a forecast,
+NaN under `min_coins`; the signal is causal; BTC trades one contract at 1% and
+BTC+ETH trades both at half risk each; the instrument is driven by the market
+signal on its own decision index; a planted market-timing edge is found as a PASS
+with 6 TRAIN cells; noise -> REJECT; the shared holdout is refused when section 31
+or 32 already used it). Section 30's caches were complete (`pool_1h/4h/1d`,
+`spot_1h/4h/1d`) so `--build` was not needed. **The reproduction check did not
+stop the run**: the forecast layer is section 30's frozen models, unchanged, and
+test 29 confirms the shared holdout lock works. No abnormal number: no inf, no
+nan, no exponential notation; every weekly mean inside |0.001| and every mean R
+inside |0.13|.
+
+**Correction carried over from Exp 037.** Exp 036 wrote that at the winning
+switches mean R fell from +0.0597 to +0.0095. The correct figure at the *same*
+switches (4h, conf, 5%) is **+0.0018**; +0.0095 is the best demeaned cell
+(1d, conf, 5%). The drop is larger than Exp 036 said. Exp 036 is not edited.
+
+### Verdict: REJECT, on three gates
+
+`valid_ci_lo>0`, `timing_beats_shift_p95`, `both_legs>0`.
+
+**The chosen cell was `ETH` with 4h agreement** - and on TRAIN that cell has a
+weekly mean of **+0.00004** with a t-statistic of **+0.05**. It is the best of
+six cells in which **five of the six lose money**.
+
+### The whole 6-cell TRAIN table
+
+| instrument | agree | TRAIN trades | weekly mean | t | per year | max DD | mean R |
+|---|---|---|---|---|---|---|---|
+| BTC | off | 201 | **-0.00094** | **-1.38** | -4.89% | 13.4% | -0.0489 |
+| BTC | 4h | 143 | -0.00047 | -0.84 | -2.44% | 8.3% | -0.0343 |
+| ETH | off | 200 | -0.00025 | -0.34 | -1.30% | 12.3% | -0.0131 |
+| **ETH** | **4h** | **142** | **+0.00004** | **+0.05** | +0.19% | 8.0% | +0.0027 |
+| BTC+ETH | off | 401 | -0.00059 | -0.87 | -3.10% | 12.9% | -0.0311 |
+| BTC+ETH | 4h | 285 | -0.00022 | -0.37 | -1.12% | 8.2% | -0.0159 |
+
+**5 of 6 cells have a negative TRAIN weekly mean. The winner has a weekly mean of
++0.000036 and mean R +0.0027 - that is not an edge, it is the least bad of six
+bad options.** The `train_weekly_mean>0` gate passed only because a tiny positive
+number is a positive number. The hypothesis was already dead on TRAIN before
+VALID was touched, and this is the clearest TRAIN signal in the whole ML line:
+**the 47-coin mean forecast has nothing tradable in it on BTC or ETH.**
+
+### VALID
+
+| | value | gate |
+|---|---|---|
+| verdict | **REJECT** | failed `valid_ci_lo>0`, `timing_beats_shift_p95`, `both_legs>0` |
+| **trades** | **98** | >= 30 pass |
+| weeks | 105 | |
+| **weekly mean** | **+0.00037** | > 0 pass |
+| **95% weekly CI** | **[-0.00111, +0.00190]** | **FAIL** |
+| **t** | **+0.48** | |
+| **max drawdown** | **4.56%** | <= 20% pass |
+| **mean R** | **+0.0393** (gross +0.0578, cost 0.0185) | |
+| **long leg (summed return)** | **-0.0398** | **FAIL** |
+| short leg (summed return) | +0.0782 | |
+| cost x1.5, weekly | +0.00026 | > 0 pass |
+| **timing** | **+0.00978** | |
+| shifted median / **shifted p95** | -0.00224 / **+0.01231** | **FAIL** - below the p95 |
+| per year, mean R | 2023 **-0.0876** / 2024 +0.1344 | |
+| average risk per trade | 1.00% | |
+
+**Long and short separately, from the trade file:**
+
+| | trades | mean R | avg hold | net R sum |
+|---|---|---|---|---|
+| **long** | **32** | **-0.1242** | **35.5 bars** | **-3.9755** |
+| **short** | **66** | **+0.1186** | **81.9 bars** | +7.8248 |
+| all | 98 | +0.0393 | 66.7 bars | +3.8493 |
+
+The whole book is the short side: longs lost 3.98 R in total, shorts made 7.82 R.
+Long positions are also held less than half as long (35.5 bars against 81.9).
+**mean R without the 5 best trades of the whole book is -0.0821** - the opposite
+sign to the +0.0393 headline. Exits were 85 signal (mean +0.1911), 12 stop
+(mean -1.0266), 1 eod; **no exit claim is made from those figures** (Exp 017),
+and the +0.0393 whole-book mean is the measure.
+
+### Diagnostics
+
+| | value |
+|---|---|
+| **time long** | **6.5%** |
+| **time short** | **30.8%** |
+| time flat (in cash) | 62.7% |
+| **share of the total from the best 5 of 105 weeks** | **298%** |
+| negative weeks | 36 of 105 |
+| buy-and-hold weekly log return (ETH) | **+1.005%** |
+| **beta of the weekly return to buy-and-hold** | **-0.006** |
+| **correlation to buy-and-hold** | **-0.061** |
+
+**The best 5 weeks are 298% of the total return.** The book made +3.85% over two
+years and its five best weeks made +11.5%; remove them and the book loses money.
+That is worse concentration than section 31's 67%, and it is the same weakness in
+a more extreme form.
+
+**The book's return is uncorrelated with ETH's own return over the same two years
+(beta -0.006, correlation -0.061), while ETH itself rose about 1% a week.** So
+the calls this signal made had no relationship to how the instrument it traded
+actually moved. The timing control says the same thing from the other side: a
+random time-shift of the desired path scored a **higher** p95 (+0.0123) than the
+real signal (+0.0098).
+
+### Section 33 against section 31, and against the owner hypothesis
+
+| | section 31 (Exp 033) | **section 33 (this)** |
+|---|---|---|
+| contracts traded | 47 coins, one side at a time | **1 (ETH)** |
+| trades / weeks | 1,588 / 105 | **98 / 105** |
+| **weekly mean** | +0.00548 | **+0.00037** (15x smaller) |
+| **95% CI** | [-0.00026, +0.01129] | **[-0.00111, +0.00190]** |
+| t | +1.84 | **+0.48** |
+| **max drawdown** | 19.77% | 4.56% |
+| **mean R** | +0.0608 | **+0.0393** |
+| gross / cost R | +0.0820 / 0.0212 | +0.0578 / 0.0185 |
+| **long leg** | **+0.1599** | **-0.0398 (negative)** |
+| short leg | +0.4158 | +0.0782 |
+| **timing vs shifted p95** | +0.01287 vs +0.00295 = **4.4x, pass** | +0.00978 vs +0.01231 = **0.8x, fail** |
+| **best 5 weeks' share** | 66.8% | **298%** |
+| negative weeks | 44 of 105 | 36 of 105 |
+| beta to the market | -0.053 (equal-weight) | **-0.006** (vs buy-and-hold) |
+| gates failed | 1 | **3** |
+
+**On the hypothesis: it is answered the other way, and harder than PLAN.md
+anticipated.** The design offered two possible answers - "the timing survives on
+1-2 contracts" or "the edge needs the alt-coin moves". The second is closer to
+what happened, but the sharper fact is that **the mean forecast has no edge at
+all on TRAIN**: 5 of 6 cells lost money and the sixth made +0.00004 a week. This
+is not a BTC-versus-alt-coins question. There is nothing in the mean of the 47
+forecasts to trade.
+
+**Why the mean is not the same signal as section 31's book, stated honestly.**
+Exp 037 showed section 31's book puts **89% of a week's trades on one side** - but
+that side is chosen **per coin, by each coin's own forecast**. Taking the mean
+across 47 coins first and thresholding that is a different and much weaker
+object: the same rolling q_in = 0.9 quantile of |m| on a mean of 47 forecasts
+crosses far less often than the same quantile on one coin, which is why VALID
+holds **98 trades against section 31's 1,588** over the identical 105 weeks. The
+cross-sectional mean is not "section 31's signal, cheaper"; it is a weaker signal
+that happens to cost less.
+
+**Two things that must NOT be said.** (1) The +0.0393 mean R is **five trades**:
+without them it is -0.0821, and the best 5 weeks are 298% of the return. (2)
+85 signal exits at +0.1911 say nothing about exit skill (Exp 017) - a position
+exists only while the signal wants it.
+
+**What this adds.** This is the 8th ML look at VALID 2023-24 in `_multi`
+(Exp 038's count). Three consecutive rounds have now failed to improve on the
+frozen section 31 cell, and this one failed on TRAIN as well - the clearest
+negative of the set, because it did not need VALID to be seen. The line's honest
+summary is unchanged: **section 30's 1h model carries a market-wide signal; that
+signal is profitable when it is spread over ~40 alt-coins with a per-direction cap
+(section 31, a REJECT by 0.00026), and it is not profitable when it is
+concentrated into one call on BTC or ETH.** The holdout (2025-01 -> 2026-08,
+untouched, shared by sections 31/32/33) remains the only data that could settle
+the frozen section 31 cell, which is an owner decision outside the PASS rule.
+
+### Verdict
+
+**REJECT** on three gates: `valid_ci_lo>0`, `timing_beats_shift_p95`,
+`both_legs>0`. **No holdout run** - HOLDOUT was never read; it still holds 5 runs,
+all from before ML (4 strategies plus one lock test on `example_trend_breakout`),
+5 FAILED and 0 CONFIRMED. Project total remains 500 evaluations. No v2, no
+changed values, no re-run.
+
+**The honest one-paragraph version for the owner:** making the market call once,
+on ETH, is much worse than making it on forty alt-coins, and it was already
+dead before the validation period. On the training period five of the six setups
+lost money and the sixth - the one chosen - made +0.00004 a week with a
+t-statistic of +0.05. On validation there were only **98 trades in two years**,
+the weekly return was **+0.00037** with a confidence interval of
+[-0.00111, +0.00190] and a t of +0.48, and it failed three gates. The long side
+**lost** 3.98 R while the short side made 7.82 R, so the whole book is one short
+bet. The best 5 of 105 weeks produced **298%** of the total return - remove them
+and the book loses money. The book's return is uncorrelated with ETH's own
+(-0.006 beta, -0.06 correlation) while ETH rose about 1% a week, and a random
+shift of the signal scored better than the real one. The 4.6% drawdown looks good
+only because it sits in cash 63% of the time. So the timing does not survive being
+made once: the mean of the 47 forecasts is simply a weaker signal than each coin's
+own forecast, and it crosses its threshold eight times less often.
