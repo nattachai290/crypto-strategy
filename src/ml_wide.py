@@ -270,9 +270,10 @@ def judge(P, pred, o4, a, b, traded, q, mode, min_coins=MP.MIN_COINS):
 def evaluate(P, pred_narrow, pred_wide, o4, traded, q, mode, min_coins=MP.MIN_COINS, keep=False, corr=None) -> dict:
     a_tr, b_tr = WF.WINDOWS["train"]
     a_va, b_va = WF.WINDOWS["valid"]
-    table = []
+    table, train_trades = [], {}
     for form, pr in (("narrow", pred_narrow), ("wide", pred_wide)):
         t, _ = run_cell(P, pr, o4, a_tr, b_tr, traded, q, mode)
+        train_trades[form] = t
         acc = MP.account(t, a_tr, b_tr)
         table.append({"form": form, **{k: acc[k] for k in ("trades", "weekly_mean", "tstat", "per_year", "max_dd",
                                                            "mean_r")},
@@ -283,6 +284,13 @@ def evaluate(P, pred_narrow, pred_wide, o4, traded, q, mode, min_coins=MP.MIN_CO
     ok = [x for x in table if x["trades"] >= MP.MIN_TRADES]
     best = max(ok, key=lambda x: x["tstat"]) if ok else table[0]
     pr = pred_narrow if best["form"] == "narrow" else pred_wide
+    # output only (Exp 049): the VALID checks repeated on TRAIN for the chosen form, for the Result Analyzer;
+    # computed after the choice, so they cannot change it
+    tj, _ = judge(P, pr, o4, a_tr, b_tr, traded, q, mode, min_coins)
+    train_checks = {k: tj[k] for k in ("trades", "weekly_mean", "ci_lo", "ci_hi", "tstat", "stress_weekly_mean",
+                                       "timing", "shift_median", "shift_p95", "long_ret", "short_ret", "max_dd",
+                                       "mean_r", "per_year_r") if k in tj}
+    train_checks["breadth"] = {k: tj["breadth"][k] for k in ("eligible", "share")}
     v, t = judge(P, pr, o4, a_va, b_va, traded, q, mode, min_coins)
     w = MP.weekly(t, a_va, b_va)
     tot = float(w.sum())
@@ -304,9 +312,10 @@ def evaluate(P, pred_narrow, pred_wide, o4, traded, q, mode, min_coins=MP.MIN_CO
     failed = [k for k, g in gates.items() if not g]
     res = {"chosen": {"form": best["form"], **CELL}, "train_table": table, "valid": v,
            "verdict": "REJECT" if failed else "PASS", "gates_failed": failed,
-           "model": {"q_in": q, "exit_mode": mode, "horizons_wide": list(HORIZONS)}}
+           "model": {"q_in": q, "exit_mode": mode, "horizons_wide": list(HORIZONS)}, "train_checks": train_checks}
     if keep:
         res["_trades"] = t
+        res["_train_trades"] = train_trades
     return res
 
 
@@ -466,6 +475,8 @@ def run(final: bool = False) -> None:
                     "ever_traded_valid": sorted({c for mo, lst in traded.items()
                                                  if "2023-01" <= mo < "2025-01" for c in lst})}
     res.pop("_trades").to_csv(OUT / "trades_valid.csv.gz", index=False)
+    for form, tt in res.pop("_train_trades").items():          # TRAIN trades of both forms (output only)
+        tt.to_csv(OUT / f"trades_train_{form}.csv.gz", index=False)
     res_path.write_text(json.dumps(res, indent=1, default=str))
     write_report(res)
     print(f"\nML_WIDE: chose {res['chosen']} -> {res['verdict']} failed {res['gates_failed']}")
