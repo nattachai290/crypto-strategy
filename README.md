@@ -1,7 +1,5 @@
 # BTCUSDT USDT-M Futures — Intraday Strategy Research
 
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
-
 A research harness for BTCUSDT **day trading** on Binance USDT-M futures
 (perpetual). Everything is backtested against real exchange data with costs
 included, because a strategy that only works with zero fees and zero
