@@ -2520,6 +2520,11 @@ def test_ml_wide() -> None:
               r1["chosen"]["form"] == "wide" and r1["verdict"] == "PASS"
               and r2["chosen"]["form"] == "narrow" and "train_chose_wide" in r2["gates_failed"],
               f"{r1['verdict']} {r1['gates_failed']} / {r2['chosen']} {r2['gates_failed']}")
+        tw = next(x for x in r1["train_table"] if x["form"] == "wide")
+        check("ml_wide train_checks (output only): the chosen form's TRAIN account repeated with the VALID checks",
+              r1["train_checks"]["trades"] == tw["trades"] and np.isclose(r1["train_checks"]["weekly_mean"],
+                                                                          tw["weekly_mean"])
+              and {"timing", "shift_p95", "stress_weekly_mean", "breadth"} <= set(r1["train_checks"]))
         check("ml_wide traded sets: a coin outside every month's traded set never gets a position",
               len(t_off) > 0 and set(t_off["coin"]) == {"C0USDT"})
     finally:

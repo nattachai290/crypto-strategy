@@ -4412,3 +4412,27 @@ python src/ml_wide.py              # once; long (1h narrow + 3 wide horizons + 4
 - Do not run `--final`.
 - If memory runs out, report it with the coin counts. Do not change TRAIN_TOP
   or TRADE_N.
+
+---
+
+## Exp 049 - §36 output addition before the run (planner; no change to what §36 tests)
+
+**Date:** 2026-10-06
+**Status:** complete (code only; §36 has not run: the runner was still downloading coins)
+
+The owner asked for every result the Result Analyzer (`src/analyzer.py`, added in PR #57) needs to come out
+of §36. `src/ml_wide.py` now also writes, for the Exp 048 run:
+
+- `results/_multi/ml_wide/trades_train_narrow.csv.gz` and `trades_train_wide.csv.gz`: the TRAIN walk-forward
+  trades of both forms, which were already computed for the TRAIN table and thrown away. No earlier ML round
+  saved TRAIN trades.
+- `summary.json` key `train_checks`: the VALID checks (CI, cost x1.5, timing vs the shifted p95/median,
+  breadth, both legs, max DD) repeated on TRAIN for the chosen form, computed **after** the choice.
+
+What does not change: the forecasts, the TRAIN choice (still the t-statistic of the two TRAIN rows), the VALID
+run (still the chosen form only: the other form's VALID trades are NOT computed, so there is no extra look
+at VALID), the gates and the holdout rule. Test 32 adds a check that `train_checks` repeats the chosen TRAIN
+row. Cost: one more TRAIN judge (the timing control's 200 shifts on TRAIN), roughly the time of the VALID judge.
+
+The analyzer now lists §36 and, where TRAIN trades exist, scores monthly fold consistency on TRAIN and VALID
+together and shows TRAIN's checks and concentration beside VALID's. Runner: pull main before running §36.

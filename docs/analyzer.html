@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตรวจคุณภาพโมเดล</title>
+<meta name="description" content="Result Analyzer: ให้คะแนนคุณภาพโมเดล ML ทุกรอบ 7 ด้าน แล้วตัดสิน ACCEPT / FRAGILE / OVERFIT / NO_EDGE">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fcfcfb; --text:#0b0b0b; --muted:#52514e; --faint:#8b8a85; --line:#e3e6ec; --grid:#ececea;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --pos:#2a78d6; --neg:#e34948;
+  --good:#16a34a; --good-bg:#e8f6ee; --bad:#dc2626; --bad-bg:#fdecec; --wait:#2563eb; --wait-bg:#e8effd; --accent:#0f766e;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --pos:#3987e5; --neg:#e66767;
+    --good:#4ade80; --good-bg:#12291c; --bad:#f87171; --bad-bg:#2e1616; --wait:#60a5fa; --wait-bg:#142038; --accent:#2dd4bf;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --pos:#3987e5; --neg:#e66767;
+  --good:#4ade80; --good-bg:#12291c; --bad:#f87171; --bad-bg:#2e1616; --wait:#60a5fa; --wait-bg:#142038; --accent:#2dd4bf;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.6;font-size:16px}
+main{max-width:900px;margin:0 auto;padding:28px 16px 64px}
+h1{font-size:1.6rem;line-height:1.3;margin:0 0 6px}
+h2{font-size:1.25rem;margin:34px 0 10px}
+h3{font-size:1.05rem;margin:0 0 4px}
+p{margin:0 0 12px}
+a{color:var(--accent)}
+.sub{color:var(--muted);margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 16px}
+.hero{border-left:6px solid var(--wait)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0 4px}
+.stat{background:var(--bg);border-radius:10px;padding:10px 12px}
+.stat .n{font-size:1.35rem;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat .l{color:var(--muted);font-size:.82rem}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.88rem;color:var(--muted);margin:2px 0 8px}
+.key{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:3px;border-radius:2px;display:inline-block}
+.sq{width:11px;height:11px;border-radius:3px;display:inline-block}
+.chart{position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.82rem;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.12);opacity:0;transition:opacity .1s;z-index:2}
+.tip .v{font-weight:600;font-variant-numeric:tabular-nums}
+.small{font-size:.85rem;color:var(--muted)}
+.tag{display:inline-block;font-size:.78rem;font-weight:600;padding:1px 9px;border-radius:999px;white-space:nowrap}
+.t-bad{background:var(--bad-bg);color:var(--bad)}
+.t-wait{background:var(--wait-bg);color:var(--wait)}
+.tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+.tbl th,.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{color:var(--muted);font-weight:500;font-size:.8rem}
+.tbl td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+details{margin-top:8px}
+summary{cursor:pointer;color:var(--muted);font-size:.85rem}
+code{font-size:.85em;overflow-wrap:anywhere}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;position:sticky;top:8px;z-index:10;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+html{scroll-padding-top:72px}
+.nav a{flex:1 1 120px;text-align:center;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem}
+.nav a:hover{background:var(--bg);color:var(--text)}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--bg);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 16px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.tile .n{font-size:1.6rem;font-weight:700;line-height:1.1}
+.tile .l{font-size:.85rem;color:var(--muted)}
+.v-ACCEPT{color:var(--good)} .v-FRAGILE{color:#b7791f} .v-OVERFIT{color:var(--bad)} .v-NO_EDGE{color:var(--faint)}
+.vt{display:inline-block;font-size:.76rem;font-weight:700;padding:1px 9px;border-radius:999px;white-space:nowrap}
+.vt.ACCEPT{background:var(--good-bg);color:var(--good)}
+.vt.FRAGILE{background:#fdf3e1;color:#b7791f}
+.vt.OVERFIT{background:var(--bad-bg);color:var(--bad)}
+.vt.NO_EDGE{background:var(--bg);color:var(--faint);border:1px solid var(--line)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .vt.FRAGILE{background:#2e2410;color:#f6c560}:root:not([data-theme="light"]) .v-FRAGILE{color:#f6c560}}
+:root[data-theme="dark"] .vt.FRAGILE{background:#2e2410;color:#f6c560}
+:root[data-theme="dark"] .v-FRAGILE{color:#f6c560}
+.run{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 12px}
+.run .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.run .top h3{margin:0;flex:1 1 200px}
+.q{font-size:1.4rem;font-weight:700;font-variant-numeric:tabular-nums}
+.q small{font-size:.75rem;color:var(--muted);font-weight:500}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:6px 16px;margin:10px 0 2px}
+.dim{font-size:.82rem}
+.dim .row{display:flex;justify-content:space-between;color:var(--muted)}
+.dim .row b{color:var(--text);font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--grid);border-radius:4px;overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;border-radius:4px}
+.na{color:var(--faint)}
+.det{font-size:.84rem;color:var(--muted);margin:8px 0 0;padding-left:18px}
+.det li{margin:2px 0}
+.flags{margin:8px 0 0;font-size:.84rem}
+.flags span{display:inline-block;background:var(--bad-bg);color:var(--bad);border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0}
+.part{color:var(--muted);font-size:.85rem;margin:22px 0 8px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.filters button{font:inherit;font-size:.85rem;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+<nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="ml.html">🤖 ML</a><a href="analyzer.html" aria-current="page">🔬 ตรวจโมเดล</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html">🕯️ จุดเข้าออก</a></nav>
+
+<h1>ตรวจคุณภาพโมเดล ML (Result Analyzer)</h1>
+<p class="sub">ให้คะแนนโมเดล ML ทุกรอบย้อนหลัง 7 ด้าน (0–100) จากผลที่บันทึกไว้แล้วเท่านั้น ไม่ได้รัน backtest ใหม่ และไม่ได้แตะข้อมูลสอบจริง (2025–ส.ค. 2026) · คะแนนรวม = ค่าเฉลี่ยของด้านที่มีข้อมูล</p>
+
+<div class="card hero">
+  <h3>สรุป: ยังไม่มีรุ่นไหนได้ ACCEPT</h3>
+  <p style="margin:6px 0 0" id="heroText"></p>
+</div>
+
+<div class="tiles" id="tiles"></div>
+
+<h2>ตัดสินอย่างไร</h2>
+<div class="card">
+  <ul class="det" style="margin:0">
+    <li><span class="vt ACCEPT">ACCEPT</span> ผ่านด่านที่ลงทะเบียนไว้ทุกด่าน <b>และ</b> คะแนนคุณภาพ ≥ <span id="acc"></span> · คะแนนสูงแต่ตกด่าน ไม่มีทางได้ ACCEPT</li>
+    <li><span class="vt FRAGILE">FRAGILE</span> ช่วงสอบย่อยยังได้กำไร แต่ตกบางด่าน หรือคะแนนยังไม่ถึง: มีแววแต่ยังเปราะ</li>
+    <li><span class="vt OVERFIT">OVERFIT</span> ช่วงเทรน (TRAIN) ได้กำไร แต่ช่วงสอบย่อย (VALID) ขาดทุน หรือมีสัญญาณ overfit หนัก: จำข้อสอบเก่ามากกว่าเรียนรู้</li>
+    <li><span class="vt NO_EDGE">NO_EDGE</span> แม้แต่ช่วงเทรนเองก็ไม่ได้กำไร: ไม่มีสัญญาณตั้งแต่แรก</li>
+  </ul>
+</div>
+
+<h2>ทุกรุ่น เรียงตามคะแนน</h2>
+<div class="filters" id="filters"></div>
+<div id="runs"></div>
+
+<h2>7 ด้านวัดอะไร</h2>
+<div class="card">
+  <ul class="det" style="margin:0" id="dimHelp"></ul>
+  <p class="small" style="margin:10px 0 0">ข้อจำกัด: ไม่เคยเก็บรายการไม้ของช่วงเทรน ด้านความสม่ำเสมอรายเดือนจึงดูได้แค่ช่วงสอบย่อย (24 เดือน = 24 รอบเทรนใหม่) · ตารางพารามิเตอร์ของช่วงเทรนมีแค่ 2–32 ช่อง จึงวัดความไวได้แบบหยาบ · §19–§21 ไม่มีไฟล์ไม้ช่วงสอบย่อย จึงมีแค่ 3–4 ด้าน · ตั้งแต่ §36 บันทึกไม้ช่วงเทรนและด่านต่าง ๆ บนช่วงเทรนด้วย รุ่นนั้นจะเทียบเทรนกับสอบย่อยได้ครบ (คะแนนรายเดือน = ค่าเฉลี่ยของทั้งสองช่วง) · §32 และ §34 ช่วงเทรนเลือกแบบเดิม ไม้ช่วงสอบย่อยจึงเป็นชุดเดียวกับ §31 (คะแนนต่างกันแค่ด้านตารางพารามิเตอร์)</p>
+</div>
+
+<p class="small">ที่มา: ไฟล์ <code>summary.json</code>/<code>tf*.json</code> และ <code>trades_valid*.csv.gz</code> ของแต่ละรอบใน <code>results/</code> · คำนวณด้วย <code>src/analyzer.py</code> → <code>docs/analyzer_data.json</code> · ไม่มีตัวเลขไหนที่แต่งขึ้นเอง · งานวิจัย ไม่ใช่คำแนะนำการลงทุน</p>
+</main>
+
+<script>
+const DIMS = [
+  ["train_vs_valid", "เทรน vs สอบย่อย", "ผลเฉลี่ยต่อไม้ช่วงสอบย่อยเทียบกับช่วงเทรนของตัวที่ถูกเลือก (ได้ ≥ 70% ของช่วงเทรน = เต็ม, สอบย่อยขาดทุน = 0)"],
+  ["robustness", "ทนทานนอกตัวอย่าง", "สัดส่วนที่ผ่านของ: ช่วงความเชื่อมั่นล่าง > 0, ค่าธรรมเนียม ×1.5 ยังบวก, จังหวะเข้าชนะการสุ่มเลื่อนเวลา (p95), เหรียญบวกเกินครึ่ง, ทั้ง long และ short บวก"],
+  ["stability", "ความนิ่ง", "กำไรไม่กระจุก (5 สัปดาห์ที่ดีสุดเป็นกี่ % ของทั้งหมด), สัดส่วนเหรียญที่บวก, และตัดไม้ที่ดีสุด 1% ออกแล้วยังบวกไหม"],
+  ["fold_consistency", "สม่ำเสมอรายเดือน", "โมเดลเทรนใหม่ทุกเดือน แต่ละเดือนจึงเป็น 1 รอบทดสอบ: กี่เดือนที่บวก, ทั้งปี 2023 และ 2024 บวกไหม"],
+  ["sensitivity", "ไวต่อพารามิเตอร์", "ในตารางช่วงเทรน กี่ช่องที่บวก และตัวที่เลือกเป็นยอดเขาโดดเดี่ยวไหม (สูงกว่าช่องอื่นเกิน 2 SD = หักครึ่ง)"],
+  ["decay", "ผลเสื่อมตามเวลา", "ผลเฉลี่ยต่อไม้แยกตามปีที่เข้าไม้ 2023 และ 2024: บวกทั้งสองปีไหม"],
+  ["overfit", "ตรวจ overfit", "เริ่ม 100 หักเมื่อ: เทรนบวกแต่สอบย่อยไม่บวก (−60), สอบย่อยได้ไม่ถึง 30% ของเทรน (−20), ตัวที่เลือกเป็นยอดโดดเดี่ยว (−20), 5 สัปดาห์ที่ดีสุดเกิน 60% ของกำไร (−20)"]
+];
+const VT = {ACCEPT:"ผ่านทั้งหมด", FRAGILE:"มีแววแต่เปราะ", OVERFIT:"overfit", NO_EDGE:"ไม่มีสัญญาณ"};
+const FLAG_TH = {
+  "positive on TRAIN, not on VALID": "เทรนบวก แต่สอบย่อยไม่บวก",
+  "VALID under 30% of TRAIN": "สอบย่อยได้ไม่ถึง 30% ของเทรน",
+  "chosen cell is an isolated peak": "ตัวที่เลือกเป็นยอดโดดเดี่ยว",
+  "best 5 weeks carry > 60% of the return": "5 สัปดาห์ที่ดีสุดเกิน 60% ของกำไร"
+};
+const CHECK_TH = {"ci_lo>0":"ช่วงความเชื่อมั่นล่าง > 0","stress>0":"ค่าธรรมเนียม ×1.5 ยังบวก","timing>p95":"ชนะการสุ่มจังหวะ","breadth>=0.5":"เหรียญบวกเกินครึ่ง","both_legs>0":"long และ short บวก"};
+const fmt = (x, d=3) => x == null ? "–" : (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d);
+const pct = x => x == null ? "–" : Math.round(x * 100) + "%";
+const col = s => s == null ? "var(--faint)" : s >= 70 ? "var(--good)" : s >= 40 ? "#d69e2e" : "var(--bad)";
+
+function detail(r) {
+  const d = r.details, L = [];
+  if (d.train_vs_valid.train_mean_r != null)
+    L.push(`R เฉลี่ยต่อไม้: เทรน ${fmt(d.train_vs_valid.train_mean_r)} → สอบย่อย ${fmt(d.train_vs_valid.valid_mean_r)}`);
+  const ck = Object.entries(d.robustness || {});
+  if (ck.length) L.push("ด่านทนทาน: " + ck.map(([k, v]) => (v ? "✅ " : "❌ ") + (CHECK_TH[k] || k)).join(" · "));
+  const s = d.stability || {};
+  if (s.top5_weeks_share !== undefined)
+    L.push(`5 สัปดาห์ที่ดีสุด = ${s.top5_weeks_share == null ? "ทั้งช่วงไม่บวก" : pct(s.top5_weeks_share) + " ของกำไร"} · เหรียญที่บวก ${pct(s.coins_positive_share)} · ตัดไม้ดีสุด 1% เหลือ ${fmt(s.mean_r_without_top1pct)} R`);
+  const f = d.fold_consistency || {};
+  if (f.months) L.push(`เดือนที่บวก ${f.months_positive}/${f.months} · ทั้งสองปีบวก: ${f.years_positive ? "ใช่" : "ไม่"} · ขาดทุนติดกันนานสุด ${f.longest_losing_months} เดือน`);
+  const p = d.sensitivity || {};
+  if (p.cells) L.push(`ตารางช่วงเทรน ${p.cells} ช่อง บวก ${pct(p.cells_positive_share)} · ตัวที่เลือกสูงกว่ากลางตาราง ${p.chosen_z_vs_grid.toFixed(1)} SD`);
+  const y = (d.decay || {}).mean_r_by_entry_year;
+  if (y) L.push("R เฉลี่ยรายปี: " + Object.entries(y).map(([k, v]) => `${k} ${fmt(v)}`).join(" · "));
+  const T = r.train_side;
+  if (T) {
+    if (T.checks) L.push("ด่านเดียวกันบนช่วงเทรน: " + Object.entries(T.checks).map(([k, v]) => (v ? "✅ " : "❌ ") + (CHECK_TH[k] || k)).join(" · "));
+    if (T.folds) L.push(`ช่วงเทรน: เดือนที่บวก ${T.folds.months_positive}/${T.folds.months} · 5 สัปดาห์ที่ดีสุด = ${T.top5_weeks_share == null ? "ทั้งช่วงไม่บวก" : pct(T.top5_weeks_share) + " ของกำไร"} (เทียบกับช่วงสอบย่อยข้างบน)`);
+  }
+  if (r.gates_failed && r.gates_failed.length) L.push("ด่านที่ตก (ตามที่ลงทะเบียน): <code>" + r.gates_failed.join(", ") + "</code>");
+  return L;
+}
+
+function card(r) {
+  const flags = (r.details.overfit || {}).flags || [];
+  const dims = DIMS.map(([k, n]) => {
+    const s = r.scores[k];
+    return `<div class="dim"><div class="row"><span>${n}</span><b class="${s == null ? "na" : ""}">${s == null ? "ไม่มีข้อมูล" : Math.round(s)}</b></div>
+      <div class="bar"><i style="width:${s || 0}%;background:${col(s)}"></i></div></div>`;
+  }).join("");
+  return `<div class="run" data-v="${r.verdict}">
+    <div class="top"><h3>${r.label}</h3><span class="vt ${r.verdict}">${r.verdict}</span>
+      <span class="q" style="color:${col(r.quality)}">${r.quality == null ? "–" : Math.round(r.quality)}<small> /100 · ${r.dims_available}/7 ด้าน</small></span></div>
+    <div class="dims">${dims}</div>
+    ${flags.length ? `<div class="flags">${flags.map(f => `<span>⚠ ${FLAG_TH[f] || f}</span>`).join("")}</div>` : ""}
+    <details><summary>ดูตัวเลขที่ใช้ให้คะแนน</summary><ul class="det">${detail(r).map(x => `<li>${x}</li>`).join("")}</ul></details>
+  </div>`;
+}
+
+fetch("analyzer_data.json?v=2").then(r => r.json()).then(D => {
+  const runs = D.runs;
+  document.getElementById("acc").textContent = D.accept_score;
+  const n = v => runs.filter(r => r.verdict === v).length;
+  document.getElementById("tiles").innerHTML = ["ACCEPT", "FRAGILE", "OVERFIT", "NO_EDGE"].map(v =>
+    `<div class="tile"><div class="n v-${v}">${n(v)}</div><div class="l">${v} · ${VT[v]}</div></div>`).join("");
+  const best = runs.filter(r => r.trades_recorded)[0];
+  document.getElementById("heroText").innerHTML = `ตรวจ ${runs.length} รุ่น (§19–§34) · คะแนนสูงสุดคือ <b>${best.label}</b> ${Math.round(best.quality)}/100 แต่ได้แค่ <span class="vt FRAGILE">FRAGILE</span> เพราะตกด่านช่วงความเชื่อมั่น และกำไรกระจุกใน 5 สัปดาห์ (${pct(best.details.stability.top5_weeks_share)}) · 4h/1d ของ §28–§30 ส่วนใหญ่เทรนดีแต่สอบย่อยหายเกือบหมด (สัญญาณ overfit)`;
+  document.getElementById("dimHelp").innerHTML = DIMS.map(([, n, h]) => `<li><b>${n}</b>: ${h}</li>`).join("");
+  const F = ["ทั้งหมด", "ACCEPT", "FRAGILE", "OVERFIT", "NO_EDGE"];
+  let cur = "ทั้งหมด";
+  const draw = () => {
+    const sel = runs.filter(r => cur === "ทั้งหมด" || r.verdict === cur);
+    const a = sel.filter(r => r.trades_recorded), b = sel.filter(r => !r.trades_recorded);
+    document.getElementById("runs").innerHTML = (a.length ? a.map(card).join("") : '<p class="small">ไม่มีรุ่นในกลุ่มนี้</p>') +
+      (b.length ? `<p class="part">รุ่นแรก ๆ (§19–§21) ไม่มีไฟล์ไม้ช่วงสอบย่อย จึงมีแค่บางด้าน คะแนนเทียบกับข้างบนตรง ๆ ไม่ได้</p>` + b.map(card).join("") : "");
+    document.getElementById("filters").innerHTML = F.map(f => `<button aria-pressed="${f === cur}" data-f="${f}">${f}</button>`).join("");
+  };
+  document.getElementById("filters").addEventListener("click", e => { const f = e.target.dataset.f; if (f) { cur = f; draw(); } });
+  draw();
+});
+</script>
+</body>
+</html>
