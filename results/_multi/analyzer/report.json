@@ -67,7 +67,8 @@
    "valid_mean_r": 0.06076503246185099,
    "train_mean_r": 0.05966546805461939,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s34",
@@ -135,7 +136,8 @@
    "valid_mean_r": 0.06076503246185099,
    "train_mean_r": 0.05966546805461939,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s32",
@@ -204,7 +206,8 @@
    "valid_mean_r": 0.06076503246185099,
    "train_mean_r": 0.05966546805461939,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s29_4h",
@@ -275,7 +278,8 @@
    "valid_mean_r": 0.012837207237447518,
    "train_mean_r": 0.057730865071753436,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s30_1h",
@@ -343,7 +347,8 @@
    "valid_mean_r": 0.03744382997808238,
    "train_mean_r": 0.03514867055377151,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s28_1d",
@@ -412,7 +417,8 @@
    "valid_mean_r": 0.02339844973792135,
    "train_mean_r": 0.3674447266369297,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s33",
@@ -480,7 +486,8 @@
    "valid_mean_r": 0.03927877530132361,
    "train_mean_r": 0.002678175144552303,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s29_1d",
@@ -552,7 +559,8 @@
    "valid_mean_r": 0.13633717226077455,
    "train_mean_r": -0.09815400739464045,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s28_4h",
@@ -623,7 +631,8 @@
    "valid_mean_r": 0.00957465171354216,
    "train_mean_r": 0.11712812851914549,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s28_1h",
@@ -694,7 +703,8 @@
    "valid_mean_r": -1.882835960162437e-05,
    "train_mean_r": 0.01481796321572476,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s30_4h",
@@ -766,7 +776,8 @@
    "valid_mean_r": 0.0031251738502580065,
    "train_mean_r": 0.15156612440948314,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s27",
@@ -838,7 +849,8 @@
    "valid_mean_r": -0.01321032049938165,
    "train_mean_r": 0.03785092553051622,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s30_1d",
@@ -910,7 +922,8 @@
    "valid_mean_r": -0.03144163343780787,
    "train_mean_r": 0.019112196715600813,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s29_1h",
@@ -983,7 +996,8 @@
    "valid_mean_r": -0.019837308690546097,
    "train_mean_r": 0.0029868886477452854,
    "trades_recorded": true,
-   "dims_available": 7
+   "dims_available": 7,
+   "train_side": null
   },
   {
    "id": "s20",
@@ -1033,7 +1047,8 @@
    "valid_mean_r": 0.060071595704867475,
    "train_mean_r": 0.056055295914807415,
    "trades_recorded": false,
-   "dims_available": 4
+   "dims_available": 4,
+   "train_side": null
   },
   {
    "id": "s19_eth",
@@ -1084,7 +1099,8 @@
    "valid_mean_r": 0.010727252106560444,
    "train_mean_r": -0.0869371914216132,
    "trades_recorded": false,
-   "dims_available": 4
+   "dims_available": 4,
+   "train_side": null
   },
   {
    "id": "s19_btc",
@@ -1137,7 +1153,8 @@
    "valid_mean_r": -0.029876555692824734,
    "train_mean_r": -0.06148756873799888,
    "trades_recorded": false,
-   "dims_available": 4
+   "dims_available": 4,
+   "train_side": null
   },
   {
    "id": "s21",
@@ -1195,7 +1212,8 @@
    "valid_mean_r": -0.02446833586799429,
    "train_mean_r": 0.009755330455675863,
    "trades_recorded": false,
-   "dims_available": 4
+   "dims_available": 4,
+   "train_side": null
   }
  ]
 }

@@ -68,7 +68,11 @@ for sec, d in ((28, "ml_wf"), (29, "ml_wf2"), (30, "ml_wf3")):
 RUNS += [("s31", 31, "§31 1h + portfolio", M / "ml_port/summary.json", M / "ml_port/trades_valid.csv.gz", "account"),
          ("s32", 32, "§32 demeaned (= §31)", M / "ml_xs/summary.json", M / "ml_xs/trades_valid.csv.gz", "account"),
          ("s33", 33, "§33 market timing → ETH", M / "ml_mkt/summary.json", M / "ml_mkt/trades_valid.csv.gz", "account"),
-         ("s34", 34, "§34 positioning data (= §31)", M / "ml_flow/summary.json", M / "ml_flow/trades_valid.csv.gz", "account")]
+         ("s34", 34, "§34 positioning data (= §31)", M / "ml_flow/summary.json", M / "ml_flow/trades_valid.csv.gz", "account"),
+         ("s36", 36, "§36 train wide · top 20 large coins", M / "ml_wide/summary.json", M / "ml_wide/trades_valid.csv.gz",
+          "account")]
+# TRAIN trade files exist from §36 on (trades_train_<form>.csv.gz, the chosen form is read)
+TRAIN = ("2021-01-01", "2023-01-01")
 
 
 def _clip(x: float) -> float:
@@ -142,11 +146,11 @@ def extract(kind: str, r: dict) -> dict:
 # --------------------------------------------------------------------------
 # the seven dimensions
 # --------------------------------------------------------------------------
-def weekly_returns(t: pd.DataFrame) -> pd.Series:
+def weekly_returns(t: pd.DataFrame, win=VALID) -> pd.Series:
     """Account return per VALID week by exit time (empty weeks 0); a trade without
     a recorded risk counts at 1% risk."""
     ret = t["ret"] if "ret" in t else 0.01 * t["net_r"]
-    weeks = pd.date_range(pd.Timestamp(VALID[0], tz="UTC"), pd.Timestamp(VALID[1], tz="UTC"), freq="7D", inclusive="left")
+    weeks = pd.date_range(pd.Timestamp(win[0], tz="UTC"), pd.Timestamp(win[1], tz="UTC"), freq="7D", inclusive="left")
     k = np.clip(weeks.searchsorted(pd.to_datetime(t["exit_time"], utc=True), side="right") - 1, 0, len(weeks) - 1)
     return pd.Series(np.bincount(k, weights=ret.to_numpy(float), minlength=len(weeks)), index=weeks)
 
@@ -185,12 +189,12 @@ def stability(t: pd.DataFrame | None) -> tuple[float | None, dict]:
                                    "mean_r_without_top1pct": trim, "valid_total_return": tot}
 
 
-def fold_consistency(t: pd.DataFrame | None) -> tuple[float | None, dict]:
+def fold_consistency(t: pd.DataFrame | None, win=VALID) -> tuple[float | None, dict]:
     if t is None or t.empty:
         return None, {}
     ex = pd.to_datetime(t["exit_time"], utc=True)
     m = (t["ret"] if "ret" in t else 0.01 * t["net_r"]).groupby(ex.dt.strftime("%Y-%m")).sum()
-    months = [str(p) for p in pd.period_range(VALID[0], "2024-12", freq="M")]
+    months = [str(p) for p in pd.period_range(win[0], pd.Timestamp(win[1]) - pd.Timedelta(days=1), freq="M")]
     m = m.reindex(months, fill_value=0.0)
     share = float((m > 0).mean())
     yrs = m.groupby([k[:4] for k in m.index]).sum()
@@ -256,13 +260,39 @@ def verdict(e: dict, score: float | None, of: float | None) -> str:
     return "FRAGILE"
 
 
-def analyze_one(kind: str, summary: dict, trades: pd.DataFrame | None) -> dict:
+def train_side(summary: dict, tt: pd.DataFrame | None) -> dict | None:
+    """Where TRAIN trades / TRAIN checks were recorded (§36 on): the same measures on TRAIN, to set beside VALID."""
+    tc = summary.get("train_checks")
+    if tt is None and not tc:
+        return None
+    out = {}
+    if tt is not None and not tt.empty:
+        w = weekly_returns(tt, TRAIN)
+        tot = float(w.sum())
+        out["top5_weeks_share"] = float(w.sort_values(ascending=False).iloc[:5].sum()) / tot if tot > 0 else None
+        out["folds"] = fold_consistency(tt, TRAIN)[1]
+        out["fold_score"] = fold_consistency(tt, TRAIN)[0]
+    if tc:
+        out["checks"] = {"ci_lo>0": (tc.get("ci_lo") or -1) > 0, "stress>0": (tc.get("stress_weekly_mean") or -1) > 0,
+                         "timing>p95": tc.get("timing") is not None and tc.get("shift_p95") is not None
+                         and tc["timing"] > tc["shift_p95"],
+                         "breadth>=0.5": tc.get("breadth", {}).get("share", 0) >= 0.5,
+                         "both_legs>0": (tc.get("long_ret") or -1) > 0 and (tc.get("short_ret") or -1) > 0}
+    return out
+
+
+def analyze_one(kind: str, summary: dict, trades: pd.DataFrame | None, train_trades: pd.DataFrame | None = None) -> dict:
     e = extract(kind, summary)
     dims = {}
     dims["train_vs_valid"] = train_vs_valid(e["train_mean"], e["valid_mean"])
     dims["robustness"] = robustness(e["checks"])
     dims["stability"] = stability(trades)
     dims["fold_consistency"] = fold_consistency(trades)
+    ts = train_side(summary, train_trades)
+    if ts and ts.get("fold_score") is not None and dims["fold_consistency"][0] is not None:
+        # both periods recorded: the score is the mean of TRAIN's and VALID's monthly folds
+        sc_, det = dims["fold_consistency"]
+        dims["fold_consistency"] = ((sc_ + ts["fold_score"]) / 2, {**det, "train": ts["folds"]})
     dims["sensitivity"] = sensitivity(e["table"], e["chosen_metric"])
     dims["decay"] = decay(trades, e["per_year"])
     dims["overfit"] = overfit(e["train_mean"], e["valid_mean"], dims["train_vs_valid"][1], dims["sensitivity"][1],
@@ -273,7 +303,7 @@ def analyze_one(kind: str, summary: dict, trades: pd.DataFrame | None) -> dict:
             "details": {k: d[1] for k, d in dims.items()}, "quality": None if score is None else round(score, 1),
             "verdict": verdict(e, score, dims["overfit"][0]), "gate_verdict": e["verdict"],
             "gates_failed": e["gates_failed"], "valid_mean_r": e["valid_mean"], "train_mean_r": e["train_mean"],
-            "trades_recorded": trades is not None, "dims_available": len(sc)}
+            "trades_recorded": trades is not None, "dims_available": len(sc), "train_side": ts}
 
 
 def _order(r: dict) -> tuple:
@@ -288,7 +318,9 @@ def main() -> None:
             continue
         s = json.loads(sfile.read_text())
         t = pd.read_csv(tfile) if tfile is not None and tfile.exists() else None
-        a = analyze_one(kind, s, t)
+        form = (s.get("chosen") or {}).get("form")
+        tr = sfile.parent / f"trades_train_{form}.csv.gz"
+        a = analyze_one(kind, s, t, pd.read_csv(tr) if form and tr.exists() else None)
         rows.append({"id": rid, "sec": sec, "label": label, **a})
     OUT.mkdir(parents=True, exist_ok=True)
     rows = sorted(rows, key=_order)
