@@ -4995,3 +4995,61 @@ and that the power formula is the stated one.
 
 **Rule for §38+ registrations:** the round calls `run_record.write(...)` for TRAIN and VALID. A registration
 that does not is incomplete.
+
+---
+
+## Exp 059 - Diagnostic (planner, recorded trade files only): every ML book is stuck on the short side after 2022
+
+**Date:** 2026-10-08
+**Status:** complete. No run; trade files and published 4h candles only.
+
+The owner asked what has to change in training before §38. The common failure of §31-§37 was traced from the
+recorded trades.
+
+### Short share of entries, by entry year
+
+| book | 2021 (bull) | 2022 (bear) | 2023 (bull) | 2024 (bull) |
+|---|---|---|---|---|
+| §36 narrow, TRAIN | 0.34 | 0.64 | - | - |
+| §36 wide, TRAIN | 0.37 | 0.63 | - | - |
+| §37, TRAIN (chosen cell) | 0.42 | 0.60 | - | - |
+| §28 4h, VALID | - | - | 0.73 | 0.71 |
+| §30 1h, VALID | - | - | 0.70 | 0.61 |
+| §30 4h, VALID | - | - | 0.78 | 0.75 |
+| §36 wide, VALID | - | - | 0.72 | 0.71 |
+| §37, VALID | - | - | 0.69 | 0.76 |
+
+**Reading.**
+- In 2021 the models leaned long, correctly. That year's refits were trained on 2017-2020.
+- In 2023-24 every model, narrow or wide, 1h or 4h, leaned short in a two-year bull market. Those refits were
+  trained on 2017-2022.
+- §37 stays 75-96% short in 2024 Q1-Q3, after 2023's rally had entered its monthly refits, so the expanding
+  window adapts too slowly.
+- Wide training is not the cause: on the ten coins, narrow and wide lean short alike.
+
+**Not contrarian.** On §37 VALID, shorts were entered after a median prior 7-day return of +0.3% (longs +1.4%);
+51% of shorts followed a 7-day rise. The model is not fading rallies. Its forecasts lean negative almost
+regardless of state: a level bias carried from the training years. The worst shorts were those after a 30-day
+fall of more than 10% (60 trades, -0.343 R): shorting dips that bounced.
+
+**Selection makes it worse.** TRAIN is one bull year and one bear year. The cell that shorts 2022 hardest wins
+the TRAIN t-statistic: §36 wide's TRAIN edge was 2022 shorts, and so was §37's chosen cell (Exp 051/055).
+
+### What to change in training (candidates for §38; owner to choose)
+
+1. **Side-neutral label.** Forecast each coin's move minus the same-time average of the traded coins (in ATR
+   units). The model then cannot learn "the market goes down". Positions stay single coins.
+   - Consequence: the book holds longs and shorts at once, so it is market-neutral by design.
+   - The owner ruled out pair trading; this is not pairs, but it must be put to the owner.
+2. **Recency weighting.** Weight training rows by age, e.g. a 12-month half-life, or use a rolling 24-month
+   window instead of the expanding one, so the bias from the last regime fades in months, not years.
+3. **TRAIN selection that cannot be won by one year.** A cell is selectable only if both TRAIN years and both
+   legs are positive on TRAIN. The t-statistic then picks among those. This removes the "best 2022 shorter wins"
+   path.
+4. **Record why.** The level bias is most likely carried by slow features (distance from long moving averages,
+   funding, 30-day returns). Proving it needs feature importance and the per-bar forecasts, which no earlier
+   round saved. §38 must call `run_record`.
+
+**Recommendation.** Make (2) and (3) the core of §38: they keep the model directional, which is what the owner
+wants to trade. Offer (1) as a second TRAIN form, with (1) vs (2) chosen on TRAIN under rule (3). Keep the
+owner's ten coins, the 4h decisions and run_record.
