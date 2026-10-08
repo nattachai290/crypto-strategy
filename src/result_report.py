@@ -19,6 +19,11 @@ from section 36 on) it writes results/_multi/<round>/analysis/<split>_<book>/:
                              month, plus the refit's training rows where recorded
   performance_by_period.json by month, year, coin, side: return, trades, win
                              rate, PF, max DD
+  feature_drivers.json       where the round recorded each trade's top-3 SHAP
+                             contributions at entry (entry_why; sections 28-30):
+                             how often each feature was a top-3 driver and its
+                             mean |SHAP|, for winners and losers apart. Partial
+                             feature importance for rounds that saved no model
   error_analysis.json        the losing trades: by side and coin, by market
                              regime at entry (BTC 30-day trend up/down, BTC
                              30-day realised volatility high/low against its own
@@ -155,6 +160,29 @@ def folds(t: pd.DataFrame, refits: list | None) -> list:
     return out
 
 
+def feature_drivers(t: pd.DataFrame, top: int = 15) -> dict:
+    """Top-3 SHAP drivers recorded at entry (entry_why = [[name, value, contribution], ...])."""
+    if "entry_why" not in t:
+        return {"available": False, "note": "this round did not record per-trade SHAP; see record/ from section 38 on"}
+    rows = []
+    for why, r in zip(t["entry_why"], t["net_r"]):
+        if isinstance(why, str):
+            for name, _, con in json.loads(why):
+                if con is not None:
+                    rows.append((name, abs(float(con)), r > 0))
+    if not rows:
+        return {"available": False, "note": "entry_why is empty"}
+    d = pd.DataFrame(rows, columns=["feature", "abs_shap", "win"])
+    n = int(t["entry_why"].notna().sum())
+
+    def tab(x):
+        g = x.groupby("feature")["abs_shap"].agg(["size", "mean"]).sort_values("size", ascending=False).head(top)
+        return [{"feature": k, "top3_share": float(v["size"] / n), "mean_abs_shap": float(v["mean"])}
+                for k, v in g.iterrows()]
+    return {"available": True, "trades_with_why": n, "all": tab(d), "winners": tab(d[d["win"]]),
+            "losers": tab(d[~d["win"]])}
+
+
 def regimes(btc: pd.DataFrame) -> pd.DataFrame:
     """Daily BTC regime, causal: 30-day trend sign; 30-day realised volatility
     above / below its own median over the previous 365 days."""
@@ -217,12 +245,14 @@ def books() -> list[tuple[str, str, str, Path, list | None]]:
     """(round folder, split, book name, trade file, refits) for every recorded trade file."""
     out = []
     for d in sorted(p for p in M.glob("s*_*") if p.is_dir()):
-        for f in sorted(d.glob("trades_*.csv.gz")):
+        for f in sorted(d.glob("trades_*.csv.gz")) + sorted(d.glob("[0-9][hd]/trades_*.csv.gz")):
             name = f.name[len("trades_"):-len(".csv.gz")]
             split = name.split("_")[0]
             if split not in SPLITS:
                 continue                                   # trades_holdout* is never read here
             book = name[len(split) + 1:] or "main"
+            if f.parent != d:                              # sub-model folders (section 38 on): 1h/ 4h/ 1d/
+                book = f"{f.parent.name}_{book}"
             refits = None
             if book.startswith("tf") and (d / f"{book}.json").exists():
                 refits = json.loads((d / f"{book}.json").read_text()).get("refits")
@@ -242,7 +272,7 @@ def main() -> None:
         out.mkdir(parents=True, exist_ok=True)
         files = {"trades_summary": {"source": f.name, **summary(t)}, "prediction_analysis": prediction_analysis(t),
                  "walkforward_folds": folds(t, refits), "performance_by_period": periods(t),
-                 "error_analysis": error_analysis(t, reg)}
+                 "error_analysis": error_analysis(t, reg), "feature_drivers": feature_drivers(t)}
         for k, v in files.items():
             (out / f"{k}.json").write_text(json.dumps(v, indent=1, default=str))
         n += 1

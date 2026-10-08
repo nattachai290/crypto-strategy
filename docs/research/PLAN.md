@@ -2696,3 +2696,80 @@ large-coin target. The ten coins were named by the owner as today's large
 coins, not chosen from VALID: BTC and BNB, which lost in §36's VALID, are in
 the list. "Large today" still carries some hindsight for 2021–24; NEAR and BCH
 were in the monthly top 20 in only 21 and 20 of the 48 months.
+
+## §38 — Recency-weighted training for the ten large coins, as 1h / 4h / 1d sub-models (`src/ml_recent.py`, `_multi` Exp 060)
+
+**Why.** Every ML book of §28–§37 leaned short in 2023–24 (57–78% of entries) during a two-year bull market,
+after 2022 entered training, and stayed short through 2024 even though 2023 was already being trained on (`_multi`
+Exp 059). The expanding window weights a 2017 row like last month's, so the last bear regime dominates for years.
+TRAIN (one bull year and one bear year) then picked the cell that shorted 2022 hardest.
+
+The recorded top-3 SHAP drivers of §30's 1h entries confirm it is the market-level features that set the side:
+- BTC 24h return: a top-3 driver of 54% of entries;
+- BTC 7-day volatility: 54%;
+- BTC 3-day return: 47%;
+- the 7-day market return: 26%.
+
+The weekday is also a top-3 driver of 29% of entries, a warning sign of calendar overfitting.
+
+The owner chose recency weighting plus a stricter TRAIN rule, as three sub-models, one per timeframe
+(2026-10-08).
+
+**Hypothesis.** If training rows are weighted by recency, the model's side follows the current regime within
+months. A TRAIN rule that needs both years and both legs positive stops one year from choosing.
+
+**Design.** Three sub-models with the same recipe, each with its own TRAIN choice and its own VALID verdict.
+
+| sub-model | decision bars | horizons (1, 2, 3 days), averaged | inputs |
+|---|---|---|---|
+| 1h | 1h | 24 / 48 / 72 bars | 4h and 1d closed-bar features |
+| 4h | 4h | 6 / 12 / 18 bars | 1h and 1d closed-bar features |
+| 1d | 1d | 1 / 2 / 3 bars | 1h and 4h closed-bar features |
+
+Frozen from §37 for every sub-model:
+- the ten coins, each from 365 days after listing;
+- wide training rows;
+- §30's LightGBM setting, entry quantile and exit mode for that timeframe;
+- 8-ATR stop, no clock;
+- agreement off;
+- confidence sizing, 5% cap.
+
+Each refit's training rows are weighted:
+- `expanding`: weight 1. This is the baseline; on 4h it IS §37's chosen cell, and its TRAIN row must reproduce
+  §37's (423 trades, t +2.22).
+- `hl12`: weight 0.5^(age in months / 12).
+- `roll24`: weight 1 up to 24 months old, else 0.
+
+**TRAIN rule, per sub-model.** A weighting is selectable only if it has ≥ 100 TRAIN trades, positive summed
+returns in both 2021 and 2022, and both legs positive. The weekly t-statistic picks among selectable cells.
+- No selectable cell is REJECT (`train_cell_selectable`).
+- An `expanding` choice is REJECT (`train_chose_recency`).
+
+**VALID gates, per sub-model.** §37's:
+- ≥ 100 trades;
+- weekly mean > 0 and CI lower bound > 0;
+- cost ×1.5 > 0;
+- timing above the shifted p95;
+- ≥ 8 coins, breadth ≥ 0.5;
+- both legs > 0;
+- max DD ≤ 20%.
+
+**Reported, not gated:** the short share of entries by year (§37 4h: 0.69 / 0.76). The hypothesis predicts it
+falls in 2023–24.
+
+**Run-time record:** `run_record` for TRAIN and VALID of each sub-model's chosen weighting: feature importance
+and SHAP, metadata, per-bar predictions, skipped signals, run info, holdout power.
+
+**Holdout:** shared with §31–§37, and only ONE §38 sub-model may take it. Among the PASS sub-models, the one
+whose chosen TRAIN weighting has the highest weekly t-statistic is picked, decided before any holdout bar is
+read.
+
+**What each outcome means.**
+- **A PASS:** the shared holdout decides.
+- **TRAIN chooses `expanding`, or nothing is selectable:** recency does not help on TRAIN for that timeframe.
+- **REJECT with the short share falling:** the side bias was fixed but the signal is still too weak.
+- **REJECT with the short share unchanged:** the bias is in the features; the record's SHAP will say which.
+
+**Prior:** low to moderate. TRAIN is short (2021–22), so recency has only 12–24 months of regime change to show
+its value there. 1d sub-models have had few trades before (§30 1d: 1,218 on 47 coins), so 1d may miss the
+100-trade gate on ten coins.

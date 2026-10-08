@@ -72,7 +72,9 @@ RUNS += [("s31", 31, "§31 1h + portfolio", M / "s31_ml_port_1h/summary.json", M
          ("s36", 36, "§36 train wide · top 20 large coins", M / "s36_ml_wide_1h/summary.json", M / "s36_ml_wide_1h/trades_valid.csv.gz",
           "account"),
          ("s37", 37, "§37 4h model · 10 large coins", M / "s37_ml_large_4h/summary.json", M / "s37_ml_large_4h/trades_valid.csv.gz",
-          "account")]
+          "account"),
+         *[(f"s38_{n}", 38, f"§38 recency-weighted {n} · 10 large coins", M / f"s38_ml_recent/{n}/summary.json",
+            M / f"s38_ml_recent/{n}/trades_valid.csv.gz", "account") for n in ("1h", "4h", "1d")]]
 # TRAIN trade files exist from §36 on (trades_train_<form>.csv.gz, the chosen form is read)
 TRAIN = ("2021-01-01", "2023-01-01")
 

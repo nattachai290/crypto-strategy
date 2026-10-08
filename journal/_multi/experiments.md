@@ -5053,3 +5053,58 @@ the TRAIN t-statistic: §36 wide's TRAIN edge was 2022 shorts, and so was §37's
 **Recommendation.** Make (2) and (3) the core of §38: they keep the model directional, which is what the owner
 wants to trade. Offer (1) as a second TRAIN form, with (1) vs (2) chosen on TRAIN under rule (3). Keep the
 owner's ten coins, the 4h decisions and run_record.
+
+---
+
+## Exp 060 - Pre-registration: recency-weighted training for the ten large coins, 1h / 4h / 1d sub-models (PLAN.md §38, owner choice)
+
+**Date:** 2026-10-08
+**Status:** registered, not run. Code `src/ml_recent.py`, test 36.
+
+The owner chose changes 1 + 2 from Exp 059: recency weighting and a TRAIN rule that needs both years and both
+legs. The side-neutral label was not chosen. The owner also asked for three sub-models per round: 1h, 4h and 1d.
+Design, gates and outcomes are in PLAN.md §38.
+
+In short, §37's chosen cell is frozen, then decided on 1h, 4h or 1d, all with 1-3 day horizons:
+- 1h: 24/48/72 bars;
+- 4h: 6/12/18 bars;
+- 1d: 1/2/3 bars.
+
+Three weightings of the training rows are compared:
+- `expanding` (on 4h this is §37, and it must reproduce 423 trades, t +2.22);
+- `hl12` (12-month half-life);
+- `roll24` (24-month window).
+
+Selection runs per sub-model, among weightings with positive 2021, positive 2022 and both legs positive. An
+`expanding` choice, or no selectable cell, is REJECT. VALID uses §37's gates. The short share by year is
+reported. `run_record` writes the run-time record. Only ONE sub-model may take the shared holdout: the PASS one
+with the highest TRAIN t.
+
+**New evidence used for the design.** `src/result_report.py` now writes `feature_drivers.json` from the per-trade
+top-3 SHAP recorded by §28-§30. On §30 1h VALID (6,307 entries) the most frequent top-3 drivers are:
+
+| feature | share of entries | mean \|SHAP\| |
+|---|---|---|
+| `btc_ret_24` | 0.54 | 0.100 |
+| `btc_vol_168` | 0.54 | 0.182 |
+| `btc_ret_72` | 0.47 | 0.119 |
+| `weekday` | 0.29 | 0.106 |
+| `mkt_ret_168` | 0.26 | 0.109 |
+
+The side is set by market-level features. A weekday driver in 29% of entries is a warning of calendar
+overfitting, to be checked in §38's record.
+
+**Test 36.**
+- `expanding` reproduces `ml_wf.walk_forward` exactly.
+- The weights, the horizons per timeframe, the selection rule and the holdout pick match hand cases.
+- A planted edge under `hl12` is chosen and PASSes, while an `expanding` choice is REJECT.
+- The record files are all written.
+
+**Count of looks.** Up to three new ML VALID books (10th-12th), one per sub-model. A sub-model whose TRAIN chooses
+`expanding` still judges that cell on VALID; on 4h that cell is §37's VALID book, so it adds no new look.
+
+**Run (runner):**
+- No new download: it uses §36's caches and `members.json`.
+- `python src/test_engine.py`, then `python src/ml_recent.py` once. It runs 1h, 4h and 1d in turn and is
+  resumable.
+- Then `python src/analyzer.py` and `python src/result_report.py`.

@@ -439,6 +439,7 @@ def main() -> None:
     test_ml_large()
     test_result_report()
     test_run_record()
+    test_ml_recent()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2660,6 +2661,81 @@ def test_run_record() -> None:
     check("run_record: recording (log + models) leaves the forecasts identical; predictions hold every forecast bar",
           np.array_equal(p1["AUSDT"], p2["AUSDT"], equal_nan=True) and len(models) == len(log) == 2
           and len(pr) == int(np.isfinite(p2["AUSDT"]).sum()))
+
+
+
+def test_ml_recent() -> None:
+    """Test 36 (PLAN.md section 38): recency weights, the TRAIN selection rule, the pipeline and its record."""
+    print("\n36. ml_recent: weights, selectable rule, 1h/4h/1d horizons, holdout pick, expanding == ml_wf, "
+          "pipeline PASS/REJECT, run record written")
+    import contextlib
+    import io
+    import json
+    import tempfile
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_recent as MR
+    m0 = pd.Timestamp("2023-01-01", tz="UTC")
+    ts = pd.DatetimeIndex([m0 - pd.Timedelta(days=30.4375 * k) for k in (0, 12, 24, 25)])
+    check("ml_recent weights: hl12 halves every 12 months; roll24 keeps rows up to 24 months; expanding all 1",
+          np.allclose(MR.row_weights(ts, m0, "hl12"), [1, 0.5, 0.25, 0.5 ** (25 / 12)])
+          and list(MR.row_weights(ts, m0, "roll24")) == [1, 1, 1, 0] and (MR.row_weights(ts, m0, "expanding") == 1).all())
+    check("ml_recent sub-models: the same 1-3 day horizons in bars of 1h, 4h and 1d",
+          MR.horizons(60) == (24, 48, 72) and MR.horizons(240) == (6, 12, 18) and MR.horizons(1440) == (1, 2, 3))
+    def _s(v, f, t):
+        return {"verdict": v, "chosen": {"form": f}, "train_table": [{"form": f, "tstat": t}, {"form": "x", "tstat": 9}]}
+    check("ml_recent holdout: only one sub-model, the PASS one with the highest TRAIN t of its chosen cell",
+          MR.holdout_pick({60: _s("PASS", "hl12", 1.5), 240: _s("PASS", "roll24", 2.1), 1440: _s("REJECT", "hl12", 5)})
+          == 240 and MR.holdout_pick({60: _s("REJECT", "hl12", 3)}) is None)
+    base = {"trades": 200, "long_ret": 0.1, "short_ret": 0.1, "per_year_r": {"2021": 0.1, "2022": 0.2}}
+    check("ml_recent selectable: needs trades, both TRAIN years and both legs positive",
+          MR.selectable(base) and not MR.selectable({**base, "short_ret": -0.01})
+          and not MR.selectable({**base, "per_year_r": {"2021": -0.1, "2022": 0.5}})
+          and not MR.selectable({**base, "trades": 50}) and not MR.selectable({**base, "per_year_r": {"2022": 0.5}}))
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for n, sd in (("C0USDT", 160), ("C1USDT", 161), ("C2USDT", 162)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+        a = WF_.walk_forward(P, 60, WF_.GRID[0], "2023-01-01", "2023-07-01", step=3)
+        b = MR.walk_forward_w(P, 60, WF_.GRID[0], "2023-01-01", "2023-07-01", "expanding", step=3)
+        lg = []
+        MR.walk_forward_w(P, 60, WF_.GRID[0], "2023-01-01", "2023-07-01", "hl12", step=3, log=lg)
+    check("ml_recent: 'expanding' reproduces ml_wf.walk_forward exactly; hl12 has fewer effective rows",
+          all(np.allclose(a[c], b[c], equal_nan=True) for c in P)
+          and all(r["effective_rows"] < r["train_rows"] for r in lg))
+    spans = [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]]
+    masks = {c: np.ones(len(P[c]["X"]), bool) for c in P}
+    keep = {}
+    with contextlib.redirect_stdout(io.StringIO()):
+        ph = MR.forecasts_w(P, 60, WF_.GRID[0], masks, spans, "hl12", step=3, keep=keep)
+    edge = {c: pd.Series(ph[24][c], index=P[c]["X"].index) for c in P}      # the planted 24-bar momentum horizon
+    noise = {c: pd.Series(np.random.default_rng(36).normal(size=len(P[c]["X"])), index=P[c]["X"].index) for c in P}
+    months = [str(p) for p in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    with contextlib.redirect_stdout(io.StringIO()):
+        r1 = MR.evaluate(P, {"expanding": noise, "hl12": edge, "roll24": noise}, traded, 0.9, "flip", tf=60,
+                         min_coins=3, keep=True)
+        r2 = MR.evaluate(P, {"expanding": edge, "hl12": noise, "roll24": noise}, traded, 0.9, "flip", tf=60,
+                         min_coins=3)
+    check("ml_recent pipeline: a planted edge under hl12 is chosen and PASSes; an expanding choice is REJECT",
+          r1["chosen"]["form"] == "hl12" and r1["verdict"] == "PASS"
+          and r2["chosen"]["form"] == "expanding" and "train_chose_recency" in r2["gates_failed"],
+          f"{r1['chosen']} {r1['verdict']} {r1['gates_failed']} / {r2['chosen']} {r2['gates_failed']}")
+    with tempfile.TemporaryDirectory() as tmp:
+        with contextlib.redirect_stdout(io.StringIO()):
+            MR._record(r1, P, edge, keep, traded, 0.0, [], 60, Path(tmp))
+        files = {p.relative_to(tmp).as_posix() for p in Path(tmp).rglob("*.*")}
+        fi = json.loads((Path(tmp) / "record" / "valid" / "feature_importance.json").read_text())
+        pr = pd.read_parquet(Path(tmp) / "record" / "valid" / "predictions.parquet")
+    need = {f"record/{s}/{n}" for s in ("train", "valid") for n in ("feature_importance.json",
+            "training_metadata.json", "predictions.parquet", "run_info.json")} | {"record/valid/holdout_power.json"}
+    check("ml_recent run record: every file written for TRAIN and VALID; importance and SHAP filled; predictions "
+          "inside VALID", need <= files and fi["mean_gain"] and fi["shap"]["rows"] > 0
+          and pr["time"].min() >= pd.Timestamp("2023-01-01", tz="UTC"), f"{sorted(need - files)}")
 
 
 if __name__ == "__main__":

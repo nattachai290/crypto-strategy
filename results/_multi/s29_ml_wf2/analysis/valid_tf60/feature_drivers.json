@@ -1,0 +1,235 @@
+{
+ "available": true,
+ "trades_with_why": 1714,
+ "all": [
+  {
+   "feature": "btc_vol_168",
+   "top3_share": 0.29929988331388563,
+   "mean_abs_shap": 0.4196539961013645
+  },
+  {
+   "feature": "weekday",
+   "top3_share": 0.20303383897316218,
+   "mean_abs_shap": 0.22247097701149424
+  },
+  {
+   "feature": "h4_ret_48",
+   "top3_share": 0.2012835472578763,
+   "mean_abs_shap": 0.2090255072463768
+  },
+  {
+   "feature": "funding_last",
+   "top3_share": 0.1721120186697783,
+   "mean_abs_shap": 0.28672237288135594
+  },
+  {
+   "feature": "btc_ret_168",
+   "top3_share": 0.16569428238039674,
+   "mean_abs_shap": 0.23272816901408452
+  },
+  {
+   "feature": "d1_ret_96",
+   "top3_share": 0.12602100350058343,
+   "mean_abs_shap": 0.2252287037037037
+  },
+  {
+   "feature": "d1_vol_168",
+   "top3_share": 0.12077012835472578,
+   "mean_abs_shap": 0.4501144927536232
+  },
+  {
+   "feature": "h4_ret_168",
+   "top3_share": 0.11260210035005834,
+   "mean_abs_shap": 0.2011279792746114
+  },
+  {
+   "feature": "mkt_ret_168",
+   "top3_share": 0.08926487747957992,
+   "mean_abs_shap": 0.31148300653594774
+  },
+  {
+   "feature": "d1_vol_ratio",
+   "top3_share": 0.08284714119019837,
+   "mean_abs_shap": 0.21320915492957745
+  },
+  {
+   "feature": "d1_upper_wick",
+   "top3_share": 0.0764294049008168,
+   "mean_abs_shap": 0.23201984732824427
+  },
+  {
+   "feature": "d1_vol_24",
+   "top3_share": 0.07176196032672112,
+   "mean_abs_shap": 0.351930081300813
+  },
+  {
+   "feature": "h4_vol_168",
+   "top3_share": 0.07117852975495916,
+   "mean_abs_shap": 0.4841909836065574
+  },
+  {
+   "feature": "d1_volume_z",
+   "top3_share": 0.06826137689614936,
+   "mean_abs_shap": 0.2292196581196581
+  },
+  {
+   "feature": "btc_ret_24",
+   "top3_share": 0.059509918319719954,
+   "mean_abs_shap": 0.1550656862745098
+  }
+ ],
+ "winners": [
+  {
+   "feature": "btc_vol_168",
+   "top3_share": 0.1557759626604434,
+   "mean_abs_shap": 0.42047303370786515
+  },
+  {
+   "feature": "weekday",
+   "top3_share": 0.10385064177362893,
+   "mean_abs_shap": 0.22572752808988764
+  },
+  {
+   "feature": "h4_ret_48",
+   "top3_share": 0.10093348891481914,
+   "mean_abs_shap": 0.2143393063583815
+  },
+  {
+   "feature": "funding_last",
+   "top3_share": 0.08693115519253208,
+   "mean_abs_shap": 0.29270335570469797
+  },
+  {
+   "feature": "btc_ret_168",
+   "top3_share": 0.07934655775962661,
+   "mean_abs_shap": 0.24340955882352944
+  },
+  {
+   "feature": "d1_ret_96",
+   "top3_share": 0.06884480746791131,
+   "mean_abs_shap": 0.22388728813559322
+  },
+  {
+   "feature": "mkt_ret_168",
+   "top3_share": 0.057759626604434074,
+   "mean_abs_shap": 0.30256666666666665
+  },
+  {
+   "feature": "d1_vol_168",
+   "top3_share": 0.056009334889148193,
+   "mean_abs_shap": 0.4565875
+  },
+  {
+   "feature": "h4_ret_168",
+   "top3_share": 0.05309218203033839,
+   "mean_abs_shap": 0.19986043956043956
+  },
+  {
+   "feature": "d1_upper_wick",
+   "top3_share": 0.03733955659276546,
+   "mean_abs_shap": 0.2341890625
+  },
+  {
+   "feature": "d1_vol_ratio",
+   "top3_share": 0.0367561260210035,
+   "mean_abs_shap": 0.2110063492063492
+  },
+  {
+   "feature": "btc_ret_24",
+   "top3_share": 0.0367561260210035,
+   "mean_abs_shap": 0.15933174603174605
+  },
+  {
+   "feature": "h4_vol_168",
+   "top3_share": 0.0338389731621937,
+   "mean_abs_shap": 0.49566379310344827
+  },
+  {
+   "feature": "d1_volume_z",
+   "top3_share": 0.03267211201866978,
+   "mean_abs_shap": 0.24815535714285716
+  },
+  {
+   "feature": "h4_ema_dist_200",
+   "top3_share": 0.030338389731621937,
+   "mean_abs_shap": 0.31126923076923074
+  }
+ ],
+ "losers": [
+  {
+   "feature": "btc_vol_168",
+   "top3_share": 0.14352392065344224,
+   "mean_abs_shap": 0.4187650406504065
+  },
+  {
+   "feature": "h4_ret_48",
+   "top3_share": 0.10035005834305717,
+   "mean_abs_shap": 0.20368081395348836
+  },
+  {
+   "feature": "weekday",
+   "top3_share": 0.09918319719953325,
+   "mean_abs_shap": 0.21906117647058823
+  },
+  {
+   "feature": "btc_ret_168",
+   "top3_share": 0.08634772462077013,
+   "mean_abs_shap": 0.22291283783783786
+  },
+  {
+   "feature": "funding_last",
+   "top3_share": 0.08518086347724621,
+   "mean_abs_shap": 0.28061849315068493
+  },
+  {
+   "feature": "d1_vol_168",
+   "top3_share": 0.0647607934655776,
+   "mean_abs_shap": 0.4445162162162162
+  },
+  {
+   "feature": "h4_ret_168",
+   "top3_share": 0.059509918319719954,
+   "mean_abs_shap": 0.20225882352941177
+  },
+  {
+   "feature": "d1_ret_96",
+   "top3_share": 0.057176196032672114,
+   "mean_abs_shap": 0.2268438775510204
+  },
+  {
+   "feature": "d1_vol_ratio",
+   "top3_share": 0.046091015169194866,
+   "mean_abs_shap": 0.2149658227848101
+  },
+  {
+   "feature": "d1_vol_24",
+   "top3_share": 0.041423570595099185,
+   "mean_abs_shap": 0.3957112676056338
+  },
+  {
+   "feature": "d1_upper_wick",
+   "top3_share": 0.039089848308051345,
+   "mean_abs_shap": 0.22994776119402985
+  },
+  {
+   "feature": "h4_vol_168",
+   "top3_share": 0.03733955659276546,
+   "mean_abs_shap": 0.47379375
+  },
+  {
+   "feature": "d1_volume_z",
+   "top3_share": 0.03558926487747958,
+   "mean_abs_shap": 0.2118360655737705
+  },
+  {
+   "feature": "mkt_ret_168",
+   "top3_share": 0.03150525087514586,
+   "mean_abs_shap": 0.32782962962962964
+  },
+  {
+   "feature": "d1_body",
+   "top3_share": 0.028588098016336057,
+   "mean_abs_shap": 0.2341673469387755
+  }
+ ]
+}

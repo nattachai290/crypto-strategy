@@ -1,0 +1,235 @@
+{
+ "available": true,
+ "trades_with_why": 1218,
+ "all": [
+  {
+   "feature": "mkt_ret_72",
+   "top3_share": 0.7200328407224958,
+   "mean_abs_shap": 0.7662889395667046
+  },
+  {
+   "feature": "btc_vol_168",
+   "top3_share": 0.6888341543513957,
+   "mean_abs_shap": 0.658600715137068
+  },
+  {
+   "feature": "btc_ret_72",
+   "top3_share": 0.5164203612479474,
+   "mean_abs_shap": 0.594833545310016
+  },
+  {
+   "feature": "mkt_ret_168",
+   "top3_share": 0.3973727422003284,
+   "mean_abs_shap": 0.5686456611570248
+  },
+  {
+   "feature": "btc_ret_24",
+   "top3_share": 0.27011494252873564,
+   "mean_abs_shap": 0.49908723404255323
+  },
+  {
+   "feature": "btc_ret_168",
+   "top3_share": 0.17405582922824303,
+   "mean_abs_shap": 0.33992594339622645
+  },
+  {
+   "feature": "vol_24",
+   "top3_share": 0.059113300492610835,
+   "mean_abs_shap": 0.4612611111111111
+  },
+  {
+   "feature": "breadth_24",
+   "top3_share": 0.031198686371100164,
+   "mean_abs_shap": 0.30354473684210526
+  },
+  {
+   "feature": "mkt_ret_24",
+   "top3_share": 0.027914614121510674,
+   "mean_abs_shap": 0.3100264705882353
+  },
+  {
+   "feature": "funding_last",
+   "top3_share": 0.027914614121510674,
+   "mean_abs_shap": 0.1901735294117647
+  },
+  {
+   "feature": "atr_pct",
+   "top3_share": 0.023809523809523808,
+   "mean_abs_shap": 0.6200034482758621
+  },
+  {
+   "feature": "vol_168",
+   "top3_share": 0.021346469622331693,
+   "mean_abs_shap": 0.30173846153846157
+  },
+  {
+   "feature": "ema_dist_200",
+   "top3_share": 0.017241379310344827,
+   "mean_abs_shap": 0.46823333333333333
+  },
+  {
+   "feature": "h1_vol_168",
+   "top3_share": 0.0090311986863711,
+   "mean_abs_shap": 0.2922909090909091
+  },
+  {
+   "feature": "h4_vol_168",
+   "top3_share": 0.007389162561576354,
+   "mean_abs_shap": 0.3271888888888889
+  }
+ ],
+ "winners": [
+  {
+   "feature": "mkt_ret_72",
+   "top3_share": 0.41133004926108374,
+   "mean_abs_shap": 0.7729383233532934
+  },
+  {
+   "feature": "btc_vol_168",
+   "top3_share": 0.33825944170771755,
+   "mean_abs_shap": 0.623291990291262
+  },
+  {
+   "feature": "mkt_ret_168",
+   "top3_share": 0.23070607553366174,
+   "mean_abs_shap": 0.5483021352313168
+  },
+  {
+   "feature": "btc_ret_72",
+   "top3_share": 0.2110016420361248,
+   "mean_abs_shap": 0.5325719844357977
+  },
+  {
+   "feature": "btc_ret_24",
+   "top3_share": 0.15517241379310345,
+   "mean_abs_shap": 0.5215486772486773
+  },
+  {
+   "feature": "btc_ret_168",
+   "top3_share": 0.07635467980295567,
+   "mean_abs_shap": 0.3537688172043011
+  },
+  {
+   "feature": "breadth_24",
+   "top3_share": 0.030377668308702793,
+   "mean_abs_shap": 0.30389729729729725
+  },
+  {
+   "feature": "vol_24",
+   "top3_share": 0.024630541871921183,
+   "mean_abs_shap": 0.45627999999999996
+  },
+  {
+   "feature": "mkt_ret_24",
+   "top3_share": 0.014778325123152709,
+   "mean_abs_shap": 0.24690555555555557
+  },
+  {
+   "feature": "atr_pct",
+   "top3_share": 0.0090311986863711,
+   "mean_abs_shap": 0.6653454545454545
+  },
+  {
+   "feature": "ema_dist_200",
+   "top3_share": 0.008210180623973728,
+   "mean_abs_shap": 0.42971000000000004
+  },
+  {
+   "feature": "h1_vol_168",
+   "top3_share": 0.007389162561576354,
+   "mean_abs_shap": 0.2828111111111111
+  },
+  {
+   "feature": "funding_last",
+   "top3_share": 0.005747126436781609,
+   "mean_abs_shap": 0.1614142857142857
+  },
+  {
+   "feature": "vol_168",
+   "top3_share": 0.0049261083743842365,
+   "mean_abs_shap": 0.43065
+  },
+  {
+   "feature": "ret_168",
+   "top3_share": 0.003284072249589491,
+   "mean_abs_shap": 0.2637
+  }
+ ],
+ "losers": [
+  {
+   "feature": "btc_vol_168",
+   "top3_share": 0.3505747126436782,
+   "mean_abs_shap": 0.6926690866510539
+  },
+  {
+   "feature": "mkt_ret_72",
+   "top3_share": 0.30870279146141216,
+   "mean_abs_shap": 0.7574289893617021
+  },
+  {
+   "feature": "btc_ret_72",
+   "top3_share": 0.3054187192118227,
+   "mean_abs_shap": 0.6378475806451613
+  },
+  {
+   "feature": "mkt_ret_168",
+   "top3_share": 0.16666666666666666,
+   "mean_abs_shap": 0.5968059113300492
+  },
+  {
+   "feature": "btc_ret_24",
+   "top3_share": 0.11494252873563218,
+   "mean_abs_shap": 0.4687642857142857
+  },
+  {
+   "feature": "btc_ret_168",
+   "top3_share": 0.09770114942528736,
+   "mean_abs_shap": 0.3291075630252101
+  },
+  {
+   "feature": "vol_24",
+   "top3_share": 0.034482758620689655,
+   "mean_abs_shap": 0.46481904761904763
+  },
+  {
+   "feature": "funding_last",
+   "top3_share": 0.022167487684729065,
+   "mean_abs_shap": 0.19762962962962963
+  },
+  {
+   "feature": "vol_168",
+   "top3_share": 0.016420361247947456,
+   "mean_abs_shap": 0.263065
+  },
+  {
+   "feature": "atr_pct",
+   "top3_share": 0.014778325123152709,
+   "mean_abs_shap": 0.5922944444444445
+  },
+  {
+   "feature": "mkt_ret_24",
+   "top3_share": 0.013136288998357963,
+   "mean_abs_shap": 0.38103750000000003
+  },
+  {
+   "feature": "ema_dist_200",
+   "top3_share": 0.0090311986863711,
+   "mean_abs_shap": 0.5032545454545455
+  },
+  {
+   "feature": "h4_vol_168",
+   "top3_share": 0.005747126436781609,
+   "mean_abs_shap": 0.3165428571428571
+  },
+  {
+   "feature": "h4_atr_pct",
+   "top3_share": 0.0024630541871921183,
+   "mean_abs_shap": 0.16226666666666667
+  },
+  {
+   "feature": "h1_vol_168",
+   "top3_share": 0.0016420361247947454,
+   "mean_abs_shap": 0.33494999999999997
+  }
+ ]
+}
