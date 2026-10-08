@@ -1,0 +1,25 @@
+{
+ "source": "trades_valid_tf1440.csv.gz",
+ "trades": 845,
+ "return": 0.19771690028543537,
+ "mean_r": 0.02339844973792135,
+ "median_r": 0.0653627315255258,
+ "win_rate": 0.6047337278106509,
+ "profit_factor": 1.171518568782274,
+ "max_dd": 0.6825991037851434,
+ "avg_win_r": 0.2642779477077963,
+ "avg_loss_r": -0.3451327582339532,
+ "expectancy_r": 0.02339844973792135,
+ "max_consecutive_wins": 73,
+ "max_consecutive_losses": 20,
+ "longs": 520,
+ "shorts": 325,
+ "exit_reasons": {
+  "signal": 777,
+  "eod": 43,
+  "stop": 25
+ },
+ "gross_r": 0.030381315481777794,
+ "cost_r": 0.006982865743856459,
+ "median_hold_bars": 12.0
+}

@@ -32,7 +32,7 @@ shifted control) and >= MIN_TRADES VALID trades. Diagnostics: best-5-week share,
 weekly mean without the best 5 weeks, per coin.
 TRAIN trades of all four cells and the chosen cell's TRAIN checks are written too
 (for src/analyzer.py). Holdout: sections 31-37 share ONE holdout.
-Writes results/_multi/ml_large/ and the generated journal/_multi/ml_large.md.
+Writes results/_multi/s37_ml_large_4h/ and the generated journal/_multi/s37_ml_large_4h.md.
 """
 from __future__ import annotations
 
@@ -56,8 +56,8 @@ import ml_wf2 as W2  # noqa: E402
 import ml_wide as MW  # noqa: E402
 import ml_xs as XS  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_large"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_large.md"
+OUT = C.ROOT / "results" / "_multi" / "s37_ml_large_4h"
+REPORT = C.ROOT / "journal" / "_multi" / "s37_ml_large_4h.md"
 
 # ---- pre-registered (PLAN.md section 37, _multi Exp 053)
 COINS = ("BNBUSDT", "BTCUSDT", "ETHUSDT", "XRPUSDT", "SOLUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT", "NEARUSDT",

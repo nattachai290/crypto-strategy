@@ -31,7 +31,7 @@ resampling whole evaluations):
   SHAKEN_OUT       direction skill CI above 0 AND shakeout excess CI above 0
                    (right more often than random, and the stops throw it away);
   RIGHT_NOT_SHAKEN direction skill CI above 0, shakeout not shown;
-  COIN_FLIP        otherwise: right about as often as random entries. Writes results/<SYMBOL>/stop_diag/ and journal/<SYMBOL>/stop_diag.md.
+  COIN_FLIP        otherwise: right about as often as random entries. Writes results/<SYMBOL>/s23_stop_diag/ and journal/<SYMBOL>/s23_stop_diag.md.
 """
 from __future__ import annotations
 
@@ -193,12 +193,12 @@ def write_report(res: dict, per: pd.DataFrame) -> None:
             L.append(f"| {r.name} | {r.tf} | {r.H} | {r.verdict} | {r.real_n} | {pc(r.real_right)} / {pc(r.ctl_right)} | "
                      f"{pc(r.real_right_if_stopped)} / {pc(r.ctl_right_if_stopped)} | "
                      f"{r.real_move_r:+.3f} / {r.ctl_move_r:+.3f} |")
-    (C.JOURNAL / "stop_diag.md").write_text("\n".join(L) + "\n")
+    (C.JOURNAL / "s23_stop_diag.md").write_text("\n".join(L) + "\n")
 
 
 def run() -> None:
     import experiment as E
-    out = C.RESULTS / "stop_diag"
+    out = C.RESULTS / "s23_stop_diag"
     out.mkdir(parents=True, exist_ok=True)
     ev = pd.read_csv(C.RESULTS / "evaluations.csv")
     per = diagnose(E.get_bars, ev, C.RESULTS / "eval_trades", valid_window())

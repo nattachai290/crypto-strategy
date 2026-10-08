@@ -33,8 +33,8 @@ Gates on VALID (all needed):
   above their own shifted median; both legs' summed return > 0; max drawdown of
   the account <= 20%.
 --final: CONFIRMED = holdout weekly mean > 0, CI lower bound > 0, timing above
-the shifted median, breadth >= half. Writes results/_multi/ml_port/ and the
-generated journal/_multi/ml_port.md.
+the shifted median, breadth >= half. Writes results/_multi/s31_ml_port_1h/ and the
+generated journal/_multi/s31_ml_port_1h.md.
 """
 from __future__ import annotations
 
@@ -54,9 +54,9 @@ import ml_wf as WF  # noqa: E402
 import ml_wf2 as W2  # noqa: E402
 import ml_wf3 as W3  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_port"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_port.md"
-SRC = C.ROOT / "results" / "_multi" / "ml_wf3"
+OUT = C.ROOT / "results" / "_multi" / "s31_ml_port_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s31_ml_port_1h.md"
+SRC = C.ROOT / "results" / "_multi" / "s30_ml_wf3"
 
 # ---- pre-registered (PLAN.md section 31)
 TF_MAIN, TF_OTHER = 60, (240, 1440)

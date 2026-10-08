@@ -4911,3 +4911,61 @@ learns the side of the year that paid. Three directions follow:
 
 Web: §37 added to `docs/ml.html`, `docs/valid.html` (chip §37) and `docs/trade.html` (§37 group on 4h).
 4h candles for XRP, SOL and NEAR are published as `docs/trades/c240_<COIN>.json`.
+
+---
+
+## Exp 056 - Result folders renamed by round number (planner, owner request; no result changed)
+
+**Date:** 2026-10-08
+**Status:** complete
+
+The owner asked for results named by round so a folder says which round it is. Every round folder under
+`results/_multi/` and its generated journal under `journal/_multi/` is renamed `s<round>_<script>_<tf>` with
+`git mv`, so file contents and history are unchanged. For example: `ml_port` -> `s31_ml_port_1h`,
+`ml_large` -> `s37_ml_large_4h`. Multi-timeframe rounds have no suffix (`s28_ml_wf`, `s29_ml_wf2`,
+`s30_ml_wf3`).
+
+Per coin, five folders are renamed the same way: `s16_allocation_1d`, `s18_exit_lab`, `s19_ml_entry_1h`,
+`s23_stop_diag` and `s24_level_limit`. Their journals follow.
+
+`results/_multi/README.md` maps each round to its folder, old folder name, script, Exp numbers and verdict.
+Journal entries before this one keep the old names (append-only); use the README's "old folder" column to
+find them.
+
+Code paths were updated in every script that reads or writes these folders (`OUT`, `REPORT`, the
+cross-round sources `SRC` / `SOURCE_UNIVERSE`, `analyzer.py`, the page-data scripts). Data caches under
+`data/` keep their names. No `holdout*.json` existed anywhere, so no lock moved.
+
+`test_engine.py` passes after the change, and `analyzer.py` and the page-data scripts reproduce their
+outputs from the new paths.
+
+---
+
+## Exp 057 - Standard analysis files for every round (planner, `src/result_report.py`; read-only)
+
+**Date:** 2026-10-08
+**Status:** complete
+
+The owner asked for trade-level and diagnostic files beside every result. `src/result_report.py` (test 34) reads
+only the recorded trade files and writes `results/_multi/<round>/analysis/<split>_<book>/`. 23 trade files are
+covered: §27-§37 VALID, plus §36/§37 TRAIN. Each folder holds:
+- `trades_summary.json`
+- `prediction_analysis.json`
+- `walkforward_folds.json`
+- `performance_by_period.json`
+- `error_analysis.json`
+
+Regimes are BTC's 30-day trend and 30-day volatility against its own past year, taken at the close before entry
+(causal).
+
+Not producible from recorded files, so left for the run-time record from §38 on:
+- feature importance / SHAP;
+- training metadata;
+- the forecast on every bar;
+- signals that were filtered out.
+
+**A first reading, for the record only (VALID, so it decides nothing).**
+- §31's 85 trades entered at >= 1.5x the threshold average +0.21 R. The other 1,180 trades with a confidence
+  average +0.05 R.
+- The rank correlation over all trades is only +0.03.
+- Any rule built on this must be a new registration chosen on TRAIN.

@@ -34,7 +34,7 @@ buy-and-hold weekly mean of the instrument(s), beta/correlation to it.
 Holdout: sections 31, 32 and 33 share ONE holdout (--final refuses if 31 or 32
 used it). CONFIRMED = weekly mean > 0, CI lower bound > 0, timing above the
 shifted median.
-Writes results/_multi/ml_mkt/ and the generated journal/_multi/ml_mkt.md.
+Writes results/_multi/s33_ml_mkt_1h/ and the generated journal/_multi/s33_ml_mkt_1h.md.
 """
 from __future__ import annotations
 
@@ -55,8 +55,8 @@ import ml_wf as WF  # noqa: E402
 import ml_wf3 as W3  # noqa: E402
 import ml_xs as XS  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_mkt"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_mkt.md"
+OUT = C.ROOT / "results" / "_multi" / "s33_ml_mkt_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s33_ml_mkt_1h.md"
 
 # ---- pre-registered (PLAN.md section 33)
 INSTRUMENT = {"BTC": ("BTCUSDT",), "ETH": ("ETHUSDT",), "BTC+ETH": ("BTCUSDT", "ETHUSDT")}

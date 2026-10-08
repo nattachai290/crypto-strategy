@@ -17,7 +17,7 @@ funding) with the shifted copies' GROSS R.
 
 Everything below is fixed before the run. Every choice is made on TRAIN
 (2020-2022) out-of-fold; VALID is used once.
-  * Same 20 coins (results/_multi/ml_pool/universe.json, chosen on TRAIN volume)
+  * Same 20 coins (results/_multi/s20_ml_pool_1h/universe.json, chosen on TRAIN volume)
     and the same 1h cache; no new download.
   * Decisions every 4 hours (signal at the close of hours 3, 7, ..., 23 UTC).
   * Exit: symmetric, 8 x 1h-ATR stop, out after 96 bars (4 days).
@@ -37,7 +37,7 @@ Everything below is fixed before the run. Every choice is made on TRAIN
       both legs (long and short) net > 0.
   * --final: CONFIRMED = holdout net mean > 0, CI lower bound > 0, gross above
     the shifted copies' median, and at least half the coins above their own.
-Writes results/_multi/ml_pool2/ and the generated journal/_multi/ml_pool2.md.
+Writes results/_multi/s21_ml_pool2_1h/ and the generated journal/_multi/s21_ml_pool2_1h.md.
 """
 from __future__ import annotations
 
@@ -55,8 +55,8 @@ import exit_lab as XL  # noqa: E402
 import ml_entry as ME  # noqa: E402
 import ml_pool as MP  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_pool2"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_pool2.md"
+OUT = C.ROOT / "results" / "_multi" / "s21_ml_pool2_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s21_ml_pool2_1h.md"
 
 # ---- pre-registered (PLAN.md section 21); a change is a new test
 STEP = 4                                   # decide every 4 hours

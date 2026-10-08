@@ -40,7 +40,7 @@ section 31 recomputed, "flow" = base + FLOW_COLS) by the weekly t-statistic; a
 VALID gates: section 31's, unchanged. Diagnostics: the share of the flow
 features in the VALID refits' total gain, the best-5-week share, negative weeks.
 Holdout: sections 31-34 share ONE holdout; --final refuses if any used it.
-Writes results/_multi/ml_flow/ and the generated journal/_multi/ml_flow.md.
+Writes results/_multi/s34_ml_flow_1h/ and the generated journal/_multi/s34_ml_flow_1h.md.
 """
 from __future__ import annotations
 
@@ -63,8 +63,8 @@ import ml_wf as WF  # noqa: E402
 import ml_wf3 as W3  # noqa: E402
 import ml_xs as XS  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_flow"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_flow.md"
+OUT = C.ROOT / "results" / "_multi" / "s34_ml_flow_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s34_ml_flow_1h.md"
 MET_DIR = C.ROOT / "data" / "cache" / "_multi" / "metrics"
 MET_RAW = C.ROOT / "data" / "raw" / "_multi" / "metrics"
 

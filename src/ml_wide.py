@@ -39,7 +39,7 @@ Non-crypto: symbols whose Binance exchangeInfo underlyingType is not COIN
 (fetched by --build) plus NON_CRYPTO_FALLBACK; they only exist from 2025, so
 they matter for the holdout only.
 Holdout: sections 31-36 share ONE holdout (the same model line).
-Writes results/_multi/ml_wide/ and the generated journal/_multi/ml_wide.md.
+Writes results/_multi/s36_ml_wide_1h/ and the generated journal/_multi/s36_ml_wide_1h.md.
 """
 from __future__ import annotations
 
@@ -64,9 +64,9 @@ import ml_wf2 as W2  # noqa: E402
 import ml_wf3 as W3  # noqa: E402
 import ml_xs as XS  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_wide"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_wide.md"
-SOURCE_UNIVERSE = C.ROOT / "results" / "_multi" / "ml_wf" / WF.UNIVERSE_FILE
+OUT = C.ROOT / "results" / "_multi" / "s36_ml_wide_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s36_ml_wide_1h.md"
+SOURCE_UNIVERSE = C.ROOT / "results" / "_multi" / "s28_ml_wf" / WF.UNIVERSE_FILE
 
 # ---- pre-registered (PLAN.md section 36, re-registered in _multi Exp 048)
 TRADE_N = 20

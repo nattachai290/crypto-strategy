@@ -28,7 +28,7 @@ comparable with section 28.
     perp ATR fraction is at least ml_wf.AFRAC_MIN. Forecasts exist only on
     tradable bars; training rows need only a clean spot label.
   * funding_last is NaN before perp funding exists (LightGBM handles NaN).
-Writes results/_multi/ml_wf2/ and the generated journal/_multi/ml_wf2.md.
+Writes results/_multi/s29_ml_wf2/ and the generated journal/_multi/s29_ml_wf2.md.
 """
 from __future__ import annotations
 
@@ -48,8 +48,8 @@ import ml_pool as MP  # noqa: E402
 import ml_wf as WF  # noqa: E402
 
 RAW = C.ROOT / "data" / "raw" / "_multi"
-OUT = C.ROOT / "results" / "_multi" / "ml_wf2"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_wf2.md"
+OUT = C.ROOT / "results" / "_multi" / "s29_ml_wf2"
+REPORT = C.ROOT / "journal" / "_multi" / "s29_ml_wf2.md"
 
 # ---- pre-registered (PLAN.md section 29); everything else is section 28's
 UNIVERSE_N = 50

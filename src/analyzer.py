@@ -57,21 +57,21 @@ VALID = ("2023-01-01", "2025-01-01")
 ACCEPT_SCORE = 70
 
 # id, section, label, summary file, VALID trades file (or None), kind
-RUNS = [("s19_btc", 19, "§19 ML entry · BTC", R / "BTCUSDT/ml_entry/summary.json", None, "entry"),
-        ("s19_eth", 19, "§19 ML entry · ETH", R / "ETHUSDT/ml_entry/summary.json", None, "entry"),
-        ("s20", 20, "§20 pooled · 20 coins", M / "ml_pool/summary.json", None, "entry"),
-        ("s21", 21, "§21 pooled round 2", M / "ml_pool2/summary.json", None, "pool2"),
-        ("s27", 27, "§27 entry + exit · 20 coins", M / "ml_hold/summary.json", M / "ml_hold/trades_valid.csv.gz", "hold")]
-for sec, d in ((28, "ml_wf"), (29, "ml_wf2"), (30, "ml_wf3")):
+RUNS = [("s19_btc", 19, "§19 ML entry · BTC", R / "BTCUSDT/s19_ml_entry_1h/summary.json", None, "entry"),
+        ("s19_eth", 19, "§19 ML entry · ETH", R / "ETHUSDT/s19_ml_entry_1h/summary.json", None, "entry"),
+        ("s20", 20, "§20 pooled · 20 coins", M / "s20_ml_pool_1h/summary.json", None, "entry"),
+        ("s21", 21, "§21 pooled round 2", M / "s21_ml_pool2_1h/summary.json", None, "pool2"),
+        ("s27", 27, "§27 entry + exit · 20 coins", M / "s27_ml_hold_1h/summary.json", M / "s27_ml_hold_1h/trades_valid.csv.gz", "hold")]
+for sec, d in ((28, "s28_ml_wf"), (29, "s29_ml_wf2"), (30, "s30_ml_wf3")):
     for tf, nm in ((60, "1h"), (240, "4h"), (1440, "1d")):
         RUNS.append((f"s{sec}_{nm}", sec, f"§{sec} {nm}", M / d / f"tf{tf}.json", M / d / f"trades_valid_tf{tf}.csv.gz", "wf"))
-RUNS += [("s31", 31, "§31 1h + portfolio", M / "ml_port/summary.json", M / "ml_port/trades_valid.csv.gz", "account"),
-         ("s32", 32, "§32 demeaned (= §31)", M / "ml_xs/summary.json", M / "ml_xs/trades_valid.csv.gz", "account"),
-         ("s33", 33, "§33 market timing → ETH", M / "ml_mkt/summary.json", M / "ml_mkt/trades_valid.csv.gz", "account"),
-         ("s34", 34, "§34 positioning data (= §31)", M / "ml_flow/summary.json", M / "ml_flow/trades_valid.csv.gz", "account"),
-         ("s36", 36, "§36 train wide · top 20 large coins", M / "ml_wide/summary.json", M / "ml_wide/trades_valid.csv.gz",
+RUNS += [("s31", 31, "§31 1h + portfolio", M / "s31_ml_port_1h/summary.json", M / "s31_ml_port_1h/trades_valid.csv.gz", "account"),
+         ("s32", 32, "§32 demeaned (= §31)", M / "s32_ml_xs_1h/summary.json", M / "s32_ml_xs_1h/trades_valid.csv.gz", "account"),
+         ("s33", 33, "§33 market timing → ETH", M / "s33_ml_mkt_1h/summary.json", M / "s33_ml_mkt_1h/trades_valid.csv.gz", "account"),
+         ("s34", 34, "§34 positioning data (= §31)", M / "s34_ml_flow_1h/summary.json", M / "s34_ml_flow_1h/trades_valid.csv.gz", "account"),
+         ("s36", 36, "§36 train wide · top 20 large coins", M / "s36_ml_wide_1h/summary.json", M / "s36_ml_wide_1h/trades_valid.csv.gz",
           "account"),
-         ("s37", 37, "§37 4h model · 10 large coins", M / "ml_large/summary.json", M / "ml_large/trades_valid.csv.gz",
+         ("s37", 37, "§37 4h model · 10 large coins", M / "s37_ml_large_4h/summary.json", M / "s37_ml_large_4h/trades_valid.csv.gz",
           "account")]
 # TRAIN trade files exist from §36 on (trades_train_<form>.csv.gz, the chosen form is read)
 TRAIN = ("2021-01-01", "2023-01-01")

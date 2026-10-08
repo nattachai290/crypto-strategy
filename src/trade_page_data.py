@@ -65,22 +65,22 @@ def build_coin(t: pd.DataFrame, why: pd.DataFrame | None, risk_col: str | None, 
 
 SEC = {"ml": 27, "wf": 28, "s29": 29, "s30": 30, "s31": 31, "s32": 32, "s33": 33, "s34": 34, "s36": 36, "s37": 37}
 # group, tf, trades file, summary file, name, verdict pill, why from (None = the file's own columns), account risk column
-SPECS = [("s29", tf, f"ml_wf2/trades_valid_tf{tf}.csv.gz", f"ml_wf2/tf{tf}.json", "ML §29 (spot from 2017, 4 coins)",
+SPECS = [("s29", tf, f"s29_ml_wf2/trades_valid_tf{tf}.csv.gz", f"s29_ml_wf2/tf{tf}.json", "ML §29 (spot from 2017, 4 coins)",
           "ML §29: ไม่ผ่าน (เหลือ 4 เหรียญ)", None, None) for tf in (60, 240, 1440)] + \
-        [("s30", tf, f"ml_wf3/trades_valid_tf{tf}.csv.gz", f"ml_wf3/tf{tf}.json", "ML §30 (spot history, 47 coins)",
+        [("s30", tf, f"s30_ml_wf3/trades_valid_tf{tf}.csv.gz", f"s30_ml_wf3/tf{tf}.json", "ML §30 (spot history, 47 coins)",
           "ML §30 1h: เกือบผ่าน (ตกด่านช่วงความเชื่อมั่น)" if tf == 60 else f"ML §30 {'4h' if tf == 240 else '1d'}: ไม่ผ่าน",
           None, None) for tf in (60, 240, 1440)] + \
-        [("s31", 60, "ml_port/trades_valid.csv.gz", "ml_port/summary.json", "ML §31 1h + portfolio",
+        [("s31", 60, "s31_ml_port_1h/trades_valid.csv.gz", "s31_ml_port_1h/summary.json", "ML §31 1h + portfolio",
           "ML §31 พอร์ตบัญชีเดียว: ขาดเกณฑ์อีก 0.00026", "s30", "risk"),
-         ("s32", 60, "ml_xs/trades_valid.csv.gz", "ml_xs/summary.json", "ML §32 market-demeaned",
+         ("s32", 60, "s32_ml_xs_1h/trades_valid.csv.gz", "s32_ml_xs_1h/summary.json", "ML §32 market-demeaned",
           "ML §32: TRAIN เลือกแบบเดิม = เทรดชุดเดียวกับ §31", "s30", "risk"),
-         ("s33", 60, "ml_mkt/trades_valid.csv.gz", "ml_mkt/summary.json", "ML §33 market timing on ETH",
+         ("s33", 60, "s33_ml_mkt_1h/trades_valid.csv.gz", "s33_ml_mkt_1h/summary.json", "ML §33 market timing on ETH",
           "ML §33 ค่าเฉลี่ยทั้งตลาด เทรดแค่ ETH: ไม่ผ่าน", None, "risk"),
-         ("s34", 60, "ml_flow/trades_valid.csv.gz", "ml_flow/summary.json", "ML §34 positioning data",
+         ("s34", 60, "s34_ml_flow_1h/trades_valid.csv.gz", "s34_ml_flow_1h/summary.json", "ML §34 positioning data",
           "ML §34: TRAIN เลือกแบบเดิม = เทรดชุดเดียวกับ §31", "s30", "risk"),
-         ("s36", 60, "ml_wide/trades_valid.csv.gz", "ml_wide/summary.json", "ML §36 train wide, trade large coins",
+         ("s36", 60, "s36_ml_wide_1h/trades_valid.csv.gz", "s36_ml_wide_1h/summary.json", "ML §36 train wide, trade large coins",
           "ML §36 เทรนกว้าง เทรดเหรียญใหญ่: ไม่ผ่าน (CI + DD 20.01%)", None, "risk"),
-         ("s37", 240, "ml_large/trades_valid.csv.gz", "ml_large/summary.json", "ML §37 4h model, ten large coins",
+         ("s37", 240, "s37_ml_large_4h/trades_valid.csv.gz", "s37_ml_large_4h/summary.json", "ML §37 4h model, ten large coins",
           "ML §37 โมเดล 4h เหรียญใหญ่ 10 ตัว: ไม่ผ่าน (CI, จังหวะ, ฝั่ง short ขาดทุน)", None, "risk")]
 
 
@@ -125,7 +125,7 @@ def main() -> None:
     for r in idx:
         if r.get("group") in SEC:
             r["sec"] = SEC[r["group"]]
-    s30_1h = pd.read_csv(M / "ml_wf3" / "trades_valid_tf60.csv.gz")
+    s30_1h = pd.read_csv(M / "s30_ml_wf3" / "trades_valid_tf60.csv.gz")
     n = 0
     for grp, tf, tfile, sfile, name, pill, why_from, risk in SPECS:
         t_all = pd.read_csv(M / tfile)

@@ -24,7 +24,7 @@ Protocol, all pre-registered:
     (the SAME long and short counts and the same clustering, so drift helps
     them exactly as much as the model); the model's mean must beat their 95th
     percentile (SKILL). Plus the usual gates.
-Writes results/<SYMBOL>/ml_entry/ and the generated journal/<SYMBOL>/ml_entry.md.
+Writes results/<SYMBOL>/s19_ml_entry_1h/ and the generated journal/<SYMBOL>/s19_ml_entry_1h.md.
 """
 from __future__ import annotations
 
@@ -200,7 +200,7 @@ def run(final: bool = False) -> None:
     import experiment as E
     bars = E.get_bars(TF)
     fund = E.load_funding()
-    out = C.RESULTS / "ml_entry"
+    out = C.RESULTS / "s19_ml_entry_1h"
     out.mkdir(parents=True, exist_ok=True)
     res_path = out / "summary.json"
     X = features(bars, fund)
@@ -313,12 +313,12 @@ def write_report(r: dict) -> None:
     for k, t in r["oof"].items():
         L.append(f"| {k} | {t['trades']} | {t['mean_r'] if t['mean_r'] is None else round(t['mean_r'], 4)} |")
     L += ["", "Top features: " + ", ".join(f"{k} ({s})" for k, s in r["top_features"]), ""]
-    h = C.RESULTS / "ml_entry" / "holdout.json"
+    h = C.RESULTS / "s19_ml_entry_1h" / "holdout.json"
     if h.exists():
         hj = json.loads(h.read_text())
         L += [f"**HOLDOUT: {hj['verdict']}** - {hj['trades']} trades, mean {hj['mean_r']:+.4f}, "
               f"CI [{hj['ci_lo']:+.4f}, {hj['ci_hi']:+.4f}], random median {hj['random_median']:+.4f}", ""]
-    (C.JOURNAL / "ml_entry.md").write_text("\n".join(L) + "\n")
+    (C.JOURNAL / "s19_ml_entry_1h.md").write_text("\n".join(L) + "\n")
 
 
 def main() -> None:

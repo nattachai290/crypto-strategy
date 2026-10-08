@@ -32,7 +32,7 @@ Pre-registered, written before any result of section 19 or 20 was seen:
   * --final: CONFIRMED = holdout pooled mean > 0, CI lower bound > 0, above
     the pooled random median, and at least BREADTH_SHARE of the coins above
     their own random median.
-Writes results/_multi/ml_pool/ and the generated journal/_multi/ml_pool.md.
+Writes results/_multi/s20_ml_pool_1h/ and the generated journal/_multi/s20_ml_pool_1h.md.
 """
 from __future__ import annotations
 
@@ -52,8 +52,8 @@ import rotation as RO  # noqa: E402
 
 RAW = C.ROOT / "data" / "raw" / "_multi"
 CACHE = C.ROOT / "data" / "cache" / "_multi" / "pool_1h"
-OUT = C.ROOT / "results" / "_multi" / "ml_pool"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_pool.md"
+OUT = C.ROOT / "results" / "_multi" / "s20_ml_pool_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s20_ml_pool_1h.md"
 
 # ---- pre-registered (PLAN.md section 20); a change is a new test
 UNIVERSE_N = 20

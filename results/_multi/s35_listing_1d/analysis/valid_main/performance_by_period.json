@@ -1,0 +1,2323 @@
+{
+ "month": {
+  "2023-01": {
+   "trades": 2,
+   "return": -0.0049787095679791,
+   "mean_r": -0.9957419135958473,
+   "median_r": -0.9957419135958473,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0049787095679791
+  },
+  "2023-02": {
+   "trades": 8,
+   "return": -0.0198966702355322,
+   "mean_r": -0.9948335117766278,
+   "median_r": -1.002475947203295,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0198966702355322
+  },
+  "2023-03": {
+   "trades": 5,
+   "return": -0.00028797459813149993,
+   "mean_r": -0.02303796785052299,
+   "median_r": 0.2618363809754102,
+   "win_rate": 0.6,
+   "profit_factor": 0.9187248402480284,
+   "max_dd": 0.0035432055625648
+  },
+  "2023-04": {
+   "trades": 5,
+   "return": -0.012422396077237701,
+   "mean_r": -0.9937916861790386,
+   "median_r": -0.9944511074557107,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.012422396077237701
+  },
+  "2023-05": {
+   "trades": 1,
+   "return": 0.0037521292126549,
+   "mean_r": 1.5008516850619915,
+   "median_r": 1.5008516850619915,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "2023-06": {
+   "trades": 2,
+   "return": 0.0022634352291955,
+   "mean_r": 0.45268704583908714,
+   "median_r": 0.45268704583908714,
+   "win_rate": 0.5,
+   "profit_factor": 1.8841872320019484,
+   "max_dd": 0.0025599049016695
+  },
+  "2023-07": {
+   "trades": 3,
+   "return": -0.0086971532937007,
+   "mean_r": -1.159620439160115,
+   "median_r": -1.0460804279368332,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0086971532937007
+  },
+  "2023-08": {
+   "trades": 2,
+   "return": -0.0053935941758505995,
+   "mean_r": -1.0787188351701382,
+   "median_r": -1.0787188351701382,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0053935941758505995
+  },
+  "2023-09": {
+   "trades": 6,
+   "return": 0.00047322057839780003,
+   "mean_r": 0.03154803855985059,
+   "median_r": 0.3123539838264128,
+   "win_rate": 0.5,
+   "profit_factor": 1.0772412818464967,
+   "max_dd": 0.0041286203173216
+  },
+  "2023-10": {
+   "trades": 9,
+   "return": -0.0076576000853062,
+   "mean_r": -0.34033778156917677,
+   "median_r": -0.9963879829969186,
+   "win_rate": 0.2222222222222222,
+   "profit_factor": 0.5284902844316417,
+   "max_dd": 0.016240598724621802
+  },
+  "2023-11": {
+   "trades": 19,
+   "return": 0.0088468221145609,
+   "mean_r": 0.1862488866223302,
+   "median_r": -0.2337922772810338,
+   "win_rate": 0.47368421052631576,
+   "profit_factor": 1.416184992946185,
+   "max_dd": 0.019137994524564696
+  },
+  "2023-12": {
+   "trades": 19,
+   "return": -0.0117935416194937,
+   "mean_r": -0.24828508672618865,
+   "median_r": -0.8759027387002002,
+   "win_rate": 0.2631578947368421,
+   "profit_factor": 0.5831210012382229,
+   "max_dd": 0.027918672034570297
+  },
+  "2024-01": {
+   "trades": 8,
+   "return": -0.003417548211431899,
+   "mean_r": -0.17087741057159544,
+   "median_r": -0.5797926623690595,
+   "win_rate": 0.375,
+   "profit_factor": 0.6723438909484765,
+   "max_dd": 0.010430289919894099
+  },
+  "2024-02": {
+   "trades": 9,
+   "return": -0.007328798528864399,
+   "mean_r": -0.32572437906065654,
+   "median_r": -0.713087253964748,
+   "win_rate": 0.2222222222222222,
+   "profit_factor": 0.4595465447415506,
+   "max_dd": 0.0107893520576263
+  },
+  "2024-03": {
+   "trades": 17,
+   "return": -0.023649585097652446,
+   "mean_r": -0.5564608258271316,
+   "median_r": -0.8354697388952741,
+   "win_rate": 0.11764705882352941,
+   "profit_factor": 0.0991208596913332,
+   "max_dd": 0.024925817974968248
+  },
+  "2024-04": {
+   "trades": 3,
+   "return": -0.0028584635219127998,
+   "mean_r": -0.3811284695883785,
+   "median_r": -0.7401786704307316,
+   "win_rate": 0.3333333333333333,
+   "profit_factor": 0.348787809129345,
+   "max_dd": 0.0028584635219127998
+  },
+  "2024-05": {
+   "trades": 4,
+   "return": -0.0022215497131445995,
+   "mean_r": -0.22215497131446943,
+   "median_r": -0.6083229303107196,
+   "win_rate": 0.25,
+   "profit_factor": 0.6000254008153193,
+   "max_dd": 0.0055542269875965
+  },
+  "2024-06": {
+   "trades": 3,
+   "return": -0.0017696188227271999,
+   "mean_r": -0.23594917636362597,
+   "median_r": -0.2022496509546122,
+   "win_rate": 0.3333333333333333,
+   "profit_factor": 0.41855323318598914,
+   "max_dd": 0.0030434752134295
+  },
+  "2024-07": {
+   "trades": 4,
+   "return": 0.007551036160723399,
+   "mean_r": 0.7551036160723433,
+   "median_r": 0.5778648072824915,
+   "win_rate": 0.5,
+   "profit_factor": 3.748237013446941,
+   "max_dd": 0.002747592774486501
+  },
+  "2024-08": {
+   "trades": 9,
+   "return": -0.0185838030720964,
+   "mean_r": -0.8259468032043069,
+   "median_r": -1.007500816686712,
+   "win_rate": 0.1111111111111111,
+   "profit_factor": 0.12126511981309102,
+   "max_dd": 0.0211483616857722
+  },
+  "2024-09": {
+   "trades": 9,
+   "return": 0.006668910183185098,
+   "mean_r": 0.29639600814156597,
+   "median_r": -1.006692567750542,
+   "win_rate": 0.4444444444444444,
+   "profit_factor": 1.508744876550591,
+   "max_dd": 0.013108554976321199
+  },
+  "2024-10": {
+   "trades": 4,
+   "return": -0.0015245826068809002,
+   "mean_r": -0.15245826068809323,
+   "median_r": -0.8974320361017623,
+   "win_rate": 0.25,
+   "profit_factor": 0.7932167270794189,
+   "max_dd": 0.0073728526749185005
+  },
+  "2024-11": {
+   "trades": 30,
+   "return": -0.0170329946596045,
+   "mean_r": -0.22710659546140033,
+   "median_r": -0.64324488869029,
+   "win_rate": 0.3333333333333333,
+   "profit_factor": 0.5807028430003324,
+   "max_dd": 0.032152819546226896
+  },
+  "2024-12": {
+   "trades": 25,
+   "return": -0.041834241584937315,
+   "mean_r": -0.6693478653590121,
+   "median_r": -0.9239379484725632,
+   "win_rate": 0.16,
+   "profit_factor": 0.07820247504894333,
+   "max_dd": 0.041834241584937315
+  },
+  "2025-01": {
+   "trades": 22,
+   "return": 0.07139310446948655,
+   "mean_r": 1.2980564448997747,
+   "median_r": 1.4721438605481012,
+   "win_rate": 0.9545454545454546,
+   "profit_factor": 501.2523216431325,
+   "max_dd": 0.0001427141891815059
+  }
+ },
+ "year": {
+  "2023": {
+   "trades": 81,
+   "return": -0.055792032518422595,
+   "mean_r": -0.2755162099675281,
+   "median_r": -0.9647549130204056,
+   "win_rate": 0.2962962962962963,
+   "profit_factor": 0.568859832088969,
+   "max_dd": 0.07841796303841611
+  },
+  "2024": {
+   "trades": 125,
+   "return": -0.10600123947534397,
+   "mean_r": -0.3392039663211103,
+   "median_r": -0.805499486150062,
+   "win_rate": 0.256,
+   "profit_factor": 0.4525096972741896,
+   "max_dd": 0.12192638065098521
+  },
+  "2025": {
+   "trades": 22,
+   "return": 0.07139310446948655,
+   "mean_r": 1.2980564448997747,
+   "median_r": 1.4721438605481012,
+   "win_rate": 0.9545454545454546,
+   "profit_factor": 501.2523216431325,
+   "max_dd": 0.0001427141891815059
+  }
+ },
+ "coin": {
+  "1000000MOGUSDT": {
+   "trades": 1,
+   "return": -0.0024174905557385,
+   "mean_r": -0.9669962222954254,
+   "median_r": -0.9669962222954254,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024174905557385
+  },
+  "1000BONKUSDT": {
+   "trades": 1,
+   "return": -0.0021992292040449,
+   "mean_r": -0.8796916816179731,
+   "median_r": -0.8796916816179731,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0021992292040449
+  },
+  "1000CATUSDT": {
+   "trades": 1,
+   "return": -0.002322179215392,
+   "mean_r": -0.9288716861568262,
+   "median_r": -0.9288716861568262,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002322179215392
+  },
+  "1000CHEEMSUSDT": {
+   "trades": 1,
+   "return": -0.0022431050413405,
+   "mean_r": -0.8972420165362215,
+   "median_r": -0.8972420165362215,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0022431050413405
+  },
+  "1000FLOKIUSDT": {
+   "trades": 1,
+   "return": 0.0032521377444135,
+   "mean_r": 1.3008550977654332,
+   "median_r": 1.3008550977654332,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "1000PEPEUSDT": {
+   "trades": 1,
+   "return": 0.004823340130865,
+   "mean_r": 1.9293360523460017,
+   "median_r": 1.9293360523460017,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "1000RATSUSDT": {
+   "trades": 1,
+   "return": 0.0021740342714472,
+   "mean_r": 0.8696137085789152,
+   "median_r": 0.8696137085789152,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "1000SATSUSDT": {
+   "trades": 1,
+   "return": -0.0024762640799824,
+   "mean_r": -0.9905056319929658,
+   "median_r": -0.9905056319929658,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024762640799824
+  },
+  "1000WHYUSDT": {
+   "trades": 1,
+   "return": 0.0039771223771041,
+   "mean_r": 1.5908489508416597,
+   "median_r": 1.5908489508416597,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "1000XUSDT": {
+   "trades": 1,
+   "return": 0.004197032469776,
+   "mean_r": 1.6788129879104174,
+   "median_r": 1.6788129879104174,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "1MBABYDOGEUSDT": {
+   "trades": 1,
+   "return": -0.0026357083056353,
+   "mean_r": -1.0542833222541292,
+   "median_r": -1.0542833222541292,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0026357083056353
+  },
+  "ACEUSDT": {
+   "trades": 1,
+   "return": 0.0013258555731055,
+   "mean_r": 0.5303422292422034,
+   "median_r": 0.5303422292422034,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "ACHUSDT": {
+   "trades": 1,
+   "return": 0.0008529958488693,
+   "mean_r": 0.3411983395477322,
+   "median_r": 0.3411983395477322,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "ACTUSDT": {
+   "trades": 1,
+   "return": -0.0024997635027096,
+   "mean_r": -0.9999054010838748,
+   "median_r": -0.9999054010838748,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024997635027096
+  },
+  "ACXUSDT": {
+   "trades": 1,
+   "return": 0.0040482170908052,
+   "mean_r": 1.6192868363221016,
+   "median_r": 1.6192868363221016,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "AERGOUSDT": {
+   "trades": 1,
+   "return": -0.0023792068362059,
+   "mean_r": -0.9516827344823764,
+   "median_r": -0.9516827344823764,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023792068362059
+  },
+  "AEROUSDT": {
+   "trades": 1,
+   "return": -0.0024640033684709,
+   "mean_r": -0.98560134738838,
+   "median_r": -0.98560134738838,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024640033684709
+  },
+  "AEVOUSDT": {
+   "trades": 1,
+   "return": -0.0013852406687389,
+   "mean_r": -0.5540962674955636,
+   "median_r": -0.5540962674955636,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0013852406687389
+  },
+  "AGIXUSDT": {
+   "trades": 1,
+   "return": -0.0024627573309956,
+   "mean_r": -0.9851029323982552,
+   "median_r": -0.9851029323982552,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024627573309956
+  },
+  "AGLDUSDT": {
+   "trades": 1,
+   "return": -0.0004167978052517,
+   "mean_r": -0.1667191221006981,
+   "median_r": -0.1667191221006981,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0004167978052517
+  },
+  "AIUSDT": {
+   "trades": 1,
+   "return": -0.0016764298580882,
+   "mean_r": -0.6705719432353113,
+   "median_r": -0.6705719432353113,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0016764298580882
+  },
+  "AIXBTUSDT": {
+   "trades": 1,
+   "return": -0.0024425619034987,
+   "mean_r": -0.9770247613995064,
+   "median_r": -0.9770247613995064,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024425619034987
+  },
+  "AKTUSDT": {
+   "trades": 1,
+   "return": -0.002185321785639,
+   "mean_r": -0.8741287142556347,
+   "median_r": -0.8741287142556347,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002185321785639
+  },
+  "ALPACAUSDT": {
+   "trades": 1,
+   "return": -0.0025206820313586,
+   "mean_r": -1.0082728125434646,
+   "median_r": -1.0082728125434646,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025206820313586
+  },
+  "ALTUSDT": {
+   "trades": 1,
+   "return": -0.0025098402882218,
+   "mean_r": -1.0039361152887438,
+   "median_r": -1.0039361152887438,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025098402882218
+  },
+  "AMBUSDT": {
+   "trades": 1,
+   "return": -0.0024930966720199,
+   "mean_r": -0.9972386688079796,
+   "median_r": -0.9972386688079796,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024930966720199
+  },
+  "ARBUSDT": {
+   "trades": 1,
+   "return": -0.0024667429768908,
+   "mean_r": -0.9866971907563364,
+   "median_r": -0.9866971907563364,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024667429768908
+  },
+  "ARKMUSDT": {
+   "trades": 1,
+   "return": 0.0011139998129925,
+   "mean_r": 0.4455999251970057,
+   "median_r": 0.4455999251970057,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "ARKUSDT": {
+   "trades": 1,
+   "return": -0.0017561947619625,
+   "mean_r": -0.702477904785026,
+   "median_r": -0.702477904785026,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0017561947619625
+  },
+  "ASTRUSDT": {
+   "trades": 1,
+   "return": -0.0025114284207973,
+   "mean_r": -1.0045713683189388,
+   "median_r": -1.0045713683189388,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025114284207973
+  },
+  "AUCTIONUSDT": {
+   "trades": 1,
+   "return": -0.0033198159714189,
+   "mean_r": -1.3279263885675927,
+   "median_r": -1.3279263885675927,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0033198159714189
+  },
+  "AVAUSDT": {
+   "trades": 1,
+   "return": 0.0037946659682523,
+   "mean_r": 1.517866387300958,
+   "median_r": 1.517866387300958,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "AXLUSDT": {
+   "trades": 1,
+   "return": -0.002451688157486,
+   "mean_r": -0.9806752629944238,
+   "median_r": -0.9806752629944238,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002451688157486
+  },
+  "BADGERUSDT": {
+   "trades": 1,
+   "return": -0.0002793365500273,
+   "mean_r": -0.1117346200109494,
+   "median_r": -0.1117346200109494,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0002793365500273
+  },
+  "BANANAUSDT": {
+   "trades": 1,
+   "return": -0.0025187520417167,
+   "mean_r": -1.007500816686712,
+   "median_r": -1.007500816686712,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025187520417167
+  },
+  "BANUSDT": {
+   "trades": 1,
+   "return": 0.0071134670576005,
+   "mean_r": 2.8453868230402084,
+   "median_r": 2.8453868230402084,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "BBUSDT": {
+   "trades": 1,
+   "return": -0.0016462700065843,
+   "mean_r": -0.6585080026337207,
+   "median_r": -0.6585080026337207,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0016462700065843
+  },
+  "BEAMXUSDT": {
+   "trades": 1,
+   "return": -0.0025194429745448,
+   "mean_r": -1.0077771898179342,
+   "median_r": -1.0077771898179342,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025194429745448
+  },
+  "BICOUSDT": {
+   "trades": 1,
+   "return": -0.0023560409451545,
+   "mean_r": -0.9424163780618257,
+   "median_r": -0.9424163780618257,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023560409451545
+  },
+  "BIGTIMEUSDT": {
+   "trades": 1,
+   "return": -0.0001419650932653,
+   "mean_r": -0.0567860373061253,
+   "median_r": -0.0567860373061253,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0001419650932653
+  },
+  "BLURUSDT": {
+   "trades": 1,
+   "return": 0.0053308608949021,
+   "mean_r": 2.132344357960874,
+   "median_r": 2.132344357960874,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "BNTUSDT": {
+   "trades": 1,
+   "return": -0.002118951940356,
+   "mean_r": -0.8475807761424052,
+   "median_r": -0.8475807761424052,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002118951940356
+  },
+  "BOMEUSDT": {
+   "trades": 1,
+   "return": 0.001530986740207,
+   "mean_r": 0.6123946960828045,
+   "median_r": 0.6123946960828045,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "BONDUSDT": {
+   "trades": 1,
+   "return": -0.0005844806932025,
+   "mean_r": -0.2337922772810338,
+   "median_r": -0.2337922772810338,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0005844806932025
+  },
+  "BRETTUSDT": {
+   "trades": 1,
+   "return": -0.0020137487153751,
+   "mean_r": -0.805499486150062,
+   "median_r": -0.805499486150062,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0020137487153751
+  },
+  "BSVUSDT": {
+   "trades": 1,
+   "return": -0.002143538929685,
+   "mean_r": -0.8574155718740033,
+   "median_r": -0.8574155718740033,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002143538929685
+  },
+  "BSWUSDT": {
+   "trades": 1,
+   "return": 0.0002293140159858,
+   "mean_r": 0.0917256063943297,
+   "median_r": 0.0917256063943297,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "CAKEUSDT": {
+   "trades": 1,
+   "return": -0.0024891230910453,
+   "mean_r": -0.9956492364181468,
+   "median_r": -0.9956492364181468,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024891230910453
+  },
+  "CATIUSDT": {
+   "trades": 1,
+   "return": 0.0037075026947658,
+   "mean_r": 1.483001077906323,
+   "median_r": 1.483001077906323,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "CETUSUSDT": {
+   "trades": 1,
+   "return": -0.0025185326693763,
+   "mean_r": -1.007413067750542,
+   "median_r": -1.007413067750542,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025185326693763
+  },
+  "CFXUSDT": {
+   "trades": 1,
+   "return": 0.0017476441631255,
+   "mean_r": 0.6990576652502062,
+   "median_r": 0.6990576652502062,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "CGPTUSDT": {
+   "trades": 1,
+   "return": -0.0024908196990273,
+   "mean_r": -0.9963278796109278,
+   "median_r": -0.9963278796109278,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024908196990273
+  },
+  "CHESSUSDT": {
+   "trades": 1,
+   "return": -0.0002955083252699,
+   "mean_r": -0.1182033301079827,
+   "median_r": -0.1182033301079827,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0002955083252699
+  },
+  "CHILLGUYUSDT": {
+   "trades": 1,
+   "return": 0.0062754648880979,
+   "mean_r": 2.5101859552392,
+   "median_r": 2.5101859552392,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "CKBUSDT": {
+   "trades": 1,
+   "return": -0.000629881602367,
+   "mean_r": -0.2519526409468056,
+   "median_r": -0.2519526409468056,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.000629881602367
+  },
+  "COCOSUSDT": {
+   "trades": 1,
+   "return": 0.0037521292126549,
+   "mean_r": 1.5008516850619915,
+   "median_r": 1.5008516850619915,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "COMBOUSDT": {
+   "trades": 1,
+   "return": 0.0050149416924294,
+   "mean_r": 2.0059766769717853,
+   "median_r": 2.0059766769717853,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "COSUSDT": {
+   "trades": 1,
+   "return": -0.0024918274889116,
+   "mean_r": -0.9967309955646674,
+   "median_r": -0.9967309955646674,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024918274889116
+  },
+  "COWUSDT": {
+   "trades": 1,
+   "return": -0.0014356149346862,
+   "mean_r": -0.5742459738745166,
+   "median_r": -0.5742459738745166,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0014356149346862
+  },
+  "CYBERUSDT": {
+   "trades": 1,
+   "return": -0.002722715423141,
+   "mean_r": -1.0890861692564016,
+   "median_r": -1.0890861692564016,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002722715423141
+  },
+  "DEGENUSDT": {
+   "trades": 1,
+   "return": 0.0057377627972387,
+   "mean_r": 2.295105118895496,
+   "median_r": 2.295105118895496,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "DEGOUSDT": {
+   "trades": 1,
+   "return": 0.0020232167880003,
+   "mean_r": 0.8092867152001454,
+   "median_r": 0.8092867152001454,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "DEXEUSDT": {
+   "trades": 1,
+   "return": -0.0001427141891815,
+   "mean_r": -0.05708567567262,
+   "median_r": -0.05708567567262,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0001427141891815
+  },
+  "DFUSDT": {
+   "trades": 1,
+   "return": 0.0004932228206988,
+   "mean_r": 0.1972891282795247,
+   "median_r": 0.1972891282795247,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "DIAUSDT": {
+   "trades": 1,
+   "return": -0.0028856924944098,
+   "mean_r": -1.154276997763921,
+   "median_r": -1.154276997763921,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0028856924944098
+  },
+  "DODOXUSDT": {
+   "trades": 1,
+   "return": -0.0023947489644751,
+   "mean_r": -0.9578995857900634,
+   "median_r": -0.9578995857900634,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023947489644751
+  },
+  "DOGSUSDT": {
+   "trades": 1,
+   "return": -0.0025153205481555,
+   "mean_r": -1.0061282192622203,
+   "median_r": -1.0061282192622203,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025153205481555
+  },
+  "DRIFTUSDT": {
+   "trades": 1,
+   "return": -0.003053811086043,
+   "mean_r": -1.2215244344172085,
+   "median_r": -1.2215244344172085,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.003053811086043
+  },
+  "DYMUSDT": {
+   "trades": 1,
+   "return": -0.0025265864193763,
+   "mean_r": -1.0106345677505413,
+   "median_r": -1.0106345677505413,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025265864193763
+  },
+  "EDUUSDT": {
+   "trades": 1,
+   "return": 0.0046562573256687,
+   "mean_r": 1.8625029302674911,
+   "median_r": 1.8625029302674911,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "EIGENUSDT": {
+   "trades": 1,
+   "return": 0.0004744906635586,
+   "mean_r": 0.1897962654234661,
+   "median_r": 0.1897962654234661,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "ENAUSDT": {
+   "trades": 1,
+   "return": -0.002539003586043,
+   "mean_r": -1.0156014344172082,
+   "median_r": -1.0156014344172082,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002539003586043
+  },
+  "ETHFIUSDT": {
+   "trades": 1,
+   "return": -0.0025232407292546,
+   "mean_r": -1.0092962917018709,
+   "median_r": -1.0092962917018709,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025232407292546
+  },
+  "ETHWUSDT": {
+   "trades": 1,
+   "return": -0.0021897568467505,
+   "mean_r": -0.8759027387002002,
+   "median_r": -0.8759027387002002,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0021897568467505
+  },
+  "FARTCOINUSDT": {
+   "trades": 1,
+   "return": -0.0012488325458299,
+   "mean_r": -0.4995330183319971,
+   "median_r": -0.4995330183319971,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0012488325458299
+  },
+  "FETUSDT": {
+   "trades": 1,
+   "return": -0.0024163231550198,
+   "mean_r": -0.9665292620079428,
+   "median_r": -0.9665292620079428,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024163231550198
+  },
+  "FIDAUSDT": {
+   "trades": 1,
+   "return": 0.0002566162966386,
+   "mean_r": 0.1026465186554639,
+   "median_r": 0.1026465186554639,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "FIOUSDT": {
+   "trades": 1,
+   "return": 0.0010993410142075,
+   "mean_r": 0.4397364056830152,
+   "median_r": 0.4397364056830152,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "FLUXUSDT": {
+   "trades": 1,
+   "return": -0.0024254335764503,
+   "mean_r": -0.9701734305801202,
+   "median_r": -0.9701734305801202,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024254335764503
+  },
+  "FRONTUSDT": {
+   "trades": 1,
+   "return": -0.0025181348788973,
+   "mean_r": -1.007253951558935,
+   "median_r": -1.007253951558935,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025181348788973
+  },
+  "FXSUSDT": {
+   "trades": 1,
+   "return": -0.0024172034877211,
+   "mean_r": -0.9668813950884724,
+   "median_r": -0.9668813950884724,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024172034877211
+  },
+  "GASUSDT": {
+   "trades": 1,
+   "return": -0.0024909699574922,
+   "mean_r": -0.9963879829969186,
+   "median_r": -0.9963879829969186,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024909699574922
+  },
+  "GHSTUSDT": {
+   "trades": 1,
+   "return": -0.0023098448711814,
+   "mean_r": -0.9239379484725632,
+   "median_r": -0.9239379484725632,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023098448711814
+  },
+  "GLMRUSDT": {
+   "trades": 1,
+   "return": -0.0013790122483392,
+   "mean_r": -0.5516048993357175,
+   "median_r": -0.5516048993357175,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0013790122483392
+  },
+  "GLMUSDT": {
+   "trades": 1,
+   "return": -0.0023677404503804,
+   "mean_r": -0.94709618015217,
+   "median_r": -0.94709618015217,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023677404503804
+  },
+  "GMXUSDT": {
+   "trades": 1,
+   "return": 0.0036306135264573,
+   "mean_r": 1.4522454105829394,
+   "median_r": 1.4522454105829394,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "GOATUSDT": {
+   "trades": 1,
+   "return": -0.0024734114651336,
+   "mean_r": -0.9893645860534624,
+   "median_r": -0.9893645860534624,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024734114651336
+  },
+  "GRASSUSDT": {
+   "trades": 1,
+   "return": -0.0010554087138419,
+   "mean_r": -0.4221634855367812,
+   "median_r": -0.4221634855367812,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0010554087138419
+  },
+  "GUSDT": {
+   "trades": 1,
+   "return": -0.0018758381668565,
+   "mean_r": -0.750335266742631,
+   "median_r": -0.750335266742631,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0018758381668565
+  },
+  "HFTUSDT": {
+   "trades": 1,
+   "return": 0.0042793083507584,
+   "mean_r": 1.7117233403033638,
+   "median_r": 1.7117233403033638,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "HIFIUSDT": {
+   "trades": 1,
+   "return": 0.0038601165664072,
+   "mean_r": 1.5440466265628978,
+   "median_r": 1.5440466265628978,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "HIGHUSDT": {
+   "trades": 1,
+   "return": 0.0050068881179453,
+   "mean_r": 2.00275524717814,
+   "median_r": 2.00275524717814,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "HIPPOUSDT": {
+   "trades": 1,
+   "return": -0.0024505694772511,
+   "mean_r": -0.9802277909004464,
+   "median_r": -0.9802277909004464,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024505694772511
+  },
+  "HIVEUSDT": {
+   "trades": 1,
+   "return": -0.00318091683324,
+   "mean_r": -1.2723667332960304,
+   "median_r": -1.2723667332960304,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.00318091683324
+  },
+  "HMSTRUSDT": {
+   "trades": 1,
+   "return": 0.0023418700457674,
+   "mean_r": 0.9367480183069852,
+   "median_r": 0.9367480183069852,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "HOOKUSDT": {
+   "trades": 1,
+   "return": -0.0024803613928476,
+   "mean_r": -0.9921445571390738,
+   "median_r": -0.9921445571390738,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024803613928476
+  },
+  "IDEXUSDT": {
+   "trades": 1,
+   "return": 0.0034605535287619,
+   "mean_r": 1.3842214115047824,
+   "median_r": 1.3842214115047824,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "IDUSDT": {
+   "trades": 1,
+   "return": -0.0024857957453015,
+   "mean_r": -0.9943182981206328,
+   "median_r": -0.9943182981206328,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024857957453015
+  },
+  "ILVUSDT": {
+   "trades": 1,
+   "return": -0.0017827181349118,
+   "mean_r": -0.713087253964748,
+   "median_r": -0.713087253964748,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0017827181349118
+  },
+  "IOUSDT": {
+   "trades": 1,
+   "return": -0.002537851086043,
+   "mean_r": -1.0151404344172086,
+   "median_r": -1.0151404344172086,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002537851086043
+  },
+  "JOEUSDT": {
+   "trades": 1,
+   "return": 0.0031591838316675,
+   "mean_r": 1.263673532667018,
+   "median_r": 1.263673532667018,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "JTOUSDT": {
+   "trades": 1,
+   "return": 0.0027657599253383,
+   "mean_r": 1.1063039701353492,
+   "median_r": 1.1063039701353492,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "JUPUSDT": {
+   "trades": 1,
+   "return": -0.0011091492405258,
+   "mean_r": -0.4436596962103287,
+   "median_r": -0.4436596962103287,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0011091492405258
+  },
+  "KAIAUSDT": {
+   "trades": 1,
+   "return": 0.0035360428448834,
+   "mean_r": 1.414417137953384,
+   "median_r": 1.414417137953384,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "KASUSDT": {
+   "trades": 1,
+   "return": -0.000834323054612,
+   "mean_r": -0.3337292218448347,
+   "median_r": -0.3337292218448347,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.000834323054612
+  },
+  "KDAUSDT": {
+   "trades": 1,
+   "return": -0.001786581511042,
+   "mean_r": -0.7146326044168207,
+   "median_r": -0.7146326044168207,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.001786581511042
+  },
+  "KEYUSDT": {
+   "trades": 1,
+   "return": -0.0025599049016695,
+   "mean_r": -1.0239619606678274,
+   "median_r": -1.0239619606678274,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025599049016695
+  },
+  "KMNOUSDT": {
+   "trades": 1,
+   "return": 0.0022011230459639,
+   "mean_r": 0.8804492183855965,
+   "median_r": 0.8804492183855965,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "KOMAUSDT": {
+   "trades": 1,
+   "return": -1.79351768845217e-05,
+   "mean_r": -0.0071740707538086,
+   "median_r": -0.0071740707538086,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 1.79351768845217e-05
+  },
+  "LEVERUSDT": {
+   "trades": 1,
+   "return": -0.0024906329143863,
+   "mean_r": -0.9962531657545334,
+   "median_r": -0.9962531657545334,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024906329143863
+  },
+  "LISTAUSDT": {
+   "trades": 1,
+   "return": 0.0025645586136758,
+   "mean_r": 1.0258234454703248,
+   "median_r": 1.0258234454703248,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "LOKAUSDT": {
+   "trades": 1,
+   "return": 0.0006173907340977,
+   "mean_r": 0.2469562936390834,
+   "median_r": 0.2469562936390834,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "LOOMUSDT": {
+   "trades": 1,
+   "return": -0.0027253464193763,
+   "mean_r": -1.090138567750542,
+   "median_r": -1.090138567750542,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0027253464193763
+  },
+  "LQTYUSDT": {
+   "trades": 1,
+   "return": -0.0029133239601978,
+   "mean_r": -1.165329584079158,
+   "median_r": -1.165329584079158,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0029133239601978
+  },
+  "LSKUSDT": {
+   "trades": 1,
+   "return": -0.0023216510953348,
+   "mean_r": -0.9286604381339524,
+   "median_r": -0.9286604381339524,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023216510953348
+  },
+  "LUMIAUSDT": {
+   "trades": 1,
+   "return": 0.0017166539036512,
+   "mean_r": 0.686661561460508,
+   "median_r": 0.686661561460508,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "MAGICUSDT": {
+   "trades": 1,
+   "return": -0.0024983481751315,
+   "mean_r": -0.9993392700526208,
+   "median_r": -0.9993392700526208,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024983481751315
+  },
+  "MANTAUSDT": {
+   "trades": 1,
+   "return": -0.0025015094309553,
+   "mean_r": -1.0006037723821333,
+   "median_r": -1.0006037723821333,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025015094309553
+  },
+  "MAVIAUSDT": {
+   "trades": 1,
+   "return": -0.0011937279418618,
+   "mean_r": -0.4774911767447585,
+   "median_r": -0.4774911767447585,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0011937279418618
+  },
+  "MAVUSDT": {
+   "trades": 1,
+   "return": -0.002615201069842,
+   "mean_r": -1.0460804279368332,
+   "median_r": -1.0460804279368332,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002615201069842
+  },
+  "MBLUSDT": {
+   "trades": 1,
+   "return": -9.651426622364747e-05,
+   "mean_r": -0.0386057064894589,
+   "median_r": -0.0386057064894589,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 9.651426622364747e-05
+  },
+  "MBOXUSDT": {
+   "trades": 1,
+   "return": -0.0014806570753,
+   "mean_r": -0.5922628301200198,
+   "median_r": -0.5922628301200198,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0014806570753
+  },
+  "MDTUSDT": {
+   "trades": 1,
+   "return": -0.0025423513774652,
+   "mean_r": -1.0169405509861036,
+   "median_r": -1.0169405509861036,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025423513774652
+  },
+  "MEMEUSDT": {
+   "trades": 1,
+   "return": -0.0024238026079315,
+   "mean_r": -0.9695210431726116,
+   "median_r": -0.9695210431726116,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024238026079315
+  },
+  "METISUSDT": {
+   "trades": 1,
+   "return": 0.0058482700680376,
+   "mean_r": 2.3393080272150724,
+   "median_r": 2.3393080272150724,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "MEUSDT": {
+   "trades": 1,
+   "return": -0.0026045174193763,
+   "mean_r": -1.0418069677505413,
+   "median_r": -1.0418069677505413,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0026045174193763
+  },
+  "MEWUSDT": {
+   "trades": 1,
+   "return": -0.0008376964026655,
+   "mean_r": -0.335078561066212,
+   "median_r": -0.335078561066212,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0008376964026655
+  },
+  "MINAUSDT": {
+   "trades": 1,
+   "return": -0.0025012972415413,
+   "mean_r": -1.000518896616522,
+   "median_r": -1.000518896616522,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025012972415413
+  },
+  "MOCAUSDT": {
+   "trades": 1,
+   "return": -0.002681568476515,
+   "mean_r": -1.0726273906060055,
+   "median_r": -1.0726273906060055,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002681568476515
+  },
+  "MOODENGUSDT": {
+   "trades": 1,
+   "return": -0.0001399682563723,
+   "mean_r": -0.0559873025489455,
+   "median_r": -0.0559873025489455,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0001399682563723
+  },
+  "MORPHOUSDT": {
+   "trades": 1,
+   "return": -0.0024422237428354,
+   "mean_r": -0.9768894971341988,
+   "median_r": -0.9768894971341988,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024422237428354
+  },
+  "MOVEUSDT": {
+   "trades": 1,
+   "return": -0.0026940437527096,
+   "mean_r": -1.0776175010838756,
+   "median_r": -1.0776175010838756,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0026940437527096
+  },
+  "MOVRUSDT": {
+   "trades": 1,
+   "return": 0.0051398501903826,
+   "mean_r": 2.0559400761530684,
+   "median_r": 2.0559400761530684,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "MYROUSDT": {
+   "trades": 1,
+   "return": -0.002464871336043,
+   "mean_r": -0.985948534417208,
+   "median_r": -0.985948534417208,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002464871336043
+  },
+  "NEIROETHUSDT": {
+   "trades": 1,
+   "return": -0.0025167314193763,
+   "mean_r": -1.006692567750542,
+   "median_r": -1.006692567750542,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025167314193763
+  },
+  "NEIROUSDT": {
+   "trades": 1,
+   "return": -0.002524952836043,
+   "mean_r": -1.0099811344172085,
+   "median_r": -1.0099811344172085,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002524952836043
+  },
+  "NFPUSDT": {
+   "trades": 1,
+   "return": 0.0027711099165872,
+   "mean_r": 1.1084439666349106,
+   "median_r": 1.1084439666349106,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "NMRUSDT": {
+   "trades": 1,
+   "return": -0.0031915914631093,
+   "mean_r": -1.276636585243756,
+   "median_r": -1.276636585243756,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0031915914631093
+  },
+  "NOTUSDT": {
+   "trades": 1,
+   "return": -0.0013953446449692,
+   "mean_r": -0.5581378579877185,
+   "median_r": -0.5581378579877185,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0013953446449692
+  },
+  "NTRNUSDT": {
+   "trades": 1,
+   "return": -0.0024446810811594,
+   "mean_r": -0.977872432463766,
+   "median_r": -0.977872432463766,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024446810811594
+  },
+  "NULSUSDT": {
+   "trades": 1,
+   "return": 0.0010743997497401,
+   "mean_r": 0.4297598998960633,
+   "median_r": 0.4297598998960633,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "OMNIUSDT": {
+   "trades": 1,
+   "return": 0.0053008153729107,
+   "mean_r": 2.1203261491642973,
+   "median_r": 2.1203261491642973,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "OMUSDT": {
+   "trades": 1,
+   "return": -0.0022892445030722,
+   "mean_r": -0.9156978012288944,
+   "median_r": -0.9156978012288944,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0022892445030722
+  },
+  "ONDOUSDT": {
+   "trades": 1,
+   "return": -0.0025094900027096,
+   "mean_r": -1.0037960010838742,
+   "median_r": -1.0037960010838742,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025094900027096
+  },
+  "ONGUSDT": {
+   "trades": 1,
+   "return": -0.0018504466760768,
+   "mean_r": -0.7401786704307316,
+   "median_r": -0.7401786704307316,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0018504466760768
+  },
+  "ORBSUSDT": {
+   "trades": 1,
+   "return": 0.0012762328773158,
+   "mean_r": 0.5104931509263456,
+   "median_r": 0.5104931509263456,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "ORCAUSDT": {
+   "trades": 1,
+   "return": 0.0037139134604583,
+   "mean_r": 1.4855653841833456,
+   "median_r": 1.4855653841833456,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "ORDIUSDT": {
+   "trades": 1,
+   "return": -0.0025093050374564,
+   "mean_r": -1.003722014982596,
+   "median_r": -1.003722014982596,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025093050374564
+  },
+  "OXTUSDT": {
+   "trades": 1,
+   "return": -0.0006153499141887,
+   "mean_r": -0.2461399656755188,
+   "median_r": -0.2461399656755188,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0006153499141887
+  },
+  "PENDLEUSDT": {
+   "trades": 1,
+   "return": -0.0008969428692935,
+   "mean_r": -0.3587771477174292,
+   "median_r": -0.3587771477174292,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0008969428692935
+  },
+  "PENGUUSDT": {
+   "trades": 1,
+   "return": -0.0025157254193763,
+   "mean_r": -1.0062901677505418,
+   "median_r": -1.0062901677505418,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025157254193763
+  },
+  "PERPUSDT": {
+   "trades": 1,
+   "return": 0.0026232731713356,
+   "mean_r": 1.0493092685342784,
+   "median_r": 1.0493092685342784,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "PHAUSDT": {
+   "trades": 1,
+   "return": 0.0003596998615216,
+   "mean_r": 0.1438799446086428,
+   "median_r": 0.1438799446086428,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "PHBUSDT": {
+   "trades": 1,
+   "return": -0.0025111020964226,
+   "mean_r": -1.004440838569047,
+   "median_r": -1.004440838569047,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025111020964226
+  },
+  "PIXELUSDT": {
+   "trades": 1,
+   "return": -0.0020886743472381,
+   "mean_r": -0.8354697388952741,
+   "median_r": -0.8354697388952741,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0020886743472381
+  },
+  "PNUTUSDT": {
+   "trades": 1,
+   "return": -0.0025046160027096,
+   "mean_r": -1.001846401083876,
+   "median_r": -1.001846401083876,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025046160027096
+  },
+  "POLUSDT": {
+   "trades": 1,
+   "return": -0.0015619076499419,
+   "mean_r": -0.6247630599767713,
+   "median_r": -0.6247630599767713,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0015619076499419
+  },
+  "POLYXUSDT": {
+   "trades": 1,
+   "return": -0.0025167543004075,
+   "mean_r": -1.00670172016303,
+   "median_r": -1.00670172016303,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025167543004075
+  },
+  "PONKEUSDT": {
+   "trades": 1,
+   "return": -0.0025089753803835,
+   "mean_r": -1.0035901521534285,
+   "median_r": -1.0035901521534285,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025089753803835
+  },
+  "POPCATUSDT": {
+   "trades": 1,
+   "return": -0.0025093787527096,
+   "mean_r": -1.0037515010838751,
+   "median_r": -1.0037515010838751,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025093787527096
+  },
+  "PORTALUSDT": {
+   "trades": 1,
+   "return": 0.007677028738988,
+   "mean_r": 3.0708114955952355,
+   "median_r": 3.0708114955952355,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "POWRUSDT": {
+   "trades": 1,
+   "return": -0.0023762239079516,
+   "mean_r": -0.9504895631806488,
+   "median_r": -0.9504895631806488,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023762239079516
+  },
+  "PYTHUSDT": {
+   "trades": 1,
+   "return": -0.0024820616479224,
+   "mean_r": -0.992824659168982,
+   "median_r": -0.992824659168982,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024820616479224
+  },
+  "QUICKUSDT": {
+   "trades": 1,
+   "return": -0.0026561241329559,
+   "mean_r": -1.0624496531823684,
+   "median_r": -1.0624496531823684,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0026561241329559
+  },
+  "RADUSDT": {
+   "trades": 1,
+   "return": 0.0020729475116767,
+   "mean_r": 0.8291790046707095,
+   "median_r": 0.8291790046707095,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "RAREUSDT": {
+   "trades": 1,
+   "return": -0.0032307675027096,
+   "mean_r": -1.2923070010838749,
+   "median_r": -1.2923070010838749,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0032307675027096
+  },
+  "RAYSOLUSDT": {
+   "trades": 1,
+   "return": 4.979563457945468e-05,
+   "mean_r": 0.0199182538317818,
+   "median_r": 0.0199182538317818,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "RDNTUSDT": {
+   "trades": 1,
+   "return": -0.0024861277686392,
+   "mean_r": -0.9944511074557107,
+   "median_r": -0.9944511074557107,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024861277686392
+  },
+  "REIUSDT": {
+   "trades": 1,
+   "return": -0.0016193483627632,
+   "mean_r": -0.6477393451053091,
+   "median_r": -0.6477393451053091,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0016193483627632
+  },
+  "RENDERUSDT": {
+   "trades": 1,
+   "return": 0.0001440928272202,
+   "mean_r": 0.0576371308881091,
+   "median_r": 0.0576371308881091,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "REZUSDT": {
+   "trades": 1,
+   "return": -0.0005056241273865,
+   "mean_r": -0.2022496509546122,
+   "median_r": -0.2022496509546122,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0005056241273865
+  },
+  "RIFUSDT": {
+   "trades": 1,
+   "return": -0.0030073075477279,
+   "mean_r": -1.2029230190911604,
+   "median_r": -1.2029230190911604,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0030073075477279
+  },
+  "RNDRUSDT": {
+   "trades": 1,
+   "return": 0.0006545909524385,
+   "mean_r": 0.2618363809754102,
+   "median_r": 0.2618363809754102,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "RONINUSDT": {
+   "trades": 1,
+   "return": -0.0024168461474398,
+   "mean_r": -0.966738458975958,
+   "median_r": -0.966738458975958,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024168461474398
+  },
+  "RPLUSDT": {
+   "trades": 1,
+   "return": -0.0016543167935095,
+   "mean_r": -0.6617267174038087,
+   "median_r": -0.6617267174038087,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0016543167935095
+  },
+  "SAFEUSDT": {
+   "trades": 1,
+   "return": -0.0013496737407614,
+   "mean_r": -0.5398694963045669,
+   "median_r": -0.5398694963045669,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0013496737407614
+  },
+  "SAGAUSDT": {
+   "trades": 1,
+   "return": 0.006571608496132,
+   "mean_r": 2.6286433984528164,
+   "median_r": 2.6286433984528164,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SANTOSUSDT": {
+   "trades": 1,
+   "return": 0.0031837216994791,
+   "mean_r": 1.2734886797916496,
+   "median_r": 1.2734886797916496,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SCRTUSDT": {
+   "trades": 1,
+   "return": -0.002559252836043,
+   "mean_r": -1.0237011344172084,
+   "median_r": -1.0237011344172084,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002559252836043
+  },
+  "SCRUSDT": {
+   "trades": 1,
+   "return": 0.0019218920157076,
+   "mean_r": 0.7687568062830795,
+   "median_r": 0.7687568062830795,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SEIUSDT": {
+   "trades": 1,
+   "return": 0.0002435055931699,
+   "mean_r": 0.0974022372679638,
+   "median_r": 0.0974022372679638,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SLERFUSDT": {
+   "trades": 1,
+   "return": 0.0046907282658631,
+   "mean_r": 1.876291306345279,
+   "median_r": 1.876291306345279,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SLPUSDT": {
+   "trades": 1,
+   "return": -0.002411887282551,
+   "mean_r": -0.9647549130204056,
+   "median_r": -0.9647549130204056,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002411887282551
+  },
+  "SNTUSDT": {
+   "trades": 1,
+   "return": 0.0033326772744519,
+   "mean_r": 1.3330709097807696,
+   "median_r": 1.3330709097807696,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SPXUSDT": {
+   "trades": 1,
+   "return": -0.0025625873886562,
+   "mean_r": -1.0250349554625078,
+   "median_r": -1.0250349554625078,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025625873886562
+  },
+  "SSVUSDT": {
+   "trades": 1,
+   "return": -0.0025110824944751,
+   "mean_r": -1.0044329977900677,
+   "median_r": -1.0044329977900677,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025110824944751
+  },
+  "STEEMUSDT": {
+   "trades": 1,
+   "return": -0.0008532794697289,
+   "mean_r": -0.3413117878915673,
+   "median_r": -0.3413117878915673,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0008532794697289
+  },
+  "STPTUSDT": {
+   "trades": 1,
+   "return": -0.00063314018258,
+   "mean_r": -0.2532560730320232,
+   "median_r": -0.2532560730320232,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.00063314018258
+  },
+  "STRAXUSDT": {
+   "trades": 1,
+   "return": -0.0028470828683619,
+   "mean_r": -1.1388331473447924,
+   "median_r": -1.1388331473447924,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0028470828683619
+  },
+  "STRKUSDT": {
+   "trades": 1,
+   "return": -0.0022310751213041,
+   "mean_r": -0.8924300485216695,
+   "median_r": -0.8924300485216695,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0022310751213041
+  },
+  "STXUSDT": {
+   "trades": 1,
+   "return": -0.0025654760085594,
+   "mean_r": -1.0261904034237768,
+   "median_r": -1.0261904034237768,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025654760085594
+  },
+  "SUIUSDT": {
+   "trades": 1,
+   "return": 0.0046161456927679,
+   "mean_r": 1.846458277107193,
+   "median_r": 1.846458277107193,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SUNUSDT": {
+   "trades": 1,
+   "return": -0.0026075016693763,
+   "mean_r": -1.0430006677505417,
+   "median_r": -1.0430006677505417,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0026075016693763
+  },
+  "SUPERUSDT": {
+   "trades": 1,
+   "return": -0.0027980255071355,
+   "mean_r": -1.11921020285421,
+   "median_r": -1.11921020285421,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0027980255071355
+  },
+  "SWELLUSDT": {
+   "trades": 1,
+   "return": 0.0036468058422821,
+   "mean_r": 1.458722336912857,
+   "median_r": 1.458722336912857,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "SYNUSDT": {
+   "trades": 1,
+   "return": -0.0027498321419395,
+   "mean_r": -1.0999328567758209,
+   "median_r": -1.0999328567758209,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0027498321419395
+  },
+  "SYSUSDT": {
+   "trades": 1,
+   "return": 0.0013500824266818,
+   "mean_r": 0.5400329706727571,
+   "median_r": 0.5400329706727571,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "TAOUSDT": {
+   "trades": 1,
+   "return": 0.0037270204390779,
+   "mean_r": 1.4908081756311948,
+   "median_r": 1.4908081756311948,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "THEUSDT": {
+   "trades": 1,
+   "return": 0.0038641062165605,
+   "mean_r": 1.545642486624231,
+   "median_r": 1.545642486624231,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "TIAUSDT": {
+   "trades": 1,
+   "return": -0.0024121475625923,
+   "mean_r": -0.9648590250369442,
+   "median_r": -0.9648590250369442,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024121475625923
+  },
+  "TNSRUSDT": {
+   "trades": 1,
+   "return": 0.0012738563907023,
+   "mean_r": 0.5095425562809429,
+   "median_r": 0.5095425562809429,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "TOKENUSDT": {
+   "trades": 1,
+   "return": 0.000371411309813,
+   "mean_r": 0.1485645239252342,
+   "median_r": 0.1485645239252342,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "TONUSDT": {
+   "trades": 1,
+   "return": -0.0022424360383015,
+   "mean_r": -0.8969744153206255,
+   "median_r": -0.8969744153206255,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0022424360383015
+  },
+  "TROYUSDT": {
+   "trades": 1,
+   "return": -0.0025167217621178,
+   "mean_r": -1.0066887048471505,
+   "median_r": -1.0066887048471505,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025167217621178
+  },
+  "TRUUSDT": {
+   "trades": 1,
+   "return": 0.0051380488543341,
+   "mean_r": 2.055219541733641,
+   "median_r": 2.055219541733641,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "TURBOUSDT": {
+   "trades": 1,
+   "return": -0.002512612336043,
+   "mean_r": -1.005044934417208,
+   "median_r": -1.005044934417208,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002512612336043
+  },
+  "TUSDT": {
+   "trades": 1,
+   "return": 0.0036858973760165,
+   "mean_r": 1.4743589504066312,
+   "median_r": 1.4743589504066312,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "TWTUSDT": {
+   "trades": 1,
+   "return": -0.0024818377281235,
+   "mean_r": -0.9927350912494214,
+   "median_r": -0.9927350912494214,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024818377281235
+  },
+  "UMAUSDT": {
+   "trades": 1,
+   "return": 0.0018239922539435,
+   "mean_r": 0.7295969015774249,
+   "median_r": 0.7295969015774249,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "USUALUSDT": {
+   "trades": 1,
+   "return": -0.0025282467527096,
+   "mean_r": -1.0112987010838748,
+   "median_r": -1.0112987010838748,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025282467527096
+  },
+  "UXLINKUSDT": {
+   "trades": 1,
+   "return": -0.0027750382823107,
+   "mean_r": -1.110015312924286,
+   "median_r": -1.110015312924286,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0027750382823107
+  },
+  "VANAUSDT": {
+   "trades": 1,
+   "return": 0.0038665062788247,
+   "mean_r": 1.546602511529898,
+   "median_r": 1.546602511529898,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "VANRYUSDT": {
+   "trades": 1,
+   "return": 0.0061627096031614,
+   "mean_r": 2.4650838412645864,
+   "median_r": 2.4650838412645864,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "VELODROMEUSDT": {
+   "trades": 1,
+   "return": 0.0030465493470269,
+   "mean_r": 1.2186197388107776,
+   "median_r": 1.2186197388107776,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "VIDTUSDT": {
+   "trades": 1,
+   "return": -0.0024961269978064,
+   "mean_r": -0.9984507991225776,
+   "median_r": -0.9984507991225776,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0024961269978064
+  },
+  "VIRTUALUSDT": {
+   "trades": 1,
+   "return": -0.002490600961427,
+   "mean_r": -0.996240384570818,
+   "median_r": -0.996240384570818,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.002490600961427
+  },
+  "VOXELUSDT": {
+   "trades": 1,
+   "return": 0.0002961806967613,
+   "mean_r": 0.1184722787045491,
+   "median_r": 0.1184722787045491,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "WAXPUSDT": {
+   "trades": 1,
+   "return": -0.0023434581092927,
+   "mean_r": -0.9373832437171044,
+   "median_r": -0.9373832437171044,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0023434581092927
+  },
+  "WIFUSDT": {
+   "trades": 1,
+   "return": -0.0003974538808899,
+   "mean_r": -0.1589815523559856,
+   "median_r": -0.1589815523559856,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0003974538808899
+  },
+  "WLDUSDT": {
+   "trades": 1,
+   "return": 0.0019979038299367,
+   "mean_r": 0.7991615319746906,
+   "median_r": 0.7991615319746906,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "WUSDT": {
+   "trades": 1,
+   "return": 0.0066555282203874,
+   "mean_r": 2.662211288154986,
+   "median_r": 2.662211288154986,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "XAIUSDT": {
+   "trades": 1,
+   "return": -0.0025119963171175,
+   "mean_r": -1.0047985268470003,
+   "median_r": -1.0047985268470003,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0025119963171175
+  },
+  "XVGUSDT": {
+   "trades": 1,
+   "return": -0.0035396008463935,
+   "mean_r": -1.415840338557408,
+   "median_r": -1.415840338557408,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0035396008463935
+  },
+  "XVSUSDT": {
+   "trades": 1,
+   "return": 0.0019785677243838,
+   "mean_r": 0.7914270897535236,
+   "median_r": 0.7914270897535236,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "YGGUSDT": {
+   "trades": 1,
+   "return": -0.0026708787527096,
+   "mean_r": -1.068351501083875,
+   "median_r": -1.068351501083875,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0026708787527096
+  },
+  "ZETAUSDT": {
+   "trades": 1,
+   "return": -0.0019801002504927,
+   "mean_r": -0.7920401001971044,
+   "median_r": -0.7920401001971044,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.0019801002504927
+  },
+  "ZKUSDT": {
+   "trades": 1,
+   "return": 0.0024671826663966,
+   "mean_r": 0.986873066558656,
+   "median_r": 0.986873066558656,
+   "win_rate": 1.0,
+   "profit_factor": null,
+   "max_dd": 0.0
+  },
+  "ZROUSDT": {
+   "trades": 1,
+   "return": -0.001909896371821,
+   "mean_r": -0.763958548728426,
+   "median_r": -0.763958548728426,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "max_dd": 0.001909896371821
+  }
+ },
+ "side": {
+  "short": {
+   "trades": 228,
+   "return": -0.09040016752428001,
+   "mean_r": -0.15859678513032247,
+   "median_r": -0.7452569685866812,
+   "win_rate": 0.33771929824561403,
+   "profit_factor": 0.7202631885562332,
+   "max_dd": 0.1413193434316071
+  }
+ }
+}

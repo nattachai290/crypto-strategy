@@ -44,7 +44,7 @@ Diagnostic (not a gate): the event mean for NEW tokens (no Binance spot pair
 before the listing month) and for EXISTING tokens that only got a new perp.
 Frozen bars after a delisting (zero volume) are cut; an entry or a control
 needs a traded day.
-Writes results/_multi/listing/ and the generated journal/_multi/listing.md.
+Writes results/_multi/s35_listing_1d/ and the generated journal/_multi/s35_listing_1d.md.
 """
 from __future__ import annotations
 
@@ -65,8 +65,8 @@ import ml_port as MP  # noqa: E402
 import ml_wf as WF  # noqa: E402
 import rotation as R  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "listing"
-REPORT = C.ROOT / "journal" / "_multi" / "listing.md"
+OUT = C.ROOT / "results" / "_multi" / "s35_listing_1d"
+REPORT = C.ROOT / "journal" / "_multi" / "s35_listing_1d.md"
 CACHE = C.ROOT / "data" / "cache" / "_multi" / "listing"
 RAW = C.ROOT / "data" / "raw" / "_multi" / "listing"
 

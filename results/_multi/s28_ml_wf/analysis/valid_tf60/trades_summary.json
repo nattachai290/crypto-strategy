@@ -1,0 +1,25 @@
+{
+ "source": "trades_valid_tf60.csv.gz",
+ "trades": 9276,
+ "return": -0.0017465186366465435,
+ "mean_r": -1.8828359601625522e-05,
+ "median_r": -0.003145036142878,
+ "win_rate": 0.49320827943078915,
+ "profit_factor": 0.9998590833658171,
+ "max_dd": 2.12351361300302,
+ "avg_win_r": 0.27086859856553913,
+ "avg_loss_r": -0.26364571161476413,
+ "expectancy_r": -1.8828359601625522e-05,
+ "max_consecutive_wins": 52,
+ "max_consecutive_losses": 60,
+ "longs": 2793,
+ "shorts": 6483,
+ "exit_reasons": {
+  "signal": 8977,
+  "stop": 294,
+  "eod": 5
+ },
+ "gross_r": 0.021937420408457114,
+ "cost_r": 0.02195624876805874,
+ "median_hold_bars": 14.0
+}

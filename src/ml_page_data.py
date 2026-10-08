@@ -32,8 +32,8 @@ def daily_cum(t: pd.DataFrame, col: str) -> list:
 def main() -> None:
     out = {"s30": {}, "s30_side": {}, "s30_month": [], "s31": [], "s35": []}
     for tf, name in ((60, "1h"), (240, "4h"), (1440, "1d")):
-        t = _read(M / "ml_wf3" / f"trades_valid_tf{tf}.csv.gz")
-        r = json.loads((M / "ml_wf3" / f"tf{tf}.json").read_text())
+        t = _read(M / "s30_ml_wf3" / f"trades_valid_tf{tf}.csv.gz")
+        r = json.loads((M / "s30_ml_wf3" / f"tf{tf}.json").read_text())
         v = r["valid"]
         out["s30"][name] = {"series": daily_cum(t, "net_r"), "trades": int(len(t)), "mean_r": v["mean_r"],
                             "ci": [v["ci_lo"], v["ci_hi"]], "verdict": r["verdict"], "failed": r["gates_failed"]}
@@ -44,20 +44,20 @@ def main() -> None:
                                       "mean_r": float(s["net_r"].mean())}
             mo = t.groupby(t["exit_time"].dt.strftime("%Y-%m"))["net_r"].sum()
             out["s30_month"] = [[k, round(float(v), 3)] for k, v in mo.items()]
-    t = _read(M / "ml_port" / "trades_valid.csv.gz")
+    t = _read(M / "s31_ml_port_1h" / "trades_valid.csv.gz")
     out["s31"] = daily_cum(t, "ret")
-    t = _read(M / "listing" / "trades_valid.csv.gz")
+    t = _read(M / "s35_listing_1d" / "trades_valid.csv.gz")
     out["s35"] = daily_cum(t, "ret")
-    rounds = [(27, None, "ml_hold/trades_valid.csv.gz", "§27 ตัดสินเข้า-ออกเอง · 20 เหรียญ")]
-    for sec, d in ((28, "ml_wf"), (29, "ml_wf2"), (30, "ml_wf3")):
+    rounds = [(27, None, "s27_ml_hold_1h/trades_valid.csv.gz", "§27 ตัดสินเข้า-ออกเอง · 20 เหรียญ")]
+    for sec, d in ((28, "s28_ml_wf"), (29, "s29_ml_wf2"), (30, "s30_ml_wf3")):
         for tf, nm in ((60, "1h"), (240, "4h"), (1440, "1d")):
             rounds.append((sec, nm, f"{d}/trades_valid_tf{tf}.csv.gz", f"§{sec} {nm}"))
-    rounds += [(31, None, "ml_port/trades_valid.csv.gz", "§31 1h + จัดพอร์ต"),
-               (32, None, "ml_xs/trades_valid.csv.gz", "§32 ตัดทิศตลาด (= §31)"),
-               (33, None, "ml_mkt/trades_valid.csv.gz", "§33 ทั้งตลาด → ETH"),
-               (34, None, "ml_flow/trades_valid.csv.gz", "§34 เพิ่ม OI/funding (= §31)"),
-               (36, None, "ml_wide/trades_valid.csv.gz", "§36 เทรนกว้าง · เทรดเหรียญใหญ่"),
-               (37, "4h", "ml_large/trades_valid.csv.gz", "§37 โมเดล 4h · เหรียญใหญ่ 10 ตัว")]
+    rounds += [(31, None, "s31_ml_port_1h/trades_valid.csv.gz", "§31 1h + จัดพอร์ต"),
+               (32, None, "s32_ml_xs_1h/trades_valid.csv.gz", "§32 ตัดทิศตลาด (= §31)"),
+               (33, None, "s33_ml_mkt_1h/trades_valid.csv.gz", "§33 ทั้งตลาด → ETH"),
+               (34, None, "s34_ml_flow_1h/trades_valid.csv.gz", "§34 เพิ่ม OI/funding (= §31)"),
+               (36, None, "s36_ml_wide_1h/trades_valid.csv.gz", "§36 เทรนกว้าง · เทรดเหรียญใหญ่"),
+               (37, "4h", "s37_ml_large_4h/trades_valid.csv.gz", "§37 โมเดล 4h · เหรียญใหญ่ 10 ตัว")]
     out["rounds"] = []
     for sec, tf, f, label in rounds:
         t = _read(M / f)

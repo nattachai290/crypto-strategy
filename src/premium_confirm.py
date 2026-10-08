@@ -16,7 +16,7 @@ Pre-registered bars (fixed 2026-10-02, before any confirmation run):
        independent), and >= MIN_POSITIVE coins with a positive mean.
 LEAD_CONFIRMED on a clock = that clock's bar is met. Only a confirmed clock
 may go on to a pre-registered holdout test. Writes
-results/_multi/premium_confirm/ and journal/_multi/premium_confirm.md.
+results/_multi/s26_premium_confirm/ and journal/_multi/s26_premium_confirm.md.
 """
 from __future__ import annotations
 
@@ -38,8 +38,8 @@ MIN_POSITIVE = 7
 MIN_SKILL = 5
 MIN_POOLED = 100
 N_BOOT = 5000
-OUT = C.ROOT / "results" / "_multi" / "premium_confirm"
-REPORT = C.ROOT / "journal" / "_multi" / "premium_confirm.md"
+OUT = C.ROOT / "results" / "_multi" / "s26_premium_confirm"
+REPORT = C.ROOT / "journal" / "_multi" / "s26_premium_confirm.md"
 
 
 def coin_rows(root: Path, coin: str) -> dict:

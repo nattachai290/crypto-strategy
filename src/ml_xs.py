@@ -34,7 +34,7 @@ weeks, negative weeks, and beta/correlation of the weekly account return to the
 equal-weight weekly market return of the 47 coins.
 Holdout: sections 31 and 32 share ONE holdout; --final refuses if section 31's
 holdout file exists. CONFIRMED = section 31's rule.
-Writes results/_multi/ml_xs/ and the generated journal/_multi/ml_xs.md.
+Writes results/_multi/s32_ml_xs_1h/ and the generated journal/_multi/s32_ml_xs_1h.md.
 """
 from __future__ import annotations
 
@@ -53,8 +53,8 @@ import ml_port as MP  # noqa: E402
 import ml_wf as WF  # noqa: E402
 import ml_wf3 as W3  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_xs"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_xs.md"
+OUT = C.ROOT / "results" / "_multi" / "s32_ml_xs_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s32_ml_xs_1h.md"
 
 # ---- pre-registered (PLAN.md section 32)
 FORM = ("raw", "demean")

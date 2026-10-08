@@ -20,7 +20,7 @@ notional (test 14 checks it trade for trade against the engine).
 
 The six exits are fixed in EXITS. TRAIN chooses one (highest mean net R).
 VALID gives PASS/REJECT. --final runs the HOLDOUT once, and only after PASS.
-Writes results/<SYMBOL>/exit_lab/ and the generated journal/<SYMBOL>/exit_lab.md.
+Writes results/<SYMBOL>/s18_exit_lab/ and the generated journal/<SYMBOL>/s18_exit_lab.md.
 """
 from __future__ import annotations
 
@@ -163,7 +163,7 @@ def run(tf: int, final: bool = False) -> None:
     import experiment as E
     bars = E.get_bars(tf)[["open", "high", "low", "close"]]
     fund = E.load_funding()
-    out = C.RESULTS / "exit_lab"
+    out = C.RESULTS / "s18_exit_lab"
     out.mkdir(parents=True, exist_ok=True)
     res_path = out / f"tf{tf}.json"
     side = random_entries(bars.index)
@@ -224,7 +224,7 @@ def write_report(out: Path) -> None:
             hj = json.loads(h.read_text())
             L += [f"**HOLDOUT: {hj['verdict']}** - {hj['trades']} trades, mean {hj['mean_r']:+.4f}, "
                   f"CI [{hj['ci_lo']:+.4f}, {hj['ci_hi']:+.4f}]", ""]
-    (C.JOURNAL / "exit_lab.md").write_text("\n".join(L) + "\n")
+    (C.JOURNAL / "s18_exit_lab.md").write_text("\n".join(L) + "\n")
 
 
 def main() -> None:

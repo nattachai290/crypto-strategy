@@ -437,6 +437,7 @@ def main() -> None:
     test_listing()
     test_ml_wide()
     test_ml_large()
+    test_result_report()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2582,6 +2583,35 @@ def test_ml_large() -> None:
           and r1["valid"]["top5_weeks_share"] is not None and "weekly_mean_without_top5" in r1["valid"])
     check("ml_large agreement: with no agreeing forecast (all NaN) no position opens; a coin outside every "
           "month's set never trades", len(t_nan) == 0 and len(t_off) > 0 and set(t_off["coin"]) == {"C0USDT"})
+
+
+
+def test_result_report() -> None:
+    """Test 34: the read-only analysis files (streaks, profit factor, drawdown, buckets, causal regimes)."""
+    print("\n34. result_report: summary numbers, confidence buckets, causal BTC regimes")
+    import result_report as RR
+    r = pd.Series([1.0, 2.0, -1.0, -0.5, -0.5, 3.0])
+    check("result_report streaks / PF / drawdown by hand: 2 wins, 3 losses in a row; PF 6/2; DD 2 (additive)",
+          RR.streaks(r) == (2, 3) and np.isclose(RR.profit_factor(r), 3.0) and np.isclose(RR.max_dd(r), 2.0))
+    t = pd.DataFrame({"entry_time": pd.date_range("2023-01-01", periods=6, freq="D", tz="UTC"),
+                      "exit_time": pd.date_range("2023-01-02", periods=6, freq="D", tz="UTC"),
+                      "side": [1, -1, 1, -1, 1, -1], "net_r": r, "conf": [1.0, 1.1, 1.3, 1.6, 2.5, 4.0],
+                      "coin": ["A", "A", "B", "B", "A", "B"], "reason": "signal"})
+    s = RR.summary(t)
+    pa = RR.prediction_analysis(t)
+    check("result_report summary: 6 trades, win rate 0.5, avg win 2, avg loss -2/3, longs 3",
+          s["trades"] == 6 and np.isclose(s["win_rate"], 0.5) and np.isclose(s["avg_win_r"], 2.0)
+          and np.isclose(s["avg_loss_r"], -2 / 3) and s["longs"] == 3 and np.isclose(s["return"], 0.01 * r.sum()))
+    check("result_report confidence buckets cover every trade once",
+          sum(b["trades"] for b in pa["buckets"]) == 6 and [b["trades"] for b in pa["buckets"]] == [2, 1, 1, 1, 1])
+    idx = pd.date_range("2020-01-01", periods=800, freq="D", tz="UTC")
+    c = pd.Series(np.exp(np.cumsum(np.random.default_rng(5).normal(0, 0.03, 800))) * 1e4, index=idx)
+    g1 = RR.regimes(pd.DataFrame({"close": c}))
+    c2 = c.copy()
+    c2.iloc[600:] *= 3.0
+    g2 = RR.regimes(pd.DataFrame({"close": c2}))
+    check("result_report regimes are causal: changing prices from day 600 changes no regime before day 600",
+          g1.iloc[:600].equals(g2.iloc[:600]) and set(g1["trend"].dropna()) <= {"up", "down"})
 
 
 if __name__ == "__main__":

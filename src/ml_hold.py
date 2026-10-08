@@ -39,8 +39,8 @@ Everything is fixed before the run; every choice is made on TRAIN out-of-fold.
     net > 0 AND timing above their own shifted median; both legs net > 0.
   * --final: CONFIRMED = holdout net mean > 0, CI lower bound > 0, timing
     above the shifted median, and at least half the coins above their own.
-Writes results/_multi/ml_hold/ (summary.json, trades_<split>.csv.gz,
-desired_<split>.csv.gz for the charts) and the generated journal/_multi/ml_hold.md.
+Writes results/_multi/s27_ml_hold_1h/ (summary.json, trades_<split>.csv.gz,
+desired_<split>.csv.gz for the charts) and the generated journal/_multi/s27_ml_hold_1h.md.
 """
 from __future__ import annotations
 
@@ -60,8 +60,8 @@ import ml_entry as ME  # noqa: E402
 import ml_pool as MP  # noqa: E402
 import ml_pool2 as M2  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_hold"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_hold.md"
+OUT = C.ROOT / "results" / "_multi" / "s27_ml_hold_1h"
+REPORT = C.ROOT / "journal" / "_multi" / "s27_ml_hold_1h.md"
 
 # ---- pre-registered (PLAN.md section 27); a change is a new test
 STEP = 4                        # decide every 4 hours (hours 3, 7, ..., 23 UTC close)

@@ -26,8 +26,8 @@ Markets:
         rate) from the funding cache.
 Both end at config data_end.
 
-Writes results/<SYMBOL>/allocation/summary.json and the generated report
-journal/<SYMBOL>/allocation.md.
+Writes results/<SYMBOL>/s16_allocation_1d/summary.json and the generated report
+journal/<SYMBOL>/s16_allocation_1d.md.
 """
 from __future__ import annotations
 
@@ -43,8 +43,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config as C  # noqa: E402
 import datafeed as DF  # noqa: E402
 
-OUT = C.RESULTS / "allocation"
-REPORT = C.JOURNAL / "allocation.md"
+OUT = C.RESULTS / "s16_allocation_1d"
+REPORT = C.JOURNAL / "s16_allocation_1d.md"
 
 # Calendar segments, reported separately so a rule cannot hide a bad cycle
 # behind a good one. Each segment is measured on the same continuous run.

@@ -8,7 +8,7 @@ Section 29 (ml_wf2.py) was meant to ask "does a longer history help?", but its
 universe rule (spot pair by 2018-01-01) left 4 coins, so it changed the history
 and the universe at once and the breadth gates were unreachable (_multi Exp
 025/026, the planner's error). This round asks the question cleanly:
-  * Universe: EXACTLY section 28's 47 coins (results/_multi/ml_wf/universe_v2.json).
+  * Universe: EXACTLY section 28's 47 coins (results/_multi/s28_ml_wf/universe_v2.json).
   * Each coin's features and labels come from its Binance SPOT bars from the
     pair's own first month (as early as 2017-08) UNTIL its perp starts, and from
     its perp bars after that (history_source, "splice"; Exp 028 fix). A coin with
@@ -17,7 +17,7 @@ and the universe at once and the breadth gates were unreachable (_multi Exp
     costs and funding, the same windows, cell grid, gates and one holdout
     timeframe (ml_wf2.prepare, ml_wf.evaluate / holdout).
 So the only difference from section 28 is the length of each coin's history.
-Writes results/_multi/ml_wf3/ and the generated journal/_multi/ml_wf3.md.
+Writes results/_multi/s30_ml_wf3/ and the generated journal/_multi/s30_ml_wf3.md.
 """
 from __future__ import annotations
 
@@ -35,9 +35,9 @@ import ml_pool as MP  # noqa: E402
 import ml_wf as WF  # noqa: E402
 import ml_wf2 as W2  # noqa: E402
 
-OUT = C.ROOT / "results" / "_multi" / "ml_wf3"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_wf3.md"
-SOURCE_UNIVERSE = C.ROOT / "results" / "_multi" / "ml_wf" / WF.UNIVERSE_FILE
+OUT = C.ROOT / "results" / "_multi" / "s30_ml_wf3"
+REPORT = C.ROOT / "journal" / "_multi" / "s30_ml_wf3.md"
+SOURCE_UNIVERSE = C.ROOT / "results" / "_multi" / "s28_ml_wf" / WF.UNIVERSE_FILE
 
 
 def build() -> None:

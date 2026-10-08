@@ -49,8 +49,8 @@ section 27's design, scaled in bars ("chart mode") to each timeframe:
     (and at a signal exit), the entry bar at that moment, and the 3 features
     that pushed the forecast most toward the decision (LightGBM per-feature
     contributions; explain()). Reported only, never a gate.
-Writes results/_multi/ml_wf/ (universe.json, tf<N>.json, trades_valid_tf<N>.csv.gz,
-desired_valid_tf<N>.csv.gz, holdout files) and the generated journal/_multi/ml_wf.md.
+Writes results/_multi/s28_ml_wf/ (universe.json, tf<N>.json, trades_valid_tf<N>.csv.gz,
+desired_valid_tf<N>.csv.gz, holdout files) and the generated journal/_multi/s28_ml_wf.md.
 """
 from __future__ import annotations
 
@@ -72,8 +72,8 @@ import ml_pool as MP  # noqa: E402
 import ml_pool2 as M2  # noqa: E402
 
 RAW = C.ROOT / "data" / "raw" / "_multi"
-OUT = C.ROOT / "results" / "_multi" / "ml_wf"
-REPORT = C.ROOT / "journal" / "_multi" / "ml_wf.md"
+OUT = C.ROOT / "results" / "_multi" / "s28_ml_wf"
+REPORT = C.ROOT / "journal" / "_multi" / "s28_ml_wf.md"
 TF_NAME = {60: "1h", 240: "4h", 1440: "1d"}
 
 # ---- pre-registered (PLAN.md section 28); a change is a new test

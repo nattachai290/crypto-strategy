@@ -24,8 +24,8 @@ Honesty rules built in:
   * Lookback is the only choice, made on TRAIN; VALID gives the verdict;
     HOLDOUT runs once (--final), and only after PASS.
 
-Outputs: results/_multi/rotation/<market>.json, <market>_weeks.csv.gz,
-holdout_<market>.json, and the generated journal/_multi/rotation.md.
+Outputs: results/_multi/s17_rotation_1d/<market>.json, <market>_weeks.csv.gz,
+holdout_<market>.json, and the generated journal/_multi/s17_rotation_1d.md.
 """
 from __future__ import annotations
 
@@ -45,8 +45,8 @@ import datafeed as DF  # noqa: E402
 
 RAW = C.ROOT / "data" / "raw" / "_multi"
 CACHE = C.ROOT / "data" / "cache" / "_multi"
-OUT = C.ROOT / "results" / "_multi" / "rotation"
-REPORT = C.ROOT / "journal" / "_multi" / "rotation.md"
+OUT = C.ROOT / "results" / "_multi" / "s17_rotation_1d"
+REPORT = C.ROOT / "journal" / "_multi" / "s17_rotation_1d.md"
 
 # ---- pre-registered design (PLAN.md section 17); changing any of these is a
 # ---- new test that needs the owner, not a tweak

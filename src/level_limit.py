@@ -43,7 +43,7 @@ with >= MIN_TRADES fills. VALID gates (all needed):
   LEVEL matters, orders at levels must beat orders at the same distance
   anywhere.
 --final: CONFIRMED = holdout mean > 0, CI lower bound > 0, above the control
-median. Writes results/<SYMBOL>/level_limit/ and journal/<SYMBOL>/level_limit.md.
+median. Writes results/<SYMBOL>/s24_level_limit/ and journal/<SYMBOL>/s24_level_limit.md.
 """
 from __future__ import annotations
 
@@ -288,7 +288,7 @@ def run(tf: int, final: bool = False) -> None:
     import experiment as E
     bars = E.get_bars(tf)[["open", "high", "low", "close"]]
     fund = E.load_funding()
-    out = C.RESULTS / "level_limit"
+    out = C.RESULTS / "s24_level_limit"
     out.mkdir(parents=True, exist_ok=True)
     res_path = out / f"tf{tf}.json"
     if final:
@@ -351,7 +351,7 @@ def write_report(out: Path) -> None:
             hj = json.loads(hp.read_text())
             L += [f"**HOLDOUT: {hj['verdict']}** - {hj.get('trades', 0)} fills, mean {f(hj.get('mean_r'))}, "
                   f"CI [{f(hj.get('ci_lo'))}, {f(hj.get('ci_hi'))}], control median {f(hj.get('control_median'))}", ""]
-    (C.JOURNAL / "level_limit.md").write_text("\n".join(L) + "\n")
+    (C.JOURNAL / "s24_level_limit.md").write_text("\n".join(L) + "\n")
 
 
 def main() -> None:
