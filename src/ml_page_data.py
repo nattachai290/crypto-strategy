@@ -55,7 +55,8 @@ def main() -> None:
     rounds += [(31, None, "ml_port/trades_valid.csv.gz", "§31 1h + จัดพอร์ต"),
                (32, None, "ml_xs/trades_valid.csv.gz", "§32 ตัดทิศตลาด (= §31)"),
                (33, None, "ml_mkt/trades_valid.csv.gz", "§33 ทั้งตลาด → ETH"),
-               (34, None, "ml_flow/trades_valid.csv.gz", "§34 เพิ่ม OI/funding (= §31)")]
+               (34, None, "ml_flow/trades_valid.csv.gz", "§34 เพิ่ม OI/funding (= §31)"),
+               (36, None, "ml_wide/trades_valid.csv.gz", "§36 เทรนกว้าง · เทรดเหรียญใหญ่")]
     out["rounds"] = []
     for sec, tf, f, label in rounds:
         t = _read(M / f)

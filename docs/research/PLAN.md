@@ -2628,3 +2628,71 @@ the data-gap bug (`_multi` Exp 047 note).
   forecasting every traded coin, shared by both forms. §30's frozen 4h
   forecasts cover only the 47 coins.
 - **Unchanged:** §31's cell, gates and holdout sharing.
+
+## §37 — A model for the owner's ten large coins: trained wide, decided on 4h (`src/ml_large.py`, `_multi` Exp 053)
+
+**Why.** The owner will trade only BNB, BTC, ETH, XRP, SOL, DOGE, ADA, LINK,
+NEAR and BCH, and allows training on any coin (2026-10-08). §36's recorded
+VALID trades on exactly these coins made +0.0297 R per trade and +0.00069 a
+week (t +0.50); their short leg made +0.001 (`_multi` Exp 052). The 1h line's
+edge is crash-week shorts in alt-coins. Re-running the 1h model on these ten
+coins would mostly replay trades already seen, so §37 changes what is
+forecast.
+
+**Hypothesis.** Large coins move slower and more steadily than alt-coins. A
+model that forecasts their next 1–6 days on 4h bars has a target large coins
+actually offer, and an 8-ATR stop on the 4h ATR costs less in R. Training on
+every top-50 coin gives the model more market states than ten coins alone.
+
+**Design.**
+- **Traded coins:** the ten above, each from the first month it has been
+  listed ≥ 365 days (from daily volume, per symbol). No monthly ranking.
+- **Bars:** decided on 4h bars, with 1h and 1d closed-bar features as inputs.
+  Trades are simulated on perp bars with costs and funding.
+- **Training rows ("wide", as in §36):** §30's 47 coins, plus every crypto perp
+  in the months it was a monthly top-50 member (§36's `members.json`).
+- **Model:** §30's chosen 4h LightGBM setting, refit monthly (walk-forward).
+- **Horizons:** one model per label horizon, averaged as in §36 (pred_h ×
+  sqrt(24/h)). Two sets are pre-registered: "1-3d" = 6, 12 and 18 4h bars;
+  "2-6d" = 12, 24 and 36 bars.
+- **Policy:** §30's 4h entry quantile and exit mode, 8-ATR protective stop,
+  no clock.
+- **Agreement switch:** "off", or "1d". "1d" is a new 1d model (§30's 1d
+  setting, 24-bar label, trained wide); a NEW position opens only when it
+  agrees with the side.
+- **Account:** confidence sizing up to 1% per trade, 5% cap per direction.
+
+**TRAIN choice.** Walk-forward 2021–22 picks 1 of 4 cells (horizon set ×
+agreement) by the weekly account t-statistic, among cells with ≥ 100 trades.
+
+**VALID gates (2023–24, once).**
+- TRAIN weekly mean > 0.
+- ≥ 100 VALID trades.
+- Weekly mean > 0 and its 95% CI lower bound > 0.
+- Cost ×1.5 weekly mean > 0.
+- Timing above the shifted p95.
+- ≥ 8 coins with ≥ 10 trades, and half of them both net > 0 and above their
+  own shifted median.
+- Both legs > 0.
+- Max drawdown ≤ 20%.
+
+**Diagnostics:** best-5-week share, weekly mean without the best 5 weeks, per
+coin, and TRAIN trades of all four cells plus the chosen cell's TRAIN checks
+(for `src/analyzer.py`).
+
+**What each outcome means.**
+- **PASS:** the first ML book that works on large coins. The shared holdout
+  (§31–§37, one use) decides.
+- **REJECT with a positive TRAIN:** the large-coin target does not hold out
+  of sample.
+- **REJECT with a negative TRAIN:** the ten coins carry no forecastable
+  1–6-day move for this model family.
+
+**Holdout:** shared with §31–§36 (one use for the ML line).
+
+**Prior:** low. 4h and 1d went backwards in §28–§30 on 47 coins (`_multi`
+Exp 030/031). What is new is the horizon ensemble, the wide training and the
+large-coin target. The ten coins were named by the owner as today's large
+coins, not chosen from VALID: BTC and BNB, which lost in §36's VALID, are in
+the list. "Large today" still carries some hindsight for 2021–24; NEAR and BCH
+were in the monthly top 20 in only 21 and 20 of the 48 months.

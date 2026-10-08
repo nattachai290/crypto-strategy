@@ -436,6 +436,7 @@ def main() -> None:
     test_ml_flow()
     test_listing()
     test_ml_wide()
+    test_ml_large()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2529,6 +2530,59 @@ def test_ml_wide() -> None:
               len(t_off) > 0 and set(t_off["coin"]) == {"C0USDT"})
     finally:
         MP_._cfg = saved_cfg
+
+
+def test_ml_large() -> None:
+    """Test 33 (PLAN.md section 37): the ten-coin model's traded sets, cells, agreement switch and pipeline."""
+    print("\n33. ml_large: fixed large-coin sets, horizon-set x agreement cells, pipeline on planted edge / noise")
+    import contextlib
+    import io
+    import ml_port as MP_
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_large as ML
+    first = {"BTCUSDT": pd.Timestamp("2019-09-08", tz="UTC"), "NEARUSDT": pd.Timestamp("2020-10-14", tz="UTC")}
+    ts = ML.traded_sets(first, ["2020-09", "2020-10", "2021-10", "2021-11"])
+    check("ml_large traded sets: a listed coin from 365 days after its first day; unlisted coins never",
+          ts["2020-09"] == [] and ts["2020-10"] == ["BTCUSDT"] and ts["2021-10"] == ["BTCUSDT"] and ts["2021-11"] == ["BTCUSDT", "NEARUSDT"],
+          f"{ts}")
+    check("ml_large cells: 2 horizon sets x agreement off/1d", [ML.cell_name(c) for c in ML.cells()] ==
+          ["1-3d_off", "1-3d_1d", "2-6d_off", "2-6d_1d"])
+
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    cfg = WF_.GRID[0]
+    by = {60: {}}
+    for n, sd in (("C0USDT", 150), ("C1USDT", 151), ("C2USDT", 152), ("N0USDT", 153)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+        spans = [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]]
+        masks = {c: np.ones(len(P[c]["X"]), bool) for c in P}
+        ph = ML.per_horizon(P, 60, cfg, masks, (12, 24), spans, step=3)
+    edge = ML.combine_set(P, ph, (12, 24))
+    noise = {c: pd.Series(np.random.default_rng(11).normal(size=len(P[c]["X"])), index=P[c]["X"].index) for c in P}
+    months = [str(p) for p in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: ["C0USDT", "C1USDT", "C2USDT"] for m in months}
+    with contextlib.redirect_stdout(io.StringIO()):
+        r1 = ML.evaluate(P, {"1-3d": edge, "2-6d": noise}, edge, traded, 0.9, "flip", tf=60, tf_agree=60, min_coins=3)
+        r2 = ML.evaluate(P, {"1-3d": noise, "2-6d": noise}, noise, traded, 0.9, "flip", tf=60, tf_agree=60,
+                         min_coins=3)
+        a, b = WF_.WINDOWS["valid"]
+        t_nan, _ = ML.run_cell(P, edge, {c: s * np.nan for c, s in edge.items()}, "1d", a, b, traded, 0.9, "flip",
+                               tf=60, tf_agree=60)
+        t_off, _ = ML.run_cell(P, edge, None, "off", a, b, {m: ["C0USDT"] for m in months}, 0.9, "flip",
+                               tf=60, tf_agree=60)
+    check("ml_large pipeline: the planted edge's horizon set is chosen on TRAIN and PASSes; pure noise is REJECT",
+          r1["chosen"]["horizons"] == "1-3d" and r1["verdict"] == "PASS" and r2["verdict"] == "REJECT",
+          f"{r1['chosen']} {r1['verdict']} {r1['gates_failed']} / {r2['verdict']} {r2['gates_failed']}")
+    check("ml_large outputs: four TRAIN rows, TRAIN checks of the chosen cell, best-5-week diagnostics",
+          len(r1["train_table"]) == 4 and {"timing", "shift_p95", "breadth"} <= set(r1["train_checks"])
+          and r1["valid"]["top5_weeks_share"] is not None and "weekly_mean_without_top5" in r1["valid"])
+    check("ml_large agreement: with no agreeing forecast (all NaN) no position opens; a coin outside every "
+          "month's set never trades", len(t_nan) == 0 and len(t_off) > 0 and set(t_off["coin"]) == {"C0USDT"})
+
 
 if __name__ == "__main__":
     main()

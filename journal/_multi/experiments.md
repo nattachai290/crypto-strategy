@@ -4579,3 +4579,110 @@ drawdown and worse concentration, so it does not displace it.
 Files: `results/_multi/ml_wide/summary.json`, `trades_valid.csv.gz`, `trades_train_narrow.csv.gz`,
 `trades_train_wide.csv.gz`; generated `journal/_multi/ml_wide.md`; refreshed
 `results/_multi/analyzer/report.json`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
+
+---
+
+## Exp 051 - Review of Exp 050 (§36, planner): REJECT stands; the TRAIN choice and the VALID return are both crash-week shorts
+
+**Date:** 2026-10-08
+**Status:** complete (review of recorded files only; no run, no holdout)
+
+Recomputed from `results/_multi/ml_wide/trades_valid.csv.gz` and `trades_train_{narrow,wide}.csv.gz`.
+The runner's numbers reproduce: 1,165 VALID trades, weekly mean +0.004857 (exit-time weeks), best 5 weeks
+= 87.2% of the return, max DD 0.2001, BTC -0.097 R / 49 trades, BNB -0.096 R / 73. My week grid puts 60
+trades (runner: 62) in the best 5 weeks, mean +1.41 R; the other trades average +0.011 R. Same reading.
+
+### Confirmed and sharpened
+
+- **2023 without its own best 5 weeks is -0.296** (year total +0.078 on this grid); 2024 without its best 5
+  is +0.099. The book's VALID return is one year (2024) plus a handful of weeks.
+- **The best 5 weeks are shorts:** 50 of their 60 trades, +0.381 of +0.445. Over all of VALID shorts made
+  +0.393 and longs +0.117. Same shape as §31 (Exp 037): a crash-week short timer.
+- **The TRAIN choice was made by the same thing.** Wide's TRAIN book: shorts +0.812, longs +0.016; in 2021
+  (a bull year) wide's longs LOST -0.063 while narrow's made +0.008. Wide beat narrow on TRAIN almost
+  entirely through 2022 shorts (+0.657 vs +0.324). "Wide doubles the per-trade result" is true, but it means
+  "wide shorts the 2022 bear market harder", not "wide forecasts better" - which matches the flat VALID
+  forecast correlation.
+
+### Corrections to Exp 050
+
+1. **"Trading only large coins did not raise the ceiling" cannot be read from this run.** §36 changes three
+   things against §31 at once (training rows, a horizon ensemble, the traded universe). Its comparison with
+   §31 says the package is not better; it does not say which part failed. Same for "BTC and BNB are the
+   drag": 49 and 73 trades at about -0.1 R are well inside noise for an 8-ATR-stop book.
+2. **Forecast correlation +0.0307 vs +0.0314 is "no difference", not "marginally worse".**
+3. **"Large" by prior-30-day volume is not "large" by size.** The VALID traded sets include BLZ, STMX, LINA,
+   UNFI, BAKE, HIGH, BIGTIME, ARPA, MTL: coins whose volume spiked during a pump. This follows the owner's
+   accepted definition (Exp 048) and the run is valid under it; it is noted because the owner's intent was
+   "established big coins". A market-cap-like filter (e.g. a volume rank that must hold for 3 of the prior 6
+   months) would be a different, new registration - not a fix to this one.
+4. `max_dd<=0.2` failed by 0.0001. The gate is fixed; no rounding applies. It is a real fail, not a technicality
+   to argue: the CI gate fails on its own anyway.
+
+### Analyzer
+
+§36 = FRAGILE, quality 83 (§31: FRAGILE 86). First run with TRAIN trades: TRAIN best-5-week share 56.7% vs
+VALID 87.2%; TRAIN months positive 14/24 (longest losing run 6), VALID 15/24 (run 2). Every TRAIN check
+passes; on VALID the CI and the DD fail.
+
+### What five rounds now say (§31-§34, §36)
+
+Every ML variant of the §30 line converges on the same book: profitable only through short trades in a few
+market-wide crash weeks, near zero elsewhere, weekly CI touching zero. Changing features (§34), the market
+part (§32), the instrument (§33) and the training set/universe (§36) moved the number around §31's, never
+past it. The next round should test that shape directly rather than add inputs: either (a) a model whose
+target is the crash week itself (market-wide drawdown risk), traded short-only with its own pre-registered
+gates, or (b) accept §31 as the line's frozen candidate and decide on the shared holdout with the power
+estimate in hand (§31: ~39% if fully real). Owner's call; nothing is run without a new registration.
+
+Web: §36 added to `docs/ml.html` (rounds table), `docs/valid.html` (round chip §36), `docs/trade.html`
+(§36 group; candles for the coins outside §28's 47 are published as `docs/trades/c60_<COIN>.json` from
+native monthly 1h perp klines by `python src/trade_page_data.py --candles`, display only) and the analyzer.
+
+---
+
+## Exp 052 - Diagnostic (planner, recorded files only): §36's trades on the owner's ten large coins
+
+**Date:** 2026-10-08
+**Status:** complete. No run; read from `results/_multi/ml_wide/trades_{train_wide,valid}.csv.gz`.
+
+The owner asked to trade only BNB, BTC, ETH, XRP, SOL, DOGE, ADA, LINK, NEAR, BCH (training on any coin).
+§36's recorded trades restricted to these coins:
+
+| period | trades | mean R | weekly mean | t | long | short |
+|---|---|---|---|---|---|---|
+| TRAIN (wide) | 630 of 1,556 | +0.1069 | +0.00352 | +2.16 | +0.019 | +0.351 |
+| VALID | 463 of 1,165 | +0.0297 | +0.00069 | +0.50 | +0.072 | +0.001 |
+
+VALID per coin (mean R): NEAR +0.164, XRP +0.133, DOGE +0.131, ADA +0.097, ETH +0.097, BCH +0.033,
+LINK -0.015, SOL -0.067, BNB -0.096, BTC -0.097. Months in §36's top-20 set (2021-24, of 48): BTC 48,
+ETH 48, XRP 47, BNB 46, ADA 42, DOGE 40, LINK 40, SOL 39, NEAR 21, BCH 20.
+
+**Reading.** On these coins the 1h model's VALID short leg is zero: the line's edge is crash-week shorts in
+alt-coins. A "§36 traded on ten coins" run would replay mostly these already-seen trades and is not a new
+test, so it is not proposed. Owner's choice (2026-10-08): a new model for large coins (PLAN.md §37).
+
+---
+
+## Exp 053 - Pre-registration: a model for the ten large coins, trained wide, decided on 4h (PLAN.md §37, owner request)
+
+**Date:** 2026-10-08
+**Status:** registered, not run. Code `src/ml_large.py`, test 33.
+
+Design, gates and outcomes: PLAN.md §37. In short:
+- **Traded coins:** the ten above, each from 365 days after its first traded day.
+- **Model:** 4h decisions trained wide (§36's members), with two horizon sets ("1-3d" 6/12/18 bars, "2-6d"
+  12/24/36). §30's 4h setting, entry quantile and exit mode; 8-ATR stop, no clock.
+- **Agreement:** off, or a wide-trained 1d model.
+- **TRAIN choice:** picks 1 of 4 cells by the weekly t-statistic.
+- **VALID:** §31's gates with ≥ 100 trades and breadth ≥ 8 coins.
+- **Outputs:** TRAIN trades of all four cells and the chosen cell's TRAIN checks are written.
+- **Holdout:** shared with §31–§36.
+
+**Count of looks.** This is the 9th distinct ML VALID book. The ten coins' VALID trades from §36 have been
+seen (Exp 052), but §37's forecasts are new (4h, new horizons, a new 1d agreement model) and its trades are
+not a subset of §36's.
+
+**Run (runner):**
+- No new download: it uses §36's caches and `results/_multi/ml_wide/members.json`.
+- `python src/test_engine.py`, then `python src/ml_large.py` once, then `python src/analyzer.py`.

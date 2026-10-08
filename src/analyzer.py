@@ -70,6 +70,8 @@ RUNS += [("s31", 31, "§31 1h + portfolio", M / "ml_port/summary.json", M / "ml_
          ("s33", 33, "§33 market timing → ETH", M / "ml_mkt/summary.json", M / "ml_mkt/trades_valid.csv.gz", "account"),
          ("s34", 34, "§34 positioning data (= §31)", M / "ml_flow/summary.json", M / "ml_flow/trades_valid.csv.gz", "account"),
          ("s36", 36, "§36 train wide · top 20 large coins", M / "ml_wide/summary.json", M / "ml_wide/trades_valid.csv.gz",
+          "account"),
+         ("s37", 37, "§37 4h model · 10 large coins", M / "ml_large/summary.json", M / "ml_large/trades_valid.csv.gz",
           "account")]
 # TRAIN trade files exist from §36 on (trades_train_<form>.csv.gz, the chosen form is read)
 TRAIN = ("2021-01-01", "2023-01-01")
