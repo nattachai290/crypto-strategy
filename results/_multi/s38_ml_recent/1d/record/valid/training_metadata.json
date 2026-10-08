@@ -1,0 +1,582 @@
+{
+ "n_features": 86,
+ "features": [
+  "atr_pct",
+  "body",
+  "body_3",
+  "breadth_24",
+  "btc_ret_168",
+  "btc_ret_24",
+  "btc_ret_72",
+  "btc_vol_168",
+  "ema_dist_20",
+  "ema_dist_200",
+  "ema_dist_50",
+  "funding_last",
+  "h1_atr_pct",
+  "h1_body",
+  "h1_body_3",
+  "h1_ema_dist_20",
+  "h1_ema_dist_200",
+  "h1_ema_dist_50",
+  "h1_lower_wick",
+  "h1_range_pos_168",
+  "h1_range_pos_24",
+  "h1_ret_1",
+  "h1_ret_12",
+  "h1_ret_168",
+  "h1_ret_24",
+  "h1_ret_3",
+  "h1_ret_48",
+  "h1_ret_6",
+  "h1_ret_96",
+  "h1_taker_ratio",
+  "h1_taker_ratio_24",
+  "h1_upper_wick",
+  "h1_vol_168",
+  "h1_vol_24",
+  "h1_vol_ratio",
+  "h1_volume_z",
+  "h4_atr_pct",
+  "h4_body",
+  "h4_body_3",
+  "h4_ema_dist_20",
+  "h4_ema_dist_200",
+  "h4_ema_dist_50",
+  "h4_lower_wick",
+  "h4_range_pos_168",
+  "h4_range_pos_24",
+  "h4_ret_1",
+  "h4_ret_12",
+  "h4_ret_168",
+  "h4_ret_24",
+  "h4_ret_3",
+  "h4_ret_48",
+  "h4_ret_6",
+  "h4_ret_96",
+  "h4_taker_ratio",
+  "h4_taker_ratio_24",
+  "h4_upper_wick",
+  "h4_vol_168",
+  "h4_vol_24",
+  "h4_vol_ratio",
+  "h4_volume_z",
+  "hour",
+  "lower_wick",
+  "mkt_ret_168",
+  "mkt_ret_24",
+  "mkt_ret_72",
+  "range_pos_168",
+  "range_pos_24",
+  "rel_ret_168",
+  "rel_ret_24",
+  "rel_ret_72",
+  "ret_1",
+  "ret_12",
+  "ret_168",
+  "ret_24",
+  "ret_3",
+  "ret_48",
+  "ret_6",
+  "ret_96",
+  "taker_ratio",
+  "taker_ratio_24",
+  "upper_wick",
+  "vol_168",
+  "vol_24",
+  "vol_ratio",
+  "volume_z",
+  "weekday"
+ ],
+ "n_coins": 10,
+ "coins": [
+  "ADAUSDT",
+  "BCHUSDT",
+  "BNBUSDT",
+  "BTCUSDT",
+  "DOGEUSDT",
+  "ETHUSDT",
+  "LINKUSDT",
+  "NEARUSDT",
+  "SOLUSDT",
+  "XRPUSDT"
+ ],
+ "refits": [
+  {
+   "month": "2023-01-01",
+   "train_rows": 52760,
+   "effective_rows": 52760.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-02-01",
+   "train_rows": 53047,
+   "effective_rows": 53047.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-03-01",
+   "train_rows": 53351,
+   "effective_rows": 53351.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-04-01",
+   "train_rows": 53830,
+   "effective_rows": 53830.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-05-01",
+   "train_rows": 54074,
+   "effective_rows": 54074.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-06-01",
+   "train_rows": 54351,
+   "effective_rows": 54351.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-07-01",
+   "train_rows": 54585,
+   "effective_rows": 54585.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-08-01",
+   "train_rows": 54744,
+   "effective_rows": 54744.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-09-01",
+   "train_rows": 54957,
+   "effective_rows": 54957.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-10-01",
+   "train_rows": 55165,
+   "effective_rows": 55165.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-11-01",
+   "train_rows": 55351,
+   "effective_rows": 55351.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-12-01",
+   "train_rows": 55485,
+   "effective_rows": 55485.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-01-01",
+   "train_rows": 55516,
+   "effective_rows": 55516.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-02-01",
+   "train_rows": 55775,
+   "effective_rows": 55775.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-03-01",
+   "train_rows": 56087,
+   "effective_rows": 56087.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-04-01",
+   "train_rows": 56414,
+   "effective_rows": 56414.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-05-01",
+   "train_rows": 56534,
+   "effective_rows": 56534.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-06-01",
+   "train_rows": 56680,
+   "effective_rows": 56680.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-07-01",
+   "train_rows": 56915,
+   "effective_rows": 56915.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-08-01",
+   "train_rows": 57176,
+   "effective_rows": 57176.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-09-01",
+   "train_rows": 57389,
+   "effective_rows": 57389.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-10-01",
+   "train_rows": 57517,
+   "effective_rows": 57517.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-11-01",
+   "train_rows": 57756,
+   "effective_rows": 57756.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-12-01",
+   "train_rows": 57938,
+   "effective_rows": 57938.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-01-01",
+   "train_rows": 52681,
+   "effective_rows": 52681.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-02-01",
+   "train_rows": 52969,
+   "effective_rows": 52969.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-03-01",
+   "train_rows": 53271,
+   "effective_rows": 53271.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-04-01",
+   "train_rows": 53747,
+   "effective_rows": 53747.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-05-01",
+   "train_rows": 53993,
+   "effective_rows": 53993.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-06-01",
+   "train_rows": 54272,
+   "effective_rows": 54272.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-07-01",
+   "train_rows": 54503,
+   "effective_rows": 54503.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-08-01",
+   "train_rows": 54664,
+   "effective_rows": 54664.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-09-01",
+   "train_rows": 54875,
+   "effective_rows": 54875.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-10-01",
+   "train_rows": 55082,
+   "effective_rows": 55082.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-11-01",
+   "train_rows": 55268,
+   "effective_rows": 55268.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-12-01",
+   "train_rows": 55402,
+   "effective_rows": 55402.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-01-01",
+   "train_rows": 55433,
+   "effective_rows": 55433.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-02-01",
+   "train_rows": 55689,
+   "effective_rows": 55689.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-03-01",
+   "train_rows": 56001,
+   "effective_rows": 56001.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-04-01",
+   "train_rows": 56327,
+   "effective_rows": 56327.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-05-01",
+   "train_rows": 56450,
+   "effective_rows": 56450.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-06-01",
+   "train_rows": 56597,
+   "effective_rows": 56597.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-07-01",
+   "train_rows": 56829,
+   "effective_rows": 56829.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-08-01",
+   "train_rows": 57090,
+   "effective_rows": 57090.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-09-01",
+   "train_rows": 57301,
+   "effective_rows": 57301.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-10-01",
+   "train_rows": 57431,
+   "effective_rows": 57431.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-11-01",
+   "train_rows": 57666,
+   "effective_rows": 57666.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-12-01",
+   "train_rows": 57849,
+   "effective_rows": 57849.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-01-01",
+   "train_rows": 52602,
+   "effective_rows": 52602.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-02-01",
+   "train_rows": 52891,
+   "effective_rows": 52891.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-03-01",
+   "train_rows": 53191,
+   "effective_rows": 53191.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-04-01",
+   "train_rows": 53664,
+   "effective_rows": 53664.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-05-01",
+   "train_rows": 53912,
+   "effective_rows": 53912.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-06-01",
+   "train_rows": 54193,
+   "effective_rows": 54193.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-07-01",
+   "train_rows": 54421,
+   "effective_rows": 54421.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-08-01",
+   "train_rows": 54584,
+   "effective_rows": 54584.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-09-01",
+   "train_rows": 54793,
+   "effective_rows": 54793.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-10-01",
+   "train_rows": 54999,
+   "effective_rows": 54999.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-11-01",
+   "train_rows": 55185,
+   "effective_rows": 55185.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2023-12-01",
+   "train_rows": 55319,
+   "effective_rows": 55319.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-01-01",
+   "train_rows": 55350,
+   "effective_rows": 55350.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-02-01",
+   "train_rows": 55603,
+   "effective_rows": 55603.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-03-01",
+   "train_rows": 55915,
+   "effective_rows": 55915.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-04-01",
+   "train_rows": 56240,
+   "effective_rows": 56240.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-05-01",
+   "train_rows": 56366,
+   "effective_rows": 56366.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-06-01",
+   "train_rows": 56514,
+   "effective_rows": 56514.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-07-01",
+   "train_rows": 56743,
+   "effective_rows": 56743.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-08-01",
+   "train_rows": 57004,
+   "effective_rows": 57004.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-09-01",
+   "train_rows": 57213,
+   "effective_rows": 57213.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-10-01",
+   "train_rows": 57345,
+   "effective_rows": 57345.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-11-01",
+   "train_rows": 57576,
+   "effective_rows": 57576.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2024-12-01",
+   "train_rows": 57760,
+   "effective_rows": 57760.0,
+   "scheme": "roll24"
+  }
+ ],
+ "label": "log(open[i+1+h]/open[i+1]) / ATR fraction at i, h in bars of 1d",
+ "horizons": [
+  1,
+  2,
+  3
+ ],
+ "lightgbm_params": {
+  "objective": "regression",
+  "learning_rate": 0.03,
+  "num_leaves": 31,
+  "min_data_in_leaf": 1000,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "feature_fraction": 0.8,
+  "lambda_l2": 1.0,
+  "seed": 7,
+  "deterministic": true,
+  "num_threads": 4,
+  "verbose": -1,
+  "rounds": 150
+ },
+ "seed": 7,
+ "windows": {
+  "split": [
+   "2023-01-01",
+   "2025-01-01"
+  ],
+  "train_rows_weighting": "roll24"
+ },
+ "label_distribution": {
+  "rows": 7310,
+  "mean": 0.07797347376872071,
+  "std": 0.9942689478987345,
+  "share_positive": 0.5202462380300957,
+  "quantiles": {
+   "0.01": -2.353644318318377,
+   "0.1": -0.9595859018159189,
+   "0.25": -0.42126246749976254,
+   "0.5": 0.03742315334237804,
+   "0.75": 0.5096678397593635,
+   "0.9": 1.1164218609879029,
+   "0.99": 3.211390170119322
+  }
+ }
+}

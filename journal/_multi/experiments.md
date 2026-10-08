@@ -5108,3 +5108,269 @@ overfitting, to be checked in §38's record.
 - `python src/test_engine.py`, then `python src/ml_recent.py` once. It runs 1h, 4h and 1d in turn and is
   resumable.
 - Then `python src/analyzer.py` and `python src/result_report.py`.
+
+---
+
+## Exp 061 - PLAN.md §38 run: recency-weighted training for the ten large coins, 1h / 4h / 1d sub-models - all three REJECT
+
+**Date:** 2026-10-08
+**Status:** complete. One run per sub-model, each ONCE, as pre-registered in Exp 060. No new download (§36's caches and `members.json`). `--final` not run.
+**No holdout spent.** No `holdout.json` under `results/_multi/s38_ml_recent/`; the §31-§38 shared holdout is untouched.
+
+**Reproduction check passed.** The 4h `expanding` TRAIN row is 423 trades, weekly +0.00278, t +2.22, years 2021 +0.0659 / 2022 +0.2257 - identical to §37's chosen cell. The run is interpreted.
+
+**Verdicts: 1h REJECT (5 gates failed), 4h REJECT (2), 1d REJECT (7).** No sub-model is PASS, so under the
+pre-registered rule **no sub-model would take the holdout** (`holdout_pick` returns None).
+
+The diagnosis being tested (§37, Exp 059) was that every ML book leaned short in 2023-24 (57-78% of
+entries) after 2022 entered training. §37's own 4h book: **short share 0.69 in 2023 and 0.76 in 2024**.
+
+## 1h sub-model: **REJECT** - failed ['train_cell_selectable', 'train_chose_recency', 'valid_ci_lo>0', 'both_legs>0', 'max_dd<=0.2']
+
+TRAIN chose **`expanding`** (horizons [24, 48, 72] bars of 1h). Two TRAIN gates are registered: `train_cell_selectable` (some weighting clears enough trades, both TRAIN years
+and both legs) and `train_chose_recency` (the pick is not `expanding`).
+
+| weighting | trades | weekly mean | t | mean R | long | short | by year | short share | selectable |
+|---|---|---|---|---|---|---|---|---|---|
+| expanding **<- chosen** | 1093 | +0.00212 | +0.85 | +0.0363 | +0.0710 | +0.1519 | 2021 -0.0724, 2022 +0.2952 | 2021 0.439, 2022 0.624 | **no** |
+| hl12 | 1120 | -0.00063 | -0.23 | -0.0074 | -0.1504 | +0.0844 | 2021 +0.0102, 2022 -0.0762 | 2021 0.411, 2022 0.627 | **no** |
+| roll24 | 1119 | -0.00076 | -0.33 | -0.0134 | -0.1587 | +0.0794 | 2021 -0.0241, 2022 -0.0552 | 2021 0.381, 2022 0.634 | **no** |
+
+**No weighting is selectable**, so the pre-registered rule fell back to the highest TRAIN t, which is
+`expanding` - and `train_cell_selectable` and `train_chose_recency` both fail by construction.
+
+| VALID measure | value | gate |
+|---|---|---|
+| trades | 1107 | >= 100 OK |
+| weekly account return | +0.00178 | > 0 OK |
+| 95% CI | [-0.00412, +0.00755] | lo > 0 **FAIL** |
+| t | +0.59 | - |
+| mean R per trade | +0.0264 | > 0 OK |
+| long leg | +0.2014 | > 0 OK |
+| short leg | -0.0149 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00100 | > 0 OK |
+| timing | +0.0051 | - |
+| shifted median / p95 | -0.0012 / +0.0025 | timing > p95 OK |
+| timing as a multiple of p95 | 2.02x | - |
+| breadth | 7 of 10 (0.70) | >= 8 coins and >= 0.5 OK |
+| max drawdown | 0.2788 | <= 0.20 **FAIL** |
+| per year (summed R) | 2023 -0.1131, 2024 +0.2996 | - |
+| negative weeks | 56 of 105 | - |
+
+**Short share of entries by year: 2023 0.722, 2024 0.588** against §37's 4h book at **0.690 / 0.760**.
+
+- **Best 5 weeks = 2.02x the whole VALID return**; the weekly mean without them is -0.00190, negative.
+- Analyzer's mean R without the top 1% of trades: -0.0185.
+
+**Top 10 features by mean |SHAP| on VALID** (`record/valid/feature_importance.json`, the middle horizon of the averaged set):
+
+| rank | feature | mean \|SHAP\| |
+|---|---|---|
+| 1 | `btc_vol_168` | 0.29975 |
+| 2 | `mkt_ret_168` | 0.15447 |
+| 3 | `btc_ret_72` | 0.11388 |
+| 4 | `d1_vol_168` | 0.08983 |
+| 5 | `h4_ret_168` | 0.08429 |
+| 6 | `btc_ret_168` | 0.07497 |
+| 7 | `weekday` **<- weekday** | 0.07216 |
+| 8 | `btc_ret_24` | 0.06670 |
+| 9 | `vol_ratio` | 0.05979 |
+| 10 | `funding_last` | 0.04857 |
+
+**`weekday` is in the top 10 for 1h: 7** (mean |SHAP| 0.07216). The features above it are BTC volatility (168-bar),
+BTC and market returns over 24-168 bars, and `vol_ratio` - the model is mostly reading BTC's volatility and
+the market's recent direction, not calendar effects.
+
+TRAIN checks (chosen weighting): weekly +0.00212, CI lo -0.00238, t +0.85, long +0.0710, short +0.1519, max DD 0.1905, breadth 0.60 of 10, cost x1.5 +0.00163, timing 1.4x its shifted p95, best-5-week share +1.890.
+
+**Analyzer: FRAGILE, quality 48** (dimensions: train 100, robustness 60, stability 33, fold 14, sensitivity 17, decay 50, overfit 60).
+
+## 4h sub-model: **REJECT** - failed ['valid_ci_lo>0', 'both_legs>0']
+
+TRAIN chose **`hl12`** (horizons [6, 12, 18] bars of 4h). Two TRAIN gates are registered: `train_cell_selectable` (some weighting clears enough trades, both TRAIN years
+and both legs) and `train_chose_recency` (the pick is not `expanding`).
+
+| weighting | trades | weekly mean | t | mean R | long | short | by year | short share | selectable |
+|---|---|---|---|---|---|---|---|---|---|
+| expanding | 423 | +0.00278 | +2.22 | +0.1175 | +0.0555 | +0.2361 | 2021 +0.0659, 2022 +0.2257 | 2021 0.424, 2022 0.604 | yes |
+| hl12 **<- chosen** | 394 | +0.00385 | +2.70 | +0.1757 | +0.1376 | +0.2669 | 2021 +0.1562, 2022 +0.2483 | 2021 0.359, 2022 0.582 | yes |
+| roll24 | 436 | +0.00298 | +2.22 | +0.1257 | +0.0786 | +0.2340 | 2021 +0.1326, 2022 +0.1800 | 2021 0.450, 2022 0.543 | yes |
+
+**All three weightings are selectable** (expanding, hl12, roll24), so `train_cell_selectable` passes and the t-statistic picks `hl12`.
+
+| VALID measure | value | gate |
+|---|---|---|
+| trades | 441 | >= 100 OK |
+| weekly account return | +0.00120 | > 0 OK |
+| 95% CI | [-0.00230, +0.00486] | lo > 0 **FAIL** |
+| t | +0.67 | - |
+| mean R per trade | +0.0497 | > 0 OK |
+| long leg | +0.1503 | > 0 OK |
+| short leg | -0.0246 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00106 | > 0 OK |
+| timing | +0.0145 | - |
+| shifted median / p95 | -0.0036 / +0.0049 | timing > p95 OK |
+| timing as a multiple of p95 | 2.96x | - |
+| breadth | 6 of 10 (0.60) | >= 8 coins and >= 0.5 OK |
+| max drawdown | 0.1075 | <= 0.20 OK |
+| per year (summed R) | 2023 +0.0110, 2024 +0.1147 | - |
+| negative weeks | 28 of 105 | - |
+
+**Short share of entries by year: 2023 0.549, 2024 0.642** against §37's 4h book at **0.690 / 0.760**.
+
+- **Best 5 weeks = 1.92x the whole VALID return**; the weekly mean without them is -0.00115, negative.
+- Analyzer's mean R without the top 1% of trades: +0.0083.
+
+**Top 10 features by mean |SHAP| on VALID** (`record/valid/feature_importance.json`, the middle horizon of the averaged set):
+
+| rank | feature | mean \|SHAP\| |
+|---|---|---|
+| 1 | `btc_vol_168` | 0.20393 |
+| 2 | `btc_ret_168` | 0.17852 |
+| 3 | `mkt_ret_168` | 0.12219 |
+| 4 | `btc_ret_72` | 0.06710 |
+| 5 | `btc_ret_24` | 0.05027 |
+| 6 | `mkt_ret_72` | 0.03939 |
+| 7 | `vol_ratio` | 0.03077 |
+| 8 | `funding_last` | 0.02945 |
+| 9 | `breadth_24` | 0.02551 |
+| 10 | `weekday` **<- weekday** | 0.02126 |
+
+**`weekday` is in the top 10 for 4h: 10** (mean |SHAP| 0.02126). The features above it are BTC volatility (168-bar),
+BTC and market returns over 24-168 bars, and `vol_ratio` - the model is mostly reading BTC's volatility and
+the market's recent direction, not calendar effects.
+
+TRAIN checks (chosen weighting): weekly +0.00385, CI lo +0.00126, t +2.70, long +0.1376, short +0.2669, max DD 0.0406, breadth 1.00 of 10, cost x1.5 +0.00377, timing 3.2x its shifted p95, best-5-week share +0.717.
+
+**Analyzer: FRAGILE, quality 59** (dimensions: train 40, robustness 60, stability 56, fold 66, sensitivity 50, decay 100, overfit 40).
+
+## 1d sub-model: **REJECT** - failed ['train_cell_selectable', 'valid_weekly_mean>0', 'valid_ci_lo>0', 'stress_weekly_mean>0', 'timing_beats_shift_p95', 'breadth>=0.5', 'both_legs>0']
+
+TRAIN chose **`roll24`** (horizons [1, 2, 3] bars of 1d). Two TRAIN gates are registered: `train_cell_selectable` (some weighting clears enough trades, both TRAIN years
+and both legs) and `train_chose_recency` (the pick is not `expanding`).
+
+| weighting | trades | weekly mean | t | mean R | long | short | by year | short share | selectable |
+|---|---|---|---|---|---|---|---|---|---|
+| expanding | 267 | -0.00053 | -0.97 | -0.0331 | -0.0628 | +0.0069 | 2021 +0.0199, 2022 -0.0758 | 2021 0.511, 2022 0.572 | **no** |
+| hl12 | 271 | -0.00023 | -0.37 | -0.0235 | -0.0265 | +0.0026 | 2021 +0.0660, 2022 -0.0900 | 2021 0.451, 2022 0.503 | **no** |
+| roll24 **<- chosen** | 216 | +0.00001 | +0.01 | +0.0064 | -0.0186 | +0.0193 | 2021 +0.0512, 2022 -0.0505 | 2021 0.435, 2022 0.492 | **no** |
+
+**No weighting is selectable**, so the pre-registered rule fell back to the highest TRAIN t, which is
+`roll24` - and `train_cell_selectable` and `train_chose_recency` both fail by construction.
+
+| VALID measure | value | gate |
+|---|---|---|
+| trades | 286 | >= 100 OK |
+| weekly account return | -0.00112 | > 0 **FAIL** |
+| 95% CI | [-0.00268, +0.00065] | lo > 0 **FAIL** |
+| t | -1.33 | - |
+| mean R per trade | -0.0809 | > 0 **FAIL** |
+| long leg | +0.0461 | > 0 OK |
+| short leg | -0.1634 | > 0 **FAIL** |
+| cost x1.5 weekly | -0.00116 | > 0 **FAIL** |
+| timing | -0.0597 | - |
+| shifted median / p95 | -0.0072 / +0.0210 | timing > p95 **FAIL** |
+| timing as a multiple of p95 | -2.85x | - |
+| breadth | 0 of 10 (0.00) | >= 8 coins and >= 0.5 **FAIL** |
+| max drawdown | 0.1927 | <= 0.20 OK |
+| per year (summed R) | 2023 -0.1044, 2024 -0.0129 | - |
+| negative weeks | 33 of 105 | - |
+
+**Short share of entries by year: 2023 0.588, 2024 0.387** against §37's 4h book at **0.690 / 0.760**.
+
+- **The VALID total is negative**, so the best-5-week share is undefined. The weekly mean without the
+  best 5 weeks is -0.00211 - negative as well.
+- Analyzer's mean R without the top 1% of trades: -0.0994.
+
+**Top 10 features by mean |SHAP| on VALID** (`record/valid/feature_importance.json`, the middle horizon of the averaged set):
+
+| rank | feature | mean \|SHAP\| |
+|---|---|---|
+| 1 | `btc_vol_168` | 0.11674 |
+| 2 | `btc_ret_24` | 0.08330 |
+| 3 | `breadth_24` | 0.07300 |
+| 4 | `mkt_ret_72` | 0.07294 |
+| 5 | `mkt_ret_168` | 0.06624 |
+| 6 | `btc_ret_168` | 0.05610 |
+| 7 | `mkt_ret_24` | 0.05402 |
+| 8 | `btc_ret_72` | 0.04365 |
+| 9 | `weekday` **<- weekday** | 0.02724 |
+| 10 | `funding_last` | 0.00681 |
+
+**`weekday` is in the top 10 for 1d: 9** (mean |SHAP| 0.02724). The features above it are BTC volatility (168-bar),
+BTC and market returns over 24-168 bars, and `vol_ratio` - the model is mostly reading BTC's volatility and
+the market's recent direction, not calendar effects.
+
+TRAIN checks (chosen weighting): weekly +0.00001, CI lo -0.00094, t +0.01, long -0.0186, short +0.0193, max DD 0.0742, breadth 0.60 of 10, cost x1.5 -0.00001, timing 0.3x its shifted p95, best-5-week share +84.867.
+
+**Analyzer: OVERFIT, quality 10** (dimensions: train 0, robustness 0, stability 0, fold 0, sensitivity 33, decay 0, overfit 40).
+
+### The three sub-models side by side
+
+| | 1h | 4h | 1d |
+|---|---|---|---|
+| verdict | REJECT | REJECT | REJECT |
+| gates failed | 5 | 2 | 7 |
+| TRAIN chose | expanding | hl12 | roll24 |
+| VALID trades | 1107 | 441 | 286 |
+| VALID weekly | +0.00178 | +0.00120 | -0.00112 |
+| 95% CI | [-0.00412, +0.00755] | [-0.00230, +0.00486] | [-0.00268, +0.00065] |
+| t | +0.59 | +0.67 | -1.33 |
+| mean R | +0.0264 | +0.0497 | -0.0809 |
+| long / short | +0.2014 / -0.0149 | +0.1503 / -0.0246 | +0.0461 / -0.1634 |
+| cost x1.5 | +0.00100 | +0.00106 | -0.00116 |
+| timing vs p95 | 2.02x | 2.96x | -2.85x |
+| breadth | 7/10 | 6/10 | 0/10 |
+| max DD | 27.88% | 10.75% | 19.27% |
+| short share 2023 / 2024 | 0.72 / 0.59 | 0.55 / 0.64 | 0.59 / 0.39 |
+| best-5-week share | 2.02x | 1.92x | - |
+| analyzer | FRAGILE 48 | FRAGILE 59 | OVERFIT 10 |
+
+For reference, the four large-coin readings now on record:
+
+| run | verdict | VALID weekly | 95% CI | mean R | short share 2023/2024 | max DD | analyzer |
+|---|---|---|---|---|---|---|---|
+| §37 4h (expanding) | REJECT | +0.00095 | [-0.00312, +0.00572] | +0.0592 | 0.69 / 0.76 | 13.65% | FRAGILE 68 |
+| §38 1h (expanding) | REJECT | +0.00178 | [-0.00412, +0.00755] | +0.0264 | 0.72 / 0.59 | 27.88% | FRAGILE 48 |
+| §38 4h (hl12) | REJECT | +0.00120 | [-0.00230, +0.00486] | +0.0497 | 0.55 / 0.64 | 10.75% | FRAGILE 59 |
+| §38 1d (roll24) | REJECT | -0.00112 | [-0.00268, +0.00065] | -0.0809 | 0.59 / 0.39 | 19.27% | OVERFIT 10 |
+| §31 1h portfolio (46 coins) | REJECT | +0.00548 | [-0.00026, +0.01129] | +0.0608 | - | 19.77% | FRAGILE 86 |
+| §36 1h wide (86 coins) | REJECT | +0.00486 | [-0.00103, +0.01086] | +0.0829 | - | 20.01% | FRAGILE 83 |
+
+### Verdict
+
+**REJECT on all three sub-models. Recency weighting did not fix the large-coin short bias, and on two of
+three timeframes the selectable rule found nothing to select.** Facts:
+
+- **The mechanism the diagnosis named is real, and recency weighting partly moved it.** The short share
+  fell from §37's 0.69/0.76 to **0.55/0.64 on the 4h sub-model** (the one whose TRAIN pick was recency), so
+  the hypothesis's first half held. But the short leg still LOST on VALID (-0.0246) and the CI still touches
+  zero: less shorting did not make the book profitable.
+- **4h is the only sub-model whose weighting choice was meaningful.** All three weightings were selectable,
+  TRAIN picked `hl12` (12-month half-life) at t +2.70 against expanding's +2.22, and its VALID book is the
+  best of the three: 441 trades, +0.00120 a week, mean R +0.0497, max DD 10.75%, breadth 6/10, timing 2.96x
+  the shifted p95. It failed only the CI and the short leg.
+- **1h and 1d had no selectable cell at all.** `train_cell_selectable` and `train_chose_recency` failed by
+  construction, so both fell back to `expanding` / `roll24` - the baselines the round was meant to beat.
+  On 1h recency weighting was actively harmful on TRAIN: hl12 -0.0074 R and roll24 -0.0134 R against
+  expanding's +0.0363. On 1d every weighting was negative or flat (mean R -0.033 to +0.006) and VALID lost
+  money outright (-0.0809 R per trade, weekly -0.00112, t -1.33, breadth 0/10).
+- **The short bias is worst where the model is worst.** The 1d sub-model has the lowest short share
+  (0.59/0.39) and it is the only book that lost money in both VALID years; the 4h sub-model kept more of its
+  short side and did better. The problem is not only which side it takes, it is the forecast.
+- **`weekday` is in the top 10 features on all three sub-models** (rank 7 on 1h at 0.0722, rank 10 on 4h at
+  0.0213, rank 9 on 1d at 0.0272). It is not the strongest feature anywhere - BTC volatility over 168 bars is
+  first on all three - so the recorded finding is that a calendar feature carries a real but secondary share
+  of the model's decisions, not that the model trades the calendar.
+- **Against §37's VALID book**, §38 4h has the higher weekly mean (+0.00120 vs +0.00095), the tighter CI
+  (-0.00230 vs -0.00312) and the lower drawdown (10.75% vs 13.65%) - but both are REJECT and neither comes
+  close to clearing.
+
+**Holdout pick under the pre-registered rule: none.** No sub-model is PASS, so `holdout_pick` returns None
+and `--final` would refuse. The §31-§38 shared holdout is untouched and nothing is proposed for it.
+
+Files: `results/_multi/s38_ml_recent/{1h,4h,1d}/summary.json`, `trades_valid.csv.gz`,
+`trades_train_{expanding,hl12,roll24}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata,
+`predictions.parquet`, skipped signals, run info, holdout power); generated
+`journal/_multi/s38_ml_recent.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`,
+`docs/analyzer_data.json`; `results/_multi/s38_ml_recent/analysis/` from `src/result_report.py`.

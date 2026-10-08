@@ -1,0 +1,582 @@
+{
+ "n_features": 86,
+ "features": [
+  "atr_pct",
+  "body",
+  "body_3",
+  "breadth_24",
+  "btc_ret_168",
+  "btc_ret_24",
+  "btc_ret_72",
+  "btc_vol_168",
+  "d1_atr_pct",
+  "d1_body",
+  "d1_body_3",
+  "d1_ema_dist_20",
+  "d1_ema_dist_200",
+  "d1_ema_dist_50",
+  "d1_lower_wick",
+  "d1_range_pos_168",
+  "d1_range_pos_24",
+  "d1_ret_1",
+  "d1_ret_12",
+  "d1_ret_168",
+  "d1_ret_24",
+  "d1_ret_3",
+  "d1_ret_48",
+  "d1_ret_6",
+  "d1_ret_96",
+  "d1_taker_ratio",
+  "d1_taker_ratio_24",
+  "d1_upper_wick",
+  "d1_vol_168",
+  "d1_vol_24",
+  "d1_vol_ratio",
+  "d1_volume_z",
+  "ema_dist_20",
+  "ema_dist_200",
+  "ema_dist_50",
+  "funding_last",
+  "h4_atr_pct",
+  "h4_body",
+  "h4_body_3",
+  "h4_ema_dist_20",
+  "h4_ema_dist_200",
+  "h4_ema_dist_50",
+  "h4_lower_wick",
+  "h4_range_pos_168",
+  "h4_range_pos_24",
+  "h4_ret_1",
+  "h4_ret_12",
+  "h4_ret_168",
+  "h4_ret_24",
+  "h4_ret_3",
+  "h4_ret_48",
+  "h4_ret_6",
+  "h4_ret_96",
+  "h4_taker_ratio",
+  "h4_taker_ratio_24",
+  "h4_upper_wick",
+  "h4_vol_168",
+  "h4_vol_24",
+  "h4_vol_ratio",
+  "h4_volume_z",
+  "hour",
+  "lower_wick",
+  "mkt_ret_168",
+  "mkt_ret_24",
+  "mkt_ret_72",
+  "range_pos_168",
+  "range_pos_24",
+  "rel_ret_168",
+  "rel_ret_24",
+  "rel_ret_72",
+  "ret_1",
+  "ret_12",
+  "ret_168",
+  "ret_24",
+  "ret_3",
+  "ret_48",
+  "ret_6",
+  "ret_96",
+  "taker_ratio",
+  "taker_ratio_24",
+  "upper_wick",
+  "vol_168",
+  "vol_24",
+  "vol_ratio",
+  "volume_z",
+  "weekday"
+ ],
+ "n_coins": 10,
+ "coins": [
+  "ADAUSDT",
+  "BCHUSDT",
+  "BNBUSDT",
+  "BTCUSDT",
+  "DOGEUSDT",
+  "ETHUSDT",
+  "LINKUSDT",
+  "NEARUSDT",
+  "SOLUSDT",
+  "XRPUSDT"
+ ],
+ "refits": [
+  {
+   "month": "2021-01-01",
+   "train_rows": 635916,
+   "effective_rows": 635916.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 685839,
+   "effective_rows": 685839.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 730863,
+   "effective_rows": 730863.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 779221,
+   "effective_rows": 779221.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 829496,
+   "effective_rows": 829496.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 879419,
+   "effective_rows": 879419.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 929744,
+   "effective_rows": 929744.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 982543,
+   "effective_rows": 982543.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 1035367,
+   "effective_rows": 1035367.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 1087182,
+   "effective_rows": 1087182.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 1141469,
+   "effective_rows": 1141469.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 1194724,
+   "effective_rows": 1194724.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 1251937,
+   "effective_rows": 1251937.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 1306639,
+   "effective_rows": 1306639.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 1354896,
+   "effective_rows": 1354896.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 1408783,
+   "effective_rows": 1408783.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 1462372,
+   "effective_rows": 1462372.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 1517733,
+   "effective_rows": 1517733.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 1571013,
+   "effective_rows": 1571013.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 1625350,
+   "effective_rows": 1625350.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 1681819,
+   "effective_rows": 1681819.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 1736539,
+   "effective_rows": 1736539.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 1793083,
+   "effective_rows": 1793083.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 1848498,
+   "effective_rows": 1848498.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-01-01",
+   "train_rows": 632819,
+   "effective_rows": 632819.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 682814,
+   "effective_rows": 682814.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 727838,
+   "effective_rows": 727838.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 776196,
+   "effective_rows": 776196.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 826351,
+   "effective_rows": 826351.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 876346,
+   "effective_rows": 876346.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 926599,
+   "effective_rows": 926599.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 979374,
+   "effective_rows": 979374.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 1032198,
+   "effective_rows": 1032198.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 1083989,
+   "effective_rows": 1083989.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 1138252,
+   "effective_rows": 1138252.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 1191483,
+   "effective_rows": 1191483.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 1248624,
+   "effective_rows": 1248624.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 1303398,
+   "effective_rows": 1303398.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 1352063,
+   "effective_rows": 1352063.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 1405542,
+   "effective_rows": 1405542.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 1459059,
+   "effective_rows": 1459059.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 1514444,
+   "effective_rows": 1514444.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 1567724,
+   "effective_rows": 1567724.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 1622085,
+   "effective_rows": 1622085.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 1678482,
+   "effective_rows": 1678482.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 1733202,
+   "effective_rows": 1733202.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 1789746,
+   "effective_rows": 1789746.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 1845137,
+   "effective_rows": 1845137.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-01-01",
+   "train_rows": 629784,
+   "effective_rows": 629784.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 679851,
+   "effective_rows": 679851.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 724875,
+   "effective_rows": 724875.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 773233,
+   "effective_rows": 773233.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 823268,
+   "effective_rows": 823268.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 873335,
+   "effective_rows": 873335.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 923516,
+   "effective_rows": 923516.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 976267,
+   "effective_rows": 976267.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 1029091,
+   "effective_rows": 1029091.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 1080858,
+   "effective_rows": 1080858.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 1135097,
+   "effective_rows": 1135097.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 1188304,
+   "effective_rows": 1188304.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 1245373,
+   "effective_rows": 1245373.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 1300219,
+   "effective_rows": 1300219.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 1349275,
+   "effective_rows": 1349275.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 1402363,
+   "effective_rows": 1402363.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 1455808,
+   "effective_rows": 1455808.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 1511217,
+   "effective_rows": 1511217.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 1564497,
+   "effective_rows": 1564497.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 1618882,
+   "effective_rows": 1618882.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 1675207,
+   "effective_rows": 1675207.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 1729927,
+   "effective_rows": 1729927.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 1786471,
+   "effective_rows": 1786471.0,
+   "scheme": "expanding"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 1841838,
+   "effective_rows": 1841838.0,
+   "scheme": "expanding"
+  }
+ ],
+ "label": "log(open[i+1+h]/open[i+1]) / ATR fraction at i, h in bars of 1h",
+ "horizons": [
+  24,
+  48,
+  72
+ ],
+ "lightgbm_params": {
+  "objective": "regression",
+  "learning_rate": 0.03,
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "feature_fraction": 0.8,
+  "lambda_l2": 1.0,
+  "seed": 7,
+  "deterministic": true,
+  "num_threads": 4,
+  "verbose": -1,
+  "rounds": 150
+ },
+ "seed": 7,
+ "windows": {
+  "split": [
+   "2021-01-01",
+   "2023-01-01"
+  ],
+  "train_rows_weighting": "expanding"
+ },
+ "label_distribution": {
+  "rows": 174840,
+  "mean": -0.12522402764717577,
+  "std": 5.395581108933384,
+  "share_positive": 0.48702814001372685,
+  "quantiles": {
+   "0.01": -14.986323224433312,
+   "0.1": -5.820604447192693,
+   "0.25": -2.7562605514821734,
+   "0.5": -0.11701318389671007,
+   "0.75": 2.5757772150025784,
+   "0.9": 5.637788849399323,
+   "0.99": 13.42222011438015
+  }
+ }
+}

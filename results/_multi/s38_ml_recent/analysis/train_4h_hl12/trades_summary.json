@@ -1,0 +1,25 @@
+{
+ "source": "trades_train_hl12.csv.gz",
+ "trades": 394,
+ "return": 0.40455796758859286,
+ "mean_r": 0.1757224632060534,
+ "median_r": 0.053196592760168304,
+ "win_rate": 0.5812182741116751,
+ "profit_factor": 2.810849691697381,
+ "max_dd": 0.04061487882821152,
+ "avg_win_r": 0.469292097390838,
+ "avg_loss_r": -0.23171660484434475,
+ "expectancy_r": 0.1757224632060534,
+ "max_consecutive_wins": 20,
+ "max_consecutive_losses": 21,
+ "longs": 205,
+ "shorts": 189,
+ "exit_reasons": {
+  "signal": 379,
+  "stop": 8,
+  "eod": 7
+ },
+ "gross_r": 0.1906656707569664,
+ "cost_r": 0.014943207550913074,
+ "median_hold_bars": 20.0
+}

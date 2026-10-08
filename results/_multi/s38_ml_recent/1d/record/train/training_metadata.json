@@ -1,0 +1,582 @@
+{
+ "n_features": 86,
+ "features": [
+  "atr_pct",
+  "body",
+  "body_3",
+  "breadth_24",
+  "btc_ret_168",
+  "btc_ret_24",
+  "btc_ret_72",
+  "btc_vol_168",
+  "ema_dist_20",
+  "ema_dist_200",
+  "ema_dist_50",
+  "funding_last",
+  "h1_atr_pct",
+  "h1_body",
+  "h1_body_3",
+  "h1_ema_dist_20",
+  "h1_ema_dist_200",
+  "h1_ema_dist_50",
+  "h1_lower_wick",
+  "h1_range_pos_168",
+  "h1_range_pos_24",
+  "h1_ret_1",
+  "h1_ret_12",
+  "h1_ret_168",
+  "h1_ret_24",
+  "h1_ret_3",
+  "h1_ret_48",
+  "h1_ret_6",
+  "h1_ret_96",
+  "h1_taker_ratio",
+  "h1_taker_ratio_24",
+  "h1_upper_wick",
+  "h1_vol_168",
+  "h1_vol_24",
+  "h1_vol_ratio",
+  "h1_volume_z",
+  "h4_atr_pct",
+  "h4_body",
+  "h4_body_3",
+  "h4_ema_dist_20",
+  "h4_ema_dist_200",
+  "h4_ema_dist_50",
+  "h4_lower_wick",
+  "h4_range_pos_168",
+  "h4_range_pos_24",
+  "h4_ret_1",
+  "h4_ret_12",
+  "h4_ret_168",
+  "h4_ret_24",
+  "h4_ret_3",
+  "h4_ret_48",
+  "h4_ret_6",
+  "h4_ret_96",
+  "h4_taker_ratio",
+  "h4_taker_ratio_24",
+  "h4_upper_wick",
+  "h4_vol_168",
+  "h4_vol_24",
+  "h4_vol_ratio",
+  "h4_volume_z",
+  "hour",
+  "lower_wick",
+  "mkt_ret_168",
+  "mkt_ret_24",
+  "mkt_ret_72",
+  "range_pos_168",
+  "range_pos_24",
+  "rel_ret_168",
+  "rel_ret_24",
+  "rel_ret_72",
+  "ret_1",
+  "ret_12",
+  "ret_168",
+  "ret_24",
+  "ret_3",
+  "ret_48",
+  "ret_6",
+  "ret_96",
+  "taker_ratio",
+  "taker_ratio_24",
+  "upper_wick",
+  "vol_168",
+  "vol_24",
+  "vol_ratio",
+  "volume_z",
+  "weekday"
+ ],
+ "n_coins": 10,
+ "coins": [
+  "ADAUSDT",
+  "BCHUSDT",
+  "BNBUSDT",
+  "BTCUSDT",
+  "DOGEUSDT",
+  "ETHUSDT",
+  "LINKUSDT",
+  "NEARUSDT",
+  "SOLUSDT",
+  "XRPUSDT"
+ ],
+ "refits": [
+  {
+   "month": "2021-01-01",
+   "train_rows": 22888,
+   "effective_rows": 22888.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 24649,
+   "effective_rows": 24649.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 26217,
+   "effective_rows": 26217.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 27854,
+   "effective_rows": 27854.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 29464,
+   "effective_rows": 29464.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 30944,
+   "effective_rows": 30944.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 32438,
+   "effective_rows": 32438.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 33974,
+   "effective_rows": 33974.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 35493,
+   "effective_rows": 35493.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 36964,
+   "effective_rows": 36964.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 38430,
+   "effective_rows": 38430.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 39843,
+   "effective_rows": 39843.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 41365,
+   "effective_rows": 41365.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 42778,
+   "effective_rows": 42778.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 43965,
+   "effective_rows": 43965.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 45171,
+   "effective_rows": 45171.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 46351,
+   "effective_rows": 46351.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 47574,
+   "effective_rows": 47574.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 48744,
+   "effective_rows": 48744.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 49890,
+   "effective_rows": 49890.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 50949,
+   "effective_rows": 50949.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 51735,
+   "effective_rows": 51735.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 52190,
+   "effective_rows": 52190.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 52512,
+   "effective_rows": 52512.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-01-01",
+   "train_rows": 22818,
+   "effective_rows": 22818.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 24581,
+   "effective_rows": 24581.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 26149,
+   "effective_rows": 26149.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 27788,
+   "effective_rows": 27788.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 29393,
+   "effective_rows": 29393.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 30876,
+   "effective_rows": 30876.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 32367,
+   "effective_rows": 32367.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 33902,
+   "effective_rows": 33902.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 35421,
+   "effective_rows": 35421.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 36891,
+   "effective_rows": 36891.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 38356,
+   "effective_rows": 38356.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 39768,
+   "effective_rows": 39768.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 41287,
+   "effective_rows": 41287.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 42703,
+   "effective_rows": 42703.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 43907,
+   "effective_rows": 43907.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 45096,
+   "effective_rows": 45096.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 46273,
+   "effective_rows": 46273.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 47497,
+   "effective_rows": 47497.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 48667,
+   "effective_rows": 48667.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 49814,
+   "effective_rows": 49814.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 50870,
+   "effective_rows": 50870.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 51656,
+   "effective_rows": 51656.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 52112,
+   "effective_rows": 52112.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 52433,
+   "effective_rows": 52433.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-01-01",
+   "train_rows": 22748,
+   "effective_rows": 22748.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 24513,
+   "effective_rows": 24513.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 26081,
+   "effective_rows": 26081.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 27722,
+   "effective_rows": 27722.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 29322,
+   "effective_rows": 29322.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 30808,
+   "effective_rows": 30808.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 32296,
+   "effective_rows": 32296.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 33830,
+   "effective_rows": 33830.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 35349,
+   "effective_rows": 35349.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 36818,
+   "effective_rows": 36818.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 38282,
+   "effective_rows": 38282.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 39693,
+   "effective_rows": 39693.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 41209,
+   "effective_rows": 41209.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 42628,
+   "effective_rows": 42628.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 43832,
+   "effective_rows": 43832.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 45021,
+   "effective_rows": 45021.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 46195,
+   "effective_rows": 46195.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 47420,
+   "effective_rows": 47420.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 48590,
+   "effective_rows": 48590.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 49738,
+   "effective_rows": 49738.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 50791,
+   "effective_rows": 50791.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 51577,
+   "effective_rows": 51577.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 52034,
+   "effective_rows": 52034.0,
+   "scheme": "roll24"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 52354,
+   "effective_rows": 52354.0,
+   "scheme": "roll24"
+  }
+ ],
+ "label": "log(open[i+1+h]/open[i+1]) / ATR fraction at i, h in bars of 1d",
+ "horizons": [
+  1,
+  2,
+  3
+ ],
+ "lightgbm_params": {
+  "objective": "regression",
+  "learning_rate": 0.03,
+  "num_leaves": 31,
+  "min_data_in_leaf": 1000,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "feature_fraction": 0.8,
+  "lambda_l2": 1.0,
+  "seed": 7,
+  "deterministic": true,
+  "num_threads": 4,
+  "verbose": -1,
+  "rounds": 150
+ },
+ "seed": 7,
+ "windows": {
+  "split": [
+   "2021-01-01",
+   "2023-01-01"
+  ],
+  "train_rows_weighting": "roll24"
+ },
+ "label_distribution": {
+  "rows": 7285,
+  "mean": -0.0019118306599901398,
+  "std": 1.0001266422068615,
+  "share_positive": 0.4857927247769389,
+  "quantiles": {
+   "0.01": -2.5815564517619274,
+   "0.1": -1.0223012153357167,
+   "0.25": -0.4759300655212546,
+   "0.5": -0.02336603536567461,
+   "0.75": 0.46656871519211846,
+   "0.9": 0.9931088534596721,
+   "0.99": 2.7262259095354104
+  }
+ }
+}
