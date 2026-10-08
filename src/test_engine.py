@@ -438,6 +438,7 @@ def main() -> None:
     test_ml_wide()
     test_ml_large()
     test_result_report()
+    test_run_record()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2612,6 +2613,53 @@ def test_result_report() -> None:
     g2 = RR.regimes(pd.DataFrame({"close": c2}))
     check("result_report regimes are causal: changing prices from day 600 changes no regime before day 600",
           g1.iloc[:600].equals(g2.iloc[:600]) and set(g1["trend"].dropna()) <= {"up", "down"})
+
+
+
+def test_run_record() -> None:
+    """Test 35: the run-time record (importance, SHAP, skipped signals, power) and that recording changes nothing."""
+    print("\n35. run_record: importance / SHAP find the planted feature; skipped signals; power; forecasts unchanged")
+    import contextlib
+    import io
+    import ml_pool2 as M2_
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import run_record as RR
+    rng = np.random.default_rng(35)
+    X = pd.DataFrame(rng.normal(size=(6000, 3)), columns=["f0", "f1", "f2"])
+    y = pd.Series(2.0 * X["f0"] + rng.normal(0, 0.5, 6000))
+    b = M2_.fit(X, y, WF_.GRID[0])
+    m = {pd.Timestamp("2023-01-01", tz="UTC"): b}
+    imp = RR.importance(m)
+    sh = RR.shap_summary(m, {pd.Timestamp("2023-01-01", tz="UTC"): X}, rows=500)
+    check("run_record importance and SHAP rank the planted feature first; gain sums to 1",
+          next(iter(imp["mean_gain"])) == "f0" and next(iter(sh["mean_abs_shap"])) == "f0"
+          and np.isclose(sum(imp["mean_gain"].values()), 1.0) and sh["rows"] == 500)
+    t = pd.date_range("2023-01-01", periods=8, freq="h", tz="UTC")
+    want = np.array([0, 1, 1, 0, -1, -1, 1, 1], float)
+    took = np.array([0, 1, 1, 0, 0, 0, 1, 1], float)
+    lab = np.array([0, 2, 0, 0, -3, 0, 1, 0], float)
+    sk = RR.skipped(t, "X", want, took, "agreement", lab)
+    check("run_record skipped signals: only the removed short at bar 4, label signed by its side (+3)",
+          len(sk) == 1 and sk["time"].iloc[0] == t[4] and sk["side"].iloc[0] == -1 and sk["signed_label"].iloc[0] == 3.0)
+    w = pd.Series(np.r_[np.full(50, 0.006), np.full(55, -0.002)])
+    pw = RR.holdout_power(w, 87)
+    mu, sd = w.mean(), w.std(ddof=1)
+    check("run_record holdout power: the stated normal formula; half the edge gives less power",
+          np.isclose(pw["if_edge_real"], RR._phi(np.sqrt(87) * mu / sd - 1.96)) and pw["if_half"] < pw["if_edge_real"])
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    bb = _momentum_bars(0.0008, seed=35)
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare({60: {"AUSDT": {"spot": bb, "perp": bb, "fund": fund}}}, 60)
+        p1 = WF_.walk_forward(P, 60, WF_.GRID[0], "2023-01-01", "2024-01-01", step=6)
+        log, models = [], {}
+        p2 = WF_.walk_forward(P, 60, WF_.GRID[0], "2023-01-01", "2024-01-01", step=6, log=log, models=models)
+    pr = RR.predictions({"AUSDT": P["AUSDT"]["X"].index}, p2, {"AUSDT": P["AUSDT"]["y"].to_numpy()},
+                        "2023-01-01", "2024-01-01")
+    check("run_record: recording (log + models) leaves the forecasts identical; predictions hold every forecast bar",
+          np.array_equal(p1["AUSDT"], p2["AUSDT"], equal_nan=True) and len(models) == len(log) == 2
+          and len(pr) == int(np.isfinite(p2["AUSDT"]).sum()))
 
 
 if __name__ == "__main__":

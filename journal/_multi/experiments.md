@@ -4969,3 +4969,29 @@ Not producible from recorded files, so left for the run-time record from §38 on
   average +0.05 R.
 - The rank correlation over all trades is only +0.03.
 - Any rule built on this must be a new registration chosen on TRAIN.
+
+---
+
+## Exp 058 - Run-time record for every ML round from §38 on (planner, `src/run_record.py`)
+
+**Date:** 2026-10-08
+**Status:** complete (library + test 35; no run)
+
+The owner asked that §38 on save what can never be rebuilt from trade files. `src/run_record.py` is called by a
+round's own `run()` and writes `<round folder>/record/<split>/`:
+
+| file | contents |
+|---|---|
+| `feature_importance.json` | LightGBM gain and split importance per refit month and their mean; mean \|SHAP\| with mean positive and negative contribution on a fixed-seed sample of forecast rows |
+| `training_metadata.json` | features, coins, training rows per refit, label and horizons, label distribution, LightGBM parameters, seed, windows |
+| `predictions.parquet` | every forecast bar of the traded coins with its realised label |
+| `skipped_signals.csv.gz` | entries the policy wanted but a filter removed, with the side-signed realised label |
+| `run_info.json` | versions, git commit, timing, input fingerprint |
+| `holdout_power.json` | the chance of a CONFIRM over the holdout's 86 weeks if the VALID edge is real, and if it is half |
+
+`ml_wf.walk_forward` already accepts `log=` and `models=`. Test 35 shows that passing them leaves every forecast
+identical, that importance and SHAP find a planted feature, that skipped-signal detection matches a hand case,
+and that the power formula is the stated one.
+
+**Rule for §38+ registrations:** the round calls `run_record.write(...)` for TRAIN and VALID. A registration
+that does not is incomplete.
