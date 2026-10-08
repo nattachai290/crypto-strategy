@@ -4436,3 +4436,146 @@ row. Cost: one more TRAIN judge (the timing control's 200 shifts on TRAIN), roug
 
 The analyzer now lists §36 and, where TRAIN trades exist, scores monthly fold consistency on TRAIN and VALID
 together and shows TRAIN's checks and concentration beside VALID's. Runner: pull main before running §36.
+
+---
+
+## Exp 050 - PLAN.md §36 run: train wide, trade the monthly top 20 large coins - REJECT
+
+**Date:** 2026-10-08
+**Status:** complete. One TRAIN/VALID run, as re-registered in Exp 048 (owner's definition of "large").
+**No holdout spent.** `results/_multi/ml_wide/holdout.json` does not exist and `--final` was not run.
+
+**Verdict: REJECT** - failed `valid_ci_lo>0` and `max_dd<=0.2`. TRAIN chose **wide** (the 12/24/48-bar
+ensemble trained on every crypto perp that was a monthly top-50 member), so the first half of the
+hypothesis passed: the extra coins and the horizon ensemble beat §30's recipe on TRAIN.
+
+### TRAIN table (both forms, same monthly sets, same account)
+
+| form | trades | weekly mean | t | per year | max DD | mean R | summed return by year |
+|---|---|---|---|---|---|---|---|
+| narrow | 1754 | +0.00403 | +1.54 | +0.2102 | 0.1469 | +0.0412 | 2021 +0.0738, 2022 +0.3493 |
+| wide | 1556 | +0.00789 | +2.62 | +0.4117 | 0.1642 | +0.0977 | 2021 +0.0927, 2022 +0.7357 |
+
+`wide` has the higher t (+2.62 vs +1.54) and twice the mean R, so gate `train_chose_wide` passed. Per trade
+the wide book is +0.0977 R (gross +0.1151) against narrow's +0.0412 R (gross +0.0592): on TRAIN the wide
+form earns 2.4x as much per trade on 11% fewer trades. **425 coins trained on** (47 core + 378), 145 coins
+ever in a traded set, 86 of them in a VALID month.
+
+### VALID (2023-2024, the wide forecast, §31's cell)
+
+| measure | §36 wide | §31 (for comparison) |
+|---|---|---|
+| trades | 1165 | 1588 |
+| weekly account return | +0.00486 | +0.00548 |
+| 95% CI | [-0.00103, +0.01086] | [-0.00026, +0.01129] |
+| t | +1.62 | +1.84 |
+| mean R per trade | +0.0829 | +0.0608 |
+| long / short (summed) | +0.1172 / +0.3928 | +0.1599 / +0.4158 |
+| cost x1.5, weekly | +0.00422 | +0.00450 |
+| timing vs shifted median / p95 | +0.0117 vs -0.0000 / +0.0032 | +0.0129 vs - / +0.0029 |
+| timing as a multiple of p95 | 3.6x | 4.4x |
+| breadth (>=10 trades, mean>0, timing>own median) | 19 of 36 (0.53) | 28 of 46 |
+| max drawdown | 0.2001 | 0.1977 |
+| return per year (account) | +0.2534 | +0.2861 |
+| weeks negative | 44 of 105 | - |
+
+Gates that passed: `train_chose_wide`, `train_weekly_mean>0`, `valid_trades>=300`, `valid_weekly_mean>0`,
+`stress_weekly_mean>0`, `timing_beats_shift_p95`, `coins>=10`, `breadth>=0.5`, `both_legs>0`. Gates that
+failed: **`valid_ci_lo>0`** (lower bound -0.00103) and **`max_dd<=0.2`** (0.2001).
+
+Both failures are about size, not direction: the weekly mean is positive, the timing statistic is
+3.6x the shifted p95, both legs are up and breadth clears half - but the 95% CI still
+touches zero and the drawdown sits a hair over the line (20.01% vs 20%).
+
+### Diagnostics
+
+- **Forecast/label correlation on the traded coins' VALID rows: narrow +0.0314 vs wide**
+  **+0.0307.** The wide forecast is **not** more informative on VALID - it is marginally worse
+  (-0.0007), even though wide beat narrow by 2x on TRAIN. The extra coins and
+  three horizons made the account's return bigger, not the forecast sharper.
+- **Best 5 weeks = 87.2% of the VALID return** (§31's: 66.8%). Removing
+  them: 62 trades at +1.399 R carry the book and the other 1,103 trades average **+0.0089 R** - almost
+  nothing. 2023 is the extreme: its 5 best weeks sum +0.3927 against a year total of +0.1013, so 2023
+  without them is negative. More concentrated than §31, not less.
+- Negative weeks: 44 of 105. Average risk 0.54% of equity per
+  trade. Exit mix: 1,021 signal, 134 stop, 10 window-end. Mean gross R +0.1040, mean net R +0.0829, so
+  costs take 0.021 R per trade (20% of gross).
+- Per coin with >=10 trades: 36 eligible, 19 beat their own
+  shifted control. Best: GALA +0.456 R (20 trades), FIL +0.379, FET +0.324, FTM +0.318, AVAX +0.251.
+  Worst: STMX -0.239, DOT -0.196, LTC -0.185, BLZ -0.150, CRV -0.139. **BTC (-0.097 over 49 trades) and
+  BNB (-0.096 over 73) both lose** - restricting to large coins did not mean trading the best of them.
+
+### TRAIN checks beside the VALID checks (Exp 049 output)
+
+| check | TRAIN (wide) | VALID (wide) | holds on TRAIN, fails on VALID |
+|---|---|---|---|
+| trades | +1556.00000 | +1165.00000 | - |
+| weekly mean | +0.0079 | +0.0049 | yes |
+| 95% CI lower bound | +0.0024 | -0.0010 | **yes** |
+| t | +2.61665 | +1.61573 | - |
+| cost x1.5 weekly | +0.00732 | +0.00422 | yes |
+| timing | +0.01244 | +0.01167 | - |
+| shifted p95 | +0.00254 | +0.00322 | - |
+| long leg | +0.0159 | +0.1172 | yes |
+| short leg | +0.8126 | +0.3928 | yes |
+| mean R | +0.0977 | +0.0829 | yes |
+| max drawdown | +0.1642 | +0.2001 | **yes** |
+| breadth share | +0.7949 | +0.5278 | yes |
+
+**Every check passes on TRAIN; two fail on VALID: the CI lower bound (+0.00243 -> -0.00103) and**
+**the drawdown (0.1642 -> 0.2001).** TRAIN breadth was 79% of 39 coins, VALID's 53% of 36. TRAIN monthly folds: 14 of 24 positive,
+longest losing run 6 months; VALID 15 of 24, longest run 2. TRAIN's best 5 weeks are 56.7% of its return
+against VALID's 87.2% - **the book is more concentrated out of sample than in sample.**
+
+### Analyzer (`src/analyzer.py`, refreshed after this run)
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §36 train wide · top 20 large coins | FRAGILE | 83 | 100.0 | 80.0 | 56.7 | 65.7 | 100.0 | 100.0 | 80.0 |
+
+**§36: FRAGILE, quality 83, against §31's FRAGILE, quality 86.** Both are FRAGILE - a gate failed, so no ACCEPT is reachable.
+§36 scores *below* §31 on the one dimension that separates them: stability 56.7 vs 74.8, because the top-5-week share is higher (87.2% vs 66.8%) and fewer coins are
+positive (56% vs 63%). On the dimension the hypothesis targeted it is the
+**best** run of the project: VALID mean R is 85% of TRAIN (§31: 102%). It is also the first ML run of the line with
+recorded TRAIN trades, so its fold consistency covers both periods.
+
+### Coins traded in VALID
+
+86 coins appear in a VALID month's traded set (86 listed in `summary.json` `coins.ever_traded_valid`);
+84 of them took a position, over 1,165 trades. BTC, ETH, SOL, XRP, LTC, BNB, DOGE, ADA, AVAX, MATIC,
+LINK, ATOM, DOT, EOS, ETC, NEAR, FTM, TRX, SUSHI, RUNE, SAND, SEI, TIA, INJ, GRT, GALA, FIL, FET, WLD,
+ARB, APT, OP, AAVE, CRV, COMP, COTI, CKB, CHZ, DYDX, ENS, BLZ, RLC, RNDR, AXS, MASK, MANA, MKR, MTL,
+STORJ, STMX, SXP, LPT, JASMY, KAVA, ICX, NEO, UNFI, WAVES, XLM, HBAR, GMT, ARPA, BAKE, BIGTIME, BNX,
+CTSI, FLM, HIGH, LINA, OCEAN, OGN, ORDI, PEOPLE, REEF, TOMO, TRB, UNI, APE, 1000BONK, 1000FLOKI,
+1000LUNC, 1000PEPE, 1000SHIB. **SOL, XRP and LTC are back in the set** - the Exp 047 data-gap fix working,
+sets computed per symbol.
+
+### Verdict
+
+**REJECT. A real improvement over §31 that still fails, and the improvement is not where the
+hypothesis said it would be.** Facts:
+
+- **The owner's hypothesis held on TRAIN.** Training wide (every monthly top-50 crypto perp, three
+  horizons) more than doubled the per-trade result over §30's 47-coin 24-bar recipe (+0.0977 vs
+  +0.0412 R) and raised the TRAIN t from +1.54 to +2.62. TRAIN preferred it; the gate passed.
+- **It did not come from a better forecast.** VALID forecast/label correlation is flat to slightly worse
+  (+0.0307 wide vs +0.0314 narrow). The book got bigger; the signal did not get
+  sharper. More training coins and a horizon ensemble are not the missing ingredient.
+- **VALID is close and fails two gates**: +0.00486 a week, t +1.62, 3.6x the shifted p95, both legs up, breadth
+  19/36 - but CI [-0.00103, +0.01086] and drawdown 20.01%.
+- **The return is more concentrated than §31's.** Best 5 weeks are 87.2% of it (§31: 66.8%);
+  strip them and 1,103 trades average +0.0089 R. The analyzer's stability score falls to 56.7 from 74.8.
+- **Trading only large coins did not raise the ceiling.** §36 traded 86 coins over VALID at +0.00486
+  a week against §31's 46 coins at +0.00548 - slightly *less* per week from more coins,
+  with the drawdown over the line and breadth down from 28/46 to 19/36.
+- **BTC and BNB lose** (-0.097 and -0.096 mean R over 49 and 73 trades). The two largest coins are the
+  book's drag, so 'large coins only' is not a quality filter.
+
+**No holdout was spent, and none is proposed.** The §31-§36 shared holdout is untouched. The
+best recorded book is still §31 (REJECT by 0.00026 on the CI); §36 is a REJECT by 0.00103 with a larger
+drawdown and worse concentration, so it does not displace it.
+
+Files: `results/_multi/ml_wide/summary.json`, `trades_valid.csv.gz`, `trades_train_narrow.csv.gz`,
+`trades_train_wide.csv.gz`; generated `journal/_multi/ml_wide.md`; refreshed
+`results/_multi/analyzer/report.json`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
