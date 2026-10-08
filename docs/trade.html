@@ -78,7 +78,7 @@ code{font-size:.85em;overflow-wrap:anywhere}
 <main>
 <nav class="nav" aria-label="เมนู"><a href="./">📋 สรุปผล</a><a href="ml.html">🤖 ML</a><a href="analyzer.html">🔬 ตรวจโมเดล</a><a href="equity.html">📈 กราฟสอบจริง</a><a href="valid.html">🧪 กราฟสอบย่อย</a><a href="trade.html" aria-current="page">🕯️ จุดเข้าออก</a></nav>
 
-<div class="mltog"><label><input type="checkbox" id="showNonMl"> แสดงกลยุทธ์ที่ไม่ใช่ ML</label><span class="small" style="color:var(--muted)">ค่าเริ่มต้นแสดงเฉพาะ ML · กลยุทธ์ที่ผ่านสอบย่อยแบบกฎตายตัว ซ่อนไว้</span></div>
+<div class="mltog"><label><input type="checkbox" id="onlyTen" checked> เฉพาะ 10 เหรียญที่จะเทรด</label><span class="small" style="color:var(--muted)">BNB BTC ETH XRP SOL DOGE ADA LINK NEAR BCH</span><label><input type="checkbox" id="showNonMl"> แสดงกลยุทธ์ที่ไม่ใช่ ML</label><span class="small" style="color:var(--muted)">ค่าเริ่มต้นแสดงเฉพาะ ML · กลยุทธ์ที่ผ่านสอบย่อยแบบกฎตายตัว ซ่อนไว้</span></div>
 <div class="bar">
   <select id="sec" aria-label="กรองตามรอบ"><option value="">ทุกรอบ</option></select>
   <select id="pick" aria-label="เลือกกลยุทธ์"></select>
@@ -351,23 +351,29 @@ $("theme").onclick = () => {
   const secSel = $("sec");
   secSel.innerHTML += [...new Set(GROUPS.map(g => SECOF[g[0]]))].sort((a, b) => b - a).map(n => `<option value="${n}">§${n}</option>`).join("");
   const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${ml(r) ? ({wf: "ML §28 · ", ml: "ML §27 · ", s29: "ML §29 · ", s30: "ML §30 · ", s31: "ML §31 พอร์ต · ", s32: "ML §32 · ", s33: "ML §33 · ", s34: "ML §34 · ", s36: "ML §36 · "})[r.group] + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
+  const TEN = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT", "NEARUSDT", "BCHUSDT"];
+  const ten = $("onlyTen");
+  try { const v = localStorage.getItem("onlyTen"); if (v !== null) ten.checked = v === "1"; } catch (e) {}
+  const keep = r => !ten.checked || TEN.includes(r.sym);
+  const order = (a, b) => ten.checked ? TEN.indexOf(a.sym) - TEN.indexOf(b.sym) : 0;
   const fill = show => {
     const sec = secSel.value ? +secSel.value : null;
     pick.innerHTML = GROUPS.filter(([g]) => !sec || SECOF[g] === sec).map(([g, tf, label]) => {
-      const rs = idx.filter(r => r.group === g && (tf === null || r.tf === tf));
+      const rs = idx.filter(r => r.group === g && (tf === null || r.tf === tf) && keep(r)).sort(order);
       return rs.length ? `<optgroup label="${label}">${rs.map(opt).join("")}</optgroup>` : "";
-    }).join("") + (show && !sec ? `<optgroup label="ไม่ใช่ ML: กลยุทธ์กฎตายตัวที่ผ่านสอบย่อย (PASS)">${idx.filter(r => !ml(r)).map(opt).join("")}</optgroup>` : "");
+    }).join("") + (show && !sec ? `<optgroup label="ไม่ใช่ ML: กลยุทธ์กฎตายตัวที่ผ่านสอบย่อย (PASS)">${idx.filter(r => !ml(r) && keep(r)).sort(order).map(opt).join("")}</optgroup>` : "");
   };
   const cb = $("showNonMl");
   const def = () => (idx.find(r => r.group === "s31" && r.sym === "BTCUSDT") || idx.find(ml) || idx[0]).id;
   let first = def();
-  try { let h = location.hash.slice(1); const ho = h.endsWith("_holdout"); if (ho) h = h.slice(0, -8); const r = idx.find(x => x.id === h); if (r) { first = h; if (ho) PER = "holdout"; if (!ml(r)) cb.checked = true; } } catch (e) {}
+  try { let h = location.hash.slice(1); const ho = h.endsWith("_holdout"); if (ho) h = h.slice(0, -8); const r = idx.find(x => x.id === h); if (r) { first = h; if (ho) PER = "holdout"; if (!ml(r)) cb.checked = true; if (!TEN.includes(r.sym)) ten.checked = false; } } catch (e) {}
   fill(cb.checked);
   const setHash = () => history.replaceState(null, "", "#" + pick.value + (PER === "holdout" ? "_holdout" : ""));
   document.querySelectorAll("#per button").forEach(b => b.onclick = () => { if (b.disabled) return; PER = b.dataset.p; setHash(); load(pick.value); });
   pick.value = first;
-  secSel.onchange = () => { const cur = pick.value; fill(cb.checked); if ([...pick.options].some(o => o.value === cur)) pick.value = cur; else { pick.value = pick.options[0].value; setHash(); load(pick.value); } };
-  cb.onchange = () => { const cur = pick.value; fill(cb.checked); if ([...pick.options].some(o => o.value === cur)) pick.value = cur; else { pick.value = pick.options[0].value; setHash(); load(pick.value); } };
+  secSel.onchange = () => { const cur = pick.value; fill(cb.checked); if ([...pick.options].some(o => o.value === cur)) pick.value = cur; else if (pick.options.length) { pick.value = pick.options[0].value; setHash(); load(pick.value); } };
+  ten.onchange = () => { try { localStorage.setItem("onlyTen", ten.checked ? "1" : "0"); } catch (e) {} cb.onchange(); };
+  cb.onchange = () => { const cur = pick.value; fill(cb.checked); if ([...pick.options].some(o => o.value === cur)) pick.value = cur; else if (pick.options.length) { pick.value = pick.options[0].value; setHash(); load(pick.value); } };
   pick.onchange = () => { setHash(); load(pick.value); };
   load(first);
 })();
