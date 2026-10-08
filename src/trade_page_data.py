@@ -63,7 +63,7 @@ def build_coin(t: pd.DataFrame, why: pd.DataFrame | None, risk_col: str | None, 
     return rows, eq
 
 
-SEC = {"ml": 27, "wf": 28, "s29": 29, "s30": 30, "s31": 31, "s32": 32, "s33": 33, "s34": 34, "s36": 36}
+SEC = {"ml": 27, "wf": 28, "s29": 29, "s30": 30, "s31": 31, "s32": 32, "s33": 33, "s34": 34, "s36": 36, "s37": 37}
 # group, tf, trades file, summary file, name, verdict pill, why from (None = the file's own columns), account risk column
 SPECS = [("s29", tf, f"ml_wf2/trades_valid_tf{tf}.csv.gz", f"ml_wf2/tf{tf}.json", "ML §29 (spot from 2017, 4 coins)",
           "ML §29: ไม่ผ่าน (เหลือ 4 เหรียญ)", None, None) for tf in (60, 240, 1440)] + \
@@ -79,20 +79,23 @@ SPECS = [("s29", tf, f"ml_wf2/trades_valid_tf{tf}.csv.gz", f"ml_wf2/tf{tf}.json"
          ("s34", 60, "ml_flow/trades_valid.csv.gz", "ml_flow/summary.json", "ML §34 positioning data",
           "ML §34: TRAIN เลือกแบบเดิม = เทรดชุดเดียวกับ §31", "s30", "risk"),
          ("s36", 60, "ml_wide/trades_valid.csv.gz", "ml_wide/summary.json", "ML §36 train wide, trade large coins",
-          "ML §36 เทรนกว้าง เทรดเหรียญใหญ่: ไม่ผ่าน (CI + DD 20.01%)", None, "risk")]
+          "ML §36 เทรนกว้าง เทรดเหรียญใหญ่: ไม่ผ่าน (CI + DD 20.01%)", None, "risk"),
+         ("s37", 240, "ml_large/trades_valid.csv.gz", "ml_large/summary.json", "ML §37 4h model, ten large coins",
+          "ML §37 โมเดล 4h เหรียญใหญ่ 10 ตัว: ไม่ผ่าน (CI, จังหวะ, ฝั่ง short ขาดทุน)", None, "risk")]
 
 
 CANDLE_SPAN = ("2022-11", "2024-12")          # the same window as the published wf60 candle files
 KLINE_COLS = ["open_time", "open", "high", "low", "close", "volume", "close_time", "qv", "n", "tbv", "tbqv", "ig"]
 
 
-def publish_candles(coin: str) -> bool:
-    """Download the coin's native 1h USDT-M klines for CANDLE_SPAN and write docs/trades/c60_<coin>.json."""
+def publish_candles(coin: str, tf: int = 60) -> bool:
+    """Download the coin's native tf USDT-M klines for CANDLE_SPAN and write docs/trades/c<tf>_<coin>.json."""
     import datafeed as DF
-    raw = C.ROOT / "data" / "raw" / "_multi" / "display_1h" / coin
+    name = {60: "1h", 240: "4h", 1440: "1d"}[tf]
+    raw = C.ROOT / "data" / "raw" / "_multi" / f"display_{name}" / coin
     parts = []
     for m in pd.period_range(*CANDLE_SPAN, freq="M"):
-        key = f"data/futures/um/monthly/klines/{coin}/1h/{coin}-1h-{m}.zip"
+        key = f"data/futures/um/monthly/klines/{coin}/{name}/{coin}-{name}-{m}.zip"
         z = DF.fetch_zip(key, raw)
         if z is not None:
             parts.append(DF._read_one_zip(z, KLINE_COLS))
@@ -104,18 +107,16 @@ def publish_candles(coin: str) -> bool:
     dec = int(np.clip(3 - np.floor(np.log10(lo)), 1, 8))
     bars = {"t": t.tolist(), **{k: b[c].round(dec).tolist() for k, c in (("o", "open"), ("h", "high"), ("l", "low"),
                                                                            ("c", "close"))}}
-    meta = {"id": f"c60_{coin}", "sym": coin, "tf": 60, "dec": dec, "candles_only": True}
-    (DOCS / f"c60_{coin}.json").write_text(json.dumps({"meta": meta, "bars": bars}, separators=(",", ":")))
+    meta = {"id": f"c{tf}_{coin}", "sym": coin, "tf": tf, "dec": dec, "candles_only": True}
+    (DOCS / f"c{tf}_{coin}.json").write_text(json.dumps({"meta": meta, "bars": bars}, separators=(",", ":")))
     return True
 
 
 def candles_needed() -> None:
     for grp, tf, tfile, *_ in SPECS:
-        if tf != 60:
-            continue
         for coin in sorted(pd.read_csv(M / tfile, usecols=["coin"])["coin"].unique()):
-            if not (DOCS / f"wf60_{coin}.json").exists() and not (DOCS / f"c60_{coin}.json").exists():
-                print(f"  candles {coin}: {'ok' if publish_candles(coin) else 'NO DATA'}", flush=True)
+            if not (DOCS / f"wf{tf}_{coin}.json").exists() and not (DOCS / f"c{tf}_{coin}.json").exists():
+                print(f"  candles {tf} {coin}: {'ok' if publish_candles(coin, tf) else 'NO DATA'}", flush=True)
 
 
 def main() -> None:
@@ -133,8 +134,8 @@ def main() -> None:
         why = s30_1h if why_from == "s30" else None
         for coin in sorted(t_all["coin"].unique()):
             src = DOCS / f"wf{tf}_{coin}.json"
-            if not src.exists() and tf == 60:
-                src = DOCS / f"c60_{coin}.json"
+            if not src.exists():
+                src = DOCS / f"c{tf}_{coin}.json"
             if not src.exists():
                 print(f"  skip {grp} {tf} {coin}: no candles published")
                 continue

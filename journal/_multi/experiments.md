@@ -4844,3 +4844,70 @@ recorded book in this project is still §31 (REJECT by 0.00026 on the CI).
 Files: `results/_multi/ml_large/summary.json`, `trades_valid.csv.gz`,
 `trades_train_{1-3d,2-6d}_{off,1d}.csv.gz` (all four cells); generated `journal/_multi/ml_large.md`;
 refreshed `results/_multi/analyzer/report.json`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
+
+---
+
+## Exp 055 - Review of Exp 054 (§37, planner): REJECT stands; the model learned 2022's side and kept it
+
+**Date:** 2026-10-08
+**Status:** complete (recorded files only; no run, no holdout)
+
+Recomputed from `results/_multi/ml_large/trades_valid.csv.gz` and the TRAIN trade files.
+The runner's numbers reproduce:
+- 417 trades;
+- weekly +0.00095, CI [-0.00312, +0.00572];
+- long leg +0.2013 over 112 trades, short leg -0.1018 over 305 trades;
+- best 5 weeks +0.385 against a +0.0994 total;
+- exits: 374 signal, 37 stop, 6 eod.
+
+### The finding the entry misses: the side mix came from TRAIN's regime
+
+- **VALID: 73% of trades are shorts (305 of 417) in a two-year bull market.**
+  - Shorts average -0.052 R and longs +0.363 R.
+  - The best 5 weeks are long rallies: Nov 2023 and Nov 2024 carry ADA +0.086, XRP +0.073 and SOL +0.042 of
+    long return, and every coin's shorts in those weeks are small.
+- **The chosen TRAIN cell earned almost all of its return from 2022 shorts.**
+  - 1-3d_off: 2022 shorts +0.221 of a +0.292 total; 2021 longs +0.051; 2022 longs +0.005.
+  - The model learned the bear year's side, and in 2023-24 it kept shorting into a rising market.
+- **This is the mirror of §31/§36.** There the profit was crash-week shorts; here the loss is shorts in a bull
+  market, and the profit is a few rally weeks of longs. Seven rounds (§31-§37) now say the same thing: these
+  models' VALID return is a handful of extreme market-wide weeks, and its side follows the regime TRAIN
+  (2021-22) happened to contain.
+
+### Corrections to Exp 054
+
+1. **"Sizing and risk, not signal, put §31 and §36 on the 20% line" is not shown by this run.**
+   - §37 differs from them in timeframe, coins and the number of concurrent positions, so its 13.65% drawdown
+     says nothing about why theirs were near 20%.
+   - Drawdown is lower mostly because 10 coins on 4h hold fewer positions at once (average risk 0.57%).
+2. **Breadth 7/10 is not "the best spread".** Breadth counts coins above their own shifted MEDIAN, while the
+   pooled timing is below the shifted p95 (0.67x). Coins beating a median is weak evidence; the pooled timing
+   gate is the one that failed.
+3. **"A long-only version would work" must NOT be read from this.**
+   - Longs at +0.363 R are a VALID observation in a bull market.
+   - On TRAIN the chosen cell's longs made +0.056 in total, so a long-only rule would have been chosen against
+     on TRAIN.
+   - Building it from this table is tuning on VALID (AGENTS.md §3 rule 3).
+
+### Analyzer
+
+§37 = FRAGILE, quality 68: the lowest of §31 (86), §36 (83) and §37.
+- train-vs-valid 72;
+- robustness 40;
+- stability 33.
+
+### What next (owner's call; nothing runs without a registration)
+
+The common cause across §31-§37 is that TRAIN (2021-22) holds one bull year and one bear year, and each model
+learns the side of the year that paid. Three directions follow:
+
+- **(a) More regimes in training for the large coins.** Their spot history goes back to 2017-2019, so each
+  monthly refit would see the 2018 bear, the 2019-20 recovery and the 2021 bull. §30 did this for 1h on 47
+  coins; it has not been done for the 4h large-coin model.
+- **(b) A side-neutral target.** Forecast each coin's move relative to the ten-coin average, so the model
+  cannot learn "short everything in a bear year". This is not pair trading: positions stay single coins, sized
+  as today.
+- **(c) Decide on the shared holdout with §31.**
+
+Web: §37 added to `docs/ml.html`, `docs/valid.html` (chip §37) and `docs/trade.html` (§37 group on 4h).
+4h candles for XRP, SOL and NEAR are published as `docs/trades/c240_<COIN>.json`.

@@ -176,7 +176,7 @@ function barAt(t) { // index of the displayed bar containing time t
 }
 
 let PER = "valid", IDX = [];
-const VER = "7";   // bump when docs/trades/ changes, so browsers do not keep an old copy
+const VER = "8";   // bump when docs/trades/ changes, so browsers do not keep an old copy
 async function load(id) {
   $("load").style.display = "flex";
   const it = IDX.find(r => r.id === id);
@@ -330,9 +330,10 @@ $("theme").onclick = () => {
   idx.forEach(r => { if (r.hasHold === undefined) r.hasHold = !!r.hold; });
   const pick = $("pick");
   IDX = idx;
-  const ml = r => ["ml", "wf", "s29", "s30", "s31", "s32", "s33", "s34", "s36"].includes(r.group);
-  const SECOF = {ml: 27, wf: 28, s29: 29, s30: 30, s31: 31, s32: 32, s33: 33, s34: 34, s36: 36};
+  const ml = r => ["ml", "wf", "s29", "s30", "s31", "s32", "s33", "s34", "s36", "s37"].includes(r.group);
+  const SECOF = {ml: 27, wf: 28, s29: 29, s30: 30, s31: 31, s32: 32, s33: 33, s34: 34, s36: 36, s37: 37};
   const GROUPS = [
+    ["s37", 240, "§37: โมเดล 4h เฉพาะ 10 เหรียญใหญ่ (ไม่ผ่าน: CI, จังหวะ, ฝั่ง short ขาดทุน)"],
     ["s36", null, "§36: เทรนกว้าง 425 เหรียญ เทรดแค่เหรียญใหญ่ top 20 (ไม่ผ่าน: CI + DD 20.01%)"],
     ["s31", null, "§31: โมเดล 1h + จัดพอร์ต (ดีที่สุด, ขาดเกณฑ์อีก 0.00026) · 47 เหรียญ"],
     ["s34", null, "§34: เพิ่มข้อมูล OI/long-short/funding (TRAIN เลือกแบบเดิม = เทรดชุดเดียวกับ §31)"],
@@ -350,7 +351,7 @@ $("theme").onclick = () => {
     ["ml", null, "§27 ตัดสินเข้า-ออกเอง (ไม่ผ่าน) · 20 เหรียญ"]];
   const secSel = $("sec");
   secSel.innerHTML += [...new Set(GROUPS.map(g => SECOF[g[0]]))].sort((a, b) => b - a).map(n => `<option value="${n}">§${n}</option>`).join("");
-  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${ml(r) ? ({wf: "ML §28 · ", ml: "ML §27 · ", s29: "ML §29 · ", s30: "ML §30 · ", s31: "ML §31 พอร์ต · ", s32: "ML §32 · ", s33: "ML §33 · ", s34: "ML §34 · ", s36: "ML §36 · "})[r.group] + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
+  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${ml(r) ? ({wf: "ML §28 · ", ml: "ML §27 · ", s29: "ML §29 · ", s30: "ML §30 · ", s31: "ML §31 พอร์ต · ", s32: "ML §32 · ", s33: "ML §33 · ", s34: "ML §34 · ", s36: "ML §36 · ", s37: "ML §37 · "})[r.group] + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
   const TEN = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT", "NEARUSDT", "BCHUSDT"];
   const ten = $("onlyTen");
   try { const v = localStorage.getItem("onlyTen"); if (v !== null) ten.checked = v === "1"; } catch (e) {}

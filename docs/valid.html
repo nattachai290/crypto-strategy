@@ -10,17 +10,17 @@
 <style>
 :root{
   --bg:#f6f7f9; --card:#fcfcfb; --text:#0b0b0b; --muted:#52514e; --faint:#8b8a85; --line:#e3e6ec; --grid:#ececea;
-  --s1:#2a78d6; --s2:#eb6834; --c27:#e87ba4; --c28:#eda100; --c29:#4a3aa7; --c30:#eb6834; --c31:#2a78d6; --c32:#1baf7a; --c33:#008300; --c34:#e34948; --c36:#0891b2; --good:#16a34a; --bad:#dc2626; --accent:#0f766e;
+  --s1:#2a78d6; --s2:#eb6834; --c27:#e87ba4; --c28:#eda100; --c29:#4a3aa7; --c30:#eb6834; --c31:#2a78d6; --c32:#1baf7a; --c33:#008300; --c34:#e34948; --c36:#0891b2; --c37:#b45309; --good:#16a34a; --bad:#dc2626; --accent:#0f766e;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
-    --s1:#3987e5; --s2:#d95926; --c27:#d55181; --c28:#c98500; --c29:#9085e9; --c30:#d95926; --c31:#3987e5; --c32:#199e70; --c33:#008300; --c34:#e66767; --c36:#22d3ee; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
+    --s1:#3987e5; --s2:#d95926; --c27:#d55181; --c28:#c98500; --c29:#9085e9; --c30:#d95926; --c31:#3987e5; --c32:#199e70; --c33:#008300; --c34:#e66767; --c36:#22d3ee; --c37:#f59e0b; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0f1218; --card:#1a1a19; --text:#ffffff; --muted:#c3c2b7; --faint:#8a897f; --line:#2f2f2c; --grid:#2a2a28;
-  --s1:#3987e5; --s2:#d95926; --c27:#d55181; --c28:#c98500; --c29:#9085e9; --c30:#d95926; --c31:#3987e5; --c32:#199e70; --c33:#008300; --c34:#e66767; --c36:#22d3ee; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
+  --s1:#3987e5; --s2:#d95926; --c27:#d55181; --c28:#c98500; --c29:#9085e9; --c30:#d95926; --c31:#3987e5; --c32:#199e70; --c33:#008300; --c34:#e66767; --c36:#22d3ee; --c37:#f59e0b; --good:#4ade80; --bad:#f87171; --accent:#2dd4bf;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.6;font-size:16px}
@@ -216,7 +216,7 @@ const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const 
 const MON = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const D = s => new Date(s + "T00:00:00Z").getTime();
 let DATA = null;
-const COL = {27: "--c27", 28: "--c28", 29: "--c29", 30: "--c30", 31: "--c31", 32: "--c32", 33: "--c33", 34: "--c34", 36: "--c36"};
+const COL = {27: "--c27", 28: "--c28", 29: "--c29", 30: "--c30", 31: "--c31", 32: "--c32", 33: "--c33", 34: "--c34", 36: "--c36", 37: "--c37"};
 const DASH = {"1h": "", "4h": "7 4", "1d": "2 3"};
 let ON = new Set([30, 31]);
 try { const v = JSON.parse(localStorage.getItem("validSecs")); if (Array.isArray(v) && v.length) ON = new Set(v); } catch (e) {}
