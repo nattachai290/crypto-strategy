@@ -4686,3 +4686,161 @@ not a subset of §36's.
 **Run (runner):**
 - No new download: it uses §36's caches and `results/_multi/ml_wide/members.json`.
 - `python src/test_engine.py`, then `python src/ml_large.py` once, then `python src/analyzer.py`.
+
+---
+
+## Exp 054 - PLAN.md §37 run: a model for the owner's ten large coins, trained wide, decided on 4h - REJECT
+
+**Date:** 2026-10-08
+**Status:** complete. One TRAIN/VALID run, as pre-registered in Exp 053. No new download (it used §36's caches and `members.json`).
+**No holdout spent.** `results/_multi/ml_large/holdout.json` does not exist and `--final` was not run.
+
+**Verdict: REJECT** - failed `valid_ci_lo>0`, `timing_beats_shift_p95` and `both_legs>0`. TRAIN chose **`1-3d_off`**: 4h decisions, horizon set 1-3 days (6/12/18 4h bars), agreement OFF.
+
+This is the pre-registered 'REJECT with a positive TRAIN' outcome: the large-coin target does not hold out
+of sample.
+
+### TRAIN table (all four cells, walk-forward 2021-22)
+
+| cell | trades | weekly mean | t | max DD | mean R | long | short | per year |
+|---|---|---|---|---|---|---|---|---|
+| 1-3d_off **<- chosen** | 423 | +0.00278 | +2.22 | 0.0586 | +0.1175 | +0.0555 | +0.2361 | +0.1449 |
+| 1-3d_1d | 246 | +0.00161 | +1.83 | 0.0416 | +0.1181 | +0.0500 | +0.1193 | +0.0842 |
+| 2-6d_off | 359 | +0.00302 | +2.10 | 0.0684 | +0.1677 | +0.1241 | +0.1935 | +0.1578 |
+| 2-6d_1d | 235 | +0.00252 | +2.02 | 0.0515 | +0.2098 | +0.1175 | +0.1471 | +0.1315 |
+
+**All four cells are positive on TRAIN and all four clear 100 trades**, so the 4h/1-6-day target looks
+real in sample. The choice is by the weekly t-statistic among them: `1-3d_off` at t +2.22 (the longer
+`2-6d` set has the highest mean R at +0.1677 but a lower t at +2.10). The 1d agreement switch cuts trades
+by 40-42% and lowers the t in every pair, so TRAIN turned it off.
+
+### VALID (2023-24, the chosen cell)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 417 | >= 100 OK |
+| weekly account return | +0.00095 | > 0 OK |
+| 95% CI | [-0.00312, +0.00572] | lower > 0 **FAIL** |
+| t | +0.41 | - |
+| mean R per trade | +0.0592 | > 0 OK |
+| long leg (summed) | +0.2013 | > 0 OK |
+| short leg (summed) | -0.1018 | > 0 **FAIL** |
+| cost x1.5, weekly | +0.00081 | > 0 OK |
+| timing | +0.0040 | - |
+| shifted median / p95 | -0.0040 / +0.0059 | timing > p95 **FAIL** |
+| timing as a multiple of p95 | 0.67x | - |
+| breadth (>=10 trades, net>0, timing>own median) | 7 of 10 (0.70) | >= 8 coins and >= 0.5 OK |
+| max drawdown | 0.1365 | <= 0.20 OK |
+| return per year (account) | +0.0494 | - |
+| per year (summed R) | 2023 +0.0094, 2024 +0.0901 | - |
+| negative weeks | 31 of 105 | - |
+| average risk per trade | 0.57% of equity | - |
+
+**Three gates failed and the third is the real result.** The CI lower bound is -0.0031 (the widest of the
+three large-coin readings: §31 -0.00026, §36 -0.00103), the timing statistic is only
+0.67x the shifted p95 (§31 4.4x, §36 3.7x), and **the short leg lost -0.1018**. On VALID this book is long-only in substance: 112 long trades made +0.2013 while
+305 short trades lost -0.1018.
+
+Drawdown is the one comfortable number: 13.65% against the 20% line (§31 19.77%, §36 20.01%).
+
+### Concentration: the decisive diagnostic
+
+- **Best 5 weeks = 3.87x the whole VALID return** (§31: 0.67, §36: 0.87). The
+  five weeks sum +0.3624 against a total of +0.0994; the other 100 weeks sum -0.2630.
+- **Weekly mean without the best 5 weeks: -0.00286** (-0.00263 recomputed from the trade file) - **negative**.
+- **Mean R without the top 1% of trades: -0.0222** (analyzer).
+- The five weeks: 2024-11-24 +0.1426, 2023-11-26 +0.0821, 2023-11-19 +0.0514, 2023-03-12 +0.0453, 2024-04-21 +0.0410.
+
+So the whole VALID result is five weeks, three of them in November 2023. This is the weakest book of the
+three, not the strongest.
+
+### Per coin (VALID)
+
+| coin | traded from | VALID trades | mean R | timing | shifted median | beats its control |
+|---|---|---|---|---|---|---|
+| XRP | 2021-02 | 36 | +0.4018 | +0.0160 | -0.0033 | yes |
+| ADA | 2021-02 | 50 | +0.2426 | +0.0233 | -0.0018 | yes |
+| SOL | 2021-10 | 35 | +0.0978 | -0.0070 | -0.0083 | yes |
+| BTC | 2021-01 | 47 | +0.0527 | +0.0089 | -0.0044 | yes |
+| ETH | 2021-01 | 48 | +0.0149 | +0.0045 | -0.0031 | yes |
+| BCH | 2021-01 | 41 | +0.0069 | +0.0075 | -0.0076 | yes |
+| LINK | 2021-02 | 40 | +0.0025 | -0.0036 | -0.0049 | yes |
+| DOGE | 2021-08 | 37 | -0.0131 | +0.0039 | -0.0057 | no |
+| BNB | 2021-03 | 50 | -0.0935 | -0.0158 | -0.0015 | no |
+| NEAR | 2021-11 | 33 | -0.1133 | +0.0003 | +0.0002 | no |
+
+Seven of the ten coins beat their own shifted control (breadth 0.70, the best breadth of the three runs) and
+all ten clear 10 trades. XRP +0.402 R and ADA +0.243 R carry the book; **BNB -0.094 and NEAR -0.113 lose**,
+DOGE -0.013 is flat. The ten coins' short leg is the problem, and BNB and NEAR are where it shows.
+
+### TRAIN checks beside the VALID checks
+
+| check | TRAIN (`1-3d_off`) | VALID | holds on TRAIN, fails on VALID |
+|---|---|---|---|
+| trades | +423.00000 | +417.00000 | - |
+| weekly mean | +0.0028 | +0.0009 | yes |
+| 95% CI lower bound | +0.0005 | -0.0031 | **yes** |
+| t | +2.22058 | +0.41244 | - |
+| cost x1.5 weekly | +0.00269 | +0.00081 | yes |
+| timing | +0.02796 | +0.00397 | - |
+| shifted p95 | +0.00970 | +0.00592 | - |
+| long leg | +0.0555 | +0.2013 | yes |
+| short leg | +0.2361 | -0.1018 | **yes** |
+| mean R | +0.1175 | +0.0592 | yes |
+| max drawdown | +0.0586 | +0.1365 | yes |
+| breadth share | +1.0000 | +0.7000 | yes |
+| best-5-week share | +0.8146 | +3.8735 | - |
+
+**Three checks pass on TRAIN and fail on VALID: the CI lower bound (+0.00046 -> -0.00312), the short leg (+0.2361 ->
+-0.1018), and timing vs the shifted p95 (2.9x -> 
+0.67x).** TRAIN breadth was 100% of 10 coins (VALID 70% of 10); TRAIN folds 13 of 24 months positive with a
+longest losing run of 5, VALID 11 of 24 with a longest run of 3. TRAIN's best 5 weeks were already 81% of
+its return, so the concentration was present in sample too.
+
+### Analyzer (`src/analyzer.py`, refreshed after this run)
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §36 train wide · top 20 large coins | FRAGILE | 83 | 100.0 | 80.0 | 56.7 | 65.7 | 100.0 | 100.0 | 80.0 |
+| §37 4h model · 10 large coins | FRAGILE | 68 | 72.0 | 40.0 | 33.3 | 47.5 | 100.0 | 100.0 | 80.0 |
+
+**§37: FRAGILE, quality 68, against §31's 86 and §36's 83 - the lowest of the three.** All three are FRAGILE (a gate failed, so no
+ACCEPT is reachable). Every dimension is at or below the other two:
+
+- **train_vs_valid 72** (§31 and §36 both 100): VALID mean R is 50% of TRAIN (§31 102%, §36 85%). Half the TRAIN edge survives.
+- **robustness 40** (§31 and §36 both 80): it is the only run of the
+  three that fails the CI, the timing-vs-p95 and the both-legs checks at once.
+- **stability 33.3** (§31 74.8, §36 56.7). Best-5-week share 3.87 and mean
+  R without the top 1% of trades is negative.
+- **fold_consistency 47.5** (§31 69.4, §36 65.7): 11 of 24 VALID months
+  positive.
+- sensitivity 100 (4 of 4 TRAIN cells positive, no isolated peak) and decay 100 (both VALID years positive,
+  2023 +0.0522 mean R, 2024 +0.0647) are the only clean dimensions.
+
+### Verdict
+
+**REJECT: the ten large coins do not carry this model's forecastable 1-6-day move out of sample.** Facts:
+
+- **The in-sample half held.** All four TRAIN cells are positive with 235-423 trades each, mean R +0.118 to
+  +0.210, t +1.83 to +2.22, and TRAIN's own checks all pass (CI +0.00046, both legs up, timing 2.9x its
+  shifted p95, breadth 10/10, drawdown 5.9%).
+- **Out of sample it is a long-only book with five good weeks.** 417 trades, +0.00095 a week, t +0.41. The
+  long leg made +0.2013; the short leg **lost -0.1018**. Remove the best 5 weeks
+  and the weekly mean is negative.
+- **It is not better than the 1h line on the same coins.** §36's VALID trades restricted to these ten coins
+  made +0.0297 R per trade and +0.00069 a week (Exp 052); this 4h model made +0.0592 R per trade but only
+  +0.00095 a week, with a CI lower bound of -0.0031 against §31's -0.00026 for the whole book.
+- **The drawdown finding is real and new**: 13.65%, the lowest of the three large-coin readings, because 4h
+  bars with an 8-ATR 4h stop take fewer, larger stops. Sizing and risk, not signal, are what put §31
+  and §36 on the 20% line.
+- **Breadth is the one thing that improved**: 7 of 10 coins beat their own shifted control (0.70), against
+  19/36 (§36) and 28/46 (§31). Seven of ten agreeing is a better spread than 28 of 46 small books, but
+  it is not enough to carry five weeks.
+
+**No holdout was spent and none is proposed.** The §31-§37 shared holdout is untouched. The best
+recorded book in this project is still §31 (REJECT by 0.00026 on the CI).
+
+Files: `results/_multi/ml_large/summary.json`, `trades_valid.csv.gz`,
+`trades_train_{1-3d,2-6d}_{off,1d}.csv.gz` (all four cells); generated `journal/_multi/ml_large.md`;
+refreshed `results/_multi/analyzer/report.json`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.

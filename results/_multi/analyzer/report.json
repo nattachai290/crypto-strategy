@@ -301,6 +301,98 @@
    "train_side": null
   },
   {
+   "id": "s37",
+   "sec": 37,
+   "label": "\u00a737 4h model \u00b7 10 large coins",
+   "scores": {
+    "train_vs_valid": 72.0,
+    "robustness": 40.0,
+    "stability": 33.3,
+    "fold_consistency": 47.5,
+    "sensitivity": 100.0,
+    "decay": 100.0,
+    "overfit": 80.0
+   },
+   "details": {
+    "train_vs_valid": {
+     "train_mean_r": 0.11746384640763106,
+     "valid_mean_r": 0.05921727998921607,
+     "valid_over_train": 0.5041319674116257
+    },
+    "robustness": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": false,
+     "both_legs>0": false,
+     "breadth>=0.5": true
+    },
+    "stability": {
+     "top5_weeks_share": 3.87353978897075,
+     "coins_positive_share": 0.7,
+     "mean_r_without_top1pct": -0.022232850515070682,
+     "valid_total_return": 0.09942604742241525
+    },
+    "fold_consistency": {
+     "months_positive": 11,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 3,
+     "train": {
+      "months_positive": 13,
+      "months": 24,
+      "years_positive": true,
+      "longest_losing_months": 5
+     }
+    },
+    "sensitivity": {
+     "cells": 4,
+     "cells_positive_share": 1.0,
+     "chosen_z_vs_grid": 1.0843094539692917,
+     "isolated_peak": false
+    },
+    "decay": {
+     "mean_r_by_entry_year": {
+      "2023": 0.052165418444357146,
+      "2024": 0.06473219735122111
+     }
+    },
+    "overfit": {
+     "flags": [
+      "best 5 weeks carry > 60% of the return"
+     ]
+    }
+   },
+   "quality": 67.6,
+   "verdict": "FRAGILE",
+   "gate_verdict": "REJECT",
+   "gates_failed": [
+    "valid_ci_lo>0",
+    "timing_beats_shift_p95",
+    "both_legs>0"
+   ],
+   "valid_mean_r": 0.05921727998921607,
+   "train_mean_r": 0.11746384640763106,
+   "trades_recorded": true,
+   "dims_available": 7,
+   "train_side": {
+    "top5_weeks_share": 0.8145688152951174,
+    "folds": {
+     "months_positive": 13,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 5
+    },
+    "fold_score": 54.79166666666666,
+    "checks": {
+     "ci_lo>0": true,
+     "stress>0": true,
+     "timing>p95": true,
+     "breadth>=0.5": true,
+     "both_legs>0": true
+    }
+   }
+  },
+  {
    "id": "s29_4h",
    "sec": 29,
    "label": "\u00a729 4h",
