@@ -441,6 +441,7 @@ def main() -> None:
     test_run_record()
     test_ml_recent()
     test_ml_rank()
+    test_ml_vol()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2787,6 +2788,95 @@ def test_ml_rank() -> None:
           r1["chosen"]["form"] == "med30" and r1["verdict"] == "PASS"
           and r2["chosen"]["form"] == "raw" and "train_chose_centered" in r2["gates_failed"],
           f"{r1['chosen']['form']} {r1['verdict']} {r1['gates_failed']} / {r2['chosen']['form']} {r2['gates_failed']}")
+
+
+
+def test_ml_vol() -> None:
+    """Test 38 (PLAN.md section 40): range label, causal channels, breakout path, arming, pipeline mechanics."""
+    print("\n38. ml_vol: next-day range label, causal channels, breakout path by hand, arming, rule-only ignores ML")
+    import contextlib
+    import io
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_vol as MV
+    idx = pd.date_range("2023-01-01", periods=40, freq="4h", tz="UTC")
+    hi = np.full(40, 101.0)
+    lo = np.full(40, 99.0)
+    hi[21:24], lo[21:24] = [104.0, 106.0, 103.0], [98.0, 97.0, 100.0]
+    b = pd.DataFrame({"open": 100.0, "high": hi, "low": lo, "close": 100.0, "volume": 1.0}, index=idx)
+    y = MV.vol_label(b, 3)
+    import indicators as ta_
+    atr = ta_.atr_(b["high"], b["low"], b["close"], 14).to_numpy()
+    check("ml_vol label: next h bars' (max high - min low) / ATR at the bar; last h rows NaN",
+          np.isclose(y[20], (106.0 - 97.0) / atr[20]) and np.isclose(y[30], 2.0 / atr[30])
+          and np.isnan(y[37:]).all() and len(y) == 39)
+    hh, ll, xh, xl = MV.channels(b, 4)
+    b2 = b.copy()
+    b2.iloc[30:, b2.columns.get_loc("high")] = 500.0
+    hh2 = MV.channels(b2, 4)[0]
+    check("ml_vol channels: previous n bars only (bar 21's high is in bar 22's channel, not its own); causal",
+          hh[21] == 101.0 and hh[22] == 104.0 and np.allclose(hh[:31], hh2[:31], equal_nan=True))
+    close = np.array([100, 106, 104, 101, 99, 100, 94, 95, 104], float)
+    H = np.full(9, 105.0)
+    L = np.full(9, 95.0)
+    XH = np.full(9, 103.0)
+    XL = np.full(9, 102.0)
+    arm_ = np.array([1, 1, 1, 1, 1, 0, 1, 1, 1], bool)
+    path = MV.breakout_path(close, H, L, XH, XL, arm_, np.ones(9, bool))
+    check("ml_vol breakout path by hand: long on the up-break, held, out under the exit channel, short on the "
+          "armed down-break, out over the exit channel",
+          list(path) == [0, 1, 1, 0, 0, 0, -1, -1, 0], f"{list(path)}")
+    path2 = MV.breakout_path(close, H, L, XH, XL, np.zeros(9, bool), np.ones(9, bool))
+    check("ml_vol: an unarmed bar never opens a position", (path2 == 0).all())
+    p = 1.0 + 0.01 * np.random.default_rng(41).random(200)
+    p[150] = 5.0
+    armed, ratio = MV.arm(p, 0.7)
+    a0, r0 = MV.arm(p, None)
+    check("ml_vol arming: forecast above its rolling quantile arms; the baseline arms every bar with ratio 1",
+          armed[150] and ratio[150] > 1 and not armed[50] and a0.all() and (r0 == 1).all())
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for n, sd in (("C0USDT", 180), ("C1USDT", 181), ("C2USDT", 182)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    lab = {c: pd.Series(np.r_[MV.vol_label(P[c]["bars"]), np.nan][:len(P[c]["X"])], index=P[c]["X"].index) for c in P}
+    noise = {c: pd.Series(np.random.default_rng(40).random(len(P[c]["X"])), index=P[c]["X"].index) for c in P}
+    months = [str(m) for m in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    a, b_ = WF_.WINDOWS["valid"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        t1, _ = MV.run_cell(P, lab, ("none", 18), a, b_, traded)
+        t2, _ = MV.run_cell(P, noise, ("none", 18), a, b_, traded)
+        t3, _ = MV.run_cell(P, lab, ("q85", 18), a, b_, traded)
+        r = MV.evaluate(P, lab, traded, min_coins=3)
+    check("ml_vol: the rule-only baseline ignores the forecast; arming trades less; every cell on TRAIN; "
+          "train_chose_ml fails exactly when the chosen arm is none",
+          t1[["entry_time", "coin", "side"]].equals(t2[["entry_time", "coin", "side"]]) and 0 < len(t3) < len(t1)
+          and len(r["train_table"]) == 6 and "rule_only_same_channel" in r["valid"]
+          and (("train_chose_ml" in r["gates_failed"]) == (r["chosen"]["arm"] == "none")))
+    import tempfile
+    masks = {c: np.ones(len(P[c]["X"]), bool) for c in P}
+    keep = {}
+    with contextlib.redirect_stdout(io.StringIO()):
+        fc = MV.forecasts(P, WF_.GRID[0], masks, [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]], keep=keep, step=6)
+        r2 = MV.evaluate(P, fc, traded, min_coins=3, keep=True)
+    saved = MV.OUT
+    with tempfile.TemporaryDirectory() as tmp:
+        MV.OUT = Path(tmp)
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                MV._record(r2, P, fc, keep, traded, 0.0, [])
+            files = {q.relative_to(tmp).as_posix() for q in Path(tmp).rglob("*.*")}
+        finally:
+            MV.OUT = saved
+    need = {f"record/{sp}/{n}" for sp in ("train", "valid") for n in ("feature_importance.json",
+            "training_metadata.json", "predictions.parquet", "run_info.json")}
+    check("ml_vol: walk-forward range forecasts exist in VALID and the run record is written end to end",
+          all(np.isfinite(fc[c][fc[c].index >= pd.Timestamp("2023-01-01", tz="UTC")]).mean() > 0.5 for c in P)
+          and need <= files, f"{sorted(need - files)}")
 
 
 if __name__ == "__main__":

@@ -2838,3 +2838,72 @@ positive. The weekly t-statistic picks among selectable forms.
 
 **Look count.** The idea was sharpened while reading §38's VALID predictions. TRAIN supports it independently
 (Q5-Q1 positive in 2021 and 2022). It is the 13th distinct ML VALID book.
+
+## §40 — ML forecasts WHEN a large coin will move; a breakout decides the side (`src/ml_vol.py`, `_multi` Exp 066)
+
+**Why.** The direction forecasts of §37–§39 are a lagging regime signal (`_multi` Exp 062/065): right while a
+regime lasts, wrong at the turn. Their strongest input everywhere is BTC's 7-day volatility. Volatility clusters
+and is far easier to forecast than direction. The owner chose this new target (2026-10-09).
+
+**Hypothesis.** A LightGBM model can forecast which 4h bars start a large move: the next day's range in ATRs.
+A price breakout taken only when such a move is forecast should follow through more often, and pay its fixed
+costs more easily, than the same breakout taken at any time. The side comes from the price (which way the range
+breaks), not from a forecast whose level drifts with the regime.
+
+**Model.**
+- the ten large coins, each from 365 days after listing;
+- 4h decisions with 1h/1d closed-bar features (§30's features);
+- wide training rows (§36's members);
+- §30's 4h LightGBM setting;
+- monthly walk-forward refits, expanding window.
+
+The label is (highest high − lowest low) of the next 6 bars (one day) divided by the ATR at the decision bar. It
+is always positive and has no side.
+
+**Rule.** Decided at the close of bar k and filled at the open of k+1.
+- **Armed:** the forecast is above its own causal rolling q-quantile, or always armed in the rule-only baseline.
+- **Entry:** when armed, a close above the highest high of the previous N bars opens a long, and a close below the
+  lowest low opens a short. A new position opens only in a month when the coin is traded.
+- **Exit:**
+  - a long exits on a close below the lowest low of the previous N/2 bars;
+  - a short exits on a close above the highest high of the previous N/2 bars;
+  - an armed opposite breakout reverses the position;
+  - the 8-ATR protective stop;
+  - no clock.
+- **Account:** §31's.
+  - Confidence = forecast / threshold, so risk is 0.5–1%; the baseline sits at 0.5%.
+  - 5% cap per direction.
+  - Costs and funding.
+
+**TRAIN** (walk-forward 2021–22) picks 1 of 6 cells: arm {none, q70, q85} × N {6 bars = 1 day, 18 bars = 3 days}.
+§38's selection rule applies: ≥ 100 trades, both TRAIN years and both legs positive, then the weekly t.
+- No selectable cell is REJECT (`train_cell_selectable`).
+- An arm = none choice (the rule without ML) is REJECT (`train_chose_ml`).
+
+**VALID gates.** §37's:
+- ≥ 100 trades;
+- weekly mean > 0 and CI lower bound > 0;
+- cost ×1.5 > 0;
+- timing above the shifted p95;
+- ≥ 8 coins, breadth ≥ 0.5;
+- both legs > 0;
+- max DD ≤ 20%.
+
+**Reported:**
+- the same breakout without ML on VALID (the chosen N, arm = none): the comparison the hypothesis is about;
+- the Spearman of forecast vs realised range on TRAIN and VALID;
+- the short share by year.
+
+**Run-time record:** `run_record`, with skipped signals = the breakouts the ML arm filtered out.
+
+**What each outcome means.**
+- **PASS:** the shared holdout (§31–§40, one use) decides.
+- **TRAIN chooses arm = none:** the ML forecast does not improve the breakout on TRAIN.
+- **REJECT after an ML arm:**
+  - if the forecast vs range Spearman is high, volatility is forecastable but does not make breakouts pay;
+  - if it is low, the model did not learn the target.
+
+**Holdout:** shared with §31–§39.
+
+**Prior:** low to moderate. Volatility forecasting is well established; breakouts on large coins after costs have
+been weak in this project's rule rounds (BTC/ETH `evaluate.py` history).

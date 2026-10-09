@@ -76,7 +76,9 @@ RUNS += [("s31", 31, "§31 1h + portfolio", M / "s31_ml_port_1h/summary.json", M
          *[(f"s38_{n}", 38, f"§38 recency-weighted {n} · 10 large coins", M / f"s38_ml_recent/{n}/summary.json",
             M / f"s38_ml_recent/{n}/trades_valid.csv.gz", "account") for n in ("1h", "4h", "1d")],
          ("s39", 39, "§39 4h forecast vs own median · 10 large coins", M / "s39_ml_rank_4h/summary.json",
-          M / "s39_ml_rank_4h/trades_valid.csv.gz", "account")]
+          M / "s39_ml_rank_4h/trades_valid.csv.gz", "account"),
+         ("s40", 40, "§40 4h range forecast + breakout · 10 large coins", M / "s40_ml_vol_4h/summary.json",
+          M / "s40_ml_vol_4h/trades_valid.csv.gz", "account")]
 # TRAIN trade files exist from §36 on (trades_train_<form>.csv.gz, the chosen form is read)
 TRAIN = ("2021-01-01", "2023-01-01")
 

@@ -5660,3 +5660,37 @@ Weighting recent rows (§38) and centring (§39) were the two direct fixes of th
 a better book.
 
 Analyzer: §39 FRAGILE 69 (= §38 4h's book; the sensitivity dimension differs).
+
+---
+
+## Exp 066 - Pre-registration: ML forecasts when a large coin will move, a breakout decides the side (PLAN.md §40, owner choice)
+
+**Date:** 2026-10-09
+**Status:** registered, not run. Code `src/ml_vol.py`, test 38.
+
+After §37-§39, the owner chose a new target (option 2 of Exp 065): the ML forecasts the next day's range in
+ATRs, not the direction.
+
+**Design.**
+- **Model:** the ten coins, 4h decisions, wide rows, §30's 4h setting, expanding monthly walk-forward.
+- **Rule:** a breakout of the previous N bars, taken only when the range forecast is above its own causal rolling
+  quantile; exit on the N/2-bar opposite channel or the 8-ATR stop, no clock; §31's account.
+- **TRAIN:** picks 1 of 6 cells (arm none / q70 / q85 × N 6 / 18) under §38's rule. An arm = none choice is
+  REJECT.
+- **VALID:** §37's gates.
+- **Reported:** the same breakout without ML on VALID, and the forecast-vs-range Spearman.
+- **Record:** `run_record`, with skipped signals = breakouts the arm filtered out.
+
+**Test 38.**
+- The range label, the causal channels and a hand-computed breakout path match.
+- Arming works.
+- The rule-only baseline is independent of the forecast.
+- The `train_chose_ml` gate matches the choice.
+- The forecasts and the run record are written end to end.
+
+**Look count.** A new forecast and a new rule, so this is a new ML VALID book (13th distinct).
+
+**Run (runner):**
+- No new download.
+- `python src/test_engine.py`, then `python src/ml_vol.py` once, then `python src/analyzer.py` and
+  `python src/result_report.py`.
