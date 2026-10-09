@@ -2907,3 +2907,56 @@ is always positive and has no side.
 
 **Prior:** low to moderate. Volatility forecasting is well established; breakouts on large coins after costs have
 been weak in this project's rule rounds (BTC/ETH `evaluate.py` history).
+
+## §41 — §40's range forecast armed per side (`src/ml_side.py`, `_multi` Exp 069)
+
+**Why.** §40's arm has no side, but in practice it tilts long (`_multi` Exp 068). On VALID it kept 787 of 1,884
+up-breaks (42%) and only 291 of 1,576 down-breaks (18%), because the range forecast ran higher around up-moves in
+2023–24. Most of its gain over the rule came from dropping shorts, and the short leg still lost. The owner chose
+this fix (2026-10-09, option ก).
+
+**Hypothesis.** Arm each side against its own history: an up-break must carry a forecast above the q-quantile of
+the forecasts at that coin's recent up-breaks, and a down-break the same against its recent down-breaks. Each side
+then keeps its own breakouts with the largest expected move, the threshold stops tilting long, and both legs earn.
+
+**Known risk, stated before the run.** In a rising market, equal keep rates add shorts, and §40's VALID
+down-breaks were the losing ones. A worse VALID book is a possible and honest result.
+
+**Unchanged from §40:**
+- the model, label and walk-forward;
+- the breakout and exit channels;
+- the 8-ATR stop, no clock;
+- §31's account (confidence sizing 0.5–1%, 5% cap per direction).
+
+The forecasts are refit exactly as in §40. The `pooled` rows must reproduce §40's TRAIN rows (recorded as
+`reproduces_s40`).
+
+**New: the arm.**
+- `pooled`: §40's arm, the forecast above its rolling q-quantile over the last 180 bars.
+- `side`: the long side is armed when the forecast is above the rolling q-quantile of the forecasts at the coin's
+  last 60 up-breaks (close above the previous-N high, the current bar included, at least 20 events). The short side
+  uses down-breaks the same way. Confidence = forecast / that side's threshold.
+
+**TRAIN** (walk-forward 2021–22) picks 1 of 8 cells: form {pooled, side} × q {0.70, 0.85} × N {6, 18}. §38's
+selection rule applies.
+- No selectable cell is REJECT (`train_cell_selectable`).
+- A `pooled` choice is REJECT (`train_chose_side`): that cell is §40.
+
+**VALID gates.** §40's (§37's).
+
+**Reported:**
+- the other form with the same q and N on VALID, so `side` vs `pooled` is the comparison this round is about;
+- each side's keep rate, = trades / (trades + skipped breakouts);
+- the short share by year.
+
+**Run-time record:** `run_record`, with skipped signals = the breakouts the chosen arm filtered out.
+
+**What each outcome means.**
+- **PASS:** the shared holdout (§31–§41, one use) decides.
+- **TRAIN chooses `pooled`:** arming per side does not help on TRAIN, so §40's tilt was not costing money there.
+- **REJECT after `side`, with the short leg still negative:** down-breaks on these coins in 2023–24 do not pay,
+  however well chosen. The short side is the problem, not the arm.
+
+**Holdout:** shared with §31–§40.
+
+**Prior:** low. It moves trades between sides more than it changes the forecast.

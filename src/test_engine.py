@@ -442,6 +442,7 @@ def main() -> None:
     test_ml_recent()
     test_ml_rank()
     test_ml_vol()
+    test_ml_side()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2877,6 +2878,62 @@ def test_ml_vol() -> None:
     check("ml_vol: walk-forward range forecasts exist in VALID and the run record is written end to end",
           all(np.isfinite(fc[c][fc[c].index >= pd.Timestamp("2023-01-01", tz="UTC")]).mean() > 0.5 for c in P)
           and need <= files, f"{sorted(need - files)}")
+
+
+def test_ml_side() -> None:
+    """Test 39 (PLAN.md section 41): per-side arm causal and by hand, equal arms = section 40, pooled cells reproduce it."""
+    print("\n39. ml_side: per-side arm by hand and causal, side path = section 40 path with equal arms, pooled = section 40")
+    import contextlib
+    import io
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_vol as MV
+    import ml_side as MS
+    rng = np.random.default_rng(39)
+    p = 1.0 + 0.01 * rng.random(400)
+    ev = np.zeros(400, bool)
+    ev[::5] = True
+    p[300] = 5.0
+    armed, ratio = MS.side_arm(p, ev, 0.7)
+    q_ref = np.quantile(p[ev & (np.arange(400) <= 300)][-MS.SIDE_ROLL:], 0.7)
+    p2 = p.copy()
+    p2[301:] = 50.0
+    _, ratio2 = MS.side_arm(p2, ev, 0.7)
+    check("ml_side arm: threshold = q-quantile of the forecasts at the last SIDE_ROLL events (bar included); "
+          "NaN before SIDE_MIN events; causal",
+          np.isclose(ratio[300], 5.0 / q_ref) and armed[300] and np.isnan(ratio[:5 * (MS.SIDE_MIN - 1)]).all()
+          and np.allclose(ratio[:301], ratio2[:301], equal_nan=True))
+    close = np.array([100, 106, 104, 101, 99, 100, 94, 95, 104], float)
+    H, L = np.full(9, 105.0), np.full(9, 95.0)
+    XH, XL = np.full(9, 103.0), np.full(9, 102.0)
+    arm_ = np.array([1, 1, 1, 1, 1, 0, 1, 1, 1], bool)
+    one = np.ones(9, bool)
+    check("ml_side path: equal arms give section 40's path; a short side never armed never shorts",
+          list(MS.side_path(close, H, L, XH, XL, arm_, arm_, one)) == list(MV.breakout_path(close, H, L, XH, XL, arm_, one))
+          and (MS.side_path(close, H, L, XH, XL, one, np.zeros(9, bool), one) >= 0).all())
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for n, sd in (("C0USDT", 190), ("C1USDT", 191), ("C2USDT", 192)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    lab = {c: pd.Series(np.r_[MV.vol_label(P[c]["bars"]), np.nan][:len(P[c]["X"])], index=P[c]["X"].index) for c in P}
+    months = [str(m) for m in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    a, b_ = WF_.WINDOWS["valid"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        t40, _ = MV.run_cell(P, lab, ("q85", 18), a, b_, traded)
+        t41, _ = MS.run_cell(P, lab, ("pooled", "q85", 18), a, b_, traded)
+        ts, _ = MS.run_cell(P, lab, ("side", "q85", 18), a, b_, traded)
+        r = MS.evaluate(P, lab, traded, min_coins=3)
+    cols = ["entry_time", "exit_time", "coin", "side", "net_r", "conf", "ret"]
+    check("ml_side: the pooled cell reproduces section 40 trade for trade; the side arm trades; 8 TRAIN cells; "
+          "train_chose_side fails exactly when the chosen arm is pooled; keep rates reported",
+          t40[cols].reset_index(drop=True).equals(t41[cols].reset_index(drop=True)) and len(ts) > 0
+          and len(r["train_table"]) == 8 and "keep_rate" in r["valid"] and "other_form_same_cell" in r["valid"]
+          and (("train_chose_side" in r["gates_failed"]) == (r["chosen"]["arm"] == "pooled")))
 
 
 if __name__ == "__main__":

@@ -5929,3 +5929,39 @@ before any run:
 - (c) exit on the forecast falling back below its median instead of the N/2 channel.
 
 No holdout spent; the §31-§40 shared holdout is untouched.
+
+---
+
+## Exp 069 - Pre-registration: §40's range forecast armed per side (PLAN.md §41, owner choice)
+
+**Date:** 2026-10-09
+**Status:** registered, not run. To be run once by the runner: `python src/ml_side.py`.
+
+The owner chose option ก from Exp 068: give each side its own arming threshold.
+
+**Design** (PLAN.md §41, `src/ml_side.py`):
+- §40's forecasts are refit unchanged;
+- TRAIN picks 1 of 8 cells: arm {pooled = §40, side} × q {0.70, 0.85} × N {6, 18};
+- a `side` arm compares the forecast with the q-quantile of the forecasts at the coin's last 60 same-side
+  breakouts (at least 20);
+- §38's selection rule: ≥ 100 trades, both TRAIN years and both legs positive, then the weekly t;
+- a `pooled` choice is REJECT (`train_chose_side`);
+- VALID gates as §40.
+
+**Reported:**
+- the other form with the same q and N on VALID;
+- the keep rate per side;
+- the short share by year;
+- `reproduces_s40`, which must be true for every pooled row.
+
+**Test 39** (`src/test_engine.py`):
+- the side threshold matches a hand-computed quantile and is causal;
+- with equal arms, the path is §40's path;
+- the pooled cell reproduces §40 trade for trade;
+- 8 TRAIN cells;
+- `train_chose_side` fails exactly on a pooled choice.
+
+**The risk stated in advance.** In a bull VALID, equal keep rates add shorts, and §40's down-breaks were the
+losing ones. A worse book than §40 would mean the short side, not the arm, is the problem.
+
+No holdout. §31–§41 share one.
