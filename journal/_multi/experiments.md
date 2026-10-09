@@ -5621,3 +5621,42 @@ Files: `results/_multi/s39_ml_rank_4h/summary.json`, `trades_valid.csv.gz`,
 `predictions.parquet`, skipped signals, run info, holdout power), `analysis/`; generated
 `journal/_multi/s39_ml_rank_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`,
 `docs/analyzer_data.json`.
+
+---
+
+## Exp 065 - Review of Exp 064 (§39, planner): REJECT stands; the 4h edge on TRAIN was the forecast's level, not its ranking
+
+**Date:** 2026-10-09
+**Status:** complete (recorded files only; no run, no holdout)
+
+**Checks.** `trades_valid.csv.gz` is identical to §38 4h's (441 trades, `DataFrame.equals` True). TRAIN chose
+`raw`, so §39 judged §38 4h's book again and added **no new look at VALID**. The 13th book counted in Exp 063
+did not happen. The runner's TRAIN table reproduces.
+
+**What centring did on TRAIN** (summed return by year and side):
+
+| form | 2021 long | 2021 short | 2022 long | 2022 short |
+|---|---|---|---|---|
+| raw | +0.131 | +0.025 | +0.006 | +0.242 |
+| med30 | +0.129 | +0.040 | -0.060 | +0.169 |
+| med90 | +0.040 | +0.047 | -0.057 | +0.232 |
+
+Centring took away the regime tilt, and the edge went with it.
+- `raw` earned 2021 mostly long and 2022 mostly short: its level followed the regime.
+- The centred forms shorted more in the 2021 bull (short share 0.54 / 0.68 against raw's 0.36) and went long into
+  2022, losing on longs.
+- The ranking alone (Q5-Q1 +0.15 / +0.19 per year, Exp 062) is not large enough to pay costs when every period is
+  forced to both sides around its own median.
+
+This is the pre-registered outcome "TRAIN prefers raw: the level carried the information in 2021-22, i.e.
+regime capture".
+
+**Reading of the large-coin line (§37-§39).** The forecasts of this family are a lagging regime signal:
+- they mostly read BTC volatility and BTC/market returns over 1-7 days (SHAP);
+- they lean with the last regime;
+- they earn when the regime persists (2021, 2022) and lose at the turn (2023).
+
+Weighting recent rows (§38) and centring (§39) were the two direct fixes of that lag. Neither survives TRAIN with
+a better book.
+
+Analyzer: §39 FRAGILE 69 (= §38 4h's book; the sensitivity dimension differs).
