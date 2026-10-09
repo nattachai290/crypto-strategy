@@ -5451,3 +5451,35 @@ TRAIN only, and it counts as another look at VALID.
 
 Web: §38's three sub-models added to `docs/ml.html`, `docs/valid.html` (chip §38) and `docs/trade.html`
 (groups §38 1h/4h/1d). 1d candles for XRP, SOL and NEAR are published (`c1440_<COIN>.json`).
+
+---
+
+## Exp 063 - Pre-registration: side from the forecast against its own recent median (PLAN.md §39, owner request)
+
+**Date:** 2026-10-09
+**Status:** registered, not run. Code `src/ml_rank.py`, test 37.
+
+The owner asked for the change that makes the existing model work. The planner chose the policy fix from Exp 062:
+it is the only one with TRAIN support, since the 4h ranking is positive in 2021 and 2022.
+
+§38's 4h sub-model is frozen as TRAIN chose it (`hl12`). The policy is fed one of three forms:
+- the raw forecast (baseline; must reproduce §38 4h `hl12`: 394 trades, t +2.70);
+- the forecast minus its causal rolling median over 30 days;
+- the same over 90 days.
+
+TRAIN picks by §38's rule (both years and both legs positive, then t). A `raw` choice, or no selectable form, is
+REJECT. VALID uses §37's gates. The short share and the mean centred forecast by year are reported. `run_record`
+writes the run-time record.
+
+**Test 37.**
+- Centring removes a constant level shift.
+- Centring is causal.
+- A planted edge in the centred form is chosen and PASSes, while a `raw` choice is REJECT.
+
+**Look count.** The idea was sharpened on §38's VALID predictions (stated in PLAN.md §39). This is the 13th
+distinct ML VALID book.
+
+**Run (runner):**
+- No new download.
+- `python src/test_engine.py`, then `python src/ml_rank.py` once, then `python src/analyzer.py` and
+  `python src/result_report.py`.

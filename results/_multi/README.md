@@ -23,7 +23,8 @@ in the "old folder" column.
 | §35 | `s35_listing_1d` | `listing` | `listing.py` | short every newly listed perp (not ML) | 044 → 045 → 046 | REJECT |
 | §36 | `s36_ml_wide_1h` | `ml_wide` | `ml_wide.py` | train on 425 coins, trade the monthly top 20 | 047/048 → 050 → 051 | REJECT (CI, DD 20.01%) |
 | §37 | `s37_ml_large_4h` | `ml_large` | `ml_large.py` | 4h model for the owner's ten large coins | 053 → 054 → 055 | REJECT (CI, timing, short leg) |
-| §38 | `s38_ml_recent` (`1h/`, `4h/`, `1d/`) | - | `ml_recent.py` | §37 with recency-weighted training + both-years TRAIN rule, three sub-models | 060 → pending | pending |
+| §38 | `s38_ml_recent` (`1h/`, `4h/`, `1d/`) | - | `ml_recent.py` | §37 with recency-weighted training + both-years TRAIN rule, three sub-models | 060 → 061 → 062 | REJECT ×3 (4h best) |
+| §39 | `s39_ml_rank_4h` | - | `ml_rank.py` | §38 4h with the side taken from the forecast against its own 30/90-day median | 063 → pending | pending |
 
 Not rounds: `analyzer/` (`analyzer.py`, quality score of every ML run) and `meta_lessons/` (`meta_lessons.py`).
 

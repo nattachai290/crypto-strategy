@@ -2773,3 +2773,68 @@ read.
 **Prior:** low to moderate. TRAIN is short (2021–22), so recency has only 12–24 months of regime change to show
 its value there. 1d sub-models have had few trades before (§30 1d: 1,218 on 47 coins), so 1d may miss the
 100-trade gate on ten coins.
+
+## §39 — Side from the forecast against its own recent median, 4h, ten large coins (`src/ml_rank.py`, `_multi` Exp 063)
+
+**Why.** §38's per-bar forecasts (`_multi` Exp 062) show two facts:
+- **The 4h model ranks bars correctly in all four years.** Its top forecast quintile beats its bottom quintile by
+  +0.15 / +0.19 on TRAIN (2021 / 2022) and +0.40 / +0.26 on VALID.
+- **The level of its forecasts drifts with the last regime.** The mean forecast was -0.14 / -0.13 in 2023-24
+  while prices rose.
+
+The policy reads the forecast's sign, so the level shift picks the side. The owner asked for the change that makes
+the existing model usable, not new inputs (2026-10-09).
+
+**Hypothesis.** Measure the forecast against its own recent median, per coin and causally. That removes the level
+drift and keeps the ranking, so the side follows what the model ranks.
+
+**Design.** §38's 4h sub-model exactly as TRAIN chose it:
+- the ten coins;
+- 4h decisions with 1h/1d features;
+- horizons 6/12/18 bars, averaged;
+- wide training rows weighted with a 12-month half-life;
+- §30's 4h setting, entry quantile and exit mode;
+- 8-ATR stop, no clock;
+- agreement off;
+- confidence sizing, 5% cap.
+
+The forecasts are §38's 4h forecasts. The `raw` TRAIN row must reproduce §38 4h `hl12`: 394 trades, t +2.70.
+
+Only the number fed to the unchanged policy changes (rolling entry threshold on |x|, side = sign of x):
+
+| form | x fed to the policy | role |
+|---|---|---|
+| `raw` | the forecast | baseline (= §38 4h) |
+| `med30` | the forecast minus its rolling median over the past 30 days (180 bars) | candidate |
+| `med90` | the forecast minus its rolling median over the past 90 days (540 bars) | candidate |
+
+The median is per coin, over past and current bars only, and is NaN until a third of the window exists.
+
+**TRAIN rule.** §38's: a form is selectable only with ≥ 100 TRAIN trades, both TRAIN years positive and both legs
+positive. The weekly t-statistic picks among selectable forms.
+- No selectable form is REJECT (`train_cell_selectable`).
+- A `raw` choice is REJECT (`train_chose_centered`).
+
+**VALID gates.** §37's:
+- ≥ 100 trades;
+- weekly mean > 0 and CI lower bound > 0;
+- cost ×1.5 > 0;
+- timing above the shifted p95;
+- ≥ 8 coins, breadth ≥ 0.5;
+- both legs > 0;
+- max DD ≤ 20%.
+
+**Reported:** the short share and the mean centred forecast by year. **Run-time record:** `run_record`.
+
+**What each outcome means.**
+- **PASS:** the shared holdout (§31–§39, one use) decides.
+- **TRAIN prefers `raw`:** centring loses the TRAIN edge. The level carried real information in 2021-22, i.e.
+  that edge was regime capture.
+- **REJECT after a centred choice:** the ranking is too weak to trade after costs on ten coins.
+
+**Holdout:** shared with §31–§38.
+
+**Prior:** low to moderate. The ranking is steady but small (Spearman +0.02 to +0.08).
+
+**Look count.** The idea was sharpened while reading §38's VALID predictions. TRAIN supports it independently
+(Q5-Q1 positive in 2021 and 2022). It is the 13th distinct ML VALID book.

@@ -440,6 +440,7 @@ def main() -> None:
     test_result_report()
     test_run_record()
     test_ml_recent()
+    test_ml_rank()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2736,6 +2737,56 @@ def test_ml_recent() -> None:
     check("ml_recent run record: every file written for TRAIN and VALID; importance and SHAP filled; predictions "
           "inside VALID", need <= files and fi["mean_gain"] and fi["shap"]["rows"] > 0
           and pr["time"].min() >= pd.Timestamp("2023-01-01", tz="UTC"), f"{sorted(need - files)}")
+
+
+
+def test_ml_rank() -> None:
+    """Test 37 (PLAN.md section 39): the forecast centred on its own causal rolling median; pipeline and gates."""
+    print("\n37. ml_rank: centring removes a level shift, is causal; centred edge chosen and PASSes, raw is REJECT")
+    import contextlib
+    import io
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_rank as MK2
+    idx = pd.date_range("2021-01-01", periods=2000, freq="4h", tz="UTC")
+    p = pd.Series(np.random.default_rng(37).normal(size=2000), index=idx)
+    p.iloc[:50] = np.nan
+    c1 = MK2.center(p, 30)
+    c2 = MK2.center(p + 5.0, 30)
+    q = p.copy()
+    q.iloc[1500:] += 9.0
+    c3 = MK2.center(q, 30)
+    check("ml_rank centring: a constant level shift changes nothing; None leaves the forecast as is; warm-up is NaN",
+          np.allclose(c1, c2, equal_nan=True) and MK2.center(p, None).equals(p) and c1.iloc[:50 + 59].isna().all()
+          and c1.iloc[50 + 60:].notna().all())
+    check("ml_rank centring is causal: changing forecasts from bar 1500 changes no centred value before it",
+          np.allclose(c1.iloc[:1500], c3.iloc[:1500], equal_nan=True) and not np.allclose(c1.iloc[1600:], c3.iloc[1600:]))
+    check("ml_rank forms: raw / med30 / med90", list(MK2.forms({"A": p}).keys()) == ["raw", "med30", "med90"])
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for n, sd in (("C0USDT", 170), ("C1USDT", 171), ("C2USDT", 172)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+        spans = [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]]
+        e = {}
+        for a, b in spans:
+            w = WF_.walk_forward(P, 60, WF_.GRID[0], a, b, step=3)
+            for c in P:
+                e[c] = np.where(np.isfinite(w[c]), w[c], e.get(c, np.full(len(w[c]), np.nan)))
+    edge = {c: pd.Series(e[c], index=P[c]["X"].index) for c in P}
+    noise = {c: pd.Series(np.random.default_rng(38).normal(size=len(P[c]["X"])), index=P[c]["X"].index) for c in P}
+    months = [str(m) for m in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    with contextlib.redirect_stdout(io.StringIO()):
+        r1 = MK2.evaluate(P, {"raw": noise, "med30": edge, "med90": noise}, traded, 0.9, "flip", tf=60, min_coins=3)
+        r2 = MK2.evaluate(P, {"raw": edge, "med30": noise, "med90": noise}, traded, 0.9, "flip", tf=60, min_coins=3)
+    check("ml_rank pipeline: a planted edge in the centred form is chosen and PASSes; a raw choice is REJECT",
+          r1["chosen"]["form"] == "med30" and r1["verdict"] == "PASS"
+          and r2["chosen"]["form"] == "raw" and "train_chose_centered" in r2["gates_failed"],
+          f"{r1['chosen']['form']} {r1['verdict']} {r1['gates_failed']} / {r2['chosen']['form']} {r2['gates_failed']}")
 
 
 if __name__ == "__main__":
