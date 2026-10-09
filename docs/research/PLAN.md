@@ -3009,3 +3009,55 @@ through the noise of a move that is still volatile. The exit is a model signal, 
 
 **Prior:** low to moderate. Longer holds cut costs per R and let winners run, but also give back more on the
 reversals.
+
+## §43 — Range model says when, direction model must agree on the side (`src/ml_agree.py`, `_multi` Exp 077)
+
+**Why** (`_multi` Exp 076, TRAIN files only). On TRAIN, §41's breakouts whose side agrees with the sign of
+§38 4h's recorded walk-forward direction forecast average +0.039 R (563 trades). Those that disagree average
+-0.017 R (429). The split:
+- has t +2.57;
+- holds in 2021 and 2022 and on both sides;
+- holds on 7 of 10 coins;
+- holds in every other §41 cell.
+
+The owner keeps the ten coins and asked for the improvement to come from past results (2026-10-09).
+
+**Hypothesis.** The two models answer different questions, and each is weak alone:
+- the range model says when a move starts;
+- the direction model leans to a side.
+
+A breakout both agree on should follow through more often than one they disagree on.
+
+**Design.**
+- §41's book is frozen: range forecasts, side / q70 / N = 6 arm, chan exit, 8-ATR stop, no clock, §31's account.
+- The direction forecasts are §38 4h hl12's (horizons 6/12/18 bars, §36's ensemble), recomputed and checked
+  against §38's recorded TRAIN forecasts.
+- Forms:
+  - `none` = §41;
+  - `sign` arms a side only where the forecast's sign agrees. An opposite breakout without agreement does not
+    reverse the position.
+
+**TRAIN.** §38's rule applies. These are REJECT:
+- a `none` choice;
+- a t gain of `sign` over `none` below +0.5 (Exp 075's margin, adopted here as a stricter pre-registered gate).
+
+**Caveat.** The filter was found on TRAIN trades, so the TRAIN comparison is not independent. VALID decides.
+
+**VALID gates.** §41's.
+
+**Reported:**
+- the `none` book on VALID;
+- the kept share per side;
+- the direction forecast by year;
+- `run_record` plus `direction_predictions.parquet`.
+
+**What each outcome means.**
+- **PASS:** the shared holdout (§31–§43) decides.
+- **REJECT with a weak long leg and a low long kept share:** the direction model's short lean in 2023–24 cost
+  the longs. Agreement helps only where the direction model is in step with the regime.
+- **REJECT with both legs up but CI ≤ 0:** the filter works, and the book is too small for this sample.
+
+**Holdout:** shared with §31–§42.
+
+**Prior:** moderate. It is the first lead with a TRAIN split of t +2.5 across years, sides and coins, but it was
+found on TRAIN.

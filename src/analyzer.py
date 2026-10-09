@@ -82,7 +82,9 @@ RUNS += [("s31", 31, "§31 1h + portfolio", M / "s31_ml_port_1h/summary.json", M
          ("s41", 41, "§41 4h range forecast armed per side · 10 large coins", M / "s41_ml_side_4h/summary.json",
           M / "s41_ml_side_4h/trades_valid.csv.gz", "account"),
          ("s42", 42, "§42 4h range forecast, forecast-based exit · 10 large coins", M / "s42_ml_exit_4h/summary.json",
-          M / "s42_ml_exit_4h/trades_valid.csv.gz", "account")]
+          M / "s42_ml_exit_4h/trades_valid.csv.gz", "account"),
+         ("s43", 43, "§43 range model + direction model agree · 10 large coins", M / "s43_ml_agree_4h/summary.json",
+          M / "s43_ml_agree_4h/trades_valid.csv.gz", "account")]
 # TRAIN trade files exist from §36 on (trades_train_<form>.csv.gz, the chosen form is read)
 TRAIN = ("2021-01-01", "2023-01-01")
 

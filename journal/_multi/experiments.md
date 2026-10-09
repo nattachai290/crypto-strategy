@@ -6458,3 +6458,91 @@ What is left:
 - or a different trade built on the range forecast.
 
 No holdout spent. §31–§42 share one.
+
+---
+
+## Exp 076 - Diagnostic: §41's breakouts split by §38's direction forecast (TRAIN only)
+
+**Date:** 2026-10-09
+**Status:** complete. Read-only, on recorded TRAIN files. No VALID file was opened for this. No run.
+
+The owner (2026-10-09): trade only the ten coins, and find the improvement in the results already recorded.
+
+**Method.**
+- Take §41's TRAIN trades: `trades_train_side_q70_n6.csv.gz`, 992 trades.
+- Join each trade at its decision bar (entry - 4h) to §38 4h's recorded walk-forward direction forecast:
+  `s38_ml_recent/4h/record/train/predictions.parquet` (hl12, 1-3 day horizons, out-of-sample per month).
+- 100% of the trades matched.
+
+**Result.**
+
+| breakout side vs sign of the direction forecast | trades | mean R | long | short |
+|---|---|---|---|---|
+| agree | 563 | **+0.039** | +0.032 (233) | +0.045 (330) |
+| disagree | 429 | **-0.017** | -0.022 (178) | -0.013 (251) |
+
+**How robust the split is:**
+- **Difference:** +0.056 R, t +2.57 (Welch).
+- **By year:** 2021 agree +0.043 vs disagree -0.029; 2022 +0.037 vs -0.007. Both years.
+- **By coin:** agree beats disagree on 7 of 10 coins (BTC, ADA and DOGE are the exceptions).
+- **Other §41 cells:**
+
+  | cell | agree mean R | disagree mean R |
+  |---|---|---|
+  | `side_q85_n6` | +0.025 | +0.001 |
+  | `pooled_q70_n6` | +0.026 | -0.018 |
+  | `side_q70_n18` | +0.048 | -0.041 |
+
+**What did not work:**
+- Agreement with the *centred* forecast (minus its rolling 180-bar median, §39's idea) gives no clean split
+  (+0.012/+0.032 vs +0.032/-0.021). The raw sign, level drift included, carries the information, as Exp 065 found.
+- By weekday there is no stable pattern.
+
+**Reading.** The two ML models answer different questions:
+- the range model says **when** a move starts, but not its side (§40–§42);
+- the direction model ranks bars and lags the regime (§37–§39).
+
+A breakout that both agree on was right more often on TRAIN than one they disagree on. This is the first lead
+that combines two ML signals.
+
+**Caveat.** This split was found by looking at TRAIN trades, so a TRAIN comparison of the filtered book is no
+longer independent evidence. VALID must decide. The round below states that before the run.
+
+---
+
+## Exp 077 - Pre-registration: §41's breakout taken only when the direction model agrees (PLAN.md §43)
+
+**Date:** 2026-10-09
+**Status:** registered, not run. To be run once by the runner: `python src/ml_agree.py`.
+
+**Design** (`src/ml_agree.py`, PLAN.md §43):
+- §41's book frozen: range forecasts, side / q70 / N = 6 arm, chan exit, 8-ATR stop, §31's account;
+- §38 4h hl12 direction forecasts recomputed (`reproduces_s38_dir` against §38's recorded TRAIN forecasts);
+- form `none` = §41 (`reproduces_s41`);
+- form `sign` arms a side only where the direction forecast's sign agrees. An opposite breakout without
+  agreement does not reverse the position.
+
+**Selection and gates:**
+- §38's TRAIN rule;
+- a `none` choice is REJECT;
+- `sign` must also beat `none` by a TRAIN t margin of at least +0.5 (`train_margin>=0.5`), following Exp 075.
+  This only makes the round stricter;
+- §41's VALID gates.
+
+**Reported:**
+- the `none` book on VALID (= §41's recorded book);
+- the kept share per side;
+- the direction forecast's mean and share below zero by year.
+
+**Stated before the run.** §38's direction forecasts leaned short in 2023–24. The filter may therefore cut good
+VALID longs, and that would show as a lower long kept share and a weaker long leg.
+
+**Test 41** (`src/test_engine.py`):
+- the agreement arms match a hand case (NaN or 0 arms nothing);
+- `none` reproduces §41 trade for trade and ignores the direction forecast;
+- a planted foresight direction forecast trades less at a higher mean R;
+- the margin gate is computed.
+
+The run record and report were smoke-tested end to end on synthetic data.
+
+No holdout. §31–§43 share one.

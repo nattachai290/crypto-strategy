@@ -444,6 +444,7 @@ def main() -> None:
     test_ml_vol()
     test_ml_side()
     test_ml_exit()
+    test_ml_agree()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2996,6 +2997,54 @@ def test_ml_exit() -> None:
           t41[cols].reset_index(drop=True).equals(t42[cols].reset_index(drop=True)) and len(tf_) > 0
           and len(r["train_table"]) == 3 and all("median_bars" in x["hold"] for x in r["train_table"])
           and (("train_chose_fc_exit" in r["gates_failed"]) == (r["chosen"]["form"] == "chan")))
+
+
+def test_ml_agree() -> None:
+    """Test 41 (PLAN.md section 43): direction agreement by hand, none = section 41, pipeline mechanics."""
+    print("\n41. ml_agree: arms kept only where the direction forecast agrees; none reproduces section 41")
+    import contextlib
+    import io
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_vol as MV
+    import ml_side as MS
+    import ml_agree as MA
+    au = np.array([1, 1, 0, 1, 1], bool)
+    ad = np.array([1, 0, 1, 1, 1], bool)
+    d = np.array([0.3, -0.2, -0.1, np.nan, 0.0])
+    bu, bd = MA.agree_arms(au, ad, d, "sign")
+    nu, nd = MA.agree_arms(au, ad, d, "none")
+    check("ml_agree arms by hand: long kept where forecast > 0, short where < 0; NaN or 0 arms nothing; none unchanged",
+          list(bu) == [True, False, False, False, False] and list(bd) == [False, False, True, False, False]
+          and (nu == au).all() and (nd == ad).all())
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for n, sd in (("C0USDT", 210), ("C1USDT", 211), ("C2USDT", 212)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    lab = {c: pd.Series(np.r_[MV.vol_label(P[c]["bars"]), np.nan][:len(P[c]["X"])], index=P[c]["X"].index) for c in P}
+    # a planted direction forecast: the realised next-6-bar return (perfect foresight, test only)
+    fwd = {c: pd.Series(np.r_[np.log(P[c]["bars"]["close"]).diff(6).shift(-6).to_numpy(), np.nan][:len(P[c]["X"])],
+                        index=P[c]["X"].index) for c in P}
+    rnd = {c: pd.Series(np.random.default_rng(41).normal(size=len(P[c]["X"])), index=P[c]["X"].index) for c in P}
+    months = [str(m) for m in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    a, b_ = WF_.WINDOWS["valid"]
+    cols = ["entry_time", "exit_time", "coin", "side", "net_r", "conf", "ret"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        t41, _ = MS.run_cell(P, lab, MA.ARM, a, b_, traded)
+        t0, _ = MA.run_cell(P, lab, rnd, "none", a, b_, traded)
+        tg, _ = MA.run_cell(P, lab, fwd, "sign", a, b_, traded)
+        r = MA.evaluate(P, lab, fwd, traded, min_coins=3)
+    check("ml_agree: none reproduces section 41 and ignores the direction forecast; a foresight direction forecast "
+          "trades less with a higher mean R; 2 TRAIN rows; the margin gate is computed",
+          t41[cols].reset_index(drop=True).equals(t0[cols].reset_index(drop=True)) and 0 < len(tg) < len(t0)
+          and tg["net_r"].mean() > t0["net_r"].mean() and len(r["train_table"]) == 2
+          and any(k.startswith("train_margin") for k in r["gates_failed"]) == (r["train_margin"] < MA.MIN_MARGIN)
+          and (("train_chose_agree" in r["gates_failed"]) == (r["chosen"]["form"] == "none")))
 
 
 if __name__ == "__main__":
