@@ -2960,3 +2960,52 @@ selection rule applies.
 **Holdout:** shared with §31–§40.
 
 **Prior:** low. It moves trades between sides more than it changes the forecast.
+
+## §42 — §41's book with an exit decided by the range forecast (`src/ml_exit.py`, `_multi` Exp 073)
+
+**Why.** §41 fails only `valid_ci_lo>0`. Its edge per trade is small (+0.0222 R), and it exits on the 3-bar
+opposite channel after a median of about 8 bars. Sizing cannot fix the CI (`_multi` Exp 072): t does not change
+when trades are rescaled, and the forecast says nothing about an armed trade's result. The exit is the remaining
+lever. The owner chose it (2026-10-09, option ค).
+
+**Hypothesis.** The range forecast says when a coin is in a large-move state. A breakout taken in that state
+should be held while the state lasts and closed when it ends, not on the first 3-bar pullback. Winners then run
+through the noise of a move that is still volatile. The exit is a model signal, not the clock.
+
+**Unchanged from §41.**
+- the forecasts;
+- the entry, frozen at §41's TRAIN choice (side arm, q70, N = 6);
+- the 8-ATR stop, no clock;
+- armed opposite breakouts still reverse the position;
+- §31's account.
+
+**The exit (TRAIN picks 1 of 3).**
+- `chan`: §41's N/2 opposite channel. It must reproduce §41's TRAIN row `side_q70_n6` (`reproduces_s41`).
+- `fc`: exit when the forecast falls below its causal rolling median over the last 180 bars, the current bar
+  included. Price exits only by the stop or an armed reversal.
+- `fcwide`: exit when the forecast falls below that median, or when the close goes beyond the previous N bars'
+  opposite extreme. This is a wider price guard than `chan`'s N/2.
+
+**TRAIN selection.** §38's rule applies.
+- No selectable form is REJECT.
+- A `chan` choice is REJECT (`train_chose_fc_exit`): that form is §41.
+
+**VALID gates.** §41's.
+
+**Reported:**
+- mean and median hold, and the exit mix, per form;
+- the `chan` book on VALID (= §41's recorded book);
+- the short share by year.
+
+**Run-time record:** `run_record`.
+
+**What each outcome means.**
+- **PASS:** the shared holdout (§31–§42) decides.
+- **TRAIN keeps `chan`:** holding by the forecast does not pay on TRAIN; the 3-bar exit is not what limits the edge.
+- **REJECT after `fc` / `fcwide` with a longer hold and no better CI:** the move after an armed breakout does not
+  persist on these coins, and the line has reached what one breakout book on ten coins can do.
+
+**Holdout:** shared with §31–§41.
+
+**Prior:** low to moderate. Longer holds cut costs per R and let winners run, but also give back more on the
+reversals.

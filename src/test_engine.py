@@ -443,6 +443,7 @@ def main() -> None:
     test_ml_rank()
     test_ml_vol()
     test_ml_side()
+    test_ml_exit()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -2934,6 +2935,67 @@ def test_ml_side() -> None:
           t40[cols].reset_index(drop=True).equals(t41[cols].reset_index(drop=True)) and len(ts) > 0
           and len(r["train_table"]) == 8 and "keep_rate" in r["valid"] and "other_form_same_cell" in r["valid"]
           and (("train_chose_side" in r["gates_failed"]) == (r["chosen"]["arm"] == "pooled")))
+
+
+def test_ml_exit() -> None:
+    """Test 40 (PLAN.md section 42): forecast-median exit by hand and causal, chan = section 41, pipeline."""
+    print("\n40. ml_exit: forecast-below-median flag causal, exit paths by hand, chan reproduces section 41")
+    import contextlib
+    import io
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_vol as MV
+    import ml_side as MS
+    import ml_exit as MX
+    rng = np.random.default_rng(40)
+    p = 1.0 + rng.random(400)
+    low = MX.fc_low(p)
+    med = np.median(p[300 - MX.MED_ROLL + 1:301])
+    p2 = p.copy()
+    p2[301:] = 0.0
+    check("ml_exit flag: below the rolling median of the last MED_ROLL forecasts (bar included); False in warm-up; "
+          "causal", low[300] == (p[300] < med) and not low[:MX.MED_MIN - 1].any()
+          and (MX.fc_low(p2)[:301] == low[:301]).all())
+    close = np.array([100, 106, 104, 101, 99, 100, 101, 94, 95], float)
+    H, L = np.full(9, 105.0), np.full(9, 95.0)
+    XH, XL = np.full(9, 103.0), np.full(9, 102.0)
+    one = np.ones(9, bool)
+    lo_ = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0], bool)
+    fc = MX.exit_path(close, H, L, XH, XL, one, one, one, lo_, "fc")
+    fw = MX.exit_path(close, H, L, XH, XL, one, one, one, lo_, "fcwide")
+    ch = MX.exit_path(close, H, L, XH, XL, one, one, one, lo_, "chan")
+    check("ml_exit paths by hand: fc holds through the 3-bar pullback and exits on the low-forecast bar; fcwide the "
+          "same (the N-bar guard at 95 is not hit); chan = section 41's path; an armed down-break opens a short",
+          list(fc) == [0, 1, 1, 1, 1, 0, 0, -1, -1] and list(fw) == list(fc)
+          and list(ch) == list(MS.side_path(close, H, L, XH, XL, one, one, one)), f"{list(fc)} {list(fw)}")
+    c2 = close.copy()
+    c2[4] = 94.0
+    fw2 = MX.exit_path(c2, H, L, XH, XL, one, np.zeros(9, bool), one, np.zeros(9, bool), "fcwide")
+    check("ml_exit fcwide: the N-bar opposite extreme closes a long even while the forecast is high",
+          list(fw2[:5]) == [0, 1, 1, 1, 0], f"{list(fw2)}")
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for n, sd in (("C0USDT", 200), ("C1USDT", 201), ("C2USDT", 202)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][n] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    lab = {c: pd.Series(np.r_[MV.vol_label(P[c]["bars"]), np.nan][:len(P[c]["X"])], index=P[c]["X"].index) for c in P}
+    months = [str(m) for m in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    a, b_ = WF_.WINDOWS["valid"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        t41, _ = MS.run_cell(P, lab, MX.ARM, a, b_, traded)
+        t42, _ = MX.run_cell(P, lab, "chan", a, b_, traded)
+        tf_, _ = MX.run_cell(P, lab, "fc", a, b_, traded)
+        r = MX.evaluate(P, lab, traded, min_coins=3)
+    cols = ["entry_time", "exit_time", "coin", "side", "net_r", "conf", "ret"]
+    check("ml_exit: chan reproduces section 41's frozen arm trade for trade; fc trades; 3 TRAIN rows with holds; "
+          "train_chose_fc_exit fails exactly on a chan choice",
+          t41[cols].reset_index(drop=True).equals(t42[cols].reset_index(drop=True)) and len(tf_) > 0
+          and len(r["train_table"]) == 3 and all("median_bars" in x["hold"] for x in r["train_table"])
+          and (("train_chose_fc_exit" in r["gates_failed"]) == (r["chosen"]["form"] == "chan")))
 
 
 if __name__ == "__main__":

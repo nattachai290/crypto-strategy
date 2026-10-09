@@ -6243,3 +6243,34 @@ the owner's rule "ถ้าเสนอไปไม่ดีไม่ต้อ�
 **What could still move `valid_ci_lo>0`:**
 - a higher per-trade edge; the exit, option (c), is the remaining untested lever in this book;
 - or more independent trades. That would need more coins, which conflicts with the owner's ten-coin rule.
+
+---
+
+## Exp 073 - Pre-registration: §41's book with an exit decided by the range forecast (PLAN.md §42, owner choice)
+
+**Date:** 2026-10-09
+**Status:** registered, not run. To be run once by the runner: `python src/ml_exit.py`.
+
+The owner chose option ค (Exp 072).
+
+**Design** (`src/ml_exit.py`, PLAN.md §42):
+- §41's forecasts and entry are frozen at side / q70 / N = 6;
+- TRAIN picks the exit from:
+  - `chan`: §41's 3-bar channel; it must reproduce §41's TRAIN row (992 trades, t +0.8784);
+  - `fc`: exit when the forecast falls below its rolling 180-bar median;
+  - `fcwide`: that, or a close beyond the 6-bar opposite extreme;
+- §38's TRAIN rule; a `chan` choice is REJECT;
+- §41's VALID gates.
+
+**Reported:**
+- hold length and exit mix per form;
+- the `chan` book on VALID.
+
+**Test 40** (`src/test_engine.py`):
+- the median flag matches a hand calculation and is causal;
+- the exit paths match hand cases (`fc` holds through the 3-bar pullback; `fcwide`'s N-bar guard closes a long);
+- `chan` reproduces §41 trade for trade;
+- 3 TRAIN rows;
+- `train_chose_fc_exit` fails exactly on a `chan` choice.
+
+No holdout. §31–§42 share one.
