@@ -5879,3 +5879,53 @@ Files: `results/_multi/s40_ml_vol_4h/summary.json`, `trades_valid.csv.gz`,
 `predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated
 `journal/_multi/s40_ml_vol_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`,
 `docs/analyzer_data.json`.
+
+---
+
+## Exp 068 - Planner's review of §40 (Exp 067): the volatility forecast is real; the arm is also a long tilt
+
+**Date:** 2026-10-09
+**Status:** complete. Read-only checks on the recorded files (`record/{train,valid}/predictions.parquet`,
+`skipped_signals.csv.gz`, `trades_valid.csv.gz`). No backtest, no holdout.
+
+**Verdict confirmed: REJECT** (`valid_ci_lo>0`, `both_legs>0`). The numbers in Exp 067 match `summary.json`.
+Three points to add or correct:
+
+1. **The range forecast beats naive persistence, so the Spearman is the model's.** The label is range / ATR,
+   so the obvious baselines are weak. Here is the Spearman of each forecast against the label:
+
+   | forecast | TRAIN | VALID |
+   |---|---|---|
+   | ML | +0.352 | +0.389 |
+   | previous day's label (lag 6 bars, causal) | +0.104 | +0.105 |
+   | mean of the last 30 lagged labels | -0.055 | -0.139 |
+
+   The ML forecast is about 3.5x the persistence baseline in both periods. Exp 067's "+0.35 vs the direction
+   models' +0.03" compares a range rank with a return correlation. That is not a like-for-like comparison, but
+   the conclusion stands.
+2. **`weekday` leading is a calendar effect, not a leak.** The mean label by weekday is Mon-Thu 2.7-3.0,
+   Fri 2.30, Sat 1.95-2.10 and Sun 2.84-3.09 ATR. The pattern is the same in TRAIN and VALID, and the low
+   values are the windows that cover the weekend. It is a legitimate input.
+3. **"Taking the side from price fixed the short bias" overstates it: the arm is side-free, but it acts as a
+   long tilt.** On VALID it kept 787 of 1,884 up-breaks (42%) but only 291 of 1,576 down-breaks (18%). The
+   rule alone shorted 0.485 / 0.487 of the time, so most of the drop to 0.251 / 0.288 comes from the arm. The
+   high-range forecasts came mostly around up-moves in 2023-24. This explains most of the gain over the rule:
+   - the long leg improved a little (+0.1119 -> +0.1302 R per trade);
+   - the short leg improved a lot (-0.1506 -> -0.0103), mainly because most shorts were removed.
+
+   On TRAIN (2022 bear) the legs were +0.0286 long / +0.0330 short, so the breakout earns in the direction of
+   its regime. The timing control (1.45x its shifted p95) says the entries are not pure drift, but the margin
+   is thin.
+
+**What §40 establishes.** The ML part works: the range is forecastable well beyond persistence, and arming
+the breakout on it turned a losing rule (VALID -0.00037/week, DD 25.3%) into a positive one (+0.00114/week,
+DD 9.6%). What fails is the trade around it. TRAIN t is +0.66 (CI lo -0.00103) and VALID t is +1.23. Both are
+too weak, and the short leg is a loser in a bull year. **If §40 is improved, the change should be in how
+the forecast is used, not in the forecast itself.** Candidates for the owner, one change each, pre-registered
+before any run:
+
+- (a) per-side quantiles, so the arm stops tilting long by accident;
+- (b) size by the forecast instead of on/off;
+- (c) exit on the forecast falling back below its median instead of the N/2 channel.
+
+No holdout spent; the §31-§40 shared holdout is untouched.
