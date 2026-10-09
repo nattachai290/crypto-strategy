@@ -301,6 +301,97 @@
    "train_side": null
   },
   {
+   "id": "s41",
+   "sec": 41,
+   "label": "\u00a741 4h range forecast armed per side \u00b7 10 large coins",
+   "scores": {
+    "train_vs_valid": 100.0,
+    "robustness": 80.0,
+    "stability": 66.7,
+    "fold_consistency": 51.1,
+    "sensitivity": 50.0,
+    "decay": 100.0,
+    "overfit": 60.0
+   },
+   "details": {
+    "train_vs_valid": {
+     "train_mean_r": 0.015291832131077099,
+     "valid_mean_r": 0.022182815452624446,
+     "valid_over_train": 1.4506316354037803
+    },
+    "robustness": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": true,
+     "both_legs>0": true,
+     "breadth>=0.5": true
+    },
+    "stability": {
+     "top5_weeks_share": 1.1472220937410662,
+     "coins_positive_share": 0.8,
+     "mean_r_without_top1pct": 0.0011871308187263337,
+     "valid_total_return": 0.14005761254088428
+    },
+    "fold_consistency": {
+     "months_positive": 13,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 3,
+     "train": {
+      "months_positive": 12,
+      "months": 24,
+      "years_positive": true,
+      "longest_losing_months": 3
+     }
+    },
+    "sensitivity": {
+     "cells": 8,
+     "cells_positive_share": 1.0,
+     "chosen_z_vs_grid": 2.1386607952300536,
+     "isolated_peak": true
+    },
+    "decay": {
+     "mean_r_by_entry_year": {
+      "2023": 0.02420816225000855,
+      "2024": 0.02020165803991057
+     }
+    },
+    "overfit": {
+     "flags": [
+      "chosen cell is an isolated peak",
+      "best 5 weeks carry > 60% of the return"
+     ]
+    }
+   },
+   "quality": 72.5,
+   "verdict": "FRAGILE",
+   "gate_verdict": "REJECT",
+   "gates_failed": [
+    "valid_ci_lo>0"
+   ],
+   "valid_mean_r": 0.022182815452624446,
+   "train_mean_r": 0.015291832131077099,
+   "trades_recorded": true,
+   "dims_available": 7,
+   "train_side": {
+    "top5_weeks_share": 1.5734548176404881,
+    "folds": {
+     "months_positive": 12,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 3
+    },
+    "fold_score": 47.5,
+    "checks": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": true,
+     "breadth>=0.5": true,
+     "both_legs>0": true
+    }
+   }
+  },
+  {
    "id": "s40",
    "sec": 40,
    "label": "\u00a740 4h range forecast + breakout \u00b7 10 large coins",

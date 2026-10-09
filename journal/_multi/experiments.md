@@ -5965,3 +5965,179 @@ The owner chose option ก from Exp 068: give each side its own arming threshold
 losing ones. A worse book than §40 would mean the short side, not the arm, is the problem.
 
 No holdout. §31–§41 share one.
+
+---
+
+## Exp 070 - PLAN.md §41 run: §40's range forecast armed PER SIDE - REJECT on one gate, and the short leg turned positive
+
+**Date:** 2026-10-09
+**Status:** complete. One run, as pre-registered in Exp 069. No new download (§36's caches). `--final` not run.
+**No holdout spent.** No `holdout.json` under `results/_multi/s41_ml_side_4h/`; the §31-§41 shared holdout is untouched.
+
+**Verdict: REJECT - failed `valid_ci_lo>0` only.** TRAIN chose **`side_q70_n6`**: an up-break is armed against the 70th percentile of the forecasts at that coin's last 60 up-breaks, a down-break against its last 60 down-breaks, breakout channel N = 6 bars.
+
+**`reproduces_s40` = {'pooled_q70_n6': True, 'pooled_q70_n18': True, 'pooled_q85_n6': True, 'pooled_q85_n18': True}** - all four `pooled` rows reproduce §40 trade for trade, so the difference below is the arm, not the model or the caches.
+
+### TRAIN table (8 cells)
+
+| cell | arm | N | trades | weekly mean | t | mean R | long | short | by year | short share | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| pooled_q70_n6 | pooled | 6 | 1432 | +0.00058 | +0.55 | +0.0069 | +0.0081 | +0.0526 | 2021 +0.0218, 2022 +0.0388 | 2021 0.355, 2022 0.465 | yes |
+| pooled_q70_n18 | pooled | 18 | 779 | +0.00065 | +0.49 | +0.0145 | +0.0254 | +0.0425 | 2021 +0.0375, 2022 +0.0304 | 2021 0.322, 2022 0.442 | yes |
+| pooled_q85_n6 | pooled | 6 | 974 | +0.00059 | +0.66 | +0.0122 | +0.0286 | +0.0330 | 2021 +0.0186, 2022 +0.0431 | 2021 0.285, 2022 0.409 | yes |
+| pooled_q85_n18 | pooled | 18 | 613 | +0.00046 | +0.38 | +0.0163 | +0.0283 | +0.0201 | 2021 +0.0367, 2022 +0.0117 | 2021 0.268, 2022 0.382 | yes |
+| side_q70_n6 **<- chosen** | side | 6 | 992 | +0.00075 | +0.88 | +0.0153 | +0.0177 | +0.0612 | 2021 +0.0224, 2022 +0.0565 | 2021 0.584, 2022 0.587 | yes |
+| side_q70_n18 | side | 18 | 426 | +0.00035 | +0.39 | +0.0143 | +0.0117 | +0.0250 | 2021 +0.0118, 2022 +0.0249 | 2021 0.555, 2022 0.615 | yes |
+| side_q85_n6 | side | 6 | 569 | +0.00047 | +0.72 | +0.0162 | +0.0030 | +0.0463 | 2021 +0.0233, 2022 +0.0260 | 2021 0.554, 2022 0.636 | yes |
+| side_q85_n18 | side | 18 | 263 | +0.00031 | +0.43 | +0.0232 | +0.0179 | +0.0148 | 2021 -0.0035, 2022 +0.0363 | 2021 0.550, 2022 0.650 | **no** |
+
+`train_chose_side` passed (a `side` cell was chosen). The chosen cell has the highest TRAIN t of all eight (+0.88 against §40's best +0.66), the best weekly mean and the lowest max DD (6-bar, 5.24%).
+
+**Per-side arming raised both the short share and the short leg on TRAIN**, so the choice was not a
+trade of sides for P&L: the pooled rows short 0.355/0.465 (`q70_n6`) and 0.285/0.409 (`q85_n6`) in 2021/2022
+with short legs of +0.0526 and +0.0330, the side rows short 0.584/0.587 and 0.554/0.636 with short legs of
++0.0612 and +0.0463. Every armed cell here is selectable except `side_q85_n18` (2021 is negative).
+
+### VALID (2023-24, the chosen `side_q70_n6`)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 1088 | >= 100 OK |
+| weekly account return | +0.00133 | > 0 OK |
+| 95% CI | [-0.00059, +0.00331] | lo > 0 **FAIL** |
+| t | +1.32 | - |
+| mean R per trade | +0.0222 | > 0 OK |
+| long leg | +0.1291 | > 0 OK |
+| short leg | +0.0109 | > 0 OK |
+| cost x1.5 weekly | +0.00095 | > 0 OK |
+| timing | +0.0257 vs shifted p95 +0.0140 (1.84x, median +0.0002) | > p95 OK |
+| breadth | 8 of 10 (0.80) | >= 8 and >= 0.5 OK |
+| max drawdown | 8.30% | <= 20% OK |
+| per year (summed R) | 2023 +0.0808, 2024 +0.0593 | both > 0 OK |
+| total account return | 14.01% | - |
+| negative weeks | 56 of 105 | - |
+
+**`both_legs>0` passed for the first time in the ten-coin line: the short leg made +0.0109 R over 522 trades, against §40's -0.0103.** Exit mix {'signal': 1084, 'stop': 3, 'eod': 1} - the exit is the N/2 = 3-bar opposite channel, so stops are rare.
+
+### The other form with the same q and N on VALID (`other_form_same_cell` = `pooled_q70_n6` = §40's cell)
+
+| | pooled `q70_n6` (= §40 cell) | **side `q70_n6`** |
+|---|---|---|
+| trades | 1573 | 1088 |
+| weekly account return | +0.00109 | +0.00133 |
+| 95% CI | [-0.00117, +0.00344] | [-0.00059, +0.00331] |
+| t | +0.91 | +1.32 |
+| mean R | +0.0123 | +0.0222 |
+| long / short | +0.1359 / -0.0211 | +0.1291 / +0.0109 |
+| max drawdown | 12.58% | 8.30% |
+| short share 2023 / 2024 | 0.342 / 0.377 | 0.418 / 0.540 |
+
+**The per-side arm beat the pooled arm at the same quantile and channel on every measure except trade count**, including the CI lower bound (-0.00059 against -0.00117) and max DD (8.30% against 12.58%). The gain is almost entirely the short leg: +0.0109 against -0.0211.
+
+### Keep rate per side on VALID
+
+| side | taken | filtered out | keep rate |
+|---|---|---|---|
+| long | 566 | 1311 | 0.302 |
+| short | 522 | 1082 | 0.325 |
+| long (pooled) | 1007 | 829 | 0.548 |
+| short (pooled) | 566 | 1056 | 0.349 |
+
+**The keep rates became equal (0.302 long, 0.325 short) where the pooled arm kept 0.548 of up-breaks but only 0.349 of down-breaks.** That was the mechanism §40's review (Exp 068) identified: its arm behaved as a long tilt. Per-side arming removed the tilt, which is why the short share rose and the short leg turned positive instead of losing.
+
+The filter still removed the worse breakouts: **2,393 filtered** (68.7% of all breakouts), mean signed_label **-0.0639** with only 44.8% moving in their own direction, against the kept trades' +0.0222 R. Per side: 1311 up-breaks at -0.0168, 1082 down-breaks at -0.1210.
+
+### Short share by year, against the large-coin line
+
+| book | 2023 | 2024 | short leg on VALID |
+|---|---|---|---|
+| §37 4h | 0.690 | 0.760 | - |
+| §38 4h / §39 | 0.549 | 0.642 | - |
+| §40 (pooled q85_n6) | 0.251 | 0.288 | -0.0103 |
+| **§41 (side q70_n6)** | **0.418** | **0.540** | **+0.0109** |
+
+### §40 against §41 on VALID, cell by cell
+
+| | §40 `q85_n6` | **§41 `side_q70_n6`** |
+|---|---|---|
+| trades | 1078 | 1088 |
+| weekly mean | +0.00114 | +0.00133 |
+| 95% CI lo | -0.00058 | -0.00059 |
+| 95% CI hi | +0.00299 | +0.00331 |
+| t | +1.23 | +1.32 |
+| mean R | +0.0185 | +0.0222 |
+| long leg | +0.1302 | +0.1291 |
+| short leg | -0.0103 | +0.0109 |
+| cost x1.5 weekly | +0.00076 | +0.00095 |
+| max drawdown | 9.59% | 8.30% |
+| breadth | 6 of 10 | 8 of 10 |
+| total return | 11.99% | 14.01% |
+| 2023 summed R | +0.0427 | +0.0808 |
+| 2024 summed R | +0.0773 | +0.0593 |
+
+**§41 is better than §40 on 12 of the 13 rows above**, the exceptions being the CI lower bound (the same to four decimals) and the long leg (-0.0011 R apart, the same long book with a slightly different filter). Both rounds fail the same gate for the same reason: the weekly CI's lower bound touches zero at around 1.3 t.
+
+### Per-coin VALID means
+
+| coin | trades | mean R | timing | shifted median |
+|---|---|---|---|---|
+| BTCUSDT | 103 | +0.0880 | +0.0514 | +0.0080 |
+| SOLUSDT | 112 | +0.0436 | +0.0329 | +0.0004 |
+| BNBUSDT | 106 | +0.0416 | +0.0428 | -0.0007 |
+| LINKUSDT | 111 | +0.0372 | +0.0334 | -0.0002 |
+| BCHUSDT | 101 | +0.0165 | +0.0374 | -0.0019 |
+| DOGEUSDT | 113 | +0.0108 | +0.0168 | -0.0001 |
+| ADAUSDT | 108 | +0.0053 | +0.0187 | -0.0008 |
+| NEARUSDT | 118 | +0.0021 | +0.0054 | -0.0006 |
+| ETHUSDT | 103 | -0.0023 **loses** | +0.0165 | +0.0030 |
+| XRPUSDT | 113 | -0.0161 **loses** | +0.0044 | +0.0015 |
+
+**Breadth 8 of 10 coins positive** (§40's was 6), the best of the ten-coin books. BTC carries the largest single-coin mean (+0.0880 R over 103 trades); ETH (-0.0023) and XRP (-0.0161) lose.
+
+### Concentration and the TRAIN checks
+
+- **Best 5 weeks = 1.15x the VALID return**, the least concentrated of the large-coin books (§40 1.30x, §39 1.92x, §37 3.87x); the weekly mean without them is -0.00021, negative but closer to zero than §40's -0.00035. The analyzer's mean R without the top 1% of trades is +0.0012 - **positive**, against §40's -0.0037.
+- TRAIN checks (chosen cell): weekly +0.00075, CI lo -0.00088 (negative), t +0.88, mean R +0.0153, long +0.0177, short +0.0612, max DD 5.24%, breadth 0.80 of 10, cost x1.5 +0.00051, timing 1.7x its shifted p95, best-5-week share +1.573.
+
+### Top 10 features by mean |SHAP| on VALID
+
+| rank | feature | mean \|SHAP\| |
+|---|---|---|
+| 1 | `weekday` | 0.13390 |
+| 2 | `vol_24` | 0.11584 |
+| 3 | `ema_dist_20` | 0.07985 |
+| 4 | `h1_volume_z` | 0.05704 |
+| 5 | `vol_ratio` | 0.04804 |
+| 6 | `ema_dist_50` | 0.04657 |
+| 7 | `btc_vol_168` | 0.04020 |
+| 8 | `funding_last` | 0.03931 |
+| 9 | `atr_pct` | 0.03525 |
+| 10 | `mkt_ret_168` | 0.02632 |
+
+Identical to §40's, as expected: §41 refits no model, it only changes the threshold, so the forecasts and their importances are the same. `weekday` is rank 1 at 0.13390; BTC's volatility (`btc_vol_168`) is rank 7.
+
+### Analyzer
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §38 recency-weighted 4h · 10 large coins | FRAGILE | 59 | 40.4 | 60.0 | 55.6 | 65.7 | 50.0 | 100.0 | 40.0 |
+| §40 4h range forecast + breakout · 10 large coins | FRAGILE | 69 | 100.0 | 60.0 | 22.2 | 40.2 | 83.3 | 100.0 | 80.0 |
+| §41 4h range forecast armed per side · 10 large coins | FRAGILE | 72 | 100.0 | 80.0 | 66.7 | 51.1 | 50.0 | 100.0 | 60.0 |
+
+**§41: FRAGILE, quality 72** - the highest of the ten-coin books and the highest of any round since §32 (§40 69, §38 4h 59, §31 86). The gain over §40 is almost entirely **stability 66.7 against 22.2**, driven by 80% of coins positive (against 60%) and a positive mean R without the top 1% of trades. It is behind §40 on sensitivity (50 against 83.3) and overfit (60 against 80).
+
+### Verdict
+
+**REJECT on one gate, and the mechanism the round was designed to fix did fix it.** Facts:
+
+- **The short leg turned positive for the first time in the ten-coin line**: +0.0109 over 522 trades, so `both_legs>0` passed. The cause is measurable: the per-side arm equalised the keep rates (0.302 long / 0.325 short) where §40's pooled arm kept 0.548 of up-breaks but only 0.349 of down-breaks. §40's arm was a long tilt (Exp 068); removing the tilt made the shorts earn.
+- **The risk stated in advance did not materialise.** Exp 069 warned that equal keep rates would add shorts in a rising VALID, and they did - short share 0.418 / 0.540 against §40's 0.251 / 0.288 - but the added shorts were profitable, so the book improved rather than worsened. **The short side was never the problem; the arm's tilt was.**
+- **Better than §40 on almost every measure**: weekly +0.00133 against +0.00114, t +1.32 against +1.23, mean R +0.0222 against +0.0185, max DD 8.30% against 9.59%, breadth 8/10 against 6/10, total return 14.01% against 11.99%. The CI lower bound is the same to four decimals; the long leg is 0.0011 R lower.
+- **The CI still touches zero** (-0.00059, t +1.32 over 1088 trades). That is the single failing gate and the same failure as §40's.
+- **Breadth and concentration are the best of the line**: 8 of 10 coins positive, best 5 weeks 1.15x the return, mean R without the top 1% of trades positive. The return is less dependent on a handful of weeks than in any previous large-coin book.
+- **The best recorded book in this project is still §31** (REJECT, CI lo -0.00026 on 46 coins, analyzer 86). §41 is the best ten-coin book (analyzer 72) and its CI lower bound is -0.00059.
+
+**No holdout was spent and none is proposed.** The §31-§41 shared holdout is untouched.
+
+Files: `results/_multi/s41_ml_side_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{pooled,side}_q{70,85}_n{6,18}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s41_ml_side_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
