@@ -6735,3 +6735,54 @@ PASS, so the holdout is not available anyway.
 The remaining gate failures (CI, short leg) are both on the short side and in the sample size.
 
 No holdout spent. §31–§43 share one.
+
+---
+
+## Exp 080 - Diagnostic: can funding or BTC's trend time the short side? (TRAIN only) - no robust signal
+
+**Date:** 2026-10-09
+**Status:** complete. Read-only on recorded TRAIN trade files. No VALID file was opened for this, and no run was
+made.
+
+**Inputs.**
+- Funding history for the ten coins: Binance monthly `fundingRate` files, downloaded to the scratchpad and not
+  committed.
+- BTC 4h bars from `data/cache/BTCUSDT`.
+
+All values are taken as of the entry time (merge_asof, backward, so causal).
+
+**Trades:**
+- §41 TRAIN `side_q70_n6`: 581 shorts, 411 longs;
+- §43 TRAIN `sign`: 348 shorts, 259 longs.
+
+**Funding** (§41 TRAIN shorts). Four measures were tried: the last rate, the rate's 90-settlement z-score, the
+3-day average, and the ten-coin market mean.
+- No quartile pattern holds in both years.
+- Shorts taken while funding was negative (shorts already crowded) lost a little in three of four measures
+  (-0.012 / -0.009 / -0.030), but the 2021 and 2022 rows disagree.
+- The best quartiles are the middle ones, which is a non-monotone shape that does not generalise.
+- Longs did better at high funding (+0.08 to +0.095 R in the top quartile), but this is about longs, not shorts.
+
+**BTC's trend.** BTC above its 50-day EMA, or a positive BTC 30-day return.
+
+| book | split | shorts when BTC up | shorts when BTC down | t |
+|---|---|---|---|---|
+| §41 | EMA50d | +0.015 (177) | +0.022 (404) | -0.27 |
+| §41 | ret30d | +0.052 (224) | +0.000 (357) | +1.90 |
+| §43 | EMA50d | +0.100 (56) | +0.034 (292) | +1.36 |
+| §43 | ret30d | +0.129 (77) | +0.021 (271) | +2.36 |
+
+- Shorts do **not** do better in BTC downtrends. If anything, they do better when BTC is rising, i.e. shorting a
+  coin's own breakdown against a strong market.
+- But the two definitions of the same idea disagree on §41 (t -0.27 vs +1.90).
+- About 14 cuts were looked at here. A best t of +2.36 is close to what chance gives across that many cuts.
+- This is not the kind of evidence Exp 076 had (t +2.57, the same sign in every cell, year, side and on 7 of 10
+  coins).
+
+**Conclusion.**
+- Neither funding nor BTC's trend gives the short side a robust TRAIN signal. No round is registered, following
+  the owner's rule "ถ้าเสนอไปไม่ดีไม่ต้องทำ".
+- Positioning data (OI, long/short ratios) covers only 13 of TRAIN's 24 months, and §34 (Exp 042) found it
+  unhelpful.
+- The short side of the ten-coin breakout book has no timing signal in the data at hand.
+- §43 stays the best risk-adjusted ten-coin book.
