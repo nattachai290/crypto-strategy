@@ -63,7 +63,7 @@ def build_coin(t: pd.DataFrame, why: pd.DataFrame | None, risk_col: str | None, 
     return rows, eq
 
 
-SEC = {"ml": 27, "wf": 28, "s29": 29, "s30": 30, "s31": 31, "s32": 32, "s33": 33, "s34": 34, "s36": 36, "s37": 37, "s38": 38, "s40": 40}
+SEC = {"ml": 27, "wf": 28, "s29": 29, "s30": 30, "s31": 31, "s32": 32, "s33": 33, "s34": 34, "s36": 36, "s37": 37, "s38": 38, "s40": 40, "s41": 41}
 # group, tf, trades file, summary file, name, verdict pill, why from (None = the file's own columns), account risk column
 SPECS = [("s29", tf, f"s29_ml_wf2/trades_valid_tf{tf}.csv.gz", f"s29_ml_wf2/tf{tf}.json", "ML §29 (spot from 2017, 4 coins)",
           "ML §29: ไม่ผ่าน (เหลือ 4 เหรียญ)", None, None) for tf in (60, 240, 1440)] + \
@@ -86,7 +86,9 @@ SPECS = [("s29", tf, f"s29_ml_wf2/trades_valid_tf{tf}.csv.gz", f"s29_ml_wf2/tf{t
           f"ML §38 {n} recency-weighted", f"ML §38 {n} ให้น้ำหนักข้อมูลใหม่: ไม่ผ่าน", None, "risk")
          for tf, n in ((60, "1h"), (240, "4h"), (1440, "1d"))] + \
         [("s40", 240, "s40_ml_vol_4h/trades_valid.csv.gz", "s40_ml_vol_4h/summary.json", "ML §40 range forecast + breakout",
-          "ML §40 ทำนายความแรง + breakout: ไม่ผ่าน (CI, ฝั่ง short) แต่ชนะกฎที่ไม่มี ML", None, "risk")]
+          "ML §40 ทำนายความแรง + breakout: ไม่ผ่าน (CI, ฝั่ง short) แต่ชนะกฎที่ไม่มี ML", None, "risk"),
+         ("s41", 240, "s41_ml_side_4h/trades_valid.csv.gz", "s41_ml_side_4h/summary.json", "ML §41 range forecast, per-side arm",
+          "ML §41 ทำนายความแรง เกณฑ์แยกฝั่ง: ไม่ผ่านด่านเดียว (CI)", None, "risk")]
 
 
 CANDLE_SPAN = ("2022-11", "2024-12")          # the same window as the published wf60 candle files

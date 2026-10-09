@@ -6141,3 +6141,63 @@ Identical to §40's, as expected: §41 refits no model, it only changes the thre
 **No holdout was spent and none is proposed.** The §31-§41 shared holdout is untouched.
 
 Files: `results/_multi/s41_ml_side_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{pooled,side}_q{70,85}_n{6,18}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s41_ml_side_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
+
+---
+
+## Exp 071 - Planner's review of §41 (Exp 070): the tilt is gone, but the short leg is zero, not positive
+
+**Date:** 2026-10-09
+**Status:** complete. Read-only checks on `results/_multi/s41_ml_side_4h/trades_valid.csv.gz` and
+`record/valid/holdout_power.json`. No backtest, no holdout.
+
+**Verdict confirmed: REJECT on `valid_ci_lo>0` alone.** The numbers in Exp 070 match `summary.json`. Two
+results are confirmed:
+- `reproduces_s40` is true for all four pooled rows;
+- per-side arming equalised the keep rates (0.302 long / 0.325 short, against pooled `q70_n6`'s 0.548 / 0.349).
+
+**What Exp 070 states correctly:**
+- §41 is better than §40 on the weekly mean (+0.00133 vs +0.00114), t (+1.32 vs +1.23), max DD (8.30% vs 9.59%),
+  breadth (8 vs 6) and cost ×1.5;
+- the analyzer moves from FRAGILE 69 to FRAGILE 72.
+
+Three corrections follow.
+
+1. **"The short leg turned positive" is true by the gate, but the short side has no edge.** Short trades on
+   VALID:
+
+   | measure | value |
+   |---|---|
+   | trades | 522 |
+   | mean net R | +0.0028 |
+   | mean gross R | +0.0162 |
+   | summed account return | +0.0109 |
+   | summed return without the 5 best shorts | -0.0421 |
+   | 2023 mean R | +0.0165 |
+   | 2024 mean R | -0.0075 |
+
+   The gate passed on five trades. Longs made +0.0400 R per trade (566 trades), positive in both years. The honest
+   reading: per-side arming stopped the short side from **losing**, and that is the whole improvement over
+   pooled `q70_n6` (short -0.0211 -> +0.0109, long +0.1359 -> +0.1291). It did not find a short edge.
+2. **The like-for-like comparison is with pooled `q70_n6`, not with §40's chosen `q85_n6`.** Against the same q
+   and N, the side arm cut trades 1,573 -> 1,088 and raised mean R +0.0123 -> +0.0222. Against §40's chosen
+   book, the 12-of-13 table in Exp 070 compares two cells TRAIN picked separately. That comparison is fair
+   (each was chosen on TRAIN), but the CI lower bound did not move (-0.00058 vs -0.00059).
+3. **The chance of holdout success is low even if the edge is real.** `holdout_power.json` gives:
+   - P(holdout CI lower bound > 0) = **22%** if VALID's weekly mean is the true edge;
+   - 9% if half of it is.
+
+   TRAIN's own t is +0.88 (CI lo -0.00088). Even a PASS here would likely fail a one-time holdout.
+
+**Where the line stands.**
+- §40–§41 are the cleanest large-coin books in the project: the least concentrated (best 5 weeks 1.15x), with 8
+  of 10 coins positive, DD 8.3% and timing 1.84x the shifted p95.
+- They earn on the long side in 2023–24 and break even on the short side.
+- The ML range forecast is real (Exp 068), and the arm now treats both sides the same.
+- **The gap to a PASS is size, not direction:** the weekly mean needs to be roughly 1.5x higher at the same
+  noise.
+
+Remaining one-change options from Exp 068:
+- (b) size by the forecast, which uses the forecast's level and not only on/off;
+- (c) exit when the forecast falls back below its median.
+
+No holdout spent. §31–§41 share one.
