@@ -6677,3 +6677,61 @@ Top features by mean |SHAP| are the range model's, unchanged from §41 (the dire
 **No holdout was spent and none is proposed.** The §31-§43 shared holdout is untouched. **§43 is the best ten-coin book by the analyzer (80 against 72) and has the closest CI of the line (-0.00039), but §31's frozen cell remains the book's closest record in the project (CI lo -0.00026 on 46 coins).**
 
 Files: `results/_multi/s43_ml_agree_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{none,sign}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `direction_predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s43_ml_agree_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
+
+---
+
+## Exp 079 - Planner's review of §43 (Exp 078): agreement replicated on longs, not on shorts
+
+**Date:** 2026-10-09
+**Status:** complete. Read-only, on recorded files. No backtest, no holdout.
+
+**Verdict confirmed: REJECT** (`valid_ci_lo>0`, `both_legs>0`). Exp 078's numbers match `summary.json`. Both
+reproduction checks are true, and the TRAIN margin was +0.84.
+
+**Correction to "the best ten-coin book".** §43 is the best on risk, not on return:
+
+| | §41 | §43 |
+|---|---|---|
+| CI lower bound | -0.00059 | -0.00039 |
+| t | +1.32 | +1.40 |
+| max DD | 8.30% | 4.33% |
+| breadth | 8/10 | 9/10 |
+| analyzer quality | 72 | 80 (FRAGILE) |
+| weekly mean | +0.00133 | +0.00109 |
+| trades | 1,088 | 658 |
+
+Its weekly mean is lower than §41's. "Best risk-adjusted ten-coin book" is accurate; "best book" is not.
+
+**Did Exp 076's TRAIN split hold on VALID?** On §41's VALID trades, split by the same rule:
+
+| side | agree | disagree |
+|---|---|---|
+| long | **+0.1028 R** (241) | -0.0065 R (325) |
+| short | -0.0067 R (363) | +0.0245 R (159) |
+
+- **Longs replicated strongly.** The direction model confirming a long breakout is the cleanest out-of-sample
+  effect found in the ten-coin line.
+- **Shorts did not replicate.** In 2023–24, agreeing shorts lost and disagreeing shorts made money. The TRAIN
+  short split (+0.045 vs -0.013) came from the 2022 bear market.
+- The direction forecast sat below zero on 56% / 63% of VALID bars. So the filter kept 72% of shorts and only
+  50% of longs, exactly the risk stated in Exp 077.
+
+The §43 short leg is -0.0078 R per trade (376 trades), negative in both years, and -0.0458 summed without its 5
+best.
+
+**What this does not license.** Dropping shorts now, or arming only longs, would be a choice made from VALID.
+That is forbidden (AGENTS.md §3 rule 3), and it would also be a long-only book in a bull sample, the drift
+trap from Exp 019. Any such book could only be judged on the holdout, and it would arrive there with no clean
+VALID evidence.
+
+**Holdout power** (`holdout_power.json`): 25% if VALID's weekly mean is the true edge, 9% if half. §43 is not
+PASS, so the holdout is not available anyway.
+
+**Where the ten-coin line stands:**
+- the range model times entries;
+- the direction model confirms longs;
+- no tested design gives the short side an edge on these coins in 2023–24.
+
+The remaining gate failures (CI, short leg) are both on the short side and in the sample size.
+
+No holdout spent. §31–§43 share one.

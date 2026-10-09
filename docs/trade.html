@@ -176,7 +176,7 @@ function barAt(t) { // index of the displayed bar containing time t
 }
 
 let PER = "valid", IDX = [];
-const VER = "12";   // bump when docs/trades/ changes, so browsers do not keep an old copy
+const VER = "13";   // bump when docs/trades/ changes, so browsers do not keep an old copy
 async function load(id) {
   $("load").style.display = "flex";
   const it = IDX.find(r => r.id === id);
@@ -330,9 +330,10 @@ $("theme").onclick = () => {
   idx.forEach(r => { if (r.hasHold === undefined) r.hasHold = !!r.hold; });
   const pick = $("pick");
   IDX = idx;
-  const ml = r => ["ml", "wf", "s29", "s30", "s31", "s32", "s33", "s34", "s36", "s37", "s38", "s40", "s41", "s42"].includes(r.group);
-  const SECOF = {ml: 27, wf: 28, s29: 29, s30: 30, s31: 31, s32: 32, s33: 33, s34: 34, s36: 36, s37: 37, s38: 38, s40: 40, s41: 41, s42: 42};
+  const ml = r => ["ml", "wf", "s29", "s30", "s31", "s32", "s33", "s34", "s36", "s37", "s38", "s40", "s41", "s42", "s43"].includes(r.group);
+  const SECOF = {ml: 27, wf: 28, s29: 29, s30: 30, s31: 31, s32: 32, s33: 33, s34: 34, s36: 36, s37: 37, s38: 38, s40: 40, s41: 41, s42: 42, s43: 43};
   const GROUPS = [
+    ["s43", 240, "§43 4h: ML ความแรง + ML ทิศต้องเห็นตรงกัน (ตก 2 ด่าน · DD ต่ำสุด)"],
     ["s42", 240, "§42 4h: §41 แต่ออกตามคำทำนายความแรง (ไม่ผ่าน 4 ด่าน แย่กว่า §41)"],
     ["s41", 240, "§41 4h: ML ทำนายความแรง เกณฑ์แยกฝั่ง long/short (ตกด่านเดียว: CI)"],
     ["s40", 240, "§40 4h: ML ทำนายความแรง + breakout (ไม่ผ่าน แต่ชนะกฎที่ไม่มี ML)"],
@@ -357,7 +358,7 @@ $("theme").onclick = () => {
     ["ml", null, "§27 ตัดสินเข้า-ออกเอง (ไม่ผ่าน) · 20 เหรียญ"]];
   const secSel = $("sec");
   secSel.innerHTML += [...new Set(GROUPS.map(g => SECOF[g[0]]))].sort((a, b) => b - a).map(n => `<option value="${n}">§${n}</option>`).join("");
-  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${ml(r) ? ({wf: "ML §28 · ", ml: "ML §27 · ", s29: "ML §29 · ", s30: "ML §30 · ", s31: "ML §31 พอร์ต · ", s32: "ML §32 · ", s33: "ML §33 · ", s34: "ML §34 · ", s36: "ML §36 · ", s37: "ML §37 · ", s38: "ML §38 · ", s40: "ML §40 · ", s41: "ML §41 · ", s42: "ML §42 · "})[r.group] + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
+  const opt = r => `<option value="${r.id}">${r.sym.replace("USDT", "")} ${tfs(r.tf)} · ${ml(r) ? ({wf: "ML §28 · ", ml: "ML §27 · ", s29: "ML §29 · ", s30: "ML §30 · ", s31: "ML §31 พอร์ต · ", s32: "ML §32 · ", s33: "ML §33 · ", s34: "ML §34 · ", s36: "ML §36 · ", s37: "ML §37 · ", s38: "ML §38 · ", s40: "ML §40 · ", s41: "ML §41 · ", s42: "ML §42 · ", s43: "ML §43 · "})[r.group] + (r.end >= 1000 ? "+" : "") + ((r.end / 1000 - 1) * 100).toFixed(1) + "%" : r.name}${r.hold ? " · สอบจริงไม่ผ่าน" : ""}</option>`;
   const TEN = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT", "NEARUSDT", "BCHUSDT"];
   const ten = $("onlyTen");
   try { const v = localStorage.getItem("onlyTen"); if (v !== null) ten.checked = v === "1"; } catch (e) {}

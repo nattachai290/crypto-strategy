@@ -62,6 +62,7 @@ def main() -> None:
     rounds += [(40, "4h", "s40_ml_vol_4h/trades_valid.csv.gz", "§40 ML ทำนายความแรง + breakout")]
     rounds += [(41, "4h", "s41_ml_side_4h/trades_valid.csv.gz", "§41 ML ทำนายความแรง เกณฑ์แยกฝั่ง")]
     rounds += [(42, "4h", "s42_ml_exit_4h/trades_valid.csv.gz", "§42 ออกตามคำทำนายความแรง")]
+    rounds += [(43, "4h", "s43_ml_agree_4h/trades_valid.csv.gz", "§43 ML สองตัวต้องเห็นตรงกัน")]
     out["rounds"] = []
     for sec, tf, f, label in rounds:
         t = _read(M / f)
