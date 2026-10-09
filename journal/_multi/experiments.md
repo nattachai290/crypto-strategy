@@ -6412,3 +6412,49 @@ Top features by mean |SHAP| on VALID are §41's, unchanged: `weekday` 0.13390, `
 **No holdout was spent and none is proposed.** The §31-§42 shared holdout is untouched. **The best book in this project is still §41** (REJECT on `valid_ci_lo>0`, CI lo -0.00059), not §42.
 
 Files: `results/_multi/s42_ml_exit_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{chan,fc,fcwide}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s42_ml_exit_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
+
+---
+
+## Exp 075 - Planner's review of §42 (Exp 074): the forecast is a fast-decaying state, so it cannot hold a trade longer
+
+**Date:** 2026-10-09
+**Status:** complete. Read-only. No backtest, no holdout.
+
+**Verdict confirmed: REJECT on four gates.** The numbers in Exp 074 match `summary.json`, and `reproduces_s41`
+is true. The runner's reading is correct, with one fix and two lessons.
+
+**Fix.** Exp 074 calls §41 "the best book in this project". It is the best **ten-coin** book. The project's
+closest book is still the frozen §31 cell (CI lo -0.00026 on 46 coins), as AGENTS.md says.
+
+**Lesson 1: the premise was wrong, and the planner wrote it.** §42 assumed that an armed breakout's high
+forecast stays high while the move lasts. It does not.
+- The forecast is a ratio to ATR.
+- After a large bar the ATR rises and the next forecast falls back.
+- So the forecast crosses its 180-bar median within about a day, sooner than the 3-bar price channel would.
+
+The result is that `fc` held for **less** time (median 7 bars vs 8), the opposite of the hypothesis. A range
+forecast tells **when** a move starts. It does not track **how long** the move runs.
+
+**Lesson 2: a TRAIN margin of t +0.07 is not a selection signal.**
+- On TRAIN, `fc` beat `chan` by t +0.95 to +0.88 (weekly +0.00081 vs +0.00075). That is well inside noise.
+- On VALID, `fc` made a fifth of `chan`'s weekly return (+0.00027 vs +0.00133), and the short leg went from
+  +0.0109 to -0.0633.
+
+**Recommendation for the owner (a protocol change, not applied):** a round whose new form must beat the
+baseline should require a minimum TRAIN margin before the new form counts as chosen, for example a t gain of
+at least +0.5. Otherwise near-ties go to the new form by chance and spend a VALID look. Below that margin, the
+outcome would be "TRAIN did not prefer the new form" (REJECT, no new VALID look), as when `pooled` / `raw` /
+`base` was chosen in earlier rounds.
+
+**Where the ten-coin line stands after §40-§42:**
+- The range forecast is real (Spearman +0.39, 3.5x persistence). The ML arm turns a losing breakout rule into a
+  positive one. Per-side arming removes the long tilt.
+- The best ten-coin book is §41: weekly +0.00133, CI lo -0.00059, t +1.32, DD 8.3%, breadth 8/10.
+- It is limited by its per-trade edge (+0.022 R), and neither sizing (Exp 072) nor this exit fixed that.
+- Single-change tweaks to the breakout book are used up.
+
+What is left:
+- more independent trades (more coins, which needs the owner's rule changed);
+- or a different trade built on the range forecast.
+
+No holdout spent. §31–§42 share one.
