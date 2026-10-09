@@ -6201,3 +6201,45 @@ Remaining one-change options from Exp 068:
 - (c) exit when the forecast falls back below its median.
 
 No holdout spent. §31–§41 share one.
+
+---
+
+## Exp 072 - Option (b) "size by the forecast" checked before registering: dropped, it cannot help
+
+**Date:** 2026-10-09
+**Status:** complete. Read-only check on §41's recorded TRAIN trade files (`trades_train_*.csv.gz`). VALID was not
+looked at for this decision. No run, no registration.
+
+The owner chose option (b) from Exp 068/071: size each trade by the range forecast. Before writing the round,
+I checked it on TRAIN. Two facts kill it.
+
+1. **§41 already sizes by the forecast, and the sizing barely moves.** `MP.conf_weight` maps forecast/threshold
+   to risk 0.5%–1%. For an armed breakout that ratio is just above 1:
+
+   | cell | ratio p10 | ratio median | ratio p90 |
+   |---|---|---|---|
+   | `side_q70_n6` | 1.01 | 1.05 | 1.14 |
+   | `side_q85_n6` | 1.00 | 1.04 | 1.13 |
+
+   So almost every trade is sized at 0.50–0.58% risk.
+2. **Among armed trades, the forecast says nothing about the result.** Spearman of ratio vs net R on TRAIN:
+   - `side_q70_n6`: +0.038;
+   - `side_q85_n6`: -0.028;
+   - `pooled_q70_n6`: +0.033.
+
+   By ratio quintile, `side_q70_n6` returns 0.000 / +0.045 / -0.008 / -0.005 / +0.044 R: no slope. The forecast
+   ranks WHEN the range is large, and the arm already uses that. Once a breakout is armed, a larger forecast does
+   not mean a better trade.
+
+**Rescaling cannot fix the failing gate.**
+- Uniform rescaling, for example every trade at 1%, multiplies the weekly mean and its CI by the same factor. The
+  t and the sign of the CI lower bound stay the same.
+- Forecast-weighted sizing adds weight to trades whose results are unrelated to the weight. That adds noise, not
+  edge.
+
+So (b) would spend a pre-registration and a VALID look on a change TRAIN already shows to be inert. Dropped, per
+the owner's rule "ถ้าเสนอไปไม่ดีไม่ต้องทำ".
+
+**What could still move `valid_ci_lo>0`:**
+- a higher per-trade edge; the exit, option (c), is the remaining untested lever in this book;
+- or more independent trades. That would need more coins, which conflicts with the owner's ten-coin rule.
