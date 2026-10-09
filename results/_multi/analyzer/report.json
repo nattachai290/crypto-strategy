@@ -301,6 +301,99 @@
    "train_side": null
   },
   {
+   "id": "s39",
+   "sec": 39,
+   "label": "\u00a739 4h forecast vs own median \u00b7 10 large coins",
+   "scores": {
+    "train_vs_valid": 40.4,
+    "robustness": 60.0,
+    "stability": 55.6,
+    "fold_consistency": 65.7,
+    "sensitivity": 100.0,
+    "decay": 100.0,
+    "overfit": 60.0
+   },
+   "details": {
+    "train_vs_valid": {
+     "train_mean_r": 0.1757224632060534,
+     "valid_mean_r": 0.04972580145764783,
+     "valid_over_train": 0.28297919657169274
+    },
+    "robustness": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": true,
+     "both_legs>0": false,
+     "breadth>=0.5": true
+    },
+    "stability": {
+     "top5_weeks_share": 1.9158457367014443,
+     "coins_positive_share": 0.6,
+     "mean_r_without_top1pct": 0.00827297658404145,
+     "valid_total_return": 0.12567369081593424
+    },
+    "fold_consistency": {
+     "months_positive": 13,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 3,
+     "train": {
+      "months_positive": 16,
+      "months": 24,
+      "years_positive": true,
+      "longest_losing_months": 1
+     }
+    },
+    "sensitivity": {
+     "cells": 3,
+     "cells_positive_share": 1.0,
+     "chosen_z_vs_grid": 1.9872429586972535,
+     "isolated_peak": false
+    },
+    "decay": {
+     "mean_r_by_entry_year": {
+      "2023": 0.012084222783268456,
+      "2024": 0.07956363821172903
+     }
+    },
+    "overfit": {
+     "flags": [
+      "VALID under 30% of TRAIN",
+      "best 5 weeks carry > 60% of the return"
+     ]
+    }
+   },
+   "quality": 68.8,
+   "verdict": "FRAGILE",
+   "gate_verdict": "REJECT",
+   "gates_failed": [
+    "train_chose_centered",
+    "valid_ci_lo>0",
+    "both_legs>0"
+   ],
+   "valid_mean_r": 0.04972580145764783,
+   "train_mean_r": 0.1757224632060534,
+   "trades_recorded": true,
+   "dims_available": 7,
+   "train_side": {
+    "top5_weeks_share": 0.7174113699817002,
+    "folds": {
+     "months_positive": 16,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 1
+    },
+    "fold_score": 76.66666666666666,
+    "checks": {
+     "ci_lo>0": true,
+     "stress>0": true,
+     "timing>p95": true,
+     "breadth>=0.5": true,
+     "both_legs>0": true
+    }
+   }
+  },
+  {
    "id": "s37",
    "sec": 37,
    "label": "\u00a737 4h model \u00b7 10 large coins",

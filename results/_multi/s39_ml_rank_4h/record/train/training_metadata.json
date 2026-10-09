@@ -1,0 +1,582 @@
+{
+ "n_features": 86,
+ "features": [
+  "atr_pct",
+  "body",
+  "body_3",
+  "breadth_24",
+  "btc_ret_168",
+  "btc_ret_24",
+  "btc_ret_72",
+  "btc_vol_168",
+  "d1_atr_pct",
+  "d1_body",
+  "d1_body_3",
+  "d1_ema_dist_20",
+  "d1_ema_dist_200",
+  "d1_ema_dist_50",
+  "d1_lower_wick",
+  "d1_range_pos_168",
+  "d1_range_pos_24",
+  "d1_ret_1",
+  "d1_ret_12",
+  "d1_ret_168",
+  "d1_ret_24",
+  "d1_ret_3",
+  "d1_ret_48",
+  "d1_ret_6",
+  "d1_ret_96",
+  "d1_taker_ratio",
+  "d1_taker_ratio_24",
+  "d1_upper_wick",
+  "d1_vol_168",
+  "d1_vol_24",
+  "d1_vol_ratio",
+  "d1_volume_z",
+  "ema_dist_20",
+  "ema_dist_200",
+  "ema_dist_50",
+  "funding_last",
+  "h1_atr_pct",
+  "h1_body",
+  "h1_body_3",
+  "h1_ema_dist_20",
+  "h1_ema_dist_200",
+  "h1_ema_dist_50",
+  "h1_lower_wick",
+  "h1_range_pos_168",
+  "h1_range_pos_24",
+  "h1_ret_1",
+  "h1_ret_12",
+  "h1_ret_168",
+  "h1_ret_24",
+  "h1_ret_3",
+  "h1_ret_48",
+  "h1_ret_6",
+  "h1_ret_96",
+  "h1_taker_ratio",
+  "h1_taker_ratio_24",
+  "h1_upper_wick",
+  "h1_vol_168",
+  "h1_vol_24",
+  "h1_vol_ratio",
+  "h1_volume_z",
+  "hour",
+  "lower_wick",
+  "mkt_ret_168",
+  "mkt_ret_24",
+  "mkt_ret_72",
+  "range_pos_168",
+  "range_pos_24",
+  "rel_ret_168",
+  "rel_ret_24",
+  "rel_ret_72",
+  "ret_1",
+  "ret_12",
+  "ret_168",
+  "ret_24",
+  "ret_3",
+  "ret_48",
+  "ret_6",
+  "ret_96",
+  "taker_ratio",
+  "taker_ratio_24",
+  "upper_wick",
+  "vol_168",
+  "vol_24",
+  "vol_ratio",
+  "volume_z",
+  "weekday"
+ ],
+ "n_coins": 10,
+ "coins": [
+  "ADAUSDT",
+  "BCHUSDT",
+  "BNBUSDT",
+  "BTCUSDT",
+  "DOGEUSDT",
+  "ETHUSDT",
+  "LINKUSDT",
+  "NEARUSDT",
+  "SOLUSDT",
+  "XRPUSDT"
+ ],
+ "refits": [
+  {
+   "month": "2021-01-01",
+   "train_rows": 158986,
+   "effective_rows": 133883.732711643,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 171469,
+   "effective_rows": 144052.6458597941,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 182725,
+   "effective_rows": 153156.54704998515,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 194829,
+   "effective_rows": 162832.3886619002,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 207394,
+   "effective_rows": 172744.3631190066,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 219877,
+   "effective_rows": 182449.62576691108,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 232456,
+   "effective_rows": 192063.42125637218,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 245655,
+   "effective_rows": 201984.0493002435,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 258861,
+   "effective_rows": 211726.94725542024,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 271814,
+   "effective_rows": 221096.0198292847,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 285385,
+   "effective_rows": 230714.7098675077,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 298698,
+   "effective_rows": 239956.27714316602,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 312999,
+   "effective_rows": 249690.30514388016,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 326677,
+   "effective_rows": 258795.34581728323,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 338754,
+   "effective_rows": 266622.02091095137,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 352213,
+   "effective_rows": 275072.0614284637,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 365608,
+   "effective_rows": 283231.78085102915,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 379449,
+   "effective_rows": 291442.4008900222,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 392769,
+   "effective_rows": 299102.3461156744,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 406354,
+   "effective_rows": 306656.2249072925,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 420469,
+   "effective_rows": 314250.4671439581,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 434149,
+   "effective_rows": 321397.5650526607,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 448285,
+   "effective_rows": 328558.0172919669,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 462138,
+   "effective_rows": 335361.53882590507,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-01-01",
+   "train_rows": 158548,
+   "effective_rows": 133529.91204058297,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 171049,
+   "effective_rows": 143715.29704739977,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 182305,
+   "effective_rows": 152822.0956310344,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 194421,
+   "effective_rows": 162512.36190951953,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 206956,
+   "effective_rows": 172404.51320964878,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 219457,
+   "effective_rows": 182129.672083604,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 232018,
+   "effective_rows": 191734.964510374,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 245211,
+   "effective_rows": 201656.88133420664,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 258417,
+   "effective_rows": 211406.22001723904,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 271364,
+   "effective_rows": 220777.32418434788,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 284929,
+   "effective_rows": 230398.4731621818,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 298236,
+   "effective_rows": 239642.46328547533,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 312519,
+   "effective_rows": 249370.27710518116,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 326215,
+   "effective_rows": 258495.2403574703,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 338394,
+   "effective_rows": 266394.7938425255,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 351751,
+   "effective_rows": 274788.35333498084,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 365128,
+   "effective_rows": 282944.50087260455,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 378975,
+   "effective_rows": 291166.32507723814,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 392295,
+   "effective_rows": 298833.85214631975,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 405886,
+   "effective_rows": 306399.62140451017,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 419983,
+   "effective_rows": 313991.1005484951,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 433663,
+   "effective_rows": 321145.2084254617,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 447799,
+   "effective_rows": 328313.122930105,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 461646,
+   "effective_rows": 335120.4725405129,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-01-01",
+   "train_rows": 158110,
+   "effective_rows": 133176.10321099436,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 170629,
+   "effective_rows": 143377.86453942818,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 181885,
+   "effective_rows": 152487.52482154412,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 194013,
+   "effective_rows": 162192.16977064006,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 206518,
+   "effective_rows": 172064.51943148504,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 219037,
+   "effective_rows": 181809.52234489005,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 231580,
+   "effective_rows": 191406.32171453876,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 244767,
+   "effective_rows": 201329.51683855653,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 257973,
+   "effective_rows": 211085.27813271992,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 270914,
+   "effective_rows": 220458.40921961275,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 284473,
+   "effective_rows": 230082.01297176804,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 297774,
+   "effective_rows": 239328.42330267734,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 312039,
+   "effective_rows": 249050.0440225827,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 325753,
+   "effective_rows": 258194.8764633286,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 338017,
+   "effective_rows": 266156.23892288236,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 351289,
+   "effective_rows": 274504.3786232877,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 364648,
+   "effective_rows": 282656.99515187833,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 378501,
+   "effective_rows": 290889.99764855707,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 391821,
+   "effective_rows": 298565.10038638563,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 405418,
+   "effective_rows": 306142.740463248,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 419497,
+   "effective_rows": 313731.50413665536,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 433177,
+   "effective_rows": 320892.6143849907,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 447313,
+   "effective_rows": 328067.985356756,
+   "scheme": "hl12"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 461154,
+   "effective_rows": 334879.17730910756,
+   "scheme": "hl12"
+  }
+ ],
+ "label": "log(open[i+1+h]/open[i+1]) / ATR fraction at i, h in bars of 4h",
+ "horizons": [
+  6,
+  12,
+  18
+ ],
+ "lightgbm_params": {
+  "objective": "regression",
+  "learning_rate": 0.03,
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "feature_fraction": 0.8,
+  "lambda_l2": 1.0,
+  "seed": 7,
+  "deterministic": true,
+  "num_threads": 4,
+  "verbose": -1,
+  "rounds": 150
+ },
+ "seed": 7,
+ "windows": {
+  "split": [
+   "2021-01-01",
+   "2023-01-01"
+  ],
+  "train_rows_weighting": "raw"
+ },
+ "label_distribution": {
+  "rows": 43710,
+  "mean": -0.03808327223563617,
+  "std": 2.552323350035664,
+  "share_positive": 0.4864104323953329,
+  "quantiles": {
+   "0.01": -6.841480068485202,
+   "0.1": -2.7000646797307475,
+   "0.25": -1.3014585936912808,
+   "0.5": -0.06050458579686452,
+   "0.75": 1.2288275611953159,
+   "0.9": 2.672501599903283,
+   "0.99": 6.35469459769635
+  }
+ }
+}

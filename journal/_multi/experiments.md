@@ -5483,3 +5483,141 @@ distinct ML VALID book.
 - No new download.
 - `python src/test_engine.py`, then `python src/ml_rank.py` once, then `python src/analyzer.py` and
   `python src/result_report.py`.
+
+---
+
+## Exp 064 - PLAN.md §39 run: the 4h side from the forecast against its own causal median - REJECT (TRAIN kept `raw`)
+
+**Date:** 2026-10-09
+**Status:** complete. One run, as pre-registered in Exp 063. No new download. `--final` not run.
+**No holdout spent.** No `holdout.json` under `results/_multi/s39_ml_rank_4h/`; the §31-§39 shared holdout is untouched.
+
+**Reproduction check passed.** The `raw` TRAIN row is 394 trades, weekly +0.00385, t +2.70, years 2021 +0.1562 / 2022 +0.2483 - identical to §38's 4h `hl12` row. The run is interpreted.
+
+**Verdict: REJECT** - failed `train_chose_centered`, `valid_ci_lo>0` and `both_legs>0`. TRAIN chose **`raw`**,
+the baseline: both centred forms were selectable-or-not and **both were worse on TRAIN**, so the pre-registered
+`train_chose_centered` gate fails by construction and the VALID book is §38's 4h book unchanged.
+
+The hypothesis (Exp 062) was that the 4h model ranks bars correctly but its forecast LEVEL drifts with the
+regime, so measuring the forecast against its own causal median would remove the drift and keep the ranking. **On
+TRAIN it did remove the level drift - and the edge went with it.**
+
+### TRAIN table
+
+| form | trades | weekly mean | t | mean R | long | short | by year | short share | mean x by year | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|
+| raw **<- chosen** | 394 | +0.00385 | +2.70 | +0.1757 | +0.1376 | +0.2669 | 2021 +0.1562, 2022 +0.2483 | 2021 0.359, 2022 0.582 | 2021 +0.0305, 2022 -0.2764 | yes |
+| med30 | 395 | +0.00265 | +1.92 | +0.1338 | +0.0686 | +0.2095 | 2021 +0.1693, 2022 +0.1088 | 2021 0.538, 2022 0.571 | 2021 +0.0339, 2022 +0.0155 | yes |
+| med90 | 375 | +0.00250 | +2.00 | +0.1219 | -0.0168 | +0.2791 | 2021 +0.0872, 2022 +0.1752 | 2021 0.678, 2022 0.484 | 2021 +0.0454, 2022 -0.0100 | **no** |
+
+`raw` and `med30` are both selectable; `med90` fails (its long leg is -0.0168). `raw` wins on every
+TRAIN measure that matters: t +2.70 against +1.92 (med30) and +2.00 (med90), mean R +0.1757 against
++0.1338 and +0.1219, and the lowest drawdown of the three (4.06% against 9.47% and 8.76%).
+
+**The mean x column is the round's finding.** Centring did exactly what it was designed to do -
+`raw`'s forecast level went negative in 2022 (-0.2764) and `med30`'s did not (+0.0155) - **and the return fell**
+with it: 2022's summed return is +0.2483 for `raw` but +0.1088 for `med30`. The 2022 level shift was not noise
+the policy was reading; it was information.
+
+| VALID measure | value | gate |
+|---|---|---|
+| trades | 441 | >= 100 OK |
+| weekly account return | +0.00120 | > 0 OK |
+| 95% CI | [-0.00230, +0.00486] | lo > 0 **FAIL** |
+| t | +0.67 | - |
+| mean R per trade | +0.0497 | > 0 OK |
+| long leg | +0.1503 | > 0 OK |
+| short leg | -0.0246 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00106 | > 0 OK |
+| timing | +0.0145 | - |
+| shifted median / p95 | -0.0036 / +0.0049 | timing > p95 OK |
+| timing as a multiple of p95 | 2.96x | - |
+| breadth | 6 of 10 (0.60) | >= 8 coins and >= 0.5 OK |
+| max drawdown | 0.1075 | <= 0.20 OK |
+| per year (summed R) | 2023 +0.0110, 2024 +0.1147 | - |
+| negative weeks | 28 of 105 | - |
+
+Because TRAIN kept `raw`, **the VALID numbers are §38 4h's exactly** (441 trades, weekly +0.00120,
+CI [-0.00230, +0.00486], mean R +0.0497, max DD 10.75%). No centred
+form was judged on VALID, so this round adds no new VALID look.
+
+### Short share and the mean forecast by year
+
+| | 2023 | 2024 |
+|---|---|---|
+| short share of entries (§39 `raw`) | 0.549 | 0.642 |
+| short share (§38 4h `hl12`) | 0.549 | 0.642 |
+| short share (§37 4h `expanding`) | 0.690 | 0.760 |
+| mean x on VALID (§39 `raw`) | -0.1360 | -0.1254 |
+| mean x on TRAIN (§39 `raw`) | +0.0305 | -0.2764 |
+| mean x on TRAIN (§39 `med30`) | +0.0339 | +0.0155 |
+
+The short share is **unchanged at 0.549 / 0.642** - the same numbers as §38's 4h, because the chosen form
+is the same book. The Exp 062 observation stands unfixed: in 2023-24 the mean forecast is negative (-0.1360 / -0.1254) while prices rose, so the
+sign-based policy leans short. Centring removes that bias and loses more than it gains.
+
+### Concentration and the TRAIN checks
+
+- **Best 5 weeks = 1.92x the whole VALID return**; the weekly mean without them is
+  -0.00115, negative. 28 of 105 weeks are negative.
+- TRAIN checks (chosen `raw`): weekly +0.00385, CI lo +0.00126 (positive), t +2.70, long +0.1376, short +0.2669, max DD 0.0406, breadth 1.00 of 10, cost x1.5 +0.00377, timing 3.2x its shifted p95, best-5-week share +0.717.
+  Everything passes on TRAIN; the CI and the short leg fail on VALID, the same two as §38's 4h.
+
+### Top 10 features by mean |SHAP| on VALID
+
+| rank | feature | mean \|SHAP\| |
+|---|---|---|
+| 1 | `btc_vol_168` | 0.20393 |
+| 2 | `btc_ret_168` | 0.17852 |
+| 3 | `mkt_ret_168` | 0.12219 |
+| 4 | `btc_ret_72` | 0.06710 |
+| 5 | `btc_ret_24` | 0.05027 |
+| 6 | `mkt_ret_72` | 0.03939 |
+| 7 | `vol_ratio` | 0.03077 |
+| 8 | `funding_last` | 0.02945 |
+| 9 | `breadth_24` | 0.02551 |
+| 10 | `weekday` **<- weekday** | 0.02126 |
+
+**Identical to §38's 4h list** - the same forecasts, so the same features. `weekday` is rank 10
+(0.02126); BTC 168-bar volatility is first (0.20393).
+
+### Analyzer
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §38 recency-weighted 4h · 10 large coins | FRAGILE | 59 | 40.4 | 60.0 | 55.6 | 65.7 | 50.0 | 100.0 | 40.0 |
+| §39 4h forecast vs own median · 10 large coins | FRAGILE | 69 | 40.4 | 60.0 | 55.6 | 65.7 | 100.0 | 100.0 | 60.0 |
+
+**§39: FRAGILE, quality 69, against §38 4h's 59 and §31's 86.** The gain over §38 4h (+10) is entirely the sensitivity dimension
+(100 vs 50): three TRAIN cells instead of a weighting sweep, and
+all three positive. Every other dimension is identical to §38's 4h, because the VALID book is the same
+book - the score difference measures the grid, not a better strategy.
+
+### Verdict
+
+**REJECT. Centring the forecast removes the level drift it was designed to remove and the edge goes with it.**
+Facts:
+
+- **The mechanism was real and the fix made it worse.** `med30` did centre the forecast (2022 mean x +0.0155
+  against `raw`'s -0.2764) and its 2022 return fell from +0.2483 to +0.1088. `med90` failed the selectable rule
+  outright (long leg -0.0168).
+- **TRAIN preferred the baseline on every measure**: t +2.70 vs +1.92 / +2.00, mean R +0.1757 vs +0.1338 /
+  +0.1219, max DD 4.06% vs 9.47% / 8.76%. The centred books also shorted more (2021 short share 0.538 and
+  0.678 against `raw`'s 0.359) - centring a bearish level in a bull year pushes the book short.
+- **So the Exp 062 reading was half right.** The 4h model does rank bars correctly (Q5-Q1 +0.15/+0.19 TRAIN,
+  +0.40/+0.26 VALID), and its level does drift negative in a bull market. But the drift is not a bias to be
+  removed: it is the signal that produced §38 4h's return. Centring it away leaves a correctly ranked
+  forecast with nothing to act on.
+- **VALID is §38's 4h book unchanged** (short share 0.549 / 0.642, 441 trades, weekly +0.00120, CI
+  [-0.00230, +0.00486], mean R +0.0497, long +0.1503 / short -0.0246, max DD 10.75%, breadth 6/10). This round
+  adds no new VALID look, and the best-5-week share stays 1.92x with the weekly mean without them negative.
+
+**No holdout was spent and none is proposed.** The §31-§39 shared holdout is untouched. The best recorded
+book in this project is still §31 (REJECT by 0.00026 on the CI).
+
+Files: `results/_multi/s39_ml_rank_4h/summary.json`, `trades_valid.csv.gz`,
+`trades_train_{raw,med30,med90}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata,
+`predictions.parquet`, skipped signals, run info, holdout power), `analysis/`; generated
+`journal/_multi/s39_ml_rank_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`,
+`docs/analyzer_data.json`.

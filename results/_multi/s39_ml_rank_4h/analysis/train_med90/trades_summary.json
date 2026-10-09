@@ -1,0 +1,25 @@
+{
+ "source": "trades_train_med90.csv.gz",
+ "trades": 375,
+ "return": 0.2623244586657801,
+ "mean_r": 0.12192439386501129,
+ "median_r": 0.0602424650314418,
+ "win_rate": 0.5813333333333334,
+ "profit_factor": 1.9538794443242318,
+ "max_dd": 0.08734595805814671,
+ "avg_win_r": 0.4296053224324553,
+ "avg_loss_r": -0.3053013540821401,
+ "expectancy_r": 0.12192439386501129,
+ "max_consecutive_wins": 19,
+ "max_consecutive_losses": 16,
+ "longs": 164,
+ "shorts": 211,
+ "exit_reasons": {
+  "signal": 339,
+  "stop": 27,
+  "eod": 9
+ },
+ "gross_r": 0.13211242695921924,
+ "cost_r": 0.010188033094207922,
+ "median_hold_bars": 19.0
+}
