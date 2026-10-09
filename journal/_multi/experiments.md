@@ -5374,3 +5374,80 @@ Files: `results/_multi/s38_ml_recent/{1h,4h,1d}/summary.json`, `trades_valid.csv
 `predictions.parquet`, skipped signals, run info, holdout power); generated
 `journal/_multi/s38_ml_recent.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`,
 `docs/analyzer_data.json`; `results/_multi/s38_ml_recent/analysis/` from `src/result_report.py`.
+
+---
+
+## Exp 062 - Review of Exp 061 (§38, planner): REJECT stands on all three; the first per-bar forecasts show a level bias over a weak but steady 4h ranking
+
+**Date:** 2026-10-09
+**Status:** complete (recorded files only; no run, no holdout)
+
+The runner's numbers were checked against the trade files and summaries and reproduce:
+- 4h `expanding` = §37 (423 trades, t +2.22);
+- verdicts 1h / 4h / 1d REJECT;
+- short shares as stated;
+- no sub-model PASS, so no holdout pick.
+
+`result_report.py` was re-run, so the VALID analysis folders now exist too (`analysis/valid_{1h,4h,1d}_main/`).
+
+### New evidence: `record/*/predictions.parquet` (every forecast bar of the ten coins, first time recorded)
+
+**Level bias, confirmed directly.** In VALID the mean forecast is negative in every year and on every sub-model,
+while the realised label is positive.
+
+| sub-model | year | mean forecast | share of bars forecast < 0 | mean label |
+|---|---|---|---|---|
+| 1h | 2023 | -0.224 | 0.75 | +0.406 |
+| 1h | 2024 | -0.063 | 0.57 | +0.126 |
+| 4h (hl12) | 2023 | -0.136 | 0.56 | +0.211 |
+| 4h (hl12) | 2024 | -0.125 | 0.63 | +0.097 |
+| 1d | 2023 | -0.148 | 0.48 | +0.093 |
+| 1d | 2024 | -0.056 | 0.57 | +0.063 |
+
+Recency weighting reduced the short share on 4h but did not remove the bias.
+
+**Ranking skill, weak but steady on 4h only.** Mean label by forecast quintile within each year (Q5 minus Q1)
+and the Spearman correlation:
+
+| sub-model | 2021 (TRAIN) | 2022 (TRAIN) | 2023 (VALID) | 2024 (VALID) |
+|---|---|---|---|---|
+| 4h | +0.15 / +0.029 | +0.19 / +0.077 | +0.40 / +0.073 | +0.26 / +0.017 |
+| 1h | +0.13 / -0.002 | +0.18 / +0.012 | -0.33 / +0.028 | +1.36 / +0.074 |
+| 1d | +0.14 / +0.078 | -0.22 / -0.085 | -0.23 / -0.062 | +0.16 / +0.001 |
+
+The 4h model orders bars correctly in all four years: its top quintile beats its bottom quintile each year,
+TRAIN included. Its absolute level drifts with the last regime, so "side = sign of the forecast" takes the
+wrong side.
+
+The 1h and 1d models have no stable ordering. 1h's TRAIN Spearman is about 0, and 1d's is negative in 2022 and
+2023.
+
+### Corrections to Exp 061
+
+1. **"The short bias is worst where the model is worst" reads backwards.** 1d has the lowest short share
+   (0.59 / 0.39) and the worst book. 1d's failure is no ranking skill (Spearman negative in 2022 and 2023), not
+   bias.
+2. **"Recency weighting partly moved it" holds for the short share only.** The 4h `hl12` forecasts still average
+   -0.136 / -0.125 in VALID, so the bias is reduced, not removed.
+3. **On 1h, recency weighting hurt TRAIN** (`hl12` -0.0074 R, `roll24` -0.0134 R against `expanding` +0.0363).
+   On 1h the rule fell back to `expanding` by construction. 1h's VALID book is `expanding`, i.e. no recency at
+   all.
+
+### Reading and next step (owner's call)
+
+The ML line's forecasts carry a small, steady ranking on 4h. The trading rule wastes it by reading the
+forecast's sign, whose level shifts with the regime.
+
+The fix that improves the existing model rather than adding inputs is a policy change: decide the side from
+where the forecast stands against its own recent history, its causal rolling percentile over the past N days.
+- Long when it is in the top tail.
+- Short in the bottom tail.
+- No trade in between.
+
+TRAIN supports this independently of VALID: 2021 and 2022 Q5-Q1 are +0.15 and +0.19.
+
+Caveat: the idea was sharpened while reading VALID predictions. A registration must choose N and the tail on
+TRAIN only, and it counts as another look at VALID.
+
+Web: §38's three sub-models added to `docs/ml.html`, `docs/valid.html` (chip §38) and `docs/trade.html`
+(groups §38 1h/4h/1d). 1d candles for XRP, SOL and NEAR are published (`c1440_<COIN>.json`).

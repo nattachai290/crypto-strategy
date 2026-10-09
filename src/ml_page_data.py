@@ -58,6 +58,7 @@ def main() -> None:
                (34, None, "s34_ml_flow_1h/trades_valid.csv.gz", "§34 เพิ่ม OI/funding (= §31)"),
                (36, None, "s36_ml_wide_1h/trades_valid.csv.gz", "§36 เทรนกว้าง · เทรดเหรียญใหญ่"),
                (37, "4h", "s37_ml_large_4h/trades_valid.csv.gz", "§37 โมเดล 4h · เหรียญใหญ่ 10 ตัว")]
+    rounds += [(38, n, f"s38_ml_recent/{n}/trades_valid.csv.gz", f"§38 {n} ให้น้ำหนักข้อมูลใหม่") for n in ("1h", "4h", "1d")]
     out["rounds"] = []
     for sec, tf, f, label in rounds:
         t = _read(M / f)

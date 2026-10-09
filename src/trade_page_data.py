@@ -63,7 +63,7 @@ def build_coin(t: pd.DataFrame, why: pd.DataFrame | None, risk_col: str | None, 
     return rows, eq
 
 
-SEC = {"ml": 27, "wf": 28, "s29": 29, "s30": 30, "s31": 31, "s32": 32, "s33": 33, "s34": 34, "s36": 36, "s37": 37}
+SEC = {"ml": 27, "wf": 28, "s29": 29, "s30": 30, "s31": 31, "s32": 32, "s33": 33, "s34": 34, "s36": 36, "s37": 37, "s38": 38}
 # group, tf, trades file, summary file, name, verdict pill, why from (None = the file's own columns), account risk column
 SPECS = [("s29", tf, f"s29_ml_wf2/trades_valid_tf{tf}.csv.gz", f"s29_ml_wf2/tf{tf}.json", "ML §29 (spot from 2017, 4 coins)",
           "ML §29: ไม่ผ่าน (เหลือ 4 เหรียญ)", None, None) for tf in (60, 240, 1440)] + \
@@ -81,7 +81,10 @@ SPECS = [("s29", tf, f"s29_ml_wf2/trades_valid_tf{tf}.csv.gz", f"s29_ml_wf2/tf{t
          ("s36", 60, "s36_ml_wide_1h/trades_valid.csv.gz", "s36_ml_wide_1h/summary.json", "ML §36 train wide, trade large coins",
           "ML §36 เทรนกว้าง เทรดเหรียญใหญ่: ไม่ผ่าน (CI + DD 20.01%)", None, "risk"),
          ("s37", 240, "s37_ml_large_4h/trades_valid.csv.gz", "s37_ml_large_4h/summary.json", "ML §37 4h model, ten large coins",
-          "ML §37 โมเดล 4h เหรียญใหญ่ 10 ตัว: ไม่ผ่าน (CI, จังหวะ, ฝั่ง short ขาดทุน)", None, "risk")]
+          "ML §37 โมเดล 4h เหรียญใหญ่ 10 ตัว: ไม่ผ่าน (CI, จังหวะ, ฝั่ง short ขาดทุน)", None, "risk")] + \
+        [("s38", tf, f"s38_ml_recent/{n}/trades_valid.csv.gz", f"s38_ml_recent/{n}/summary.json",
+          f"ML §38 {n} recency-weighted", f"ML §38 {n} ให้น้ำหนักข้อมูลใหม่: ไม่ผ่าน", None, "risk")
+         for tf, n in ((60, "1h"), (240, "4h"), (1440, "1d"))]
 
 
 CANDLE_SPAN = ("2022-11", "2024-12")          # the same window as the published wf60 candle files
