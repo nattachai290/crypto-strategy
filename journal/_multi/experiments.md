@@ -6546,3 +6546,134 @@ VALID longs, and that would show as a lower long kept share and a weaker long le
 The run record and report were smoke-tested end to end on synthetic data.
 
 No holdout. §31–§43 share one.
+
+---
+
+## Exp 078 - PLAN.md §43 run: the range model says WHEN, the direction model must agree on the SIDE - REJECT on two gates, and the filter worked out of sample
+
+**Date:** 2026-10-09
+**Status:** complete. One run, as pre-registered in Exp 077. No new download (section 36's caches). `--final` not run.
+**No holdout spent.** No `holdout.json` under `results/_multi/s43_ml_agree_4h/`; the §31-§43 shared holdout is untouched.
+
+**Verdict: REJECT - failed `valid_ci_lo>0` and `both_legs>0`.** TRAIN chose **`sign`** (arm a side only where the sign of §38 4h hl12's direction forecast agrees with the breakout side).
+
+**`reproduces_s41` = True, `reproduces_s38_dir` = True.** The `none` row is §41's TRAIN row exactly (992 trades, t +0.88) and the recomputed direction forecasts match §38's recorded ones, so every difference below is the agreement filter, not the entry or either model.
+
+### TRAIN table (2 rows) and the margin gate
+
+| form | trades | weekly mean | t | mean R | long | short | by year | short share | max DD | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|
+| none | 992 | +0.00075 | +0.88 | +0.0153 | +0.0177 | +0.0612 | 2021 +0.0224, 2022 +0.0565 | 2021 0.584, 2022 0.587 | 5.24% | yes |
+| sign **<- chosen** | 607 | +0.00111 | +1.72 | +0.0372 | +0.0358 | +0.0809 | 2021 +0.0420, 2022 +0.0747 | 2021 0.455, 2022 0.653 | 2.13% | yes |
+
+**`train_margin` = +0.8391** (+1.72 against +0.88), so the pre-registered +0.5 margin passed with room to spare (Exp 075's protocol change, first use). The filter cuts TRAIN trades from 992 to 607 (-39%) and lifts mean R from +0.0153 to +0.0372, both legs up, both years up, and the max drawdown from 5.24% to 2.13%. This is the TRAIN split Exp 076 predicted.
+
+### VALID (2023-24, the chosen `sign`)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 658 | >= 100 OK |
+| weekly account return | +0.00109 | > 0 OK |
+| 95% CI | [-0.00039, +0.00266] | lo > 0 **FAIL** |
+| t | +1.40 | - |
+| mean R per trade | +0.0308 | > 0 OK |
+| long leg | +0.1292 | > 0 OK |
+| short leg | -0.0149 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00086 | > 0 OK |
+| timing | +0.0334 vs shifted p95 +0.0164 (2.04x, median -0.0002) | > p95 OK |
+| breadth | 9 of 10 (0.90) | >= 8 and >= 0.5 OK |
+| max drawdown | 4.33% | <= 20% OK |
+| per year (summed R) | 2023 +0.0652, 2024 +0.0491 | both > 0 OK |
+| total account return | 11.43% | - |
+| negative weeks | 56 of 105 | - |
+
+**The per-trade edge is the highest of the ten-coin line (+0.0308 R on 658 trades) and the CI lower bound is the closest to zero of the whole project (-0.00039).** `both_legs>0` fails because the short leg is -0.0149.
+
+Exit mix {'signal': 654, 'stop': 3, 'eod': 1}, hold 11.18 bars mean / 8 median.
+
+### Against `none_same_arm` (= §41's recorded VALID book)
+
+| | §41 `none` | **§43 `sign`** |
+|---|---|---|
+| trades | 1088 | 658 |
+| weekly account return | +0.00133 | +0.00109 |
+| 95% CI | [-0.00059, +0.00331] | [-0.00039, +0.00266] |
+| t | +1.32 | +1.40 |
+| mean R | +0.0222 | +0.0308 |
+| long / short | +0.1291 / +0.0109 | +0.1292 / -0.0149 |
+| max drawdown | 8.30% | 4.33% |
+| short share 2023 / 2024 | 0.418 / 0.540 | 0.519 / 0.621 |
+
+**The filter improves the per-trade edge, the t, the CI lower bound and the drawdown, and costs weekly return.** mean R +0.0222 -> +0.0308 (+39%), t +1.32 -> +1.40, CI lo -0.00059 -> -0.00039, max DD 8.30% -> 4.33%, against weekly +0.00133 -> +0.00109 (82% of it) because it takes 40% fewer trades. **The short leg is the one thing it made worse** (+0.0109 -> -0.0149), and that is the failing gate.
+
+### Kept share per side, and the direction forecast by year
+
+| side | kept share | §41 had |
+|---|---|---|
+| long | **0.498** | 1.000 |
+| short | **0.720** | 1.000 |
+
+| year | mean direction forecast | share below 0 |
+|---|---|---|
+| 2023 | -0.1360 | 0.560 |
+| 2024 | -0.1254 | 0.627 |
+
+**The pre-registered risk did happen, and it is measurable.** §38's direction forecast is bearish on 56.0% of 2023 bars and 62.7% of 2024 bars (mean -0.1360 and -0.1254), so the filter kept 72.0% of the shorts but only 49.8% of the longs. **The short share rose to 0.519 / 0.621 from 0.418 / 0.540** - and in a rising VALID that is the wrong direction. Exp 077 said this before the run.
+
+### Sides on VALID
+
+| side | trades | mean net R | 2023 | 2024 | mean R without its 5 best |
+|---|---|---|---|---|---|
+| long | 282 | +0.0821 | +0.0801 | +0.0845 | +0.0423 |
+| short | 376 | -0.0078 | -0.0055 | -0.0095 | -0.0235 |
+
+**The long leg is strong and clean: +0.0821 R over 282 trades, positive in both years and +0.0423 R without its five best.** The short leg is -0.0078 R over 376 trades and negative in both years - the same break-even short leg §41 had, pushed just under zero (§41 shorts were +0.0028 R on a per-trade basis, Exp 071).
+
+### Per-coin VALID means
+
+| coin | trades | §43 mean R | §41 mean R |
+|---|---|---|---|
+| BTCUSDT | 65 | +0.1059 | +0.0880 |
+| SOLUSDT | 70 | +0.0469 | +0.0436 |
+| DOGEUSDT | 68 | +0.0397 | +0.0108 |
+| LINKUSDT | 63 | +0.0363 | +0.0372 |
+| BNBUSDT | 59 | +0.0358 | +0.0416 |
+| BCHUSDT | 64 | +0.0280 | +0.0165 |
+| NEARUSDT | 70 | +0.0260 | +0.0021 |
+| ADAUSDT | 64 | +0.0254 | +0.0053 |
+| XRPUSDT | 72 | +0.0109 | -0.0161 |
+| ETHUSDT | 63 | -0.0485 | -0.0023 |
+
+**Breadth is 9 of 10 coins positive - the best of the ten-coin line** (§41's was 8). BTC carries the book (+0.1059 R). **Only ETH loses (-0.0485), and it is the one coin that got worse**: §41's ETH was -0.0023. XRP flipped to positive (-0.0161 -> +0.0109) and NEAR rose to +0.0260 from +0.0021.
+
+### Concentration, TRAIN checks and holdout power
+
+- **Best 5 weeks = 1.10x the VALID return** (§41's 1.15x, §37's 3.87x) and the analyzer's mean R without the top 1% of trades is **+0.0090** (§41's +0.0012); 90% of coins positive against 80%. The weekly mean without the best 5 weeks is -0.00012. The five largest trades are +3.73 R, +2.39 R, +1.81 R, +1.80 R, +1.70 R and the book averages +0.0135 R without them.
+- TRAIN checks (chosen `sign`): weekly +0.00111, CI lo -0.00006 (negative), t +1.72, mean R +0.0372, long +0.0358, short +0.0809, max DD 2.13%, breadth 0.90 of 10, cost x1.5 +0.00096, timing 2.5x its shifted p95, best-5-week share +0.936.
+- **Holdout power** (`record/valid/holdout_power.json`): P(holdout CI lower bound > 0) = **25%** if VALID's weekly mean is the true edge, 9% if half of it is (§41's recorded 22% / 9%). The weekly noise fell from 0.0104 to 0.0079, which is what raised the number.
+
+### Analyzer
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §41 4h range forecast armed per side · 10 large coins | FRAGILE | 72 | 100.0 | 80.0 | 66.7 | 51.1 | 50.0 | 100.0 | 60.0 |
+| §43 range model + direction model agree · 10 large coins | FRAGILE | 80 | 100.0 | 60.0 | 66.7 | 51.1 | 100.0 | 100.0 | 80.0 |
+
+**§43: FRAGILE, quality 80** against §41's 72 and §31's 86 - **the highest ten-coin book in the project and the highest of any round since §31**. VALID mean R is 83% of TRAIN (against §41's 145%), so it holds up out of sample. The gain over §41 is sensitivity (100 against 50) and overfit (80 against 60); it is behind on robustness (60 against 80) and equal on stability and fold consistency.
+
+Top features by mean |SHAP| are the range model's, unchanged from §41 (the direction model is refit but contributes only its sign): `weekday` 0.13390, `vol_24` 0.11584, `ema_dist_20` 0.07985, `h1_volume_z` 0.05704, `vol_ratio` 0.04804.
+
+### Verdict
+
+**REJECT on two gates, and the filter generalised.** Facts:
+
+- **The TRAIN split held out of sample.** §43 lifts the per-trade edge from +0.0222 to +0.0308 R, the t from +1.32 to +1.40, the CI lower bound from -0.00059 to -0.00039 and cuts the max drawdown from 8.30% to 4.33% - on data no one had tuned on. The filter found on TRAIN (Exp 076) was real, not an artifact of the split.
+- **`valid_ci_lo>0` is still the failing gate, and it is the closest miss of the whole ten-coin line: -0.00039** at t +1.40 over 658 trades.
+- **The pre-registered risk happened exactly as stated.** The direction forecast is bearish on 56.0%/62.7% of VALID bars, so the filter kept 72.0% of shorts and only 49.8% of longs, the short share rose to 0.519/0.621 and the short leg went from +0.0109 to -0.0149 - negative in both years. **That is why `both_legs>0` fails.** The longs, which is where the book earns, are unchanged and strong (+0.1292 against +0.1291).
+- **Breadth 9 of 10 coins positive, the best of the line**, best 5 weeks 1.10x, and the analyzer's mean R without the top 1% of trades is +0.0090 (positive, and §41's was +0.0012).
+- **Analyzer: FRAGILE 80, up from §41's 72** - the best ten-coin book in the project. It is still not a PASS: `valid_ci_lo>0` and `both_legs>0` both failed.
+
+**No holdout was spent and none is proposed.** The §31-§43 shared holdout is untouched. **§43 is the best ten-coin book by the analyzer (80 against 72) and has the closest CI of the line (-0.00039), but §31's frozen cell remains the book's closest record in the project (CI lo -0.00026 on 46 coins).**
+
+Files: `results/_multi/s43_ml_agree_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{none,sign}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `direction_predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s43_ml_agree_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.

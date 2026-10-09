@@ -231,6 +231,97 @@
    }
   },
   {
+   "id": "s43",
+   "sec": 43,
+   "label": "\u00a743 range model + direction model agree \u00b7 10 large coins",
+   "scores": {
+    "train_vs_valid": 100.0,
+    "robustness": 60.0,
+    "stability": 66.7,
+    "fold_consistency": 51.1,
+    "sensitivity": 100.0,
+    "decay": 100.0,
+    "overfit": 80.0
+   },
+   "details": {
+    "train_vs_valid": {
+     "train_mean_r": 0.03720091284494154,
+     "valid_mean_r": 0.030757905683435862,
+     "valid_over_train": 0.8268051327567952
+    },
+    "robustness": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": true,
+     "both_legs>0": false,
+     "breadth>=0.5": true
+    },
+    "stability": {
+     "top5_weeks_share": 1.101343587367261,
+     "coins_positive_share": 0.9,
+     "mean_r_without_top1pct": 0.009022489586802828,
+     "valid_total_return": 0.11429163592287941
+    },
+    "fold_consistency": {
+     "months_positive": 12,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 3,
+     "train": {
+      "months_positive": 13,
+      "months": 24,
+      "years_positive": true,
+      "longest_losing_months": 3
+     }
+    },
+    "sensitivity": {
+     "cells": 2,
+     "cells_positive_share": 1.0,
+     "chosen_z_vs_grid": 1.0000000000000002,
+     "isolated_peak": false
+    },
+    "decay": {
+     "mean_r_by_entry_year": {
+      "2023": 0.03569765633735086,
+      "2024": 0.02613778595418597
+     }
+    },
+    "overfit": {
+     "flags": [
+      "best 5 weeks carry > 60% of the return"
+     ]
+    }
+   },
+   "quality": 79.7,
+   "verdict": "FRAGILE",
+   "gate_verdict": "REJECT",
+   "gates_failed": [
+    "valid_ci_lo>0",
+    "both_legs>0"
+   ],
+   "valid_mean_r": 0.030757905683435862,
+   "train_mean_r": 0.03720091284494154,
+   "trades_recorded": true,
+   "dims_available": 7,
+   "train_side": {
+    "top5_weeks_share": 0.935880634818395,
+    "folds": {
+     "months_positive": 13,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 3
+    },
+    "fold_score": 54.79166666666666,
+    "checks": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": true,
+     "breadth>=0.5": true,
+     "both_legs>0": true
+    }
+   }
+  },
+  {
    "id": "s32",
    "sec": 32,
    "label": "\u00a732 demeaned (= \u00a731)",
