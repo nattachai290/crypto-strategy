@@ -1,0 +1,24 @@
+{
+ "source": "trades_train_fcwide.csv.gz",
+ "trades": 1051,
+ "return": 0.06691363952042677,
+ "mean_r": 0.010908975111975928,
+ "median_r": -0.0503493639402698,
+ "win_rate": 0.3967649857278782,
+ "profit_factor": 1.1175768945275275,
+ "max_dd": 0.07196652586427377,
+ "avg_win_r": 0.2613400928267597,
+ "avg_loss_r": -0.15380676004112315,
+ "expectancy_r": 0.010908975111975928,
+ "max_consecutive_wins": 10,
+ "max_consecutive_losses": 17,
+ "longs": 413,
+ "shorts": 638,
+ "exit_reasons": {
+  "signal": 1049,
+  "stop": 2
+ },
+ "gross_r": 0.022550788600185244,
+ "cost_r": 0.01164181348820932,
+ "median_hold_bars": 6.0
+}

@@ -6274,3 +6274,141 @@ The owner chose option ค (Exp 072).
 - `train_chose_fc_exit` fails exactly on a `chan` choice.
 
 No holdout. §31–§42 share one.
+
+---
+
+## Exp 074 - PLAN.md §42 run: §41's book with a forecast-decided exit - REJECT on four gates, and the exit lost three quarters of the edge
+
+**Date:** 2026-10-09
+**Status:** complete. One run, as pre-registered in Exp 073. No new download (section 36's caches). `--final` not run.
+**No holdout spent.** No `holdout.json` under `results/_multi/s42_ml_exit_4h/`; the §31-§42 shared holdout is untouched.
+
+**Verdict: REJECT - failed `valid_ci_lo>0`, `stress_weekly_mean>0`, `timing_beats_shift_p95` and `both_legs>0`.** TRAIN chose **`fc`** (exit when the range forecast falls below its causal rolling 180-bar median), so `train_chose_fc_exit` passed: the exit is a model signal and not §41's 3-bar channel.
+
+**`reproduces_s41` = True.** The `chan` row is §41's TRAIN row exactly (992 trades, t 0.8784), so every difference below is the exit, not the entry, the model or the caches.
+
+### TRAIN table (3 rows, as selected)
+
+| form | trades | weekly mean | t | mean R | long | short | by year | short share | max DD | mean / median hold | exit mix | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| chan | 992 | +0.00075 | +0.88 | +0.0153 | +0.0177 | +0.0612 | 2021 +0.0224, 2022 +0.0565 | 2021 0.584, 2022 0.587 | 5.24% | 10.8 / 8 bars (1.8 days) | eod 1, signal 990, stop 1 | yes |
+| fc **<- chosen** | 1015 | +0.00081 | +0.95 | +0.0145 | +0.0150 | +0.0700 | 2021 +0.0603, 2022 +0.0247 | 2021 0.602, 2022 0.609 | 7.04% | 9.9 / 7 bars (1.6 days) | signal 1012, stop 3 | yes |
+| fcwide | 1051 | +0.00064 | +0.77 | +0.0109 | -0.0107 | +0.0776 | 2021 +0.0390, 2022 +0.0279 | 2021 0.611, 2022 0.605 | 7.20% | 8.4 / 6 bars (1.4 days) | signal 1049, stop 2 | **no** |
+
+**TRAIN picked the forecast exit on a 7% margin:** `fc` t +0.95 against `chan`'s +0.88, and it is the highest t of the three. `fcwide` is not selectable (its long leg is negative on TRAIN, -0.0107).
+
+**The hypothesis predicted a longer hold. It did not happen: the forecast exit holds for LESS time.**
+
+| form | mean hold | median hold | max DD | mean R |
+|---|---|---|---|---|
+| chan | 10.76 bars (1.8 days) | 8 bars (1.3 days) | 5.24% | +0.0153 |
+| fc | 9.85 bars (1.6 days) | 7 bars (1.2 days) | 7.04% | +0.0145 |
+| fcwide | 8.41 bars (1.4 days) | 6 bars (1.0 days) | 7.20% | +0.0109 |
+
+The intent was to hold through the noise of a move that is still volatile instead of exiting on the first 3-bar pullback. In fact the median hold fell from 8 bars (`chan`) to 7 (`fc`) and the mean from 10.8 to 9.9. The rolling 180-bar median of the forecast is crossed below far more often than a 3-bar pullback ends, so the exit cut positions earlier. Exit mix: `chan` closed 990 of its 992 on signal (1 stop, 1 eod), `fc` 1012 of 1015 (3 stops, no eod), `fcwide` 1049 of 1051.
+
+### VALID (2023-24, the chosen `fc`)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 1129 | >= 100 OK |
+| weekly account return | +0.00027 | > 0 OK |
+| 95% CI | [-0.00157, +0.00216] | lo > 0 **FAIL** |
+| t | +0.28 | - |
+| mean R per trade | +0.0040 | > 0 OK |
+| long leg | +0.0913 | > 0 OK |
+| short leg | -0.0633 | > 0 **FAIL** |
+| cost x1.5 weekly | -0.00013 | > 0 **FAIL** |
+| timing | +0.0103 vs shifted p95 +0.0135 (0.76x, median +0.0020) | > p95 **FAIL** |
+| breadth | 7 of 10 (0.70) | >= 8 and >= 0.5 OK |
+| max drawdown | 10.33% | <= 20% OK |
+| per year (summed R) | 2023 +0.0165, 2024 +0.0115 | both > 0 OK |
+| total account return | 2.80% | - |
+| negative weeks | 61 of 105 | - |
+
+**`stress_weekly_mean>0` is a new failure in this line: with fees and slippage x1.5 the book makes -0.00013 a week.** The gross edge is too small to pay for a worse fill.
+
+Exit mix on VALID {'signal': 1114, 'stop': 13, 'eod': 2}, hold 9.28 bars mean / 7 median (1.5 days) - again shorter than `chan`'s.
+
+### The short leg is where it went
+
+| side | trades | mean net R | 2023 | 2024 | mean R without its 5 best |
+|---|---|---|---|---|---|
+| long | 595 | +0.0285 | +0.0178 | +0.0422 | -0.0005 |
+| short | 534 | -0.0233 | -0.0155 | -0.0291 | -0.0362 |
+
+**§41's short leg was +0.0109; here it is -0.0633.** Longs fell too, +0.1291 -> +0.0913, but the short side lost the most. **The short leg lost in both years (-0.0155 in 2023, -0.0291 in 2024) while longs gained in both.**
+
+The return is concentrated again: **best 5 weeks = 5.02x the VALID return** and without them the weekly mean is -0.00112. The whole VALID return is 2.80%; the largest five trades alone are +5.53 R, +4.50 R, +2.72 R, +2.39 R, +2.11 R, and the book averages -0.0113 R without them.
+
+**Short share 0.405 / 0.540** on VALID, against §41's 0.418 / 0.540 - essentially unchanged, so the exit did not move the side mix; it moved the result.
+
+### Against `chan_same_arm` (= §41's recorded VALID book)
+
+| | §41 `chan` | **§42 `fc`** |
+|---|---|---|
+| trades | 1088 | 1129 |
+| weekly account return | +0.00133 | +0.00027 |
+| 95% CI | [-0.00059, +0.00331] | [-0.00157, +0.00216] |
+| t | +1.32 | +0.28 |
+| mean R | +0.0222 | +0.0040 |
+| long / short | +0.1291 / +0.0109 | +0.0913 / -0.0633 |
+| max drawdown | 8.30% | 10.33% |
+| total return | 14.01% | 2.80% |
+| mean hold (bars) | 10.90 | 9.28 |
+| median hold (bars) | 8 | 7 |
+| 2023 summed R | +0.0808 | +0.0165 |
+| 2024 summed R | +0.0593 | +0.0115 |
+
+**The forecast exit is worse than the channel exit on every measure**, and worse on the ones §41 already failed: weekly +0.00027 against +0.00133 (20% of it), t +0.28 against +1.32, mean R +0.0040 against +0.0222 (18%), CI lo -0.00157 against -0.00059, total return 2.80% against 14.01%.
+
+### Per-coin VALID means
+
+| coin | trades | §42 mean R | §41 mean R |
+|---|---|---|---|
+| BTCUSDT | 105 | +0.0859 | +0.0880 |
+| BCHUSDT | 102 | +0.0250 | +0.0165 |
+| ADAUSDT | 105 | +0.0161 | +0.0053 |
+| BNBUSDT | 118 | +0.0156 | +0.0416 |
+| ETHUSDT | 107 | +0.0086 | -0.0023 |
+| LINKUSDT | 114 | +0.0055 | +0.0372 |
+| DOGEUSDT | 112 | +0.0002 | +0.0108 |
+| SOLUSDT | 117 | -0.0072 | +0.0436 |
+| NEARUSDT | 130 | -0.0237 | +0.0021 |
+| XRPUSDT | 119 | -0.0690 | -0.0161 |
+
+Breadth fell from §41's 8 of 10 coins positive to 7: XRP went from -0.0161 to -0.0690 and NEAR from +0.0021 to -0.0237.
+
+### Concentration, TRAIN checks and holdout power
+
+- Best 5 weeks 5.02x the VALID return, against §41's 1.15x. The analyzer's mean R without the top 1% of trades is -0.0207 (§41's +0.0012); 70% of coins positive against 80%.
+- TRAIN checks (chosen `fc`): weekly +0.00081, CI lo -0.00083 (negative), t +0.95, mean R +0.0145, long +0.0150, short +0.0700, max DD 7.04%, breadth 0.70 of 10, cost x1.5 +0.00057, timing 1.7x its shifted p95, best-5-week share +1.471. The selected cell clears §38's rule and its own TRAIN stress test; VALID's stress test is where it fails.
+- **Holdout power** (`record/valid/holdout_power.json`): P(holdout CI lower bound > 0) = **4%** if VALID's weekly mean is the true edge, 3% if half of it is (§41's recorded 22% / 9%).
+
+### Analyzer
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §41 4h range forecast armed per side · 10 large coins | FRAGILE | 72 | 100.0 | 80.0 | 66.7 | 51.1 | 50.0 | 100.0 | 60.0 |
+| §42 4h range forecast, forecast-based exit · 10 large coins | FRAGILE | 57 | 39.3 | 20.0 | 33.3 | 43.9 | 100.0 | 100.0 | 60.0 |
+
+**§42: FRAGILE, quality 57** against §41's 72 and §31's 86. **train_vs_valid 39 against 100:** VALID mean R is 28% of TRAIN, against 145% for §41. TRAIN looked better and VALID was worse - the overfit shape. Robustness 20 and stability 33.3 are the lowest of the large-coin books. The only dimension above §41's is sensitivity (100 against 50), because the forms barely move.
+
+Top features by mean |SHAP| on VALID are §41's, unchanged: `weekday` 0.13390, `vol_24` 0.11584, `ema_dist_20` 0.07985, `h1_volume_z` 0.05704, `vol_ratio` 0.04804 - §42 refits no model, it only changes the exit.
+
+### Verdict
+
+**REJECT on four gates, and the exit is worse than the exit it replaced.** Facts:
+
+- **TRAIN liked it and VALID did not.** `fc` won on TRAIN by a 7% margin (t +0.95 against `chan`'s +0.88) and lost on VALID by a factor of five: weekly +0.00027 against +0.00133, t +0.28 against +1.32, mean R +0.0040 against +0.0222. VALID mean R is only 28% of TRAIN.
+- **The stated hypothesis was falsified on its own terms: the forecast exit holds for LESS time, not more.** Mean hold fell from 10.9 to 9.3 bars on VALID (10.8 to 9.9 on TRAIN); the median fell from 8 to 7 bars on both. The 180-bar median of the forecast is crossed below far more often than a 3-bar pullback ends. **The design could not have produced the intended longer hold.**
+- **The short leg turned negative again** (-0.0633 over 534 trades, and -0.0362 R without its five best). The long leg also fell (+0.1291 -> +0.0913), but longs were the part of §41 that actually earned, and the exit took a third of that.
+- **`stress_weekly_mean>0` is a new gate failure in this line**: with costs x1.5 the book makes -0.00013 a week. The remaining gross edge (+0.0040 R per trade, gross +0.0193) cannot pay for worse execution.
+- **`timing_beats_shift_p95` fails at 0.76x** the shifted p95 (§41 was 1.84x): the time-shifted control beats the book's own entry timing.
+- **Concentration returned**: best 5 weeks 5.02x the return (§41 1.15x), weekly mean without them -0.00112.
+- Analyzer: FRAGILE 57, down from §41's 72 - the lowest of the ten-coin books.
+
+**No holdout was spent and none is proposed.** The §31-§42 shared holdout is untouched. **The best book in this project is still §41** (REJECT on `valid_ci_lo>0`, CI lo -0.00059), not §42.
+
+Files: `results/_multi/s42_ml_exit_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{chan,fc,fcwide}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s42_ml_exit_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
