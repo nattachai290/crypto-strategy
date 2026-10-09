@@ -1,0 +1,25 @@
+{
+ "source": "trades_train_q70_n18.csv.gz",
+ "trades": 779,
+ "return": 0.0678969674375477,
+ "mean_r": 0.014526443302021916,
+ "median_r": -0.1298306613295909,
+ "win_rate": 0.3453145057766367,
+ "profit_factor": 1.0916325875968271,
+ "max_dd": 0.09775725119629469,
+ "avg_win_r": 0.501153781987901,
+ "avg_loss_r": -0.24214562357347116,
+ "expectancy_r": 0.014526443302021916,
+ "max_consecutive_wins": 9,
+ "max_consecutive_losses": 21,
+ "longs": 473,
+ "shorts": 306,
+ "exit_reasons": {
+  "signal": 770,
+  "eod": 5,
+  "stop": 4
+ },
+ "gross_r": 0.03291397255779589,
+ "cost_r": 0.018387529255773978,
+ "median_hold_bars": 20.0
+}

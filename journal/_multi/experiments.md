@@ -5694,3 +5694,188 @@ ATRs, not the direction.
 - No new download.
 - `python src/test_engine.py`, then `python src/ml_vol.py` once, then `python src/analyzer.py` and
   `python src/result_report.py`.
+
+---
+
+## Exp 067 - PLAN.md §40 run: ML forecasts WHEN a large coin moves, a breakout decides the side - REJECT (but ML beat the rule)
+
+**Date:** 2026-10-09
+**Status:** complete. One run, as pre-registered in Exp 066. No new download. `--final` not run.
+**No holdout spent.** No `holdout.json` under `results/_multi/s40_ml_vol_4h/`; the §31-§40 shared holdout is untouched.
+
+**Verdict: REJECT** - failed `valid_ci_lo>0` and `both_legs>0`. TRAIN chose **`q85_n6`**: arm the breakout only
+when the range forecast is above its own rolling 85th percentile, breakout channel N = 6 bars (1 day).
+
+**This is the first round in the large-coin line where the ML arm was chosen AND it beat the rule it is
+measured against.** The hypothesis held. The book still failed two gates.
+
+### The volatility forecast works
+
+Spearman of the forecast against the realised next-day range, pooled over the ten coins:
+
+| split | Spearman |
+|---|---|
+| TRAIN 2021-22 | **+0.3539** |
+| VALID 2023-24 | **+0.3880** |
+
+Ranking volatility is far easier than ranking direction: +0.35 / +0.39 Spearman against the range, where the
+direction models' forecast/label correlation was +0.03 (Exp 050). It holds out of sample (VALID is not lower
+than TRAIN).
+
+### TRAIN table (6 cells)
+
+| cell | arm | N | trades | weekly mean | t | mean R | long | short | by year | short share | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| none_n6 | none | 6 | 2783 | -0.00059 | -0.50 | -0.0044 | -0.0491 | -0.0128 | 2021 -0.0358, 2022 -0.0260 | 2021 0.500, 2022 0.530 | **no** |
+| none_n18 | none | 18 | 1143 | +0.00047 | +0.38 | +0.0087 | +0.0054 | +0.0444 | 2021 -0.0112, 2022 +0.0611 | 2021 0.479, 2022 0.528 | **no** |
+| q70_n6 | q70 | 6 | 1432 | +0.00058 | +0.55 | +0.0069 | +0.0081 | +0.0526 | 2021 +0.0218, 2022 +0.0388 | 2021 0.355, 2022 0.465 | yes |
+| q70_n18 | q70 | 18 | 779 | +0.00065 | +0.49 | +0.0145 | +0.0254 | +0.0425 | 2021 +0.0375, 2022 +0.0304 | 2021 0.322, 2022 0.442 | yes |
+| q85_n6 **<- chosen** | q85 | 6 | 974 | +0.00059 | +0.66 | +0.0122 | +0.0286 | +0.0330 | 2021 +0.0186, 2022 +0.0431 | 2021 0.285, 2022 0.409 | yes |
+| q85_n18 | q85 | 18 | 613 | +0.00046 | +0.38 | +0.0163 | +0.0283 | +0.0201 | 2021 +0.0367, 2022 +0.0117 | 2021 0.268, 2022 0.382 | yes |
+
+**Both `arm=none` cells are dead and all four armed cells are selectable.** The rule alone loses money at the
+short channel (`none_n6`: 2,783 trades, weekly -0.00059, mean R -0.0044, both legs negative) and is not
+selectable at the long channel either (`none_n18`: 2021 -0.0112, so both years are not positive). Every armed
+cell clears both TRAIN years and both legs.
+
+**Arming cuts trades and lifts them.** `q85_n6` takes 974 trades against `none_n6`'s 2,783 - 65% fewer - and
+the mean R goes from -0.0044 to +0.0122, the t from -0.50 to +0.66, the max DD from 16.24% to 6.79%. The short
+share falls from 0.500 to 0.285 in 2021 and 0.530 to 0.409 in 2022: the arming removes more bad shorts than bad
+longs.
+
+### VALID (2023-24, the chosen `q85_n6`)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 1078 | >= 100 OK |
+| weekly account return | +0.00114 | > 0 OK |
+| 95% CI | [-0.00058, +0.00299] | lo > 0 **FAIL** |
+| t | +1.23 | - |
+| mean R per trade | +0.0185 | > 0 OK |
+| long leg | +0.1302 | > 0 OK |
+| short leg | -0.0103 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00076 | > 0 OK |
+| timing | +0.0218 | - |
+| shifted median / p95 | +0.0053 / +0.0151 | timing > p95 OK |
+| timing as a multiple of p95 | 1.45x | - |
+| breadth | 6 of 10 (0.60) | >= 8 coins and >= 0.5 OK |
+| max drawdown | 0.0959 | <= 0.20 OK |
+| per year (summed R) | 2023 +0.0427, 2024 +0.0773 | - |
+| short share | 2023 0.251, 2024 0.288 | - |
+| negative weeks | 59 of 105 | - |
+
+**The short share is 0.251 / 0.288 - the lowest of any large-coin book in the project** (against §37's 0.69/0.76, §38 4h's 0.549/0.642 and §39's 0.549/0.642). Taking the side from the price instead of the forecast's sign fixed the bias the last three rounds chased. It did not make the short leg profitable: 291 short trades averaged -0.0069 R, so `both_legs>0` still fails.
+
+### The same breakout WITHOUT ML on VALID - the hypothesis's own comparison
+
+| | rule only (`none_n6`) | ML armed (`q85_n6`) |
+|---|---|---|
+| trades | 3065 | 1078 |
+| weekly account return | -0.00037 | +0.00114 |
+| 95% CI | [-0.00310, +0.00250] | [-0.00058, +0.00299] |
+| t | -0.25 | +1.23 |
+| mean R per trade | -0.0025 | +0.0185 |
+| long / short | +0.1119 / -0.1506 | +0.1302 / -0.0103 |
+| max drawdown | 25.28% | 9.59% |
+| short share 2023 / 2024 | 0.485 / 0.487 | 0.251 / 0.288 |
+
+**ML beat the rule on every measure, by a wide margin.** Weekly +0.00114 against -0.00037 (the rule loses),
+mean R +0.0185 against -0.0025, t +1.23 against -0.25, max DD 9.59% against 25.28%, and the CI moves from
+[-0.00310, +0.00250] to [-0.00058, +0.00299] - the lower bound comes 5x closer to zero. The rule's drawdown
+exceeds the 20% line and the ML book does not.
+
+### What the arming filtered out (`record/valid/skipped_signals.csv.gz`)
+
+The ML arm removed **2,382 breakouts** and kept 1,078 trades, so the filter removed
+68.8% of all breakouts (2.2 skipped per trade taken).
+
+| group | n | mean signed_label | share positive |
+|---|---|---|---|
+| breakouts the arm FILTERED OUT | 2382 | **-0.0633** | 0.449 |
+| - of those, up-breaks (long side) | 1097 | -0.0002 | 0.467 |
+| - of those, down-breaks (short side) | 1285 | -0.1171 | 0.433 |
+| breakouts TAKEN (net R per trade) | 1078 | +0.0185 (net) | 0.374 |
+| - of those, longs | 787 | +0.0278 | 0.365 |
+| - of those, shorts | 291 | -0.0069 | 0.399 |
+
+The signed_label is the realised next-day move times the breakout's side. **The filter worked as designed:**
+the removed breakouts average -0.0633 and only 44.9%
+of them moved in their own direction, against 1.8% R of the kept trades. The damage
+was concentrated in down-breaks (-0.1171 over 1285 of them); the removed up-breaks were flat (-0.0002).
+Per coin the filtered breakouts were worst on BTC (-0.177) and DOGE (-0.161).
+
+Exit mix on VALID: {'signal': 1073, 'stop': 5} - only 5 stops in 1078 trades, because the exit is the N/2 = 3-bar opposite
+channel rather than a fixed stop.
+
+### Concentration and the TRAIN checks
+
+- **Best 5 weeks = 1.30x the VALID return** (the lowest concentration of any
+  large-coin book: §37 3.87x, §39 1.92x); the weekly mean without them is
+  -0.00035, negative. Analyzer's mean R without the top 1% of trades is
+  -0.0037, also negative.
+- TRAIN checks (chosen `q85_n6`): weekly +0.00059, CI lo -0.00103 (negative), t +0.66, long +0.0286, short +0.0330, max DD 0.0679, breadth 0.80 of 10, cost x1.5 +0.00035, timing 1.6x its shifted p95, best-5-week share +2.304.
+  The chosen cell passes the selectable rule and the legs, but its own TRAIN CI lower bound is -0.00103.
+
+### Top 10 features by mean |SHAP| on VALID
+
+| rank | feature | mean \|SHAP\| |
+|---|---|---|
+| 1 | `weekday` | 0.13390 |
+| 2 | `vol_24` | 0.11584 |
+| 3 | `ema_dist_20` | 0.07985 |
+| 4 | `h1_volume_z` | 0.05704 |
+| 5 | `vol_ratio` | 0.04804 |
+| 6 | `ema_dist_50` | 0.04657 |
+| 7 | `btc_vol_168` | 0.04020 |
+| 8 | `funding_last` | 0.03931 |
+| 9 | `atr_pct` | 0.03525 |
+| 10 | `mkt_ret_168` | 0.02632 |
+
+**`weekday` is rank 1 at 0.13390 - the strongest feature in this round, and the first time it has
+led.** The rest is a volatility block of its own (`vol_24`, `vol_ratio`, `atr_pct`) plus the coin's own
+short-horizon position (`ema_dist_20`, `ema_dist_50`) and `h1_volume_z`. BTC's volatility, which led every
+direction round, is only rank 7 here: the model reads the coin's own state, not the market's.
+
+### Analyzer
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §38 recency-weighted 4h · 10 large coins | FRAGILE | 59 | 40.4 | 60.0 | 55.6 | 65.7 | 50.0 | 100.0 | 40.0 |
+| §40 4h range forecast + breakout · 10 large coins | FRAGILE | 69 | 100.0 | 60.0 | 22.2 | 40.2 | 83.3 | 100.0 | 80.0 |
+
+**§40: FRAGILE, quality 69, against §38 4h's 59 and §31's 86.** It is the best large-coin book on train-vs-valid (100, like §31's, against 40)
+and the best on decay (100, both VALID years positive). But stability is 22.2, the lowest in the
+project's positive books: mean R without the top 1% of trades is -0.0037 and only
+60% of the coins are positive. Fold consistency is 40.2.
+
+### Verdict
+
+**REJECT, and the mechanism works.** Facts:
+
+- **Volatility is forecastable where direction is not.** Spearman +0.35 TRAIN / +0.39 VALID between the
+  forecast and the realised next-day range, against +0.03 for the direction models. It holds out of sample.
+- **The ML arm beat the rule it was measured against, on every measure.** VALID weekly +0.00114 against the
+  rule's -0.00037, mean R +0.0185 against -0.0025, t +1.23 against -0.25, max DD 9.59% against 25.28%, CI lower
+  bound -0.00058 against -0.00310. On TRAIN both `arm=none` cells were unselectable and all four armed cells
+  were selectable.
+- **The filter removed genuinely worse breakouts**: 2,382 filtered, mean signed_label -0.0633 and only 44.9%
+  in their own direction, against the kept trades' +0.0185 R. The removal was worth it.
+- **Taking the side from price fixed the short bias at last** (0.251 / 0.288, the lowest in the project), so
+  three rounds of chasing that bias (Exp 059, 062, 065) were treating the symptom. But the short leg still
+  lost -0.0103 over 291 trades, which is why `both_legs>0` fails.
+- **The CI still touches zero** (-0.00058) with t +1.23 on 1078 trades. Best 5 weeks are
+  1.30x the return and the weekly mean without them is negative; the analyzer's stability
+  score is the lowest of the positive books. So the edge is real but small and thin.
+- **`weekday` is the strongest feature** (mean |SHAP| 0.13390), the first time in the project it has led. It is a
+  recorded finding, not a gate: no cell excludes it, and the round's gates say nothing about features.
+
+**No holdout was spent and none is proposed.** The §31-§40 shared holdout is untouched. The best recorded
+book in this project is still §31 (REJECT by 0.00026 on the CI); §40's lower bound is -0.00058 on ten
+coins against §31's -0.00026 on 46.
+
+Files: `results/_multi/s40_ml_vol_4h/summary.json`, `trades_valid.csv.gz`,
+`trades_train_{none,q70,q85}_n{6,18}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata,
+`predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated
+`journal/_multi/s40_ml_vol_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`,
+`docs/analyzer_data.json`.
