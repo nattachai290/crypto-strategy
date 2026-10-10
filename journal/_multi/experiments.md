@@ -7297,3 +7297,42 @@ confidence in §43.** It is still the best risk-adjusted ten-coin book on record
   meta-labeling and timeframe.
 
 No holdout spent. §31–§45 share one.
+
+---
+
+## Exp 088 - Pre-registration: ML volatility targeting on the ten coins (PLAN.md §46, owner choice)
+
+**Date:** 2026-10-10
+**Status:** registered, not run. To be run once by the runner: `python src/ml_voltarget.py`.
+
+The owner chose option 1 from Exp 087: use the range forecast as a risk tool, not as an entry signal.
+
+**Design** (`src/ml_voltarget.py`, PLAN.md §46):
+- three long books on the ten coins: `bh` (equal weight), `naive` (ATR-sized) and `ml` (sized by §40's forecast
+  × ATR);
+- daily rebalance with a 20% band, a 2x cap per coin share, and targets calibrated on TRAIN;
+- fees, slippage and funding;
+- the range forecasts are §40's, checked against §40's recorded TRAIN predictions (`reproduces_s40`).
+
+**PASS needs, on VALID:**
+- Sharpe(ml) > Sharpe(bh), with the weekly-block CI of the difference above 0;
+- max DD ≤ 0.6 × bh's;
+- Sharpe(ml) > naive, on TRAIN too;
+- with costs ×1.5, Sharpe(ml) still above bh.
+
+**Test 44** (`src/test_engine.py`):
+- the band rule and the weight formula by hand;
+- the max DD by hand;
+- `bh` holds 1/n each;
+- `ml` at expected = target equals `bh`, and a doubled forecast halves the exposure;
+- changing future forecasts changes no earlier daily return;
+- a book against itself has a bootstrap difference of exactly 0.
+
+`panel` and `evaluate` were smoke-tested on synthetic bars with funding.
+
+**Stated before the run.**
+- Volatility clusters, so ATR sizing already captures most of what vol targeting gives. `ml` beating `naive` is
+  the hard part, and the gate that may fail.
+- The VALID period is a bull market, so `bh` has a high Sharpe to beat.
+
+No holdout. §31–§46 share one.

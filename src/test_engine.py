@@ -447,6 +447,7 @@ def main() -> None:
     test_ml_agree()
     test_ml_meta()
     test_ml_tf()
+    test_ml_voltarget()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -3167,6 +3168,47 @@ def test_ml_tf() -> None:
           and len(r["train_table"]) == 8 and r["chosen"]["form"].startswith("sign")
           and "none_same_cell" in r["valid"]
           and any(k.startswith("train_margin") for k in r["gates_failed"]) == (r["train_margin"] < MT.MIN_MARGIN))
+
+
+def test_ml_voltarget() -> None:
+    """Test 44 (PLAN.md section 46): band, vol-target weight, Sharpe/DD, bootstrap, books by hand and causal."""
+    print("\n44. ml_voltarget: band rule and weights by hand, causal books, bh = equal weight, ml halves when the "
+          "forecast doubles")
+    import ml_voltarget as VT
+    check("ml_voltarget band: moves only beyond 20% of the held weight, or to / from 0",
+          list(VT.band_weights(np.array([0.1, 0.11, 0.13, 0.0, np.nan, 0.05]))) == [0.1, 0.1, 0.13, 0.0, 0.0, 0.05])
+    w = VT.vt_weight(np.array([0.02, 0.04, 0.005, np.nan]), 0.02, np.array([2, 2, 2, 2]))
+    check("ml_voltarget weight: min(cap, target / expected) / n; NaN where expected is missing",
+          np.allclose(w[:3], [0.5, 0.25, 1.0]) and np.isnan(w[3]))
+    d = pd.Series([0.1, -0.5, 0.2], index=pd.date_range("2023-01-01", periods=3, freq="D", tz="UTC"))
+    check("ml_voltarget max DD: 1.1 -> 0.55 is a 50% drawdown", np.isclose(VT.max_dd(d), 0.5))
+    idx = pd.date_range("2023-01-02", periods=6 * 120, freq="4h", tz="UTC")
+    rng = np.random.default_rng(44)
+    def coin(seed, fc):
+        r = np.random.default_rng(seed).normal(0.0005, 0.01, len(idx))
+        return pd.DataFrame({"ret": r, "afrac": 0.02, "fc": fc, "fund": 0.0, "ok": True, "slip": 0.0002,
+                             "dec": idx.hour == VT.DECISION_HOUR}, index=idx)
+    pan = {"A": coin(1, 1.0), "B": coin(2, 1.0)}
+    pan2 = {"A": coin(1, 2.0), "B": coin(2, 2.0)}
+    a, b = "2023-01-01", "2023-06-01"
+    bh = VT.run_book(pan, "bh", None, a, b)
+    m1 = VT.run_book(pan, "ml", 0.02, a, b)
+    m2 = VT.run_book(pan2, "ml", 0.02, a, b)
+    check("ml_voltarget books: bh holds 1/n each (gross ~1); ml at expected = target equals bh; a doubled forecast "
+          "halves the exposure",
+          abs(bh["avg_gross"] - 1.0) < 0.05 and np.allclose(m1["daily"].to_numpy(), bh["daily"].to_numpy())
+          and abs(m2["avg_gross"] - 0.5) < 0.05)
+    pan3 = {k: v.copy() for k, v in pan.items()}
+    cut = idx[300]
+    for v in pan3.values():
+        v.loc[v.index > cut, "fc"] = 5.0
+    m3 = VT.run_book(pan3, "ml", 0.02, a, b)
+    day = cut.floor("D")
+    check("ml_voltarget causal: changing forecasts after a bar changes no daily return up to that day",
+          np.allclose(m3["daily"][m3["daily"].index < day].to_numpy(), m1["daily"][m1["daily"].index < day].to_numpy()))
+    diff, lo, hi = VT.sharpe_diff_ci(m1["daily"], m1["daily"], n_boot=200)
+    check("ml_voltarget bootstrap: a book against itself has difference 0 and a CI of [0, 0]",
+          abs(diff) < 1e-12 and abs(lo) < 1e-12 and abs(hi) < 1e-12)
 
 
 if __name__ == "__main__":

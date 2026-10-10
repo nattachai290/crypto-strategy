@@ -30,7 +30,8 @@ in the "old folder" column.
 | §42 | `s42_ml_exit_4h` | - | `ml_exit.py` | §41's entry with the exit decided by the range forecast (hold while it stays above its median) | 073 → 074, review 075 | REJECT |
 | §43 | `s43_ml_agree_4h` | - | `ml_agree.py` | §41's breakout taken only when §38's direction model agrees on the side (two ML models) | 077 → 078, review 079 | REJECT |
 | §44 | `s44_ml_meta_4h` | - | `ml_meta.py` | meta-labeling: a model trained on every breakout's own outcome filters §41's breakouts | 082 → 083, review 084 | REJECT |
-| §45 | `s45_ml_tf` | `1h/`, `1d/` | `ml_tf.py` | §43's two-model book (range arm + direction agreement) as 1h and 1d sub-models | 085 → pending | pending |
+| §45 | `s45_ml_tf` | `1h/`, `1d/` | `ml_tf.py` | §43's two-model book (range arm + direction agreement) as 1h and 1d sub-models | 085 → 086, review 087 | REJECT |
+| §46 | `s46_ml_voltarget_4h` | - | `ml_voltarget.py` | the ten coins held long, each sized by §40's range forecast (vol targeting), against buy-and-hold and ATR sizing | 088 → pending | pending |
 
 Not rounds: `analyzer/` (`analyzer.py`, quality score of every ML run) and `meta_lessons/` (`meta_lessons.py`).
 

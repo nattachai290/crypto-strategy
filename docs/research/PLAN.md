@@ -3166,3 +3166,49 @@ At tf = 240 the code reproduces §43 and §40 exactly (test 43).
 
 **Prior:** moderate for 1h, low for 1d. The 1h direction model's TRAIN IC was ~0 (Exp 081), so the agreement
 filter may not carry at 1h; the margin gate tests exactly that.
+
+## §46 — ML volatility targeting: the ten coins long, sized by the forecast range (`src/ml_voltarget.py`, `_multi` Exp 088)
+
+**Why.**
+- The breakout line (§40–§45) is closed (`_multi` Exp 087).
+- The one thing this project has shown to be forecastable is the size of the next day's range. §40's model has a
+  Spearman of +0.35 / +0.39 with it, about 3.5x persistence.
+- A volatility forecast is first of all a risk tool.
+
+The owner chose this (2026-10-10).
+
+**Hypothesis.** An equal-risk long book of the ten coins, each scaled by target / forecast next-day range, holds
+less before turbulent days and more before calm ones. Crypto's worst days cluster in high-volatility spells, so
+the book should beat buy-and-hold of the same coins on Sharpe and drawdown. If the ML forecast is better than
+plain ATR, the book should also beat the same book sized by ATR alone. It is long-only, so it is judged against
+buy-and-hold, never against zero.
+
+**Books.** All are rebalanced once a day at the 20:00 UTC 4h close, filled at the next open, over the coins traded
+that month.
+- `bh`: weight 1/n per coin.
+- `naive`: weight min(2, target / ATR fraction) / n.
+- `ml`: weight min(2, target / (§40 forecast × ATR fraction)) / n.
+
+**Settings:**
+- each target is that estimator's TRAIN median, so the average weight is about 1/n on TRAIN;
+- a 20% no-trade band;
+- costs are taker fee + slippage on traded weight, plus funding (weight × rate);
+- returns are 4h open-to-open, summed by day.
+
+**PASS needs, on VALID:**
+- Sharpe(ml) > Sharpe(bh), with the weekly-block bootstrap 95% CI of the difference above 0;
+- max DD(ml) ≤ 0.6 × max DD(bh), §16's risk bar;
+- Sharpe(ml) > Sharpe(naive), on TRAIN as well;
+- with costs ×1.5, Sharpe(ml) still above bh.
+
+**Holdout:** shared with §31–§45.
+
+**What each outcome means.**
+- **PASS:** the holdout decides.
+- **ml beats bh but not naive:** volatility targeting works on these coins, but ATR does it as well as the ML.
+  That would be a rule, not an ML result.
+- **Neither beats bh:** volatility timing does not pay on these ten coins in 2023–24.
+
+**Prior:**
+- moderate for "a vol-targeted book beats buy-and-hold on drawdown";
+- low for "the ML beats ATR", since volatility clusters and ATR already captures most of it.
