@@ -64,6 +64,7 @@ def main() -> None:
     rounds += [(42, "4h", "s42_ml_exit_4h/trades_valid.csv.gz", "§42 ออกตามคำทำนายความแรง")]
     rounds += [(43, "4h", "s43_ml_agree_4h/trades_valid.csv.gz", "§43 ML สองตัวต้องเห็นตรงกัน")]
     rounds += [(44, "4h", "s44_ml_meta_4h/trades_valid.csv.gz", "§44 meta-labeling (TRAIN เลือก = §43)")]
+    rounds += [(45, n, f"s45_ml_tf/{n}/trades_valid.csv.gz", f"§45 {n} สูตร §43 (TRAIN ไม่มีแบบผ่าน)") for n in ("1h", "1d")]
     out["rounds"] = []
     for sec, tf, f, label in rounds:
         t = _read(M / f)

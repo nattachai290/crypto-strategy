@@ -7251,3 +7251,49 @@ The 1h range model's own top features by mean |SHAP| are a volatility block - `a
 **No holdout was spent and none is proposed.** The §31-§45 shared holdout is untouched and neither sub-model is PASS. **§43 (4h) remains the best risk-adjusted ten-coin book**, and the project's closest record is still the frozen §31 cell (CI lo -0.00026 on 46 coins).
 
 Files: `results/_multi/s45_ml_tf/{1h,1d}/summary.json`, `trades_valid.csv.gz`, `trades_train_*.csv.gz` (8 cells per sub-model), `record/{train,valid}/` (importance + SHAP, `predictions.parquet`, `training_metadata.json`, `run_info.json`, `holdout_power.json`; no `skipped_signals.csv.gz` in this round), `analysis/`; generated `journal/_multi/s45_ml_tf.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
+
+---
+
+## Exp 087 - Planner's review of §45 (Exp 086): §43's mechanism does not transfer to 1h or 1d
+
+**Date:** 2026-10-10
+**Status:** complete. Read-only. No backtest, no holdout.
+
+**Verdict confirmed: both sub-models REJECT, and both fail on TRAIN.** Neither has a selectable cell:
+- 0 of 8 cells on 1h;
+- 0 of 8 cells on 1d.
+
+Both direction reproductions are true, so the forecasts are §38's.
+
+**1h on TRAIN:**
+- every q70/N=1-day cell loses money;
+- every cell's short leg is negative, except `none_q85_n24`;
+- 2022 is negative in 5 of 8 cells;
+- the best `sign` cell (q70, N = 3 days) is t +0.52, with its short leg at -0.077.
+
+**1d on TRAIN:** 7 of 8 cells have a negative weekly mean, and the best cell's t is +0.31.
+
+The pre-registered risk for 1h was that the direction model there has no skill (Exp 081: IC -0.002 / +0.012). It
+showed up as the short leg, not as the margin: `sign` beat `none` by +0.59 on 1h, but no cell made both years and
+both legs positive.
+
+**The VALID rows printed for these sub-models are not evidence.** When no cell is selectable, the code still
+judges the highest-t `sign` cell on VALID. The VALID numbers of the `none` twins are also printed; for example, the
+1d `none` cell's CI lo is +0.00004. None of these cells was selectable on TRAIN, so none of them is a candidate.
+This is the same rule as Exp 084.
+
+**What this means for §43.** §43's two-model mechanism works only on 4h:
+- it is negative on TRAIN at 1h, where costs are larger relative to ATR and the direction model has no skill;
+- it is flat at 1d, which has too few breakouts and a weak range forecast at one-bar horizons.
+
+A real market effect would usually show at neighbouring timeframes. One that shows at a single timeframe, after
+about 40 TRAIN cells were tried there across §40–§44, is more likely partly selection. **This lowers the
+confidence in §43.** It is still the best risk-adjusted ten-coin book on record, and it is still not PASS.
+
+**State of the line.** The ten-coin breakout family (§40–§45) has reached its end:
+- the range forecast is real;
+- the best book misses the CI gate;
+- every lever has been tried on TRAIN-first evidence: arm, side, exit, sizing, direction agreement,
+  meta-labeling and timeframe.
+
+No holdout spent. §31–§45 share one.
