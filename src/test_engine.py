@@ -445,6 +445,7 @@ def main() -> None:
     test_ml_side()
     test_ml_exit()
     test_ml_agree()
+    test_ml_meta()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -3045,6 +3046,81 @@ def test_ml_agree() -> None:
           and tg["net_r"].mean() > t0["net_r"].mean() and len(r["train_table"]) == 2
           and any(k.startswith("train_margin") for k in r["gates_failed"]) == (r["train_margin"] < MA.MIN_MARGIN)
           and (("train_chose_agree" in r["gates_failed"]) == (r["chosen"]["form"] == "none")))
+
+
+def test_ml_meta() -> None:
+    """Test 42 (PLAN.md section 44): breakout side and meta label by hand, causal median arm, forms, pipeline."""
+    print("\n42. ml_meta: meta label by hand, side-median arm causal, none = section 41, agree = section 43")
+    import contextlib
+    import io
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_vol as MV
+    import ml_side as MS
+    import ml_agree as MA
+    import ml_meta as MM
+    n = 60
+    idx = pd.date_range("2023-01-01", periods=n, freq="4h", tz="UTC")
+    o = np.full(n, 100.0)
+    c = np.full(n, 100.0)
+    hi = np.full(n, 101.0)
+    lo = np.full(n, 99.0)
+    c[30], hi[30] = 103.0, 103.5             # up-break at bar 30 (previous 6 highs = 101)
+    o[31:36] = [104.0, 105.0, 106.0, 107.0, 108.0]
+    c[31:35] = [104.5, 105.5, 106.5, 107.5]
+    hi[31:36], lo[31:36] = [105, 106, 107, 108, 109], [103.5, 104.5, 105.5, 106.5, 101.0]
+    c[35] = 102.0                            # closes below the previous 3 lows (104.5) -> exit at open[36]
+    o[36:] = 102.5
+    b = pd.DataFrame({"open": o, "high": hi, "low": lo, "close": c, "volume": 1.0}, index=idx)
+    s = MM.bo_side(b)
+    y = MM.meta_label(b)
+    import indicators as ta_
+    import ml_hold as MH_
+    afrac = (ta_.atr_(b["high"], b["low"], b["close"], MH_.ATR_N) / b["close"]).to_numpy()
+    check("ml_meta by hand: bar 30 is an up-break; its label is log(open[36] / open[31]) / ATR fraction at 30; "
+          "non-break rows NaN",
+          s[30] == 1 and s[20] == 0 and np.isclose(y[30], np.log(102.5 / 104.0) / afrac[30])
+          and np.isnan(y[20]) and len(y) == n - 1, f"{y[30]}")
+    rng = np.random.default_rng(42)
+    mp = rng.normal(size=300)
+    ev = np.zeros(300, bool)
+    ev[::4] = True
+    arm = MM.side_median_arm(mp, ev)
+    mp2 = mp.copy()
+    mp2[201:] = 9.0
+    k = 200
+    evk = np.flatnonzero(ev[:k + 1])[-MM.SIDE_ROLL:]
+    check("ml_meta side-median arm: above the median of the last SIDE_ROLL same-side events (bar included); causal",
+          arm[k] == (mp[k] > np.median(mp[evk])) and (MM.side_median_arm(mp2, ev)[:201] == arm[:201]).all())
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for nm, sd in (("C0USDT", 220), ("C1USDT", 221), ("C2USDT", 222)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][nm] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    lab = {c_: pd.Series(np.r_[MV.vol_label(P[c_]["bars"]), np.nan][:len(P[c_]["X"])], index=P[c_]["X"].index) for c_ in P}
+    rnd = {c_: pd.Series(np.random.default_rng(42).normal(size=len(P[c_]["X"])), index=P[c_]["X"].index) for c_ in P}
+    fore = {c_: pd.Series(np.nan_to_num(MM.meta_label(P[c_]["bars"]), nan=-1.0), index=P[c_]["X"].index) for c_ in P}
+    months = [str(m) for m in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    a, b_ = WF_.WINDOWS["valid"]
+    cols = ["entry_time", "exit_time", "coin", "side", "net_r", "conf", "ret"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        t41, _ = MS.run_cell(P, lab, MM.ARM, a, b_, traded)
+        t43, _ = MA.run_cell(P, lab, rnd, "sign", a, b_, traded)
+        tn, _ = MM.run_cell(P, lab, rnd, rnd, "none", a, b_, traded)
+        ta, _ = MM.run_cell(P, lab, rnd, rnd, "agree", a, b_, traded)
+        tm, _ = MM.run_cell(P, lab, rnd, fore, "meta0", a, b_, traded)
+        r = MM.evaluate(P, lab, rnd, fore, traded, min_coins=3)
+    check("ml_meta: none = section 41 and agree = section 43 trade for trade; a foresight meta forecast trades less "
+          "at a higher mean R; 4 TRAIN rows; train_chose_meta fails exactly on a none/agree choice",
+          t41[cols].reset_index(drop=True).equals(tn[cols].reset_index(drop=True))
+          and t43[cols].reset_index(drop=True).equals(ta[cols].reset_index(drop=True))
+          and 0 < len(tm) < len(tn) and tm["net_r"].mean() > tn["net_r"].mean() and len(r["train_table"]) == 4
+          and (("train_chose_meta" in r["gates_failed"]) == (r["chosen"]["form"] in ("none", "agree")))
+          and r["valid"]["meta_ic"]["valid"]["all"] is not None)
 
 
 if __name__ == "__main__":

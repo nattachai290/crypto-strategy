@@ -3061,3 +3061,70 @@ A breakout both agree on should follow through more often than one they disagree
 
 **Prior:** moderate. It is the first lead with a TRAIN split of t +2.5 across years, sides and coins, but it was
 found on TRAIN.
+
+## §44 — Meta-labeling: an ML model learns which breakouts follow through (`src/ml_meta.py`, `_multi` Exp 082)
+
+**Why.**
+- Most of §41/§43's losses are breakouts that fail within a day: trades under one day average -0.18 R and win
+  7% of the time.
+- §43's direction model answers a broad question (where is price in 1–3 days?), and on VALID it helped only the
+  longs (`_multi` Exp 079).
+- Recombining §38's models did not help (Exp 081).
+
+The owner chose meta-labeling (2026-10-10).
+
+**Hypothesis.** A model trained directly on breakout events can separate follow-throughs from false breaks
+better than a general direction forecast. It asks: given this breakout and the market state, how far does the
+trade run before §41's exit closes it? It learns from every breakout of every wide-training coin, while trading
+stays on the ten coins.
+
+**Meta label.**
+- **Event:** a close beyond the previous 6 bars' extreme, with side s.
+- **Trade:** entry at open[k+1]. The exit is at open[j+1], where j is the first bar in k+1..k+18 whose close
+  crosses the previous 3 bars' opposite extreme. If no bar does, the exit is open[k+19].
+- **Label:** y = s · log(exit / entry) / ATR fraction at k.
+- NaN at non-events and wherever a bar did not trade.
+- The walk-forward lag is 19 bars.
+
+**Model.**
+- Features: §30's 4h features plus `bo_side`.
+- §30's 4h LightGBM setting, monthly expanding refits.
+- Training rows: §36's wide members.
+
+**Unchanged from §41.**
+- range forecasts;
+- the arm (side / q70 / N = 6);
+- the chan exit, the 8-ATR stop, no clock;
+- §31's account.
+
+**Forms (TRAIN picks one).**
+- `none` = §41;
+- `agree` = §43;
+- `meta0`: take the breakout only if its meta forecast is > 0;
+- `metaq50`: take it only if its meta forecast is above the median at the coin's last 60 same-side breakouts.
+
+**REJECT if:**
+- `none` or `agree` is chosen;
+- the chosen meta form's TRAIN t beats the better of `none` / `agree` by less than +0.5.
+
+**VALID gates.** §41's.
+
+**Reported:**
+- every other form on VALID;
+- the meta forecast vs label Spearman at events, by split and side;
+- the kept share per side;
+- `run_record` of the meta model.
+
+**What each outcome means.**
+- **PASS:** the shared holdout (§31–§44) decides.
+- **TRAIN keeps `none` / `agree`, or the margin fails:** a breakout-specific model does not beat the general
+  ones on TRAIN.
+- **A meta form chosen and VALID IC > 0 on both sides, but the CI still ≤ 0:** the model sees follow-through, and
+  ten coins in two years are not enough to prove it.
+- **VALID short IC ≤ 0:** short breakouts on these coins are not predictable from this data. This agrees with
+  Exp 079–080.
+
+**Holdout:** shared with §31–§43.
+
+**Prior:** low to moderate. This is a new label aimed at the book's actual failure. It also adds a model on top
+of a model.

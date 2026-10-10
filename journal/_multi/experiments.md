@@ -6831,3 +6831,43 @@ Only the 4h model ranks correctly in both years.
 - Neither the 1h nor the 1d model, alone or combined with it, improves the agreement filter on TRAIN.
 - Improving the direction signal would need a new model, not a recombination of the recorded ones.
 - No round registered.
+
+---
+
+## Exp 082 - Pre-registration: meta-labeling, an ML model trained on every breakout's own outcome (PLAN.md §44)
+
+**Date:** 2026-10-10
+**Status:** registered, not run. To be run once by the runner: `python src/ml_meta.py`.
+
+The owner chose meta-labeling after Exp 081.
+
+**Design** (`src/ml_meta.py`, PLAN.md §44):
+- **Model.** A LightGBM regressor, refit monthly on wide rows, with §30's 4h setting and an expanding window.
+  Features are §30's 4h set plus `bo_side`.
+- **Label.** Only at N = 6 breakouts of any training coin: the signed log move from the next open to §41's
+  chan exit (or 18 bars), over ATR. The walk-forward lag is 19 bars.
+- **Book.** §41's book is frozen. `none` must reproduce §41's TRAIN row (`reproduces_s41`) and `agree` must
+  reproduce §43's (`reproduces_s43`).
+- **Meta forms:**
+  - `meta0`: meta forecast > 0;
+  - `metaq50`: above the median of the coin's last 60 same-side breakout forecasts.
+- **Selection.** §38's TRAIN rule. A `none` / `agree` choice is REJECT. So is a TRAIN t gain below +0.5 over
+  the better of `none` / `agree`.
+- **VALID gates:** §41's.
+
+**Order matters.** The range and direction forecasts are computed before `bo_side` is added to X. The meta model
+runs last, so the two earlier models see exactly §41's and §43's feature columns.
+
+**Test 42** (`src/test_engine.py`):
+- `bo_side` and the meta label are computed by hand for a constructed breakout, with the exit on the 3-bar low;
+- the side-median arm is causal;
+- `none` = §41 and `agree` = §43, trade for trade;
+- a foresight meta forecast trades less at a higher mean R;
+- 4 TRAIN rows, and `train_chose_meta` fails exactly on a `none` / `agree` choice.
+
+The meta walk-forward, evaluate, the run record and the report were smoke-tested end to end on synthetic data.
+
+**Stated before the run.** Exp 079–080 found no predictable short side on these coins in 2023–24. If the VALID
+short IC is ≤ 0, the meta model has not changed that.
+
+No holdout. §31–§44 share one.

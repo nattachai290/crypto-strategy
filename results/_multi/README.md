@@ -28,7 +28,8 @@ in the "old folder" column.
 | §40 | `s40_ml_vol_4h` | - | `ml_vol.py` | ML forecasts the next day's range; breakouts taken only when a big move is forecast | 066 → 067, review 068 | REJECT |
 | §41 | `s41_ml_side_4h` | - | `ml_side.py` | §40 with the arm's threshold set per side (long vs recent up-breaks, short vs recent down-breaks) | 069 → 070, review 071 | REJECT |
 | §42 | `s42_ml_exit_4h` | - | `ml_exit.py` | §41's entry with the exit decided by the range forecast (hold while it stays above its median) | 073 → 074, review 075 | REJECT |
-| §43 | `s43_ml_agree_4h` | - | `ml_agree.py` | §41's breakout taken only when §38's direction model agrees on the side (two ML models) | 077 → pending | pending |
+| §43 | `s43_ml_agree_4h` | - | `ml_agree.py` | §41's breakout taken only when §38's direction model agrees on the side (two ML models) | 077 → 078, review 079 | REJECT |
+| §44 | `s44_ml_meta_4h` | - | `ml_meta.py` | meta-labeling: a model trained on every breakout's own outcome filters §41's breakouts | 082 → pending | pending |
 
 Not rounds: `analyzer/` (`analyzer.py`, quality score of every ML run) and `meta_lessons/` (`meta_lessons.py`).
 
