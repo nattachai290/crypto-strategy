@@ -6980,3 +6980,51 @@ Kept share per side for the chosen form: long **0.498**, short **0.720** (the ag
 **No holdout was spent and none is proposed.** The §31-§44 shared holdout is untouched. **§43 remains the best risk-adjusted ten-coin book** (analyzer 80, CI lo -0.00039); §31's frozen cell remains the project's closest record (CI lo -0.00026 on 46 coins).
 
 Files: `results/_multi/s44_ml_meta_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{none,agree,meta0,metaq50}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s44_ml_meta_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
+
+---
+
+## Exp 084 - Planner's review of §44 (Exp 083): the meta model ranks breakouts only weakly, and TRAIN kept §43
+
+**Date:** 2026-10-10
+**Status:** complete. Read-only. No backtest, no holdout.
+
+**Verdict confirmed: REJECT** (`train_chose_meta`, `train_margin>=0.5`, `valid_ci_lo>0`, `both_legs>0`).
+- Both reproduction checks are true.
+- TRAIN chose `agree` at t +1.72. The meta forms reached +1.16 (`meta0`) and +1.05 (`metaq50`), a margin of
+  -0.55.
+- The VALID book is therefore §43's own, so the chosen book had no new look at VALID.
+
+**The meta model learned little.** Spearman of the meta forecast vs the breakout's own outcome:
+
+| split | all | long | short |
+|---|---|---|---|
+| TRAIN | +0.048 | +0.017 | +0.079 |
+| VALID | +0.023 | +0.037 | +0.013 |
+
+For scale, the range model's Spearman with its own target is +0.35 / +0.39. Whether a breakout follows through
+is far harder to forecast than how large the next day's range will be.
+
+**A warning for the record: the VALID rows of the forms TRAIN did not choose are not evidence.**
+- `summary.json` reports every form on VALID.
+- `metaq50` shows weekly +0.00120, CI lo -0.00016 and both legs positive (short +0.008 R/trade). That is the
+  closest CI in the project.
+- It was not chosen: on TRAIN it was the weakest selectable form after `none` (t +1.05).
+- Picking it now would be selecting on VALID (AGENTS.md §3 rule 3). It is reported only as what the round saw,
+  and no follow-up round may be built from it.
+
+**Where the ten-coin breakout line stands after §40-§44.**
+- **Range model:** times entries (it beats the rule-only breakout).
+- **Per-side arming:** removes the long tilt.
+- **Direction-model agreement:** confirms longs.
+- **Exit, sizing, multi-timeframe direction, funding, BTC trend and meta-labeling:** all tried, none improved
+  §43.
+- §43 remains the best ten-coin book: CI lo -0.00039, t +1.40, DD 4.3%, 9/10 coins.
+
+**What is left is sample size, not signal.** The owner's standing request (2026-10-06) was that every round run
+as 1h / 4h / 1d sub-models, but §40-§44 were registered on 4h only. A 1h sub-model of §43 decides 4x as often.
+- If the per-trade edge held at 1h, the t would roughly double.
+- Costs per R are higher at 1h (smaller ATR), so that is not given.
+
+That is the most defensible next round.
+
+No holdout spent. §31–§44 share one.
