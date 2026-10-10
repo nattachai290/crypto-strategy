@@ -1,0 +1,269 @@
+{
+ "n_features": 87,
+ "features": [
+  "atr_pct",
+  "bo_side",
+  "body",
+  "body_3",
+  "breadth_24",
+  "btc_ret_168",
+  "btc_ret_24",
+  "btc_ret_72",
+  "btc_vol_168",
+  "d1_atr_pct",
+  "d1_body",
+  "d1_body_3",
+  "d1_ema_dist_20",
+  "d1_ema_dist_200",
+  "d1_ema_dist_50",
+  "d1_lower_wick",
+  "d1_range_pos_168",
+  "d1_range_pos_24",
+  "d1_ret_1",
+  "d1_ret_12",
+  "d1_ret_168",
+  "d1_ret_24",
+  "d1_ret_3",
+  "d1_ret_48",
+  "d1_ret_6",
+  "d1_ret_96",
+  "d1_taker_ratio",
+  "d1_taker_ratio_24",
+  "d1_upper_wick",
+  "d1_vol_168",
+  "d1_vol_24",
+  "d1_vol_ratio",
+  "d1_volume_z",
+  "ema_dist_20",
+  "ema_dist_200",
+  "ema_dist_50",
+  "funding_last",
+  "h1_atr_pct",
+  "h1_body",
+  "h1_body_3",
+  "h1_ema_dist_20",
+  "h1_ema_dist_200",
+  "h1_ema_dist_50",
+  "h1_lower_wick",
+  "h1_range_pos_168",
+  "h1_range_pos_24",
+  "h1_ret_1",
+  "h1_ret_12",
+  "h1_ret_168",
+  "h1_ret_24",
+  "h1_ret_3",
+  "h1_ret_48",
+  "h1_ret_6",
+  "h1_ret_96",
+  "h1_taker_ratio",
+  "h1_taker_ratio_24",
+  "h1_upper_wick",
+  "h1_vol_168",
+  "h1_vol_24",
+  "h1_vol_ratio",
+  "h1_volume_z",
+  "hour",
+  "lower_wick",
+  "mkt_ret_168",
+  "mkt_ret_24",
+  "mkt_ret_72",
+  "range_pos_168",
+  "range_pos_24",
+  "rel_ret_168",
+  "rel_ret_24",
+  "rel_ret_72",
+  "ret_1",
+  "ret_12",
+  "ret_168",
+  "ret_24",
+  "ret_3",
+  "ret_48",
+  "ret_6",
+  "ret_96",
+  "taker_ratio",
+  "taker_ratio_24",
+  "upper_wick",
+  "vol_168",
+  "vol_24",
+  "vol_ratio",
+  "volume_z",
+  "weekday"
+ ],
+ "n_coins": 10,
+ "coins": [
+  "ADAUSDT",
+  "BCHUSDT",
+  "BNBUSDT",
+  "BTCUSDT",
+  "DOGEUSDT",
+  "ETHUSDT",
+  "LINKUSDT",
+  "NEARUSDT",
+  "SOLUSDT",
+  "XRPUSDT"
+ ],
+ "refits": [
+  {
+   "month": "2021-01-01",
+   "train_rows": 27683,
+   "last_train_label_end": "2020-12-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-02-01",
+   "train_rows": 30074,
+   "last_train_label_end": "2021-01-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-03-01",
+   "train_rows": 31870,
+   "last_train_label_end": "2021-02-28 20:00:00+00:00"
+  },
+  {
+   "month": "2021-04-01",
+   "train_rows": 34101,
+   "last_train_label_end": "2021-03-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-05-01",
+   "train_rows": 36441,
+   "last_train_label_end": "2021-04-30 20:00:00+00:00"
+  },
+  {
+   "month": "2021-06-01",
+   "train_rows": 38917,
+   "last_train_label_end": "2021-05-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-07-01",
+   "train_rows": 41359,
+   "last_train_label_end": "2021-06-30 20:00:00+00:00"
+  },
+  {
+   "month": "2021-08-01",
+   "train_rows": 44115,
+   "last_train_label_end": "2021-07-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-09-01",
+   "train_rows": 46500,
+   "last_train_label_end": "2021-08-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-10-01",
+   "train_rows": 48772,
+   "last_train_label_end": "2021-09-30 20:00:00+00:00"
+  },
+  {
+   "month": "2021-11-01",
+   "train_rows": 51306,
+   "last_train_label_end": "2021-10-31 20:00:00+00:00"
+  },
+  {
+   "month": "2021-12-01",
+   "train_rows": 53615,
+   "last_train_label_end": "2021-11-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-01-01",
+   "train_rows": 56672,
+   "last_train_label_end": "2021-12-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-02-01",
+   "train_rows": 59368,
+   "last_train_label_end": "2022-01-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-03-01",
+   "train_rows": 62212,
+   "last_train_label_end": "2022-02-28 20:00:00+00:00"
+  },
+  {
+   "month": "2022-04-01",
+   "train_rows": 64774,
+   "last_train_label_end": "2022-03-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-05-01",
+   "train_rows": 67203,
+   "last_train_label_end": "2022-04-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-06-01",
+   "train_rows": 69558,
+   "last_train_label_end": "2022-05-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-07-01",
+   "train_rows": 72102,
+   "last_train_label_end": "2022-06-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-08-01",
+   "train_rows": 74835,
+   "last_train_label_end": "2022-07-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-09-01",
+   "train_rows": 77165,
+   "last_train_label_end": "2022-08-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-10-01",
+   "train_rows": 79305,
+   "last_train_label_end": "2022-09-30 20:00:00+00:00"
+  },
+  {
+   "month": "2022-11-01",
+   "train_rows": 81486,
+   "last_train_label_end": "2022-10-31 20:00:00+00:00"
+  },
+  {
+   "month": "2022-12-01",
+   "train_rows": 83780,
+   "last_train_label_end": "2022-11-30 20:00:00+00:00"
+  }
+ ],
+ "label": "meta label: breakout N=6, chan exit, cap 18 bars, signed log move / ATR",
+ "horizons": [
+  18
+ ],
+ "lightgbm_params": {
+  "objective": "regression",
+  "learning_rate": 0.03,
+  "num_leaves": 7,
+  "min_data_in_leaf": 1000,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "feature_fraction": 0.8,
+  "lambda_l2": 1.0,
+  "seed": 7,
+  "deterministic": true,
+  "num_threads": 4,
+  "verbose": -1,
+  "rounds": 150
+ },
+ "seed": 7,
+ "windows": {
+  "split": [
+   "2021-01-01",
+   "2023-01-01"
+  ],
+  "cell": "agree"
+ },
+ "label_distribution": {
+  "rows": 7861,
+  "mean": 0.09734347628965326,
+  "std": 2.4411761277407744,
+  "share_positive": 0.358860195903829,
+  "quantiles": {
+   "0.01": -3.401331431557458,
+   "0.1": -1.8066795198760985,
+   "0.25": -1.2395041172346186,
+   "0.5": -0.5597580341075165,
+   "0.75": 0.7670948722839539,
+   "0.9": 2.770443397278646,
+   "0.99": 9.471436956665869
+  }
+ }
+}

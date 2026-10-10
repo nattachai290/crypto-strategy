@@ -1,0 +1,24 @@
+{
+ "source": "trades_train_metaq50.csv.gz",
+ "trades": 765,
+ "return": 0.08248477396279505,
+ "mean_r": 0.02163036337358702,
+ "median_r": -0.0650655658205053,
+ "win_rate": 0.3712418300653595,
+ "profit_factor": 1.2149280399745774,
+ "max_dd": 0.044278478341466476,
+ "avg_win_r": 0.32935509616162784,
+ "avg_loss_r": -0.16006157864679466,
+ "expectancy_r": 0.02163036337358702,
+ "max_consecutive_wins": 12,
+ "max_consecutive_losses": 18,
+ "longs": 288,
+ "shorts": 477,
+ "exit_reasons": {
+  "signal": 764,
+  "stop": 1
+ },
+ "gross_r": 0.03394857781795122,
+ "cost_r": 0.01231821444436421,
+ "median_hold_bars": 8.0
+}

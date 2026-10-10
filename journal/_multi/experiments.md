@@ -6871,3 +6871,112 @@ The meta walk-forward, evaluate, the run record and the report were smoke-tested
 short IC is ≤ 0, the meta model has not changed that.
 
 No holdout. §31–§44 share one.
+
+---
+
+## Exp 083 - PLAN.md §44 run: meta-labeling, an ML trained on every breakout's own outcome - REJECT, TRAIN did not prefer it
+
+**Date:** 2026-10-10
+**Status:** complete. One run, as pre-registered in Exp 082. No new download (section 36's caches). `--final` not run. Three models trained (range, direction, meta); ~47 minutes.
+**No holdout spent.** No `holdout.json` under `results/_multi/s44_ml_meta_4h/`; the §31-§44 shared holdout is untouched.
+
+**Verdict: REJECT - failed `train_chose_meta`, `train_margin>=0.5`, `valid_ci_lo>0` and `both_legs>0`.** TRAIN chose **`agree`** (=§43), so the pre-registered rule fired twice: a non-meta form was chosen, and the best meta form's TRAIN t is -0.55 against `agree`'s, not the required +0.5.
+
+**`reproduces_s41` = True, `reproduces_s43` = True.** The `none` row is §41's TRAIN row exactly (992 trades, t +0.88) and the `agree` row is §43's exactly (607 trades, t +1.72), so the only thing under test is the meta model.
+
+### TRAIN table (4 rows) and the margin gate
+
+| form | trades | weekly mean | t | mean R | long | short | by year | short share | max DD | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|
+| none | 992 | +0.00075 | +0.88 | +0.0153 | +0.0177 | +0.0612 | 2021 +0.0224, 2022 +0.0565 | 2021 0.584, 2022 0.587 | 5.24% | yes |
+| agree **<- chosen** | 607 | +0.00111 | +1.72 | +0.0372 | +0.0358 | +0.0809 | 2021 +0.0420, 2022 +0.0747 | 2021 0.455, 2022 0.653 | 2.13% | yes |
+| meta0 | 688 | +0.00087 | +1.16 | +0.0259 | +0.0100 | +0.0810 | 2021 +0.0486, 2022 +0.0424 | 2021 0.513, 2022 0.630 | 4.56% | yes |
+| metaq50 | 765 | +0.00079 | +1.05 | +0.0216 | +0.0177 | +0.0648 | 2021 +0.0396, 2022 +0.0429 | 2021 0.609, 2022 0.634 | 4.43% | yes |
+
+**All four forms are selectable, and `agree` wins on TRAIN by a wide margin.** `train_margin` = -0.5542: the best meta form (`meta0`, t +1.16) is 0.56 t BELOW `agree` (t +1.72), so the pre-registered +0.5 gate fails with the sign reversed. The meta forms also cut trades less than `agree` (688 and 765 against 607) and their long legs are weaker on TRAIN (+0.0100 and +0.0177 against +0.0358).
+
+**This is the pre-registered outcome 'TRAIN keeps none / agree, or the margin fails: a breakout-specific model does not beat the general ones on TRAIN.'**
+
+### The meta forecast does rank breakouts correctly - by side and by split
+
+| split | events | IC all | IC long | IC short |
+|---|---|---|---|---|
+| TRAIN | 7861 | +0.0477 | +0.0169 | +0.0789 |
+| VALID | 7175 | +0.0234 | +0.0371 | +0.0130 |
+
+**The IC is positive on both sides and in both splits**, and it holds out of sample: +0.0477 TRAIN -> +0.0234 VALID on all events. Exp 082 stated that a VALID short IC of 0 or below would mean the meta model had not changed Exp 079-080's finding; **it did change it** - the short IC is +0.0130 on VALID. **The model sees follow-through on both sides.**
+
+**The model does not use the side.** `bo_side` has mean |SHAP| 0.00004, rank 81 of 87. The top ten are `btc_vol_168` 0.06554, `breadth_24` 0.06166, `mkt_ret_24` 0.02895, `h1_vol_168` 0.02847, `d1_ret_6` 0.02715, `vol_168` 0.02565 - a market volatility and breadth block, a different feature set from the range model's (which is led by `weekday`).
+
+### VALID - the chosen form is §43's book, unchanged
+
+| measure | value | gate |
+|---|---|---|
+| trades | 658 | >= 100 OK |
+| weekly account return | +0.00109 | > 0 OK |
+| 95% CI | [-0.00039, +0.00266] | lo > 0 **FAIL** |
+| t | +1.40 | - |
+| mean R per trade | +0.0308 | > 0 OK |
+| long leg | +0.1292 | > 0 OK |
+| short leg | -0.0149 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00086 | > 0 OK |
+| timing | +0.0334 vs shifted p95 +0.0164 (2.04x) | > p95 OK |
+| breadth | 9 of 10 (0.90) | >= 8 and >= 0.5 OK |
+| max drawdown | 4.33% | <= 20% OK |
+| per year (summed R) | 2023 +0.0652, 2024 +0.0491 | both > 0 OK |
+| total account return | 11.43% | - |
+
+**Every VALID number is §43's to the last decimal, because TRAIN chose `agree`.** All 10 per-coin means match §43's, the trade file is the same book (658 trades), the holdout power is the same (24.5% / 9.3%). §44 adds no new look at VALID for the chosen form.
+
+Sides on VALID: long +0.0821 R (282 trades, positive in both years, +0.0423 R without its five best), short -0.0078 R (376 trades, negative in both years, -0.0235 R without its five best).
+
+### The other forms on VALID (`other_forms`) - reported, not selected
+
+| form | trades | weekly mean | 95% CI | t | mean R | long / short | max DD | short share 23/24 |
+|---|---|---|---|---|---|---|---|---|
+| **agree (chosen = §43)** | 658 | +0.00109 | [-0.00039, +0.00266] | +1.40 | +0.0308 | +0.1292 / -0.0149 | 4.33% | 0.519 / 0.621 |
+| none | 1088 | +0.00133 | [-0.00059, +0.00331] | +1.32 | +0.0222 | +0.1291 / +0.0109 | 8.30% | 0.418 / 0.540 |
+| meta0 | 747 | +0.00108 | [-0.00032, +0.00255] | +1.44 | +0.0268 | +0.0886 / +0.0251 | 10.34% | 0.456 / 0.630 |
+| metaq50 | 653 | +0.00120 | [-0.00016, +0.00265] | +1.64 | +0.0336 | +0.1080 / +0.0178 | 7.87% | 0.447 / 0.536 |
+
+Side means on VALID, per form:
+
+| form | long mean R | short mean R |
+|---|---|---|
+| agree (chosen) | +0.0821 | -0.0078 |
+| none | +0.0400 | +0.0028 |
+| meta0 | +0.0454 | +0.0098 |
+| metaq50 | +0.0579 | +0.0081 |
+
+**Both meta forms have a positive short leg on VALID and both beat the chosen form on the CI lower bound**: `metaq50` reaches -0.00016 against `agree`'s -0.00039, with t +1.64 against +1.40, and `meta0` reaches -0.00032. **TRAIN did not select either of them** (their TRAIN t is 0.56 and 0.67 below `agree`'s), so they are not the frozen book and none of this counts as a result. Recorded as a fact about VALID, not as a choice: switching to them now would be tuning on VALID (AGENTS.md rule 3).
+
+Kept share per side for the chosen form: long **0.498**, short **0.720** (the agreement filter's, since the chosen form is `agree`). Short share by year 0.519 / 0.621.
+
+### Concentration and the TRAIN checks
+
+- **Best 5 weeks = 1.10x the VALID return** (the lowest concentration of the line) and the weekly mean without them is -0.00012; the five largest trades are +3.73 R, +2.39 R, +1.81 R, +1.80 R, +1.70 R, and the book averages +0.0135 R without them. All of these are §43's numbers.
+- TRAIN checks (chosen `agree`): weekly +0.00111, CI lo -0.00006 (negative), t +1.72, mean R +0.0372, long +0.0358, short +0.0809, max DD 2.13%, breadth 0.90 of 10, cost x1.5 +0.00096, timing 2.5x its shifted p95, best-5-week share +0.936, hold 11.4 bars mean / 9 median.
+
+### Analyzer
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §43 range model + direction model agree · 10 large coins | FRAGILE | 80 | 100.0 | 60.0 | 66.7 | 51.1 | 100.0 | 100.0 | 80.0 |
+| §44 meta-labeling: ML learns which breakouts follow through · 10 large coins | FRAGILE | 80 | 100.0 | 60.0 | 66.7 | 51.1 | 100.0 | 100.0 | 80.0 |
+
+**§44: FRAGILE, quality 80 - identical to §43's 80 on every dimension**, because the chosen form is §43's book. The analyzer scores the frozen book, not the round, so §44 adds nothing to it.
+
+### Verdict
+
+**REJECT on four gates. Two are selection gates that fired before VALID, and the meta model lost on TRAIN.**
+
+- **TRAIN did not prefer the meta model.** `meta0` t +1.16 and `metaq50` t +1.05 against `agree`'s +1.72; both had weaker long legs on TRAIN (+0.0100 and +0.0177 against +0.0358) and took more trades. `train_margin` = -0.5542, the wrong sign for the +0.5 gate. Both pre-registered selection rules therefore failed.
+- **The meta model does rank breakouts correctly, on both sides and out of sample.** IC +0.0477 TRAIN and +0.0234 VALID over all events, with the short IC +0.0789 TRAIN and +0.0130 VALID. **Exp 082's stated failure mode (a VALID short IC of 0 or below, agreeing with Exp 079-080) did not happen.** Ranking events well is not the same as improving the book, and on TRAIN it did not.
+- **`bo_side` is not used**: mean |SHAP| 0.00004, rank 81 of 87. The meta model reads market volatility and breadth (`btc_vol_168`, `breadth_24`, `mkt_ret_24`), not which way the breakout went, even though the side is in its feature set.
+- **The chosen book is §43's, unchanged**: 658 trades, weekly +0.00109, CI [-0.00039, +0.00266] (t +1.40), mean R +0.0308, long +0.1292 / short -0.0149, max DD 4.33%, breadth 9/10, short share 0.519 / 0.621, best 5 weeks 1.10x. `valid_ci_lo>0` and `both_legs>0` fail for exactly the reasons they failed in §43.
+- **Analyzer: FRAGILE 80, unchanged from §43** (the same book). Best 5 weeks 1.10x, mean R without the top 1% of trades +0.0090.
+
+**No holdout was spent and none is proposed.** The §31-§44 shared holdout is untouched. **§43 remains the best risk-adjusted ten-coin book** (analyzer 80, CI lo -0.00039); §31's frozen cell remains the project's closest record (CI lo -0.00026 on 46 coins).
+
+Files: `results/_multi/s44_ml_meta_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_{none,agree,meta0,metaq50}.csv.gz`, `record/{train,valid}/` (importance + SHAP, metadata, `predictions.parquet`, `skipped_signals.csv.gz`, run info, holdout power), `analysis/`; generated `journal/_multi/s44_ml_meta_4h.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.
