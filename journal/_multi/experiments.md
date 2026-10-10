@@ -7064,3 +7064,190 @@ The 1h record and the report were smoke-tested end to end.
 - The 1d sub-model trades on daily bars with a 1-day channel, and may have too few trades.
 
 No holdout. §31–§45 share one.
+
+---
+
+## Exp 086 - PLAN.md §45 run: §43's two-model book as 1h and 1d sub-models - both REJECT, and neither timeframe has a selectable cell
+
+**Date:** 2026-10-10
+**Status:** complete. One run each, as pre-registered in Exp 085. No new download (section 36's caches). `--final` not run. Wall clock: 1h about 2 h 37 min (range walk-forward about 45 min, direction walk-forward about 1 h 50 min), 1d about 18 min.
+**No holdout spent.** No `holdout.json` under `results/_multi/s45_ml_tf/1h/` or `/1d/`. Under the pre-registered rule a sub-model could take the shared holdout only on a PASS; neither is PASS, so none was offered. The §31-§45 shared holdout is untouched.
+
+**`reproduces_s38_dir` = True on both sub-models** (1h and 1d), so the recomputed direction forecasts match §38's recorded ones and every difference below is the timeframe, not the models.
+
+### VERDICT 1h - REJECT on `train_cell_selectable` + `valid_ci_lo>0` + `both_legs>0`
+
+TRAIN chose **`sign_q70_n72`** (side arm q70, N = 72 bars = 3 days, sign filter). `train_margin` = **+0.5855**, so the pre-registered +0.5 margin passed. **`train_cell_selectable` failed anyway: not one of the 8 cells is selectable.**
+
+| cell | trades | weekly mean | t | mean R | long | short | by year | short share | max DD | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| none_q70_n24 | 1463 | -0.00030 | -0.17 | -0.0064 | +0.0241 | -0.0555 | 2021 +0.0546, 2022 -0.0860 | 2021 0.523, 2022 0.559 | 22.21% | **no** |
+| none_q70_n72 | 624 | -0.00016 | -0.06 | -0.0114 | +0.0826 | -0.0997 | 2021 +0.1201, 2022 -0.1371 | 2021 0.422, 2022 0.594 | 29.45% | **no** |
+| none_q85_n24 | 937 | -0.00009 | -0.06 | -0.0028 | -0.0275 | +0.0180 | 2021 +0.0450, 2022 -0.0544 | 2021 0.505, 2022 0.560 | 20.64% | **no** |
+| none_q85_n72 | 386 | +0.00065 | +0.31 | +0.0259 | +0.1116 | -0.0439 | 2021 +0.0424, 2022 +0.0254 | 2021 0.432, 2022 0.629 | 19.31% | **no** |
+| sign_q70_n24 | 939 | -0.00034 | -0.27 | -0.0104 | +0.0264 | -0.0623 | 2021 +0.0439, 2022 -0.0798 | 2021 0.398, 2022 0.640 | 15.18% | **no** |
+| sign_q70_n72 **<- chosen** | 447 | +0.00114 | +0.52 | +0.0475 | +0.1967 | -0.0766 | 2021 +0.1035, 2022 +0.0166 | 2021 0.358, 2022 0.646 | 17.30% | **no** |
+| sign_q85_n24 | 594 | +0.00011 | +0.10 | +0.0034 | +0.0288 | -0.0171 | 2021 +0.0522, 2022 -0.0405 | 2021 0.408, 2022 0.671 | 13.13% | **no** |
+| sign_q85_n72 | 285 | +0.00084 | +0.46 | +0.0520 | +0.1497 | -0.0615 | 2021 +0.0202, 2022 +0.0680 | 2021 0.405, 2022 0.690 | 15.89% | **no** |
+
+**Every 1h cell's short leg is negative** (-0.0171 to -0.0997) and every cell's max DD is at or above 13% (up to 29.45%). Five of the eight have a negative 2022. Only three cells have a positive weekly mean - `none_q85_n72` (+0.00065), `sign_q70_n72` (+0.00114) and `sign_q85_n72` (+0.00084) - and all three have a negative short leg, which is what makes them unselectable.
+
+#### 1h VALID (the chosen `sign_q70_n72`)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 449 | >= 100 OK |
+| weekly account return | +0.00262 | > 0 OK |
+| 95% CI | [-0.00140, +0.00721] | lo > 0 **FAIL** |
+| t | +1.17 | - |
+| mean R per trade | +0.1172 (gross +0.1576) | > 0 OK |
+| long leg | +0.3704 | > 0 OK |
+| short leg | -0.0950 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00227 | > 0 OK |
+| timing | +0.0087 vs shifted p95 +0.0057 (1.53x) | > p95 OK |
+| breadth | 7 of 10 (0.70) | >= 8 and >= 0.5 OK |
+| max drawdown | 13.71% | <= 20% OK |
+| per year (summed R) | 2023 +0.0772, 2024 +0.1982 | both > 0 OK |
+| total account return | 27.54% | - |
+
+**The per-trade R is the highest recorded in this project (+0.1172 R on 449 trades) and the weekly mean is the highest of the ten-coin line (+0.00262)** - but the CI is the widest of the line (-0.00140, +0.00721), the short leg is -0.0950 and the max DD is 13.71%. Hold 79.9 bars mean / 61 median (3.3 / 2.5 days), exit mix {'signal': 416, 'stop': 30, 'eod': 3}.
+
+| side | trades | mean net R | 2023 | 2024 | mean R without its 5 best |
+|---|---|---|---|---|---|
+| long | 182 | +0.3842 | +0.5222 | +0.2979 | +0.0903 |
+| short | 267 | -0.0648 | -0.1556 | +0.0322 | -0.1323 |
+
+**The 1h book is a long book in a bull sample.** Longs +0.3842 R per trade over 182 trades, shorts -0.0648 R over 267. The five largest trades are +18.74 R, +14.69 R, +7.93 R, +6.82 R, +5.77 R and the book averages -0.0030 R without them. **Best 5 weeks 1.44x the VALID return**; the weekly mean without them is -0.00122.
+
+Short share by year 0.667 / 0.531. The 1h direction forecast is below zero on 74.6% of 2023 bars (mean -0.2239) and 57.7% of 2024 bars (mean -0.0650) - the same bearish lean as 4h, and stronger in 2023.
+
+#### 1h against `none_same_cell` (`none_q70_n72`)
+
+| | `none_q70_n72` | **chosen `sign_q70_n72`** |
+|---|---|---|
+| trades | 694 | 449 |
+| weekly account return | +0.00380 | +0.00262 |
+| 95% CI | [-0.00197, +0.01007] | [-0.00140, +0.00721] |
+| t | +1.22 | +1.17 |
+| mean R | +0.1150 | +0.1172 |
+| long / short | +0.4544 / -0.0552 | +0.3704 / -0.0950 |
+| side mean R long / short | +0.2317 / -0.0340 | +0.3842 / -0.0648 |
+| max drawdown | 19.91% | 13.71% |
+| short share 2023 / 2024 | 0.450 / 0.429 | 0.667 / 0.531 |
+
+**At 1h the sign filter made the book worse than its `none` twin on the return and on the short leg** (weekly +0.00380 -> +0.00262, short -0.0552 -> -0.0950, short share 0.45/0.43 -> 0.67/0.53). It did cut the max DD, 19.91% -> 13.71%, because it also cut trades. **The opposite of 4h, where the same filter was worth +0.39 R per trade (Exp 078).** The filter is worth what the forecast behind it is worth, and at 1h that forecast carries nothing.
+
+1h TRAIN checks: weekly +0.00114, CI lo -0.00285 (negative), t +0.52, mean R +0.0475 (gross +0.0878), long +0.1967, short -0.0766, max DD 17.30%, cost x1.5 +0.00089, timing 0.4x its shifted p95, best-5-week share +3.105. **The TRAIN short leg is already negative, which is why the cell is not selectable.**
+
+#### 1h against §43 (4h)
+
+| | §45 1h | §43 4h |
+|---|---|---|
+| trades | 449 | 658 |
+| weekly account return | +0.00262 | +0.00109 |
+| 95% CI lo | -0.00140 | -0.00039 |
+| t | +1.17 | +1.40 |
+| mean R | +0.1172 | +0.0308 |
+| long / short | +0.3704 / -0.0950 | +0.1292 / -0.0149 |
+| max drawdown | 13.71% | 4.33% |
+| breadth | 7/10 | 9/10 |
+| best 5 weeks | 1.44x | 1.10x |
+| hold (bars) | 79.9 / 61 | 11.2 / 8 |
+
+**The hypothesis - that a larger sample at 1h would raise the t - did not hold.** The 1h weekly mean is 2.4x 4h's, but t is +1.17 against +1.40, the CI lower bound -0.00140 against -0.00039 - **worse, not closer** - and the weekly noise is 0.0230 against 4h's 0.0079. More trades at 1h are more noise, not more evidence.
+
+### VERDICT 1d - REJECT on `train_cell_selectable` + `train_margin>=0.5` + `train_weekly_mean>0` + `valid_ci_lo>0` + `timing_beats_shift_p95` + `both_legs>0`
+
+TRAIN chose **`sign_q70_n1`** (q70, N = 1 day, sign filter). Its own TRAIN weekly mean is -0.00003 - **negative**, which is the pre-registered `train_weekly_mean>0` failure - and `train_margin` = **+0.3069**, below the +0.5 gate. No cell is selectable either, so `train_cell_selectable` failed too.
+
+| cell | trades | weekly mean | t | mean R | long | short | by year | short share | max DD | selectable |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| none_q70_n1 | 408 | -0.00015 | -0.42 | -0.0077 | -0.0101 | -0.0059 | 2021 -0.0097, 2022 -0.0062 | 2021 0.576, 2022 0.630 | 7.20% | **no** |
+| none_q70_n3 | 254 | -0.00025 | -0.91 | -0.0193 | -0.0100 | -0.0159 | 2021 -0.0283, 2022 +0.0024 | 2021 0.570, 2022 0.754 | 4.66% | **no** |
+| none_q85_n1 | 217 | +0.00003 | +0.09 | +0.0013 | -0.0016 | +0.0043 | 2021 -0.0137, 2022 +0.0164 | 2021 0.483, 2022 0.686 | 3.69% | **no** |
+| none_q85_n3 | 135 | +0.00005 | +0.29 | +0.0098 | +0.0050 | +0.0007 | 2021 -0.0106, 2022 +0.0162 | 2021 0.467, 2022 0.838 | 1.44% | **no** |
+| sign_q70_n1 **<- chosen** | 192 | -0.00003 | -0.11 | -0.0044 | +0.0021 | -0.0051 | 2021 +0.0166, 2022 -0.0196 | 2021 0.254, 2022 0.789 | 4.38% | **no** |
+| sign_q70_n3 | 129 | -0.00025 | -1.62 | -0.0352 | -0.0115 | -0.0144 | 2021 -0.0066, 2022 -0.0193 | 2021 0.176, 2022 0.842 | 2.89% | **no** |
+| sign_q85_n1 | 106 | -0.00009 | -0.62 | -0.0142 | -0.0069 | -0.0021 | 2021 +0.0010, 2022 -0.0101 | 2021 0.161, 2022 0.813 | 2.83% | **no** |
+| sign_q85_n3 | 73 | -0.00012 | -1.48 | -0.0350 | -0.0018 | -0.0112 | 2021 -0.0004, 2022 -0.0126 | 2021 0.067, 2022 0.879 | 1.54% | **no** |
+
+**The 1d book is dead on TRAIN.** Six of the eight cells have a negative weekly mean; the two exceptions are +0.00003 and +0.00005. The two `sign_*_n3` cells are the worst (t -1.62 and -1.48). **Trade counts are also the smallest of the round** (73 to 408 on TRAIN, 251 on VALID) - the second risk Exp 085 named.
+
+#### 1d VALID (the chosen `sign_q70_n1`)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 251 | >= 100 OK |
+| weekly account return | +0.00056 | > 0 OK |
+| 95% CI | [-0.00045, +0.00193] | lo > 0 **FAIL** |
+| t | +0.90 | - |
+| mean R per trade | +0.0457 (gross +0.0532) | > 0 OK |
+| long leg | +0.1031 | > 0 OK |
+| short leg | -0.0439 | > 0 **FAIL** |
+| cost x1.5 weekly | +0.00053 | > 0 OK |
+| timing | +0.0076 vs shifted p95 +0.0309 (0.25x) | > p95 **FAIL** |
+| breadth | 5 of 10 (0.50) | >= 8 and >= 0.5 OK |
+| max drawdown | 5.55% | <= 20% OK |
+| per year (summed R) | 2023 -0.0495, 2024 +0.1087 | both > 0 **FAIL** |
+| total account return | 5.92% | - |
+
+**2023 is negative (-0.04953)**, which the decay gate catches. Hold 5.7 bars mean / 4 median, exit mix {'signal': 251} - no stops at all.
+
+| side | trades | mean net R | 2023 | 2024 | mean R without its 5 best |
+|---|---|---|---|---|---|
+| long | 95 | +0.2020 | +0.0005 | +0.6384 | -0.0083 |
+| short | 156 | -0.0494 | -0.0926 | +0.0094 | -0.0630 |
+
+Side mean R long +0.2020 / short -0.0494. The five largest trades are +10.70 R, +4.11 R, +2.21 R, +2.11 R, +0.79 R and the book averages -0.0344 R without them. **Best 5 weeks 1.83x**, weekly mean without them -0.00049. **Without its 95 longs it loses money** (-0.0083 R), so the 1d return rests on 95 trades.
+
+Short share by year 0.586 / 0.681. The 1d direction forecast is below zero on 48.1% of 2023 bars (mean -0.1483) and 57.0% of 2024 (mean -0.0559).
+
+#### 1d against `none_same_cell` (`none_q70_n1`)
+
+| | `none_q70_n1` | **chosen `sign_q70_n1`** |
+|---|---|---|
+| trades | 525 | 251 |
+| weekly account return | +0.00155 | +0.00056 |
+| 95% CI | [+0.00004, +0.00338] | [-0.00045, +0.00193] |
+| t | +1.79 | +0.90 |
+| mean R | +0.0516 | +0.0457 |
+| long / short | +0.2391 / -0.0768 | +0.1031 / -0.0439 |
+| side mean R long / short | +0.1788 / -0.0437 | +0.2020 / -0.0494 |
+| max drawdown | 5.06% | 5.55% |
+
+**Recorded as a fact, not a choice: the `none` twin's VALID row is the only row in this round whose CI lower bound is above zero** (+0.00004; weekly +0.00155, t +1.79). **TRAIN did not select it** - `none_q70_n1` has a negative TRAIN weekly mean (-0.00015) and a negative TRAIN long leg (-0.0101) - and its VALID short leg is -0.0768, so `both_legs>0` would still fail. Exp 084's rule stands: the VALID rows of cells TRAIN did not select are not evidence and no follow-up round may be built from them.
+
+1d TRAIN checks: weekly -0.00003, CI [-0.00052, +0.00048], t -0.11, mean R -0.0044 (gross +0.0050), long +0.0021, short -0.0051, max DD 4.38%, cost x1.5 -0.00005 - **the TRAIN weekly mean and its cost-stress row are both negative.**
+
+### Analyzer
+
+| run | verdict | quality | train_vs_valid | robustness | stability | fold_cons | sensitivity | decay | overfit |
+|---|---|---|---|---|---|---|---|---|---|
+| §31 1h + portfolio | FRAGILE | 86 | 100.0 | 80.0 | 74.8 | 69.4 | 100.0 | 100.0 | 80.0 |
+| §43 range model + direction model agree · 10 large coins | FRAGILE | 80 | 100.0 | 60.0 | 66.7 | 51.1 | 100.0 | 100.0 | 80.0 |
+| §45 §43's two-model book as 1h sub-model · 10 large coins | FRAGILE | 70 | 100.0 | 60.0 | 66.7 | 36.6 | 50.0 | 100.0 | 80.0 |
+| §45 §43's two-model book as 1d sub-model · 10 large coins | NO_EDGE | 30 | 0.0 | 40.0 | 11.1 | 5.1 | 25.0 | 50.0 | 80.0 |
+
+**1h: FRAGILE, quality 70** against §43's 80. **1d: NO_EDGE, quality 30** - the analyzer's NO_EDGE verdict, on a sub-model whose TRAIN cells were negative. Both are below §43.
+
+- 1h: fold_consistency 36.6 (against §43's 51.1), best-5-week share 1.44x (§43 1.10x), 70% of coins positive (§43 90%), mean R without the top 1% of trades +0.0100 (§43 +0.0090). VALID mean R is 246% of TRAIN - **2.5x, on a cell TRAIN could not select.**
+- 1d: train_vs_valid 0 (its TRAIN mean R was negative), stability 11.1, fold_consistency 5.1, mean R without the top 1% of trades -0.0224, 50% of coins positive, best-5-week share 1.83x.
+
+Holdout power: 1h 18% (8% at half the edge), 1d 13% (6%), both below §43's 25%.
+
+The 1h range model's own top features by mean |SHAP| are a volatility block - `atr_pct` 0.34686, `weekday` 0.28220, `vol_ratio` 0.21807, `vol_24` 0.14797 - a different set from 4h's, where `weekday` led at 0.1339 and the values were far smaller.
+
+### Verdict
+
+**Both sub-models REJECT, and neither has a selectable cell on TRAIN.** Facts:
+
+- **Exp 081's prediction held at 1h.** The 1h direction model's TRAIN IC was near zero. The margin gate did pass on the chosen cell (+0.5855) - but **all 8 cells are unselectable**, every one with a negative short leg (-0.0171 to -0.0997) and a max DD of at least 13%. The agreement filter cannot help when the forecast behind it has nothing to agree with.
+- **At 1h the sign filter made the book worse than its `none` twin** on the weekly return (+0.00262 against +0.00380) and the short leg (-0.0950 against -0.0552); it only helped the drawdown (13.71% against 19.91%), by taking fewer trades. At 4h the same filter was worth +0.39 R per trade (Exp 078). **The filter is worth what its forecast is worth.**
+- **The larger sample did not raise the t.** 1h's weekly mean is 2.4x 4h's, but t is +1.17 against +1.40 and the CI lower bound -0.00140 against -0.00039 - worse, not closer - because the weekly noise is 0.0230 against 4h's 0.0079. **More trades at 1h are more noise, not more evidence.**
+- **1d is dead on TRAIN**: six of eight cells below zero a week, the chosen cell's weekly mean -0.00003 and its cost-stress row negative, trade counts 73-408 on TRAIN and 251 on VALID. Analyzer **NO_EDGE 30**. 2023 is negative on VALID (-0.04953) and the book loses money without its 95 longs.
+- **Both VALID books are long books in a bull sample** (1h: long +0.3842 R/trade over 182 trades, short -0.0648 over 267; 1d: long +0.2020 over 95, short -0.0494 over 156), and both direction forecasts are bearish in VALID, so the sign filter kept more shorts than longs (1h short share 0.667/0.531; 1d 0.586/0.681). **This is Exp 079's finding reproduced at both timeframes.**
+- **Analyzer: 1h FRAGILE 70, 1d NO_EDGE 30, against §43's 80.** Neither sub-model improves on the 4h book.
+
+**No holdout was spent and none is proposed.** The §31-§45 shared holdout is untouched and neither sub-model is PASS. **§43 (4h) remains the best risk-adjusted ten-coin book**, and the project's closest record is still the frozen §31 cell (CI lo -0.00026 on 46 coins).
+
+Files: `results/_multi/s45_ml_tf/{1h,1d}/summary.json`, `trades_valid.csv.gz`, `trades_train_*.csv.gz` (8 cells per sub-model), `record/{train,valid}/` (importance + SHAP, `predictions.parquet`, `training_metadata.json`, `run_info.json`, `holdout_power.json`; no `skipped_signals.csv.gz` in this round), `analysis/`; generated `journal/_multi/s45_ml_tf.md`; refreshed `results/_multi/analyzer/`, `journal/_multi/analyzer.md`, `docs/analyzer_data.json`.

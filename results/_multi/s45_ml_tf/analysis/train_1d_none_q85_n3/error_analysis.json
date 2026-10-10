@@ -1,0 +1,193 @@
+{
+ "losers": 75,
+ "losing_r_sum": -9.676519392543995,
+ "by_side": {
+  "long": {
+   "losers": 20,
+   "loser_share": 0.6060606060606061,
+   "mean_r": 0.029944150079395104
+  },
+  "short": {
+   "losers": 55,
+   "loser_share": 0.5392156862745098,
+   "mean_r": 0.003253610889536904
+  }
+ },
+ "worst_coins": [
+  {
+   "coin": "BNBUSDT",
+   "trades": 14,
+   "losers": 9,
+   "sum_r": -0.3921505251397765
+  },
+  {
+   "coin": "BCHUSDT",
+   "trades": 14,
+   "losers": 8,
+   "sum_r": -0.18962504748437964
+  },
+  {
+   "coin": "ETHUSDT",
+   "trades": 16,
+   "losers": 10,
+   "sum_r": -0.16711483754284084
+  },
+  {
+   "coin": "LINKUSDT",
+   "trades": 15,
+   "losers": 8,
+   "sum_r": -0.12209241336617128
+  },
+  {
+   "coin": "SOLUSDT",
+   "trades": 10,
+   "losers": 6,
+   "sum_r": -0.09861403732962115
+  },
+  {
+   "coin": "BTCUSDT",
+   "trades": 13,
+   "losers": 8,
+   "sum_r": 0.05979724504973687
+  },
+  {
+   "coin": "ADAUSDT",
+   "trades": 14,
+   "losers": 5,
+   "sum_r": 0.37106077956251154
+  },
+  {
+   "coin": "DOGEUSDT",
+   "trades": 12,
+   "losers": 8,
+   "sum_r": 0.45496764128197476
+  },
+  {
+   "coin": "XRPUSDT",
+   "trades": 15,
+   "losers": 7,
+   "sum_r": 0.6674192661795315
+  },
+  {
+   "coin": "NEARUSDT",
+   "trades": 12,
+   "losers": 6,
+   "sum_r": 0.7363771921418365
+  }
+ ],
+ "confidence": {
+  "losers_median": 1.0547652094253992,
+  "winners_median": 1.072125394210966
+ },
+ "regime_at_entry": {
+  "up_high": {
+   "trades": 7,
+   "return": 0.0004995108773323628,
+   "mean_r": 0.017836414142654744,
+   "median_r": 0.0461919828171181,
+   "win_rate": 0.5714285714285714,
+   "profit_factor": 1.324602090887014,
+   "max_dd": 0.002025924314692437,
+   "long": {
+    "trades": 6,
+    "return": 0.0002683938076934628,
+    "mean_r": 0.013110486030244178,
+    "median_r": 0.01988134413313435,
+    "win_rate": 0.5,
+    "profit_factor": 1.2045105740549535,
+    "max_dd": 0.002025924314692437
+   },
+   "short": {
+    "trades": 1,
+    "return": 0.0002311170696389,
+    "mean_r": 0.0461919828171181,
+    "median_r": 0.0461919828171181,
+    "win_rate": 1.0,
+    "profit_factor": null,
+    "max_dd": 0.0
+   }
+  },
+  "up_low": {
+   "trades": 48,
+   "return": -0.0047168151136638,
+   "mean_r": -0.015928796980494205,
+   "median_r": -0.09765459733424231,
+   "win_rate": 0.2916666666666667,
+   "profit_factor": 0.8513749972525976,
+   "max_dd": 0.019130632180816003,
+   "long": {
+    "trades": 24,
+    "return": 0.0060164818685792,
+    "mean_r": 0.048401338226399436,
+    "median_r": -0.1141649172792233,
+    "win_rate": 0.375,
+    "profit_factor": 1.47441985418859,
+    "max_dd": 0.0075577162083872995
+   },
+   "short": {
+    "trades": 24,
+    "return": -0.010733296982243,
+    "mean_r": -0.08025893218738786,
+    "median_r": -0.09605403670185836,
+    "win_rate": 0.20833333333333334,
+    "profit_factor": 0.2854863473916336,
+    "max_dd": 0.0134288578641706
+   }
+  },
+  "down_high": {
+   "trades": 31,
+   "return": -0.0005109133339544091,
+   "mean_r": -0.0030353857328643346,
+   "median_r": -0.0064733297716316,
+   "win_rate": 0.45161290322580644,
+   "profit_factor": 0.9383269417668619,
+   "max_dd": 0.0037237303461491,
+   "long": {
+    "trades": 2,
+    "return": 0.00016195541316910015,
+    "mean_r": 0.021012492150036408,
+    "median_r": 0.021012492150036408,
+    "win_rate": 0.5,
+    "profit_factor": 1.1861977269867725,
+    "max_dd": 0.001292240185353
+   },
+   "short": {
+    "trades": 29,
+    "return": -0.0006728687471235094,
+    "mean_r": -0.00469386006961611,
+    "median_r": -0.0064733297716316,
+    "win_rate": 0.4482758620689655,
+    "profit_factor": 0.8952938445513433,
+    "max_dd": 0.0033287574197973487
+   }
+  },
+  "down_low": {
+   "trades": 49,
+   "return": 0.010366924612288948,
+   "mean_r": 0.04191529749258644,
+   "median_r": 0.0235644284355167,
+   "win_rate": 0.5714285714285714,
+   "profit_factor": 1.783383002435283,
+   "max_dd": 0.008310358634579598,
+   "long": {
+    "trades": 1,
+    "return": -0.0014952637391945,
+    "mean_r": -0.2941630652950862,
+    "median_r": -0.2941630652950862,
+    "win_rate": 0.0,
+    "profit_factor": 0.0,
+    "max_dd": 0.0014952637391945
+   },
+   "short": {
+    "trades": 48,
+    "return": 0.011862188351483446,
+    "mean_r": 0.04891693005066294,
+    "median_r": 0.025074706353745452,
+    "win_rate": 0.5833333333333334,
+    "profit_factor": 2.008767082561038,
+    "max_dd": 0.008310358634579598
+   }
+  }
+ },
+ "regime_note": "BTC 30-day trend and volatility at the close before entry; describes, never chooses"
+}

@@ -576,6 +576,98 @@
    }
   },
   {
+   "id": "s45_1h",
+   "sec": 45,
+   "label": "\u00a745 \u00a743's two-model book as 1h sub-model \u00b7 10 large coins",
+   "scores": {
+    "train_vs_valid": 100.0,
+    "robustness": 60.0,
+    "stability": 66.7,
+    "fold_consistency": 36.6,
+    "sensitivity": 50.0,
+    "decay": 100.0,
+    "overfit": 80.0
+   },
+   "details": {
+    "train_vs_valid": {
+     "train_mean_r": 0.04754803254473488,
+     "valid_mean_r": 0.11717712152757957,
+     "valid_over_train": 2.464394744773828
+    },
+    "robustness": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": true,
+     "both_legs>0": false,
+     "breadth>=0.5": true
+    },
+    "stability": {
+     "top5_weeks_share": 1.4435572951475206,
+     "coins_positive_share": 0.7,
+     "mean_r_without_top1pct": 0.009984368028159451,
+     "valid_total_return": 0.2753959729266516
+    },
+    "fold_consistency": {
+     "months_positive": 11,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 4,
+     "train": {
+      "months_positive": 10,
+      "months": 24,
+      "years_positive": true,
+      "longest_losing_months": 4
+     }
+    },
+    "sensitivity": {
+     "cells": 8,
+     "cells_positive_share": 0.5,
+     "chosen_z_vs_grid": 1.8132573276882935,
+     "isolated_peak": false
+    },
+    "decay": {
+     "mean_r_by_entry_year": {
+      "2023": 0.066114888751413,
+      "2024": 0.16204351852755858
+     }
+    },
+    "overfit": {
+     "flags": [
+      "best 5 weeks carry > 60% of the return"
+     ]
+    }
+   },
+   "quality": 70.5,
+   "verdict": "FRAGILE",
+   "gate_verdict": "REJECT",
+   "gates_failed": [
+    "train_cell_selectable",
+    "valid_ci_lo>0",
+    "both_legs>0"
+   ],
+   "valid_mean_r": 0.11717712152757957,
+   "train_mean_r": 0.04754803254473488,
+   "trades_recorded": true,
+   "dims_available": 7,
+   "train_side": {
+    "top5_weeks_share": 3.1048496886068393,
+    "folds": {
+     "months_positive": 10,
+     "months": 24,
+     "years_positive": true,
+     "longest_losing_months": 4
+    },
+    "fold_score": 32.916666666666664,
+    "checks": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": false,
+     "breadth>=0.5": true,
+     "both_legs>0": false
+    }
+   }
+  },
+  {
    "id": "s40",
    "sec": 40,
    "label": "\u00a740 4h range forecast + breakout \u00b7 10 large coins",
@@ -1485,6 +1577,101 @@
    "trades_recorded": true,
    "dims_available": 7,
    "train_side": null
+  },
+  {
+   "id": "s45_1d",
+   "sec": 45,
+   "label": "\u00a745 \u00a743's two-model book as 1d sub-model \u00b7 10 large coins",
+   "scores": {
+    "train_vs_valid": 0.0,
+    "robustness": 40.0,
+    "stability": 11.1,
+    "fold_consistency": 5.1,
+    "sensitivity": 25.0,
+    "decay": 50.0,
+    "overfit": 80.0
+   },
+   "details": {
+    "train_vs_valid": {
+     "train_mean_r": -0.004393609490916547,
+     "valid_mean_r": 0.045729160934686486,
+     "valid_over_train": null
+    },
+    "robustness": {
+     "ci_lo>0": false,
+     "stress>0": true,
+     "timing>p95": false,
+     "both_legs>0": false,
+     "breadth>=0.5": true
+    },
+    "stability": {
+     "top5_weeks_share": 1.8312779728317683,
+     "coins_positive_share": 0.5,
+     "mean_r_without_top1pct": -0.022373761139105112,
+     "valid_total_return": 0.059183516682077913
+    },
+    "fold_consistency": {
+     "months_positive": 11,
+     "months": 24,
+     "years_positive": false,
+     "longest_losing_months": 4,
+     "train": {
+      "months_positive": 9,
+      "months": 24,
+      "years_positive": false,
+      "longest_losing_months": 3
+     }
+    },
+    "sensitivity": {
+     "cells": 8,
+     "cells_positive_share": 0.25,
+     "chosen_z_vs_grid": 0.6212983869561134,
+     "isolated_peak": false
+    },
+    "decay": {
+     "mean_r_by_entry_year": {
+      "2023": -0.054002742634162305,
+      "2024": 0.21230265944861484
+     }
+    },
+    "overfit": {
+     "flags": [
+      "best 5 weeks carry > 60% of the return"
+     ]
+    }
+   },
+   "quality": 30.2,
+   "verdict": "NO_EDGE",
+   "gate_verdict": "REJECT",
+   "gates_failed": [
+    "train_cell_selectable",
+    "train_margin>=0.5",
+    "train_weekly_mean>0",
+    "valid_ci_lo>0",
+    "timing_beats_shift_p95",
+    "both_legs>0"
+   ],
+   "valid_mean_r": 0.045729160934686486,
+   "train_mean_r": -0.004393609490916547,
+   "trades_recorded": true,
+   "dims_available": 7,
+   "train_side": {
+    "top5_weeks_share": null,
+    "folds": {
+     "months_positive": 9,
+     "months": 24,
+     "years_positive": false,
+     "longest_losing_months": 3
+    },
+    "fold_score": 0.0,
+    "checks": {
+     "ci_lo>0": false,
+     "stress>0": false,
+     "timing>p95": false,
+     "breadth>=0.5": false,
+     "both_legs>0": false
+    }
+   }
   },
   {
    "id": "s28_4h",

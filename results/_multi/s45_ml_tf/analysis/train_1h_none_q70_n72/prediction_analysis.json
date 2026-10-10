@@ -1,0 +1,39 @@
+{
+ "available": true,
+ "measure": "|forecast| / entry threshold at entry",
+ "buckets": [
+  {
+   "bucket": "1-1.25",
+   "trades": 598,
+   "return": 0.022927985499883084,
+   "mean_r": -0.001426870766089762,
+   "median_r": -0.3333251961375388,
+   "win_rate": 0.3277591973244147,
+   "profit_factor": 0.9958397618388626,
+   "max_dd": 0.2841091105644818
+  },
+  {
+   "bucket": "1.25-1.5",
+   "trades": 19,
+   "return": -0.031365944471261994,
+   "mean_r": -0.2396542139858527,
+   "median_r": -0.5390733892268875,
+   "win_rate": 0.21052631578947367,
+   "profit_factor": 0.48106423203124704,
+   "max_dd": 0.03840658606351751
+  },
+  {
+   "bucket": "1.5-2",
+   "trades": 0
+  },
+  {
+   "bucket": "2-3",
+   "trades": 0
+  },
+  {
+   "bucket": ">=3",
+   "trades": 0
+  }
+ ],
+ "spearman_conf_vs_r": -0.010199876527966417
+}

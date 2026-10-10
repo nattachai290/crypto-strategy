@@ -1,0 +1,15 @@
+{
+ "python": "3.13.13",
+ "platform": "Windows-11-10.0.26200-SP0",
+ "libraries": {
+  "numpy": "2.4.6",
+  "pandas": "3.0.2",
+  "lightgbm": "4.7.0",
+  "pyarrow": "25.0.1"
+ },
+ "git_commit": "cb674ce8796a6159477ff7b26181d3ede595765e",
+ "started": "2026-10-10T08:24:41Z",
+ "finished": "2026-10-10T08:42:12Z",
+ "seconds": 1050.4,
+ "inputs_fingerprint": "ddb84d87f4bc33b9"
+}

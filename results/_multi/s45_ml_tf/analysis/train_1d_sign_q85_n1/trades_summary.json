@@ -1,0 +1,24 @@
+{
+ "source": "trades_train_sign_q85_n1.csv.gz",
+ "trades": 106,
+ "return": -0.009044609399557042,
+ "mean_r": -0.014237722622858575,
+ "median_r": -0.05052736214589715,
+ "win_rate": 0.36792452830188677,
+ "profit_factor": 0.8287326261072937,
+ "max_dd": 0.028290500366358398,
+ "avg_win_r": 0.1872498956141229,
+ "avg_loss_r": -0.13152156010408658,
+ "expectancy_r": -0.014237722622858575,
+ "max_consecutive_wins": 8,
+ "max_consecutive_losses": 12,
+ "longs": 40,
+ "shorts": 66,
+ "exit_reasons": {
+  "signal": 102,
+  "eod": 4
+ },
+ "gross_r": -0.0032561657108668455,
+ "cost_r": 0.010981556911991732,
+ "median_hold_bars": 5.0
+}
