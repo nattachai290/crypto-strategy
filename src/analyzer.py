@@ -86,7 +86,9 @@ RUNS += [("s31", 31, "§31 1h + portfolio", M / "s31_ml_port_1h/summary.json", M
          ("s43", 43, "§43 range model + direction model agree · 10 large coins", M / "s43_ml_agree_4h/summary.json",
           M / "s43_ml_agree_4h/trades_valid.csv.gz", "account"),
          ("s44", 44, "§44 meta-labeling: ML learns which breakouts follow through · 10 large coins",
-          M / "s44_ml_meta_4h/summary.json", M / "s44_ml_meta_4h/trades_valid.csv.gz", "account")]
+          M / "s44_ml_meta_4h/summary.json", M / "s44_ml_meta_4h/trades_valid.csv.gz", "account"),
+         *[(f"s45_{n}", 45, f"§45 §43's two-model book as {n} sub-model · 10 large coins", M / f"s45_ml_tf/{n}/summary.json",
+            M / f"s45_ml_tf/{n}/trades_valid.csv.gz", "account") for n in ("1h", "1d")]]
 # TRAIN trade files exist from §36 on (trades_train_<form>.csv.gz, the chosen form is read)
 TRAIN = ("2021-01-01", "2023-01-01")
 

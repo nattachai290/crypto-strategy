@@ -3128,3 +3128,41 @@ stays on the ten coins.
 
 **Prior:** low to moderate. This is a new label aimed at the book's actual failure. It also adds a model on top
 of a model.
+
+## §45 — §43's two-model book as 1h and 1d sub-models (`src/ml_tf.py`, `_multi` Exp 085)
+
+**Why.** §43 (4h) is the best ten-coin book: CI lo -0.00039, t +1.40, DD 4.3%. Its gap to the CI gate is sample
+size, and single changes to it are used up (`_multi` Exp 084). The owner asked (2026-10-06) for every round to
+run as 1h / 4h / 1d sub-models; §40–§44 ran on 4h only. The owner chose this round (2026-10-10).
+
+**Hypothesis.** §43's mechanism transfers to other decision timeframes:
+- the range model times the breakout;
+- the per-side arm removes the tilt;
+- the direction model agrees on the side.
+
+1h decides 4x as often, so it gives a larger sample at a hopefully similar per-trade edge (costs per R are
+higher). 1d gives fewer, larger trades.
+
+**Each sub-model, at its own tf:**
+- **Range model:** the next day's range / ATR (24 bars on 1h, 1 bar on 1d), §30's setting for that tf, wide
+  rows, expanding monthly walk-forward.
+- **Arm:** §41's per-side arm.
+- **Direction model:** §38's sub-model for that tf as its TRAIN chose it (1h `expanding`, 1d `roll24`), checked
+  against §38's recorded TRAIN forecasts.
+- **Exit:** the N/2 channel or the 8-ATR stop; no clock.
+- **Account:** §31's.
+
+At tf = 240 the code reproduces §43 and §40 exactly (test 43).
+
+**Cells.** q {0.70, 0.85} × N {1 day, 3 days} × filter {none, sign}.
+
+**TRAIN** picks a `sign` cell by §38's rule. These are REJECT:
+- no selectable `sign` cell;
+- a t gain below +0.5 over the `none` cell with the same q and N.
+
+**VALID gates.** §43's, per sub-model.
+
+**Holdout.** One sub-model may take it: the PASS one with the highest TRAIN t. It is shared with §31–§44.
+
+**Prior:** moderate for 1h, low for 1d. The 1h direction model's TRAIN IC was ~0 (Exp 081), so the agreement
+filter may not carry at 1h; the margin gate tests exactly that.

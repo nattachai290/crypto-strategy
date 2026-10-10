@@ -446,6 +446,7 @@ def main() -> None:
     test_ml_exit()
     test_ml_agree()
     test_ml_meta()
+    test_ml_tf()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -3121,6 +3122,51 @@ def test_ml_meta() -> None:
           and 0 < len(tm) < len(tn) and tm["net_r"].mean() > tn["net_r"].mean() and len(r["train_table"]) == 4
           and (("train_chose_meta" in r["gates_failed"]) == (r["chosen"]["form"] in ("none", "agree")))
           and r["valid"]["meta_ic"]["valid"]["all"] is not None)
+
+
+def test_ml_tf() -> None:
+    """Test 43 (PLAN.md section 45): day lengths, cells, the 4h case equals sections 40/43, pipeline on 1h."""
+    print("\n43. ml_tf: one day in bars, 8 cells, tf=240 reproduces section 43's book and section 40's range model")
+    import contextlib
+    import io
+    import ml_wf as WF_
+    import ml_wf2 as W2
+    import ml_vol as MV
+    import ml_agree as MA
+    import ml_tf as MT
+    check("ml_tf day bars and cells: 1h 24 / 72, 4h 6 / 18, 1d 1 / 3; 8 cells per sub-model",
+          [MT.day_bars(60), MT.day_bars(60, 3), MT.day_bars(240), MT.day_bars(1440), MT.day_bars(1440, 3)]
+          == [24, 72, 6, 1, 3] and len(MT.cells(60)) == 8
+          and ("sign", "q70", 6) in MT.cells(240) and ("none", "q85", 3) in MT.cells(1440))
+    ft = pd.date_range("2020-01-01", "2025-01-10", freq="8h", tz="UTC")
+    fund = pd.DataFrame({"calc_time": ft, "last_funding_rate": np.zeros(len(ft))})
+    by = {60: {}}
+    for nm, sd in (("C0USDT", 240), ("C1USDT", 241), ("C2USDT", 242)):
+        bb = _momentum_bars(0.0008, seed=sd)
+        by[60][nm] = {"spot": bb, "perp": bb, "fund": fund}
+    with contextlib.redirect_stdout(io.StringIO()):
+        P = W2.prepare(by, 60)
+    lab = {c_: pd.Series(np.r_[MV.vol_label(P[c_]["bars"]), np.nan][:len(P[c_]["X"])], index=P[c_]["X"].index) for c_ in P}
+    rnd = {c_: pd.Series(np.random.default_rng(43).normal(size=len(P[c_]["X"])), index=P[c_]["X"].index) for c_ in P}
+    months = [str(m) for m in pd.period_range("2020-01", "2024-12", freq="M")]
+    traded = {m: list(P) for m in months}
+    a, b_ = WF_.WINDOWS["valid"]
+    cols = ["entry_time", "exit_time", "coin", "side", "net_r", "conf", "ret"]
+    masks = {c_: np.ones(len(P[c_]["X"]), bool) for c_ in P}
+    spans = [WF_.WINDOWS["train"], WF_.WINDOWS["valid"]]
+    with contextlib.redirect_stdout(io.StringIO()):
+        t43, _ = MA.run_cell(P, lab, rnd, "sign", a, b_, traded)
+        t45, _ = MT.run_cell(P, lab, rnd, ("sign", "q70", 6), 240, a, b_, traded)
+        f40 = MV.forecasts(P, WF_.GRID[0], masks, spans, step=12)
+        f45 = MT.range_forecasts(P, 240, WF_.GRID[0], masks, spans, step=12)
+        r = MT.evaluate(P, lab, rnd, 60, traded, min_coins=3)
+    same_fc = all(np.allclose(f40[c_].to_numpy(), f45[c_].to_numpy(), equal_nan=True) for c_ in P)
+    check("ml_tf: at tf=240 the sign cell is section 43's book trade for trade and the range model is section 40's; "
+          "the 1h pipeline gives 8 TRAIN rows, chooses a sign cell and computes the margin gate",
+          t43[cols].reset_index(drop=True).equals(t45[cols].reset_index(drop=True)) and same_fc
+          and len(r["train_table"]) == 8 and r["chosen"]["form"].startswith("sign")
+          and "none_same_cell" in r["valid"]
+          and any(k.startswith("train_margin") for k in r["gates_failed"]) == (r["train_margin"] < MT.MIN_MARGIN))
 
 
 if __name__ == "__main__":

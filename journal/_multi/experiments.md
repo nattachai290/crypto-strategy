@@ -7028,3 +7028,39 @@ as 1h / 4h / 1d sub-models, but §40-§44 were registered on 4h only. A 1h sub-m
 That is the most defensible next round.
 
 No holdout spent. §31–§44 share one.
+
+---
+
+## Exp 085 - Pre-registration: §43's book as 1h and 1d sub-models (PLAN.md §45, owner choice)
+
+**Date:** 2026-10-10
+**Status:** registered, not run. To be run once by the runner: `python src/ml_tf.py` (or `--tf 60` /
+`--tf 1440`, which is resumable).
+
+The owner chose the 1h / 1d sub-models (after Exp 084).
+
+**Design** (`src/ml_tf.py`, PLAN.md §45). Per tf:
+- a one-day range model;
+- §41's side arm;
+- §38's direction sub-model for that tf (1h `expanding`, 1d `roll24`; `reproduces_s38_dir`);
+- 8 cells: q70/q85 × N 1/3 days × none/sign.
+
+**Selection and gates:**
+- TRAIN picks a `sign` cell by §38's rule;
+- a t margin below +0.5 over the same cell's `none` twin is REJECT;
+- §43's VALID gates;
+- ONE sub-model may take the holdout (PASS, highest TRAIN t).
+
+**Test 43** (`src/test_engine.py`):
+- day lengths and cells;
+- at tf = 240 the `sign` cell is §43's book trade for trade, and the range model is §40's forecast exactly;
+- the 1h pipeline gives 8 TRAIN rows and the margin gate.
+
+The 1h record and the report were smoke-tested end to end.
+
+**Stated before the run.**
+- Exp 081 found the 1h direction model's TRAIN IC near zero (-0.002 / +0.012). At 1h the agreement filter may
+  therefore add nothing, and the margin gate would catch that.
+- The 1d sub-model trades on daily bars with a 1-day channel, and may have too few trades.
+
+No holdout. §31–§45 share one.
