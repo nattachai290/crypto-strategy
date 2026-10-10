@@ -6786,3 +6786,48 @@ All values are taken as of the entry time (merge_asof, backward, so causal).
   unhelpful.
 - The short side of the ten-coin breakout book has no timing signal in the data at hand.
 - §43 stays the best risk-adjusted ten-coin book.
+
+---
+
+## Exp 081 - Diagnostic: can the direction model be improved by combining §38's 1h / 4h / 1d forecasts? (TRAIN only) - no
+
+**Date:** 2026-10-10
+**Status:** complete. Read-only on recorded TRAIN files. No VALID file was opened for this, and no run was
+made. The owner chose option 2 from Exp 080: improve the direction model that confirms §43's trades.
+
+**Inputs.**
+- §38's recorded walk-forward TRAIN forecasts for 1h (`expanding`), 4h (`hl12`) and 1d (`roll24`).
+- Each forecast is joined to a trade only once its bar has closed (merge_asof on bar open + tf). It is causal,
+  and every trade matched.
+
+**Forecast vs label Spearman (IC) by TRAIN year:**
+
+| sub-model | 2021 | 2022 |
+|---|---|---|
+| 1h | -0.002 | +0.012 |
+| 4h | +0.029 | +0.077 |
+| 1d | +0.078 | -0.085 |
+
+Only the 4h model ranks correctly in both years.
+
+**§41 TRAIN trades (992) split by agreement with each sub-model:**
+
+| sub-model | agree | disagree | t |
+|---|---|---|---|
+| 4h | +0.040 | -0.017 | +2.57 |
+| 1h | +0.032 | -0.014 | +1.96 (all of it in 2022) |
+| 1d | +0.010 | +0.021 | -0.52 |
+
+- Counting how many of the three agree (0/1/2/3 models: +0.010 / -0.022 / +0.020 / +0.050) does not improve
+  on the 4h sign alone.
+- A scaled average of the three (agree +0.031 / disagree -0.005, t +1.62) is weaker than the 4h sign alone.
+
+**On top of §43** (its 607 TRAIN trades already agree with the 4h model):
+- adding 1h agreement: +0.038 vs +0.032, t +0.13, and it reverses between 2021 and 2022;
+- adding 1d agreement: +0.041 vs +0.032, t +0.32, and it reverses by year and by side.
+
+**Conclusion.**
+- The 4h direction model is the only one carrying information.
+- Neither the 1h nor the 1d model, alone or combined with it, improves the agreement filter on TRAIN.
+- Improving the direction signal would need a new model, not a recombination of the recorded ones.
+- No round registered.
