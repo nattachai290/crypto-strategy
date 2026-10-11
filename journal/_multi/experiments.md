@@ -7421,3 +7421,55 @@ No holdout. §31–§46 share one.
 **No holdout was spent and none is proposed.** The §31-§46 shared holdout is untouched and nothing here is PASS. **§43 (4h) remains the best risk-adjusted ten-coin book**, and the project's closest record is still the frozen §31 cell (CI lo -0.00026 on 46 coins).
 
 Files: `results/_multi/s46_ml_voltarget_4h/summary.json`, `daily_train.csv.gz`, `daily_valid.csv.gz`; generated `journal/_multi/s46_ml_voltarget_4h.md`.
+
+---
+
+## Exp 090 - Planner's review of §46 (Exp 089): vol targeting did stabilise volatility; it lost because crypto's high-volatility months were its best months
+
+**Date:** 2026-10-11
+**Status:** complete. Read-only: `results/_multi/s46_ml_voltarget_4h/{summary.json,daily_train.csv.gz,daily_valid.csv.gz}` only. No backtest, no new data, no holdout.
+
+### Checks
+- The REJECT stands on all six gates. The `ml` - `bh` VALID Sharpe difference is -0.38 with a CI wholly below zero (the only fully negative CI in §46), and `reproduces_s40` is True.
+- `bh` is not a drifting buy-and-hold. It is a constant 1/n weight per tradable coin, held to the same 20% band and costs (`run_book`, `src/ml_voltarget.py`). That makes the comparison fair on rebalancing: the gap is not "winners were allowed to grow in `bh`".
+
+### Corrections to Exp 089
+1. **"Both sized books lost money while buy-and-hold did not" (TRAIN) is wrong.** `bh` also lost: CAGR -36.3%, max DD 90.0%. Its Sharpe is +0.13 only because the arithmetic daily mean is positive while the compounded return is negative. On TRAIN all three books lost; the sized books lost slightly more.
+2. **"It never reduced volatility" is half wrong.** Volatility targeting did what it was built to do. Three measures from the recorded daily returns:
+   - Each month's regression beta of `ml` on `bh` has correlation **-0.79 (TRAIN) / -0.80 (VALID)** with that month's `bh` volatility, so exposure fell when volatility rose.
+   - The coefficient of variation of 30-day realised volatility fell from **0.36 to 0.18 (TRAIN)** and from **0.25 to 0.18 (VALID)**.
+   - What rose was the *level* of exposure on VALID (gross 1.34x), because VALID's expected ranges were below TRAIN's median. Exp 089 says this itself.
+3. **Leverage is not the reason the drawdown failed.** Scale `ml`'s daily returns to `bh`'s daily standard deviation (x0.83 on VALID) and its max DD is still **47.9% against `bh`'s 40.2%**; `naive` scaled the same way gives 48.7%. On TRAIN (x1.36) the scaled `ml` reaches 94.9% against 90.0%. At equal volatility the timing itself is worse.
+
+### Why the timing is worse
+The case for volatility-managed portfolios needs high-volatility periods not to pay more. In this sample they did, or at least they were not the bad periods:
+- On VALID, the correlation of monthly `bh` volatility with the monthly `bh` return is **+0.10**. The two highest-volatility months, 2024-03 (+36%) and 2024-11 (+65%), were two of the three best. The book cut its beta to 0.73 and 0.91 in them, and it made +29% and +52% where `bh` made +36% and +65%.
+- 2024 is where the book lost the race: `ml` +50.5% against `bh` +106.9%.
+- On TRAIN the crashes did come in high-volatility months: 2021-05, 2022-05/06 and 2022-11 (FTX). The book did cut beta there, to 0.45-0.67. It lost about the same anyway (2022 -76% against -80%). The volatility arrives with the crash, so a decision once a day at 20:00 UTC reduces size after most of the damage.
+
+Crypto's large moves are two-sided and partly upside. Cutting size when volatility is high cuts the rallies as much as the crashes, and the rallies were bigger in 2023-24.
+
+### The ML part
+- `ml` and `naive` daily returns have correlation 0.9956. The ±0.12 CI on their Sharpe difference rules out any useful gap.
+- §40's forecast ranks *which* coin-days will be wide (Spearman +0.39). Sizing does not need that ranking, because plain ATR already carries the level.
+- This is the third use of the range forecast:
+
+| round | use of the range forecast | result |
+|---|---|---|
+| §40 | entry filter | helped |
+| §41/§43 | per-side arm | helped |
+| §46 | sizing | nothing |
+
+  The forecast is useful for choosing *which breakouts* to take, not for *how much* to hold.
+
+### Process note (planner's fault)
+`src/ml_voltarget.py` does not call `run_record.py`, although AGENTS.md says every §38+ round must. §46 refits no model (it reuses §40's forecasts, checked by `_check_s40`), so the missing files would have repeated §40's record. It is still a deviation in the code I wrote. The rule stands for future rounds, and §46 is not re-run for it.
+
+### Verdict
+**REJECT confirmed.** Volatility targeting is not a way to improve the ten-coin book. The ten-coin research line now stands like this:
+- §40-§45 breakout line: closed.
+- §46 sizing: closed.
+- Best risk-adjusted ten-coin book: §43 (4h). Its confidence is lowered by §45.
+- Project's closest record: the frozen §31 cell.
+- The §31-§46 holdout is untouched.
+- No approved run is pending.
