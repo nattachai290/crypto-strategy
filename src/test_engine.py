@@ -448,6 +448,7 @@ def main() -> None:
     test_ml_meta()
     test_ml_tf()
     test_ml_voltarget()
+    test_leadlag()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -3209,6 +3210,72 @@ def test_ml_voltarget() -> None:
     diff, lo, hi = VT.sharpe_diff_ci(m1["daily"], m1["daily"], n_boot=200)
     check("ml_voltarget bootstrap: a book against itself has difference 0 and a CI of [0, 0]",
           abs(diff) < 1e-12 and abs(lo) < 1e-12 and abs(hi) < 1e-12)
+
+
+def test_leadlag() -> None:
+    """Test 45 (PLAN.md section 47): moves, lag/follow events, the gap-close path with its stop, causal."""
+    print("\n45. leadlag: moves and events by hand, gap-close exit, a stopped trade is not re-entered, causal path, "
+          "the engine-style simulator takes the same trades")
+    import leadlag as LL
+    import ml_hold as MH
+    m = LL.moves(np.array([100.0, 102.0, 99.0]), np.array([2.0, 2.0, 3.0]))
+    check("leadlag moves: (close change) / previous ATR", np.isnan(m[0]) and np.allclose(m[1:], [1.0, -1.5]))
+    bm = np.array([1.2, 1.2, -1.2, -1.2, 0.5])
+    gap = np.array([-0.8, -0.2, 0.8, 0.2, -2.0])
+    check("leadlag events: lag = the alt lagged BTC's large move, follow = it moved with it, nothing on small moves",
+          list(LL.events(bm, gap, 1.0, 0.5, "lag")) == [1, 0, -1, 0, 0]
+          and list(LL.events(bm, gap, 1.0, 0.5, "follow")) == [0, 1, 0, -1, 0])
+    # alt: long event at bar 1; BTC flat after; the alt catches up at bar 3
+    o = np.array([100.0, 100.0, 99.0, 99.5, 101.0, 101.0, 101.0])
+    c = np.array([100.0, 99.0, 99.5, 101.0, 101.0, 101.0, 101.0])
+    h, l = np.maximum(o, c) + 0.2, np.minimum(o, c) - 0.2
+    bo = np.array([100.0, 100.0, 101.0, 101.0, 101.0, 101.0, 101.0])
+    bc = np.array([100.0, 101.0, 101.0, 101.0, 101.0, 101.0, 101.0])
+    ev = np.array([0, 1, 0, 0, 0, 0, 0])
+    atr = np.full(7, 1.0)
+    tgt, held = LL.lag_path(o, h, l, c, bo, bc, ev, atr, 2.0, 0.0)
+    want = np.full(7, np.nan)
+    want[1], want[3] = 1.0, 0.0
+    check("leadlag path: enter on the event, exit when the alt has matched BTC since the event bar's open",
+          np.array_equal(np.isnan(tgt), np.isnan(want)) and np.allclose(tgt[~np.isnan(tgt)], [1.0, 0.0])
+          and list(held) == [0, 1, 1, 0, 0, 0, 0])
+    tr = MH.simulate(pd.DataFrame({"open": o, "high": h, "low": l, "close": c},
+                                  index=pd.date_range("2023-01-01", periods=7, freq="4h", tz="UTC")),
+                     tgt, atr, None, fee=0.0, slip=0.0, stop_atr=2.0)
+    check("leadlag simulate: one signal exit, entry at bar 2's open, exit at bar 4's open",
+          len(tr) == 1 and tr["reason"].iloc[0] == "signal" and np.isclose(tr["entry_px"].iloc[0], 99.0)
+          and np.isclose(tr["exit_px"].iloc[0], 101.0))
+    # a stop: the alt keeps falling and BTC does not move; the event repeats while stopped out
+    o2 = np.array([100.0, 100.0, 99.0, 96.0, 95.0, 95.0, 95.0])
+    c2 = np.array([100.0, 99.0, 96.5, 95.0, 95.0, 95.0, 95.0])
+    h2, l2 = np.maximum(o2, c2) + 0.1, np.minimum(o2, c2) - 0.1
+    ev2 = np.array([0, 1, 0, 0, 0, 0, 0])
+    tgt2, held2 = LL.lag_path(o2, h2, l2, c2, bo, bc, ev2, atr, 2.0, 0.0)
+    tr2 = MH.simulate(pd.DataFrame({"open": o2, "high": h2, "low": l2, "close": c2},
+                                   index=pd.date_range("2023-01-01", periods=7, freq="4h", tz="UTC")),
+                      tgt2, atr, None, fee=0.0, slip=0.0, stop_atr=2.0)
+    check("leadlag stop: stopped at entry - 2 ATR, the path goes flat and the simulator does not re-enter",
+          len(tr2) == 1 and tr2["reason"].iloc[0] == "stop" and np.isclose(tr2["exit_px"].iloc[0], 97.0)
+          and held2[2] == 0 and np.nansum(np.abs(tgt2)) == 1.0)
+    rng = np.random.default_rng(45)
+    n = 400
+    cc = 100 * np.exp(np.cumsum(rng.normal(0, 0.01, n)))
+    bcc = 100 * np.exp(np.cumsum(rng.normal(0, 0.01, n)))
+    oo, bo3 = np.r_[cc[0], cc[:-1]], np.r_[bcc[0], bcc[:-1]]
+    hh, ll = np.maximum(oo, cc) * 1.003, np.minimum(oo, cc) * 0.997
+    a3 = np.full(n, 1.0)
+    ev3 = LL.events(LL.moves(bcc, a3), LL.moves(cc, a3) - LL.moves(bcc, a3), 0.8, 0.3, "lag")
+    t_full, _ = LL.lag_path(oo, hh, ll, cc, bo3, bcc, ev3, a3, 2.0, 0.0002)
+    cut = 200
+    oo2, hh2, ll2, cc2, bcc2 = (x.copy() for x in (oo, hh, ll, cc, bcc))
+    for x in (hh2, ll2, cc2, bcc2):
+        x[cut + 1:] *= 1.5
+    oo2[cut + 2:] *= 1.5
+    ev4 = LL.events(LL.moves(bcc2, a3), LL.moves(cc2, a3) - LL.moves(bcc2, a3), 0.8, 0.3, "lag")
+    t_cut, _ = LL.lag_path(oo2, hh2, ll2, cc2, bo3, bcc2, ev4, a3, 2.0, 0.0002)
+    check("leadlag causal: changing bars after t changes no decision up to t",
+          np.array_equal(np.nan_to_num(t_full[:cut + 1], nan=9), np.nan_to_num(t_cut[:cut + 1], nan=9))
+          and np.nansum(np.abs(t_full)) > 4)
 
 
 if __name__ == "__main__":

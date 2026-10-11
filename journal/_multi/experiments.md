@@ -7473,3 +7473,64 @@ Crypto's large moves are two-sided and partly upside. Cutting size when volatili
 - Project's closest record: the frozen §31 cell.
 - The §31-§46 holdout is untouched.
 - No approved run is pending.
+
+---
+
+## Exp 091 - TRAIN-only scan of new families on the ten coins, and pre-registration of §47 (BTC lead-lag catch-up)
+
+**Date:** 2026-10-11
+**Status:** pre-registered. The owner chose option ค: pause the ten-coin ML line and look for a family that is neither a breakout nor a sizing rule.
+
+### The scan (TRAIN only)
+
+**Data and method.**
+- Binance USDT-M 4h klines for the ten coins, 2020-01 to 2022-12 only, downloaded into the planner's scratchpad. No VALID or holdout bar was loaded; the script asserts the last bar is before 2023-01-01.
+- Each coin from 365 days after its first bar.
+- Score per event: the signed move from the next open to h bars later, in ATRs, minus a 0.14% round-trip cost.
+- t-statistics are clustered by day.
+
+**Mean-reversion families: all lost on TRAIN.**
+
+| family | h = 6 | h = 18 |
+|---|---|---|
+| fade over-extension (\|close − EMA50\| > 3/4/5 ATR) | −0.04 to −0.12 | −0.33 to −1.20 |
+| fade a failed 6-bar breakout | −0.030 | −0.157 |
+| fade a capitulation bar (range > 2.5 / 3.5 ATR, close in the far quarter) | −0.28 / −0.37 | −0.55 / −0.39 |
+
+On the 4h bars of these coins, over-extension continues; it does not revert.
+
+**BTC lead-lag: the one family that held up.** An alt lags when BTC's 4h move exceeds 1 ATR and the alt's own move falls short of it by more than 0.5 ATR (gap < −0.5); shorts are the mirror.
+- Over 6 / 12 / 18 bars the lagging alt earned +0.137 / +0.176 / +0.134 ATR net, in both years and on both sides; 8 of 9 alts were positive.
+- **The control matters.** On the same BTC bars, the alts that moved with BTC earned −0.017 ATR (h = 6), against the laggards' +0.137. With a 1-ATR gap the laggards earned +0.227. So this is catch-up, not just BTC momentum.
+- At BTC > 2 ATR, h = 12, every alt (laggard or not) earned +0.44: there, momentum and catch-up cannot be separated.
+
+### Traded as a rule (TRAIN, scratch simulation then `src/leadlag.py` on the scratch data)
+- **Exit design.** The exit is a signal: the gap has closed since the event bar's open. A K-ATR stop backs it up. There is no clock, and no event is taken while a position is open.
+- **All 8 cells are positive on TRAIN.**
+  - weekly t +1.16 to +1.90;
+  - mean R +0.04 to +0.17;
+  - both legs positive in all 8;
+  - 2022 is close to zero, between −0.015 and +0.041 in account return at half scale.
+- **Selectable cells.** Under §38's rule, 4 of 8 are selectable. On this data the best is `bt1.5_rt0.5_k2`, at t +1.90 and +0.1293 R. The runner's run with funding and its own caches decides; funding was empty in the scratch run.
+- **Drawdown and risk scale.** At §31's 1% risk / 5% cap, every cell's TRAIN max DD was 21–32%. A single BTC bar fires up to nine correlated alts on the same side. The pre-registered account is therefore half scale: 0.5% per trade, 2.5% per direction. TRAIN max DD is then 10.5–16.2%; t and the CI are unchanged by scale. Decided on TRAIN, before any VALID look.
+- **Control on TRAIN.** The `follow` twin of the chosen cell makes about +0.00015 a week against the lag form's +0.00320.
+
+### Pre-registration (PLAN.md §47)
+`src/leadlag.py`, test 45 (6 checks: moves and events by hand, gap-close exit, no re-entry after a stop, causal path, simulator agreement).
+- **Rule.** Leader BTC; traded the other nine coins. `lag` events with BT {1.0, 1.5} × RT {0.5, 1.0} × K {2, 3}.
+- **Exits.** Gap-close or the K-ATR stop; no clock.
+- **Account.** 0.5% / 2.5%.
+- **Selection.** TRAIN picks by §38's rule.
+- **Gates.** §41's VALID gates plus `valid_beats_follow`.
+- **Holdout.** Its own, used once.
+- **Data.** No new download (§36's 4h caches and funding).
+- **Records.** Writes `results/_multi/s47_leadlag_4h/` (summary, trade files, `record/valid/run_info.json` and `holdout_power.json`; there is no model, so there is no feature record).
+
+### Stated before the run
+- The family won a 7-family TRAIN scan, so it carries selection bias.
+- TRAIN 2022 is flat.
+- TRAIN t is below 2.
+
+- **Concentration.** On the scratch TRAIN run, `judge` on the likely cell (`bt1.5_rt0.5_k2`, no funding) gives 520 trades, weekly +0.00320, CI lo +0.00009, t +1.90, cost ×1.5 +0.00283, timing 0.0257 against a shifted p95 of 0.0127, breadth 7 of 9 and max DD 14.7%. Exits are 74% signal and 26% stop, with a median hold of 3 bars (mean 9.3). The best 5 weeks are 77% of the TRAIN return, so the TRAIN result is concentrated in a few 2021 weeks.
+
+A REJECT is the most likely single outcome. If it comes with `valid_beats_follow` passing, the effect is real but small. If the follow twin does as well, it was BTC momentum or luck.

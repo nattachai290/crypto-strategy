@@ -3212,3 +3212,61 @@ that month.
 **Prior:**
 - moderate for "a vol-targeted book beats buy-and-hold on drawdown";
 - low for "the ML beats ATR", since volatility clusters and ATR already captures most of it.
+
+## §47 — BTC lead-lag catch-up on the large alts (`src/leadlag.py`, `_multi` Exp 091)
+
+**Why now.** The owner chose (2026-10-11) to pause the ML line on the ten coins and look for a family that is
+neither a breakout nor a sizing rule. The breakout line (§40–§45) and the sizing round (§46) are closed (Exp 087,
+Exp 090). A TRAIN-only scan of seven families on the ten coins' 4h perp bars (Exp 091) found the following:
+- every mean-reversion family lost on TRAIN (fading over-extension, failed breakouts, capitulation bars);
+- one family held up: alts that lagged a large BTC move.
+
+**Hypothesis.** News and flow reach BTC first. The alt books are thinner and are re-priced later, by traders who
+trade the alts against BTC's move. An alt that has not followed a large BTC 4h move is mispriced for a while, and
+the gap closes in the direction of BTC's move. The control is the alts that moved with BTC on the same bars. They
+must earn less; otherwise the book is BTC momentum, not catch-up.
+
+**Signal.** Computed on the 4h perp bars, decided at the close and filled at the next open:
+- move = close-to-close change ÷ the previous bar's ATR14, for BTC and for the alt;
+- gap = alt move − BTC move;
+- `lag` form: long when BTC move > BT and gap < −RT; short when BTC move < −BT and gap > RT.
+
+**Exit (no clock).** Two ways out:
+- a signal exit once the alt has caught up with BTC since the event bar's open, i.e.
+  side × [(alt/alt open − 1) − (BTC/BTC open − 1)] ≥ 0;
+- or the stop at K × ATR14 from the fill.
+
+While a position is open, new events are ignored (one position per coin).
+
+**Universe.** The nine alts among the owner's ten coins, each from 365 days after listing. BTC is the leader and
+is not traded.
+
+**Account.** §31's account at half scale:
+- 0.5% risk per trade, 2.5% cap per direction. One BTC bar can fire all nine alts on the same side; at 1% / 5%
+  every TRAIN cell drew down 21–32%.
+- Fees, slippage and funding as in §41.
+- No ML.
+
+**TRAIN picks 1 of 8 cells.**
+- Grid: BT {1.0, 1.5} × RT {0.5, 1.0} × K {2, 3}.
+- Selection uses §38's rule: ≥ 100 trades, both years and both legs positive, then the weekly t.
+- If no cell is selectable, the verdict is REJECT.
+
+**VALID gates.** §41's gates, plus one:
+- §41's gates: ≥ 100 trades, weekly mean > 0, weekly-block CI lower bound > 0, cost ×1.5 > 0, timing above the
+  shifted p95, ≥ 8 coins with half beating their shifts, both legs > 0, max DD ≤ 20%;
+- `valid_beats_follow`: the weekly mean must beat the `follow` twin. The twin uses the same cell but trades the
+  alts that moved with BTC.
+
+**Holdout:** its own, used once. This is a new family and does not share the ML line's §31–§46 holdout.
+
+**Known weaknesses, stated before the run:**
+- The family was chosen by scanning about seven on TRAIN, so TRAIN overstates it.
+- In TRAIN 2022 every cell is close to zero; 2021 carries the result.
+- TRAIN weekly t is only +1.2 to +1.9.
+- VALID is the first look.
+
+**What each outcome means.**
+- **PASS:** the holdout decides.
+- **REJECT with `valid_beats_follow` passing:** the catch-up is real but too small to trade at these costs.
+- **REJECT with the follow twin as good or better:** the TRAIN effect was BTC momentum or luck.
