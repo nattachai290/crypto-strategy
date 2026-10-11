@@ -7336,3 +7336,88 @@ The owner chose option 1 from Exp 087: use the range forecast as a risk tool, no
 - The VALID period is a bull market, so `bh` has a high Sharpe to beat.
 
 No holdout. §31–§46 share one.
+
+---
+
+## Exp 089 - PLAN.md §46 run: ML volatility targeting on the ten coins - REJECT on all six gates, and the ML forecast adds nothing over plain ATR
+
+**Date:** 2026-10-11
+**Status:** complete. One run, as pre-registered in Exp 088. No new download (§36's caches). `--final` not run. Wall clock about 12 minutes (425 training coins prepared at 4h, then §40's range forecast recomputed and checked).
+**`reproduces_s40` = True**: the range forecasts are §40's own, checked against its recorded TRAIN predictions, so the three books differ only in how they size.
+**No holdout spent.** No `holdout.json` under `results/_multi/s46_ml_voltarget_4h/`. PASS would have been the only way to take it, and the verdict is REJECT. The §31-§46 shared holdout is untouched.
+
+### VERDICT: REJECT on all six gates
+
+`['train_ml_sharpe>naive', 'ml_sharpe>bh', 'ml_vs_bh_ci_lo>0', 'ml_dd<=0.6*bh', 'ml_sharpe>naive', 'stress_sharpe>bh']`
+
+**The books.** All are long-only, held over the coins traded that month, rebalanced once a day at the 20:00 UTC 4h close and filled at the next open, with a 20% no-trade band, a 2x cap on a coin's share, taker fee + slippage on traded weight and funding. Targets are each estimator's own TRAIN median, so the average weight is about 1/n on TRAIN by construction: `naive` 2.91% of price, `ml` 7.59%. `ml`/`naive` at the same target is 2.60x - the ML forecast's expected range is about 2.6x the plain ATR fraction, because §40 predicts the **range**, not a one-directional move.
+
+### TRAIN
+
+| book | Sharpe | max DD | CAGR | avg gross | turnover/yr | daily mean | daily sd | corr with bh | by year (annual account return) |
+|---|---|---|---|---|---|---|---|---|---|
+| `bh` | +0.13 | 89.99% | -36.29% | 1.145 | 1.46 | +0.00039 | 0.05595 | 1.000 | 2021 101.06%, 2022 -79.81% |
+| `naive` | -0.19 | 85.93% | -37.26% | 0.998 | 21.23 | -0.00040 | 0.04135 | 0.923 | 2021 76.13%, 2022 -77.65% |
+| `ml` | -0.24 | 86.16% | -39.41% | 0.990 | 25.54 | -0.00051 | 0.04103 | 0.939 | 2021 54.47%, 2022 -76.24% |
+
+| difference (descriptive; TRAIN has one pre-registered gate, below) | value | 95% CI |
+|---|---|---|
+| Sharpe `ml` - `bh` | -0.3721 | [-0.7819, +0.0574] |
+| Sharpe `ml` - `naive` | -0.0521 | [-0.2113, +0.1130] |
+| with costs x1.5: Sharpe `ml` -0.25 against `bh` +0.13 | -0.387 | - |
+
+| **gate** | value | requirement | result |
+|---|---|---|---|
+| `train_ml_sharpe>naive` | -0.2374 vs naive -0.1852 | ml > naive | **FAIL** |
+
+### VALID
+
+| book | Sharpe | max DD | CAGR | avg gross | turnover/yr | daily mean | daily sd | corr with bh | by year (annual account return) |
+|---|---|---|---|---|---|---|---|---|---|
+| `bh` | +1.72 | 40.24% | 131.52% | 0.999 | 0.50 | +0.00278 | 0.03078 | 1.000 | 2023 159.69%, 2024 106.88% |
+| `naive` | +1.35 | 57.52% | 105.56% | 1.367 | 23.62 | +0.00270 | 0.03822 | 0.956 | 2023 182.17%, 2024 50.04% |
+| `ml` | +1.35 | 55.54% | 101.84% | 1.338 | 29.21 | +0.00261 | 0.03710 | 0.961 | 2023 171.20%, 2024 50.50% |
+
+| difference | value | 95% CI | gate |
+|---|---|---|---|
+| Sharpe `ml` - `bh` | -0.3773 | [-0.7177, -0.0119] | `ml_vs_bh_ci_lo>0` **FAIL** (whole CI below 0) |
+| Sharpe `ml` - `naive` | -0.0059 | [-0.1243, +0.1164] | `ml_sharpe>naive` **FAIL** |
+| with costs x1.5: Sharpe `ml` +1.33 against `bh` +1.72 | -0.396 | - | `stress_sharpe>bh` **FAIL** |
+
+| **gate** | value | requirement | result |
+|---|---|---|---|
+| `ml_sharpe>bh` | +1.3455 vs bh +1.7228 | ml > bh | **FAIL** |
+| `ml_vs_bh_ci_lo>0` | CI lo -0.7177 | CI lower bound > 0 | **FAIL** |
+| `ml_dd<=0.6*bh` | 55.54% vs 0.6 x 40.24% = 24.14% | <= 24.14% | **FAIL** |
+| `ml_sharpe>naive` | +1.3455 vs naive +1.3514 | ml > naive | **FAIL** |
+| `stress_sharpe>bh` | +1.3260 vs bh +1.7224 | ml > bh | **FAIL** |
+
+### What actually happened
+
+**1. On VALID the vol-targeted books lost on both halves of the Sharpe ratio.** `ml`'s daily mean is +0.00261 against buy-and-hold's +0.00278 - lower - and its daily standard deviation is 0.03710 against 0.03078 - **higher**. Sharpe +1.35 against +1.72. The difference is **-0.3773 with CI [-0.7177, -0.0119] - the whole interval is below zero**, so this is not a failure to beat buy-and-hold by luck: the vol-targeted book is reliably worse than simply holding the ten coins.
+
+**2. It never reduced volatility, which is the whole point of the hypothesis.** §46's premise is that the book holds less before turbulent days. On VALID it held a **larger** average exposure than buy-and-hold (`avg_gross` 1.338 against 0.999) and its drawdown was **worse**: 55.54% against 40.24%, 1.38x, against a bar of 0.6x.
+
+**The mechanism, which the recorded panel shows exactly.** The targets are the TRAIN medians, so on TRAIN both sized books ran at about 1x gross (0.998 and 0.990) - as designed. On VALID the expected range was smaller than TRAIN's median, so the same rule ran both books at about 1.35x. Sharpe is scale-invariant, so the leverage alone does not explain the Sharpe gap - but it does explain the drawdown. Relative to its own leverage, the vol targeting did cut daily volatility a little; the leverage more than undid it.
+
+**3. It did not work on TRAIN either.** TRAIN is the calibration period, and there buy-and-hold was Sharpe +0.13 while `naive` was -0.19 and `ml` -0.24. Both sized books **lost money while buy-and-hold did not**, in both years (2021 101.06% against ml's 54.47%; 2022 -79.81% against -76.24%). This is not a VALID-only failure - volatility timing cost money on the period it was calibrated on.
+
+**4. The ML forecast is worth nothing over plain ATR here - the pre-registered hard part failed.** On VALID `ml` Sharpe +1.3455 against `naive` +1.3514: a difference of -0.0059, CI [-0.1243, +0.1164]. The two daily return series have correlation **0.9956** - they are almost the same book. Their max drawdowns are within 2 points of each other (55.54% against 57.52%) and their by-year returns agree to three decimals (2024 50.50% against 50.04%). **Exp 088's stated risk - volatility clusters, so ATR sizing already captures most of what vol targeting gives - is what happened.**
+
+**5. Costs.** The two sized books rebalance continuously and buy-and-hold does not: turnover 29.2 and 23.6 of notional a year against buy-and-hold's 0.50. At 0.07% per unit traded that is about 2% a year of drag, against a CAGR gap of 29.68%. **Cost is a real part of the gap, but this round recorded only NET daily returns, so the gross Sharpe is not in evidence** and the rest of the gap is unexplained by anything this run recorded. Sharpe is what the gates read.
+
+**6. The books are not diversification.** Correlation of `ml`'s daily return with buy-and-hold's is 0.961 on VALID and 0.939 on TRAIN. This is the same long bet with a slowly varying size, not a different exposure.
+
+### Recorded facts about the round itself
+
+- **No `record/` folder.** AGENTS.md's repository map says a §38+ registration must call `run_record.py`; `src/ml_voltarget.py` does not import it, so §46 wrote only `summary.json` and the two daily panels. Noted here rather than fixed - fixing it would mean re-running a pre-registered round.
+- **`reproduces_s40` is True**, so the forecast is §40's and every difference between the books is the sizing rule.
+- The round writes `daily_train.csv.gz` and `daily_valid.csv.gz` (730 and 731 days of bh / naive / ml daily account returns) rather than trade files, because the book is a continuously rebalanced panel, not a sequence of entries and exits.
+
+### Verdict
+
+**REJECT on all six gates, on both periods, and the pre-registered outcome is the weakest of the three §46 named: volatility timing does not pay on these ten coins, in 2021-22 or in 2023-24.** Buy-and-hold of the same ten coins at Sharpe +1.72 and 40.24% drawdown was not beaten by `ml` (+1.35, 55.54%) or `naive` (+1.35, 57.52%); the ML difference against buy-and-hold has a CI entirely below zero, so the loss is reliable rather than noisy. **The ML range forecast, which §40 showed is genuinely forecastable (Spearman +0.35 / +0.39, about 3.5x persistence), produced a book indistinguishable from one sized by plain ATR** - correlation 0.9956 on VALID.
+
+**No holdout was spent and none is proposed.** The §31-§46 shared holdout is untouched and nothing here is PASS. **§43 (4h) remains the best risk-adjusted ten-coin book**, and the project's closest record is still the frozen §31 cell (CI lo -0.00026 on 46 coins).
+
+Files: `results/_multi/s46_ml_voltarget_4h/summary.json`, `daily_train.csv.gz`, `daily_valid.csv.gz`; generated `journal/_multi/s46_ml_voltarget_4h.md`.
