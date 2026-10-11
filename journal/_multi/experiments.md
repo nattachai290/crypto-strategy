@@ -7534,3 +7534,104 @@ On the 4h bars of these coins, over-extension continues; it does not revert.
 - **Concentration.** On the scratch TRAIN run, `judge` on the likely cell (`bt1.5_rt0.5_k2`, no funding) gives 520 trades, weekly +0.00320, CI lo +0.00009, t +1.90, cost ×1.5 +0.00283, timing 0.0257 against a shifted p95 of 0.0127, breadth 7 of 9 and max DD 14.7%. Exits are 74% signal and 26% stop, with a median hold of 3 bars (mean 9.3). The best 5 weeks are 77% of the TRAIN return, so the TRAIN result is concentrated in a few 2021 weeks.
 
 A REJECT is the most likely single outcome. If it comes with `valid_beats_follow` passing, the effect is real but small. If the follow twin does as well, it was BTC momentum or luck.
+
+---
+
+## Exp 092 - PLAN.md §47 run: BTC lead-lag catch-up - REJECT, and the `follow` control beats the lag form on VALID
+
+**Date:** 2026-10-11
+**Status:** complete. One run, as pre-registered in Exp 091. No new download (§36's 4h caches and funding). `--final` not run. Wall clock 12 seconds (no model is fitted: the rule uses §36's bars and BTC as the leader).
+**No holdout spent.** No `holdout.json` under `results/_multi/s47_leadlag_4h/`. §47 owns its own holdout and uses it once, only on a PASS; the verdict is REJECT. The §31-§46 shared holdout is untouched.
+
+### VERDICT: REJECT on `REJECT`
+
+`valid_ci_lo>0`, `stress_weekly_mean>0`, `timing_beats_shift_p95`, `breadth>=0.5`, `both_legs>0`, `valid_beats_follow`
+
+### The rule as run
+
+Leader BTCUSDT; the other nine of the owner's ten coins traded. On the 4h perp bars: `move` = close-to-close change divided by the previous bar's ATR14, for BTC and for the alt; `gap` = alt move minus BTC move. A `lag` event is long when BTC move > BT and gap < -RT, short when BTC move < -BT and gap > RT. Exit is a signal - the alt has matched BTC's move since the event bar's open - or the K-ATR stop; no clock, one position per coin, no re-entry after a stop. Grid BT {1.0, 1.5} x RT {0.5, 1.0} x K {2, 3}, 0.5% risk and a 2.5% cap per direction. No ML.
+
+### TRAIN - 4 of 8 cells selectable, the chosen one is the best of them
+
+| cell | trades | weekly | t | mean R | long | short | by year | selectable | its `follow` twin, weekly |
+|---|---|---|---|---|---|---|---|---|---|
+| `lag_bt1_rt0.5_k2` | 941 | +0.00219 | +1.16 | +0.0488 | +0.1338 | +0.0958 | 2021 +0.2385, 2022 -0.0090 | **no** | -0.00176 |
+| `lag_bt1_rt0.5_k3` | 834 | +0.00126 | +0.93 | +0.0318 | +0.0630 | +0.0696 | 2021 +0.1135, 2022 +0.0190 | yes | -0.00115 |
+| `lag_bt1_rt1_k2` | 412 | +0.00199 | +1.22 | +0.1017 | +0.1502 | +0.0593 | 2021 +0.1804, 2022 +0.0291 | yes | +0.00015 |
+| `lag_bt1_rt1_k3` | 376 | +0.00140 | +1.14 | +0.0783 | +0.0570 | +0.0902 | 2021 +0.1087, 2022 +0.0385 | yes | -0.00073 |
+| `lag_bt1.5_rt0.5_k2` **<- chosen** | 520 | +0.00293 | +1.75 | +0.1183 | +0.2269 | +0.0808 | 2021 +0.2902, 2022 +0.0175 | yes | +0.00015 |
+| `lag_bt1.5_rt0.5_k3` | 489 | +0.00175 | +1.50 | +0.0753 | +0.1105 | +0.0737 | 2021 +0.1958, 2022 -0.0116 | **no** | -0.00027 |
+| `lag_bt1.5_rt1_k2` | 309 | +0.00229 | +1.52 | +0.1557 | +0.2062 | +0.0344 | 2021 +0.2412, 2022 -0.0006 | **no** | +0.00166 |
+| `lag_bt1.5_rt1_k3` | 292 | +0.00150 | +1.40 | +0.1077 | +0.1118 | +0.0455 | 2021 +0.1717, 2022 -0.0144 | **no** | +0.00044 |
+
+TRAIN chose **`lag_bt1.5_rt0.5_k2`** under §38's rule: {tc['trades']} trades, weekly {f(tc['weekly_mean'])}, t +1.75, mean R +0.1183 (both legs positive: long +0.2269, short +0.0808), both years positive (2021 +0.2902, 2022 +0.0175), max DD 14.78%, timing 0.02573 against a shifted p95 of 0.01265 (2.03x), cost x1.5 +0.00256, CI [-0.00017, +0.00634], exit mix 74% signal / 26% stop, hold median 3 bars (mean 9.3). **The trainer's scratch run put this cell at t +1.90; the runner's run with funding gives +1.75** - the same cell, slightly weaker.
+
+**The TRAIN separation from the control was large and is what the family was chosen on**: at this cell the lag form made +0.00293 a week against the follow twin's +0.00015. On TRAIN the twin is negative or flat in 7 of the 8 cells.
+
+### VALID (the chosen cell)
+
+| measure | value | gate |
+|---|---|---|
+| trades | 648 | >= 100 OK |
+| weekly account return | +0.00074 | > 0 OK |
+| 95% CI | [-0.00304, +0.00493] | lo > 0 **FAIL** |
+| t | +0.36 | - |
+| mean R per trade | +0.0239 | > 0 OK |
+| long leg | +0.1160 | > 0 OK |
+| short leg | -0.0387 | > 0 **FAIL** |
+| cost x1.5 weekly | -0.00010 | > 0 **FAIL** |
+| timing | +0.0067 vs shifted p95 +0.0166 (0.40x) | > p95 **FAIL** |
+| breadth | 4 of 9 (0.44) | >= 0.5 **FAIL** |
+| max drawdown | 13.44% | <= 20% OK |
+| per year (summed R) | 2023 -0.0399, 2024 +0.1172 | - |
+| total account return | 7.73% | - |
+| `valid_beats_follow` | weekly +0.00074 vs twin +0.00085 | ml > follow **FAIL** |
+
+### The control won
+
+The `follow` twin is the same cell trading the alts that moved **with** BTC on the same bars. If catch-up is the effect, the lag form must beat it.
+
+| | `lag` (chosen) | `follow` twin |
+|---|---|---|
+| trades | 648 | 432 |
+| weekly account return | +0.00074 | **+0.00085** |
+| 95% CI | [-0.00304, +0.00493] | [-0.00147, +0.00354] |
+| t | +0.36 | **+0.67** |
+| mean R | +0.0239 | **+0.0413** |
+| long / short | +0.1160 / -0.0387 | +0.1423 / -0.0531 |
+| max drawdown | 13.44% | **11.24%** |
+| by year | 2023 -0.0399, 2024 +0.1172 | 2023 -0.0134, 2024 +0.1026 |
+
+**The twin is better on every measure**: weekly return, t, mean R, the CI lower bound (-0.00147 against -0.00304) and the drawdown. This is §47's third pre-registered outcome - *the TRAIN effect was BTC momentum or luck* - and it is what the run shows. The gap that made this family win the TRAIN scan (lag +0.00293 a week against follow +0.00015, about twenty times) does not survive to VALID; there the twin is ahead.
+
+### The rest of the diagnosis
+
+- **Timing is 0.40x the shifted p95** (+0.0067 against +0.0166). The entries are worse timed than shifting the same entries through time, so the signal is not what produced the result.
+- **Concentration.** The best 5 of 105 weeks are **4.06x** the whole VALID return and the weekly mean without them is -0.00237; 56 of 105 weeks were negative.
+- **2023 is negative** (-0.0399) and 2024 carries the book (+0.1172).
+- **Side mix is close to balanced** - short share 0.446 / 0.455 against the ML line's 0.5-0.7 lean - and the short leg still lost (-0.0387).
+- **Exit and hold behave as designed**: 69% signal exits and 31% stops, hold median 3 4h bars and mean 13.9. No clock, as registered.
+
+| coin | trades | mean net R |
+|---|---|---|
+| DOGEUSDT | 104 | +0.1401 |
+| ADAUSDT | 104 | +0.0804 |
+| BCHUSDT | 115 | +0.0615 |
+| BNBUSDT | 86 | +0.0488 |
+| XRPUSDT | 22 | -0.0134 |
+| NEARUSDT | 51 | -0.0243 |
+| SOLUSDT | 44 | -0.0336 |
+| LINKUSDT | 71 | -0.1002 |
+| ETHUSDT | 51 | -0.1688 |
+
+Four coins earn and five lose. DOGEUSDT (+0.1401 R over 104 trades), ADAUSDT (+0.0804), BCHUSDT (+0.0615) and BNBUSDT (+0.0488) carry the book; ETHUSDT (-0.1688 over 51 trades) and LINKUSDT (-0.1002) are the largest losers. The pre-registered breadth gate needs at least half the coins to beat their own shifts, and only 4 of 9 did.
+
+Holdout power on VALID: 5% if the edge is fully real, 4% at half the edge (86 weeks, weekly sd 0.0207). Recorded for the file; no holdout was run.
+
+### Verdict
+
+**REJECT.** The BTC lead-lag catch-up family is dead on this evidence. It looked like the only survivor of the TRAIN-only scan (Exp 091) and it looked well separated from its control there - but on VALID the control beats it on every measure, the timing is worse than shifting the same entries in time, the book loses money at 1.5x costs, 2023 is negative and the return is four times concentrated in five weeks. **The catch-up effect the scan measured did not generalise; what the family actually traded was BTC momentum, and the control says so.**
+
+**No holdout was spent and none is proposed.** §47's own holdout is untouched and nothing here is PASS. **§43 (4h) remains the best risk-adjusted ten-coin book**, and the project's closest record is still the frozen §31 cell (CI lo -0.00026 on 46 coins).
+
+Files: `results/_multi/s47_leadlag_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_<cell>.csv.gz` (8 cells), `record/valid/{run_info.json, holdout_power.json}`; generated `journal/_multi/s47_leadlag_4h.md`. `run_record.py` was called for its run-info and holdout-power files only; the round fits no model, so there is no feature record to write.
