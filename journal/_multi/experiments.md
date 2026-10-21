@@ -7718,3 +7718,68 @@ What the two scans (Exp 091, 094) establish on these ten coins' 4h bars, TRAIN o
 - the BTC lead-lag looked real on TRAIN and failed on VALID (§47).
 
 No approved run is pending.
+
+---
+
+## Exp 095 - What would make §43 better? A TRAIN-only diagnosis of its 607 TRAIN trades
+
+**Date:** 2026-10-21
+**Status:** complete.
+- Inputs, all read-only: `results/_multi/s43_ml_agree_4h/trades_train_sign.csv.gz` (the 607 TRAIN trades of the chosen cell), plus TRAIN 4h klines (2020-2022) in the planner's scratchpad for BTC regime and excursions. VALID was not used for any choice.
+- The owner asked for a direction, based on past results, that would make the model better.
+
+### Where the TRAIN book makes and loses money
+- **All 607 trades exit on the channel signal; none is stopped out.** The 8-ATR stop sits at a median of **20.0% of price**.
+  - So R, and with it the position size (0.5-1% risk / 20% = 2.5-5% of equity notional), is set by a stop that never fires.
+  - The book is tiny relative to the risk it actually takes: losers average -0.154 R, about 3% of price, and their mean favourable excursion is only 0.147 R.
+- **Hold length decides the trade, and cannot be known at entry.**
+  - Trades held 1-3 bars: -0.225 R (41 trades).
+  - 4-8 bars: -0.122 R (245).
+  - 9-20 bars: +0.084 R (242).
+  - 21 bars or more: +0.526 R (79).
+  - This is the trend-following shape: many small losses and a few long winners. Winners capture 0.328 R of a 0.723 R mean favourable excursion.
+- **No entry filter clears the bar (Exp 093: t >= 2.5, both years).**
+  - |direction forecast| terciles: weak +0.068 / mid +0.026 / strong +0.017. The strong-minus-weak difference has t -1.40, so it goes the wrong way for a higher threshold.
+  - Range-arm ratio terciles: low +0.061 / mid +0.029 / high +0.022. Again the wrong way for a higher q.
+  - BTC above / below EMA200: +0.045 / +0.030.
+  - Trade side against / with BTC's 30-day trend: +0.088 (118 trades) / +0.025 (489), t -1.59.
+  - None is significant, and the two "stronger signal is worse" patterns argue against raising thresholds.
+  - Coins: BTC is the weakest (-0.005); the other nine are positive.
+
+### Tighter stop
+Approximated on TRAIN from each trade's own bars: a stop at K ATR counts as hit if the adverse excursion before the recorded exit reaches K ATR, and the risk stays 0.75% average.
+
+| K (ATR) | stop hit | mean R | weekly | weekly t | 2021 / 2022 | long / short | position size |
+|---|---|---|---|---|---|---|---|
+| 8 (now) | 0% | +0.037 | +0.00163 | +1.70 | +0.035 / +0.039 | +0.027 / +0.044 | x1.0 |
+| 6 | 0% | +0.049 | +0.00214 | +1.67 | +0.045 / +0.052 | +0.035 / +0.059 | x1.3 |
+| 4 | 2% | +0.071 | +0.00311 | +1.61 | +0.062 / +0.077 | +0.047 / +0.089 | x2.0 |
+| 3 | 5% | +0.097 | +0.00424 | +1.66 | +0.090 / +0.102 | +0.069 / +0.118 | x2.7 |
+| 2 | 17% | +0.129 | +0.00565 | +1.61 | +0.094 / +0.153 | +0.077 / +0.168 | x4.0 |
+
+**A tighter stop scales the return almost in proportion to the position size, and leaves the weekly t unchanged (+1.6 to +1.7).**
+- It is a leverage choice, not an edge: it cannot move the CI lower bound's sign.
+- The drawdown should scale with it, roughly 4.3% → 11-12% on VALID at K = 3, if VALID behaves like TRAIN.
+- It cannot pass a TRAIN t-margin rule, because it does not raise t.
+- The approximation ignores intrabar ordering and re-entries after a stop.
+
+### What the history says about which levers raise t
+| lever | result |
+|---|---|
+| entry filters found as a large TRAIN difference | worked: §40 arm, §41 per-side arm, §43 agreement (Exp 076, difference t +2.57) |
+| exits | did nothing or hurt: §42, §18 |
+| sizing by forecast | did nothing: §46, Exp 072 |
+| other timeframes | did nothing: §45 |
+| meta-labeling | did nothing: §44 |
+| new families | did nothing: §47, Exp 094 |
+| more coins | the only lever that shrinks the CI by sample size: §31 on 46 coins is the closest record, at CI lo -0.00026 |
+
+Today no new filter reaches the bar.
+
+### Conclusion
+Three levers are left. Only the first is a research question.
+1. **More coins for §43's mechanism.** This raises evidence; it needs the owner to relax the ten-coin rule.
+2. **A tighter stop, K = 3-4.** This raises return and drawdown together, not certainty. It is an owner's risk choice and should be registered only together with lever 1 or after a holdout.
+3. **Wait for new data.** Paper-trading, for example.
+
+Nothing is registered. No approved run is pending.
