@@ -7783,3 +7783,38 @@ Three levers are left. Only the first is a research question.
 3. **Wait for new data.** Paper-trading, for example.
 
 Nothing is registered. No approved run is pending.
+
+---
+
+## Exp 096 - Pre-registration: §43's book on more coins (PLAN.md §48, owner choice)
+
+**Date:** 2026-10-21
+**Status:** pre-registered. The owner chose option ก from Exp 095: trade §43's mechanism on more than the ten coins.
+
+### Why
+- Exp 095 found no TRAIN-justified change to §43 that raises its t.
+- The only lever that has narrowed a CI by sample size in this project is the number of coins (§31, 46 coins, CI lo -0.00026).
+- §43's VALID CI lower bound is -0.00039, on 658 trades over ten coins.
+- §48 adds no new parameter. It is §43's frozen book traded on a wider set.
+
+### Pre-registration (PLAN.md §48)
+- **Code:** `src/ml_agree_wide.py`, test 46 (3 checks).
+- **Book:** §43 frozen: side arm q70 N 6, N/2 channel exit, 8-ATR stop, no clock, direction agreement `sign` with §38 4h hl12, conf sizing 0.5-1%, 5% cap.
+- **Universe:** each month, the ten coins plus §36's monthly large-coin set (crypto, listed >= 1 year, top 20 by prior-30-day volume, causal). That is 112 distinct coins over 2021-2024, against §43's 10.
+- **TRAIN gates, no selection:** `sign` selectable, and TRAIN t at least +0.5 above `none` on the same coins.
+- **VALID gates:** §43's, plus `valid_added_mean_r>0` (the coins outside the ten must earn on their own).
+- **Reports:** the ten and added parts, `none` on the same coins, and §43's ten-coin row.
+- **Holdout:** shared with §31-§46.
+- **Data and records:** no new download (§36's caches); `run_record` files for the traded coins.
+
+### Stated before the run
+Four risks are recorded in advance:
+- smaller coins are noisier, so the CI may not narrow;
+- the 5% cap binds more often with more coins;
+- §36 failed on these same sets, with the 1h model;
+- the short leg has lost on VALID in every ten-coin book.
+
+This is not a scan pick, so Exp 093's t >= 2.5 bar does not apply. The TRAIN margin gate is the guard instead.
+
+### What VALID can show
+The ten-coin part of the book reuses VALID data already seen in §43. Only the added part is a fresh look, which is why it has its own gate.

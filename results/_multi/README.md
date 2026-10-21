@@ -33,6 +33,7 @@ in the "old folder" column.
 | §45 | `s45_ml_tf` | `1h/`, `1d/` | `ml_tf.py` | §43's two-model book (range arm + direction agreement) as 1h and 1d sub-models | 085 → 086, review 087 | REJECT |
 | §46 | `s46_ml_voltarget_4h` | - | `ml_voltarget.py` | the ten coins held long, each sized by §40's range forecast (vol targeting), against buy-and-hold and ATR sizing | 088 → 089, review 090 | REJECT |
 | §47 | `s47_leadlag_4h` | - | `leadlag.py` | no ML: an alt that lagged a large BTC 4h move, traded until it catches up (own holdout) | 091 → 092, review 093 | REJECT |
+| §48 | `s48_ml_agree_wide_4h` | - | `ml_agree_wide.py` | §43's frozen book traded on the ten coins plus the monthly top-20 large coins | 096 → pending | pending |
 
 Not rounds: `analyzer/` (`analyzer.py`, quality score of every ML run) and `meta_lessons/` (`meta_lessons.py`).
 

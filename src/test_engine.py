@@ -449,6 +449,7 @@ def main() -> None:
     test_ml_tf()
     test_ml_voltarget()
     test_leadlag()
+    test_ml_agree_wide()
     print("\n" + "=" * 70)
     if FAIL:
         print(f"FAILED ({len(FAIL)}): " + ", ".join(FAIL))
@@ -3276,6 +3277,29 @@ def test_leadlag() -> None:
     check("leadlag causal: changing bars after t changes no decision up to t",
           np.array_equal(np.nan_to_num(t_full[:cut + 1], nan=9), np.nan_to_num(t_cut[:cut + 1], nan=9))
           and np.nansum(np.abs(t_full)) > 4)
+
+
+def test_ml_agree_wide() -> None:
+    """Test 46 (PLAN.md section 48): monthly sets merged (ten first, no duplicates), book split into ten / added."""
+    print("\n46. ml_agree_wide: ten + large sets merged by month, the book split into its ten-coin and added parts, "
+          "frozen cell and the shared holdout")
+    import ml_agree_wide as AW
+    m = AW.merge_sets({"2023-01": ["BTCUSDT", "ETHUSDT"], "2023-02": ["BTCUSDT"]},
+                      {"2023-01": ["ETHUSDT", "AVAXUSDT"], "2023-03": ["LTCUSDT"]})
+    check("ml_agree_wide sets: union per month, the ten first, no duplicates, months from either side",
+          m == {"2023-01": ["BTCUSDT", "ETHUSDT", "AVAXUSDT"], "2023-02": ["BTCUSDT"], "2023-03": ["LTCUSDT"]})
+    t = pd.DataFrame({"coin": ["BTCUSDT", "AVAXUSDT", "AVAXUSDT", "LTCUSDT"], "net_r": [0.5, -0.2, 0.4, 0.1],
+                      "ret": [0.005, -0.002, 0.004, 0.001], "side": [1, -1, 1, 1]})
+    p = AW.split_parts(t)
+    check("ml_agree_wide parts: ten = BTC only; added = 3 trades on 2 coins, mean R 0.1, short leg -0.002",
+          p["ten"]["trades"] == 1 and np.isclose(p["ten"]["mean_r"], 0.5) and p["added"]["trades"] == 3
+          and p["added"]["coins"] == 2 and np.isclose(p["added"]["mean_r"], 0.1)
+          and np.isclose(p["added"]["short_ret"], -0.002) and np.isclose(p["added"]["long_ret"], 0.005))
+    import ml_agree as MA
+    check("ml_agree_wide frozen: section 43's arm, direction scheme and sign form; holdout shared with sections 31-46",
+          AW.FORM == "sign" and AW.TF == MA.TF and AW.MIN_MARGIN == MA.MIN_MARGIN
+          and any(x.name == "s43_ml_agree_4h" for x in AW.LOCKS) and any(x.name == "s46_ml_voltarget_4h" for x in AW.LOCKS)
+          and not any(x.name == "s47_leadlag_4h" for x in AW.LOCKS))
 
 
 if __name__ == "__main__":

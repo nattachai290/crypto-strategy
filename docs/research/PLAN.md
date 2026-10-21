@@ -3270,3 +3270,56 @@ is not traded.
 - **PASS:** the holdout decides.
 - **REJECT with `valid_beats_follow` passing:** the catch-up is real but too small to trade at these costs.
 - **REJECT with the follow twin as good or better:** the TRAIN effect was BTC momentum or luck.
+
+## §48 — §43's book on more coins (`src/ml_agree_wide.py`, `_multi` Exp 096)
+
+**Why now.** Exp 095 diagnosed §43's TRAIN trades and found nothing new to tune:
+- no entry filter, exit or sizing change raises its t;
+- a tighter stop scales return, not evidence.
+
+The one lever that has narrowed a CI by sample size in this project is the number of coins: §31 on 46 coins is the
+closest record. The owner chose (2026-10-21) to trade §43 on more coins than the ten.
+
+**Hypothesis.** §43's mechanism is not specific to the ten coins: a breakout armed per side by the ML range
+forecast and kept only where the 4h direction forecast agrees. Traded on every month's large coins, it keeps its
+per-trade edge, and the bigger sample narrows the weekly CI.
+
+**Book: frozen at §43's TRAIN choices, nothing re-chosen.**
+- §40's range model and §38 4h hl12's direction model, as §43 computes them; both are already fitted wide, so
+  they forecast every prepared coin.
+- §41's side arm (q70, N 6), the N/2 channel exit, the 8-ATR stop, no clock.
+- Form `sign`; form `none` is computed only for the TRAIN margin.
+- §31's account: conf sizing 0.5–1%, 5% cap per direction.
+
+**Universe, decided each month.** §43's ten coins (each from 365 days after listing) plus §36's monthly large-coin
+set: crypto only, listed ≥ 1 year, top 20 by prior-30-day volume (`results/_multi/s36_ml_wide_1h/traded.json`,
+causal). That is 112 distinct coins over 2021–2024 and about 20 to 25 in any month.
+
+**TRAIN gates (no selection).**
+- `sign` must be selectable by §38's rule (≥ 100 trades, both years and both legs positive).
+- Its TRAIN t must be ≥ +0.5 above `none` on the same coins.
+
+**VALID gates.** §43's gates, plus one:
+- §43's: ≥ 100 trades, weekly mean > 0, weekly-block CI lower bound > 0, cost ×1.5 > 0, timing above the shifted
+  p95, ≥ 8 coins with half beating their shifts, both legs > 0, max DD ≤ 20%;
+- `valid_added_mean_r>0`: the trades on coins outside the ten must earn on their own.
+
+**Reported.**
+- The ten-coin part and the added-coin part of the book.
+- The `none` form on the same coins.
+- §43's ten-coin VALID row, for comparison.
+
+**Holdout:** shared with §31–§46. §47 has its own.
+
+**Risks, stated before the run:**
+- The added coins are smaller and noisier. If their per-trade edge is lower, the CI may not narrow.
+- The 5% per-direction cap binds more often with more coins.
+- §36 traded the same large-coin sets with the 1h model and failed on the CI and the drawdown.
+- The short leg has lost on VALID in every ten-coin book.
+
+**What each outcome means.**
+- **PASS:** the holdout decides.
+- **REJECT, but the added part earns and the CI narrows:** the mechanism carries to other coins but is still too
+  small to prove.
+- **REJECT with the added part losing:** the mechanism is specific to the ten coins, and probably to their VALID
+  sample.
