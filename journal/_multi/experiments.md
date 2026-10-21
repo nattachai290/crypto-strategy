@@ -7635,3 +7635,38 @@ Holdout power on VALID: 5% if the edge is fully real, 4% at half the edge (86 we
 **No holdout was spent and none is proposed.** §47's own holdout is untouched and nothing here is PASS. **§43 (4h) remains the best risk-adjusted ten-coin book**, and the project's closest record is still the frozen §31 cell (CI lo -0.00026 on 46 coins).
 
 Files: `results/_multi/s47_leadlag_4h/summary.json`, `trades_valid.csv.gz`, `trades_train_<cell>.csv.gz` (8 cells), `record/valid/{run_info.json, holdout_power.json}`; generated `journal/_multi/s47_leadlag_4h.md`. `run_record.py` was called for its run-info and holdout-power files only; the round fits no model, so there is no feature record to write.
+
+---
+
+## Exp 093 - Planner's review of §47 (Exp 092): REJECT confirmed; neither the lag form nor its control has evidence on VALID, and the scan's selection bias is the lesson
+
+**Date:** 2026-10-21
+**Status:** complete. Read-only: `results/_multi/s47_leadlag_4h/summary.json` and `trades_valid.csv.gz`. No backtest, no new data, no holdout.
+
+### Checks
+- REJECT stands on six gates. The chosen cell `lag_bt1.5_rt0.5_k2` is the one the planner's scratch TRAIN run predicted (Exp 091: t +1.90 without funding; t +1.75 with funding). §47's own holdout is untouched.
+- Exit mechanics on VALID worked as designed: 446 signal exits average +0.512 R and 202 stops average -1.053 R. There was no clock and no re-entry after a stop.
+
+### Corrections to Exp 092
+1. **Two unrendered lines.** The heading "REJECT on `REJECT`" should list the six gates, and the TRAIN paragraph has an unrendered `{tc['trades']} ... {f(tc['weekly_mean'])}` placeholder. The values are 520 trades and weekly +0.00293, as in the table above that paragraph.
+2. **"The entries are worse timed than shifting the same entries through time" is too strong.** The timing statistic is +0.0067:
+   - It is *above* the median shift (+0.0055) and below the shifted p95 (+0.0166).
+   - So the gate fails because the timing is not distinguishable from shifted entries. It is not worse than them.
+3. **"The twin is better on every measure" is not exact.** The follow twin's short leg is worse (-0.0531 against -0.0387).
+4. **The twin's edge is a weekly difference of +0.00011, inside both CIs** (lag [-0.00304, +0.00493], follow [-0.00147, +0.00354]).
+   - The honest reading is not "it was BTC momentum". On VALID, neither form shows an edge: lag t +0.36, follow t +0.67.
+   - The control did its job by showing the lag form adds nothing over it.
+   - BTC momentum is not shown either.
+
+### The lesson (planner's fault, recorded)
+The family was chosen as the one survivor of a seven-family TRAIN scan with many cells (Exp 091). Its TRAIN t was below 2, and 2022 was flat in every cell. Exp 091 named all three warnings before the run, and VALID confirmed them: the lag-minus-follow gap went from +0.00278 a week on TRAIN to -0.00011 on VALID.
+- A scan that picks one family out of seven needs a stricter bar before a run is registered: TRAIN t of at least 2.5 and both TRAIN years clearly positive.
+- The breakout line passed that kind of bar (§43's filter came from a TRAIN t +2.57 difference in both years, Exp 076) and generalised.
+- This scan did not pass it.
+
+### Verdict
+**REJECT confirmed. The lead-lag family is closed.**
+- §43 (4h) remains the best risk-adjusted ten-coin book.
+- The project's closest record is still the frozen §31 cell.
+- Both holdouts (§31-§46's and §47's) are untouched.
+- No approved run is pending.
