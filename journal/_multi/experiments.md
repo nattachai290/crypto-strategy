@@ -7670,3 +7670,51 @@ The family was chosen as the one survivor of a seven-family TRAIN scan with many
 - The project's closest record is still the frozen §31 cell.
 - Both holdouts (§31-§46's and §47's) are untouched.
 - No approved run is pending.
+
+---
+
+## Exp 094 - Second TRAIN-only scan of new families on the ten coins under the stricter bar: nothing passes, nothing registered
+
+**Date:** 2026-10-21
+**Status:** complete. TRAIN only. The data was Binance USDT-M 4h klines and funding for the ten coins, 2020-01 to 2022-12, in the planner's scratchpad, and the script asserts that no bar is on or after 2023-01-01. No backtest in `src/`, no VALID or holdout data, no registration.
+**The bar (Exp 093):** a scan's pick must reach TRAIN t >= 2.5, with both TRAIN years clearly positive, before a run is registered.
+
+### Families scanned (event study)
+Each event enters at the next open. The score is the signed move h = 6 / 12 / 18 bars later, in ATRs, net of a 0.14% round trip; each coin is counted from 365 days after its first bar.
+
+| family | best result | verdict |
+|---|---|---|
+| continuation after over-extension (\|close - EMA50\| > 3 / 4 ATR, same side) | h18 +0.18 to +0.32 ATR net of funding | see below |
+| taker-buy share z-score (180 bars) > 2 / 3, continuation or reversal | cont3 n = 162 (small); cont2 and rev negative | fail |
+| volume shock (> 3x / 5x the 180-bar median), continuation or reversal | cont5 h18 +0.37, but 2021 +0.025 | fail (2021 flat) |
+| funding contrarian (level > 0.05%, or 90-settlement z > 2 / 3) | h18 -0.27 to -0.36, bar-clustered t -4.7 to -7.4 | fail |
+| funding momentum (the reverse of the above), net of the funding it pays | weekly t <= +0.83 | fail |
+| long by entry hour (6 buckets) or weekday (7) | no bucket positive in both years | fail |
+
+### Why the large t-statistics were not real
+- The first pass clustered by event bar. A signal that stays on for many consecutive bars puts heavily overlapping holds into "independent" clusters, so the first pass's t was inflated. Examples:
+  - funding contrarian at t -7.4;
+  - over-extension continuation at +4.7.
+- Recomputed by week and net of the funding paid while holding (`fundmom.py`), every family falls to a weekly t of about 1 or less:
+  - over-extension continuation: +0.87 / +0.97 (h18, z3 / z4), with 2021 at +0.039 / -0.011;
+  - funding momentum: +0.32 to +0.83.
+- Funding is not a free signal here. Going with high funding costs about 0.05-0.10 ATR per 18-bar hold, which is most of the edge.
+
+### Traded as rules (one position per coin, K-ATR stop, exit when the trigger state crosses zero, no clock, funding paid)
+
+| rule | trades | mean R | weekly t | 2021 / 2022 | long / short |
+|---|---|---|---|---|---|
+| extension z > 3, stop 3 ATR | 449 | +0.105 | +0.98 | +0.167 / +0.055 | +0.157 / +0.058 |
+| extension z > 3, stop 5 ATR | 434 | +0.091 | **+1.24** | +0.119 / +0.067 | +0.121 / +0.064 |
+| extension z > 4, stop 3 / 5 ATR | 239 / 234 | +0.044 / +0.024 | +0.31 / +0.26 | | short negative |
+| funding momentum z > 2 / 3, stops 3 / 5 | 253-489 | -0.021 to -0.001 | -0.45 to -0.02 | 2022 negative | |
+
+### Verdict
+**Nothing passes the bar.** The best TRAIN result is extension continuation at weekly t +1.24, about half the required 2.5, and it is a trend rule close to the closed breakout line. No round is registered; registering it would repeat §47's mistake.
+
+What the two scans (Exp 091, 094) establish on these ten coins' 4h bars, TRAIN only:
+- over-extension and volume shocks continue rather than revert;
+- funding extremes do not reverse once the funding paid is counted;
+- the BTC lead-lag looked real on TRAIN and failed on VALID (§47).
+
+No approved run is pending.
