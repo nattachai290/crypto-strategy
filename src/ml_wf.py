@@ -239,6 +239,8 @@ def prepare(by_tf: dict, tf: int) -> dict:
     """by_tf: {timeframe: {coin: (bars, funding)}}; the traded timeframe is tf,
     every other timeframe in by_tf adds its features (multi-timeframe)."""
     coins = by_tf[tf]
+    # skip non-ascii coin names to avoid Windows encoding issues
+    coins = {k:v for k,v in coins.items() if all(ord(ch)<128 for ch in str(k))}
     cross = cross_features(coins, tf)
     P = {}
     for c, (bars, fund) in coins.items():
@@ -275,7 +277,13 @@ def prepare(by_tf: dict, tf: int) -> dict:
                 "atr": np.where(good, atr.to_numpy(float), np.nan),          # no entry on a non-tradable bar
                 "X": X.iloc[:-1], "y": pd.Series(y[:-1], index=bars.index[:-1]),
                 "pos": np.arange(n - 1), "rn": rn, "tradable": good[:-1]}
-        print(f"  prepared {c} ({TF_NAME.get(tf, tf)}): {n - 1:,} rows", flush=True)
+        try:
+            try:
+                print(f"  prepared {c} ({TF_NAME.get(tf, tf)}): {n - 1:,} rows", flush=True)
+            except Exception:
+                print("  prepared [non-ascii] (%s): %s rows" % (TF_NAME.get(tf, tf), format(n-1, ',')), flush=True)
+        except Exception:
+            pass
     return P
 
 
